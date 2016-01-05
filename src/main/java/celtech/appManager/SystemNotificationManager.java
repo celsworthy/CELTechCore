@@ -7,6 +7,7 @@ import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -28,9 +29,9 @@ public interface SystemNotificationManager
     void showErrorNotification(String title, String message);
 
     /**
-     * Returns 0 for no downgrade and 1 for downgrade
+     * Returns true for no update and false for update
      *
-     * @return True if the user has agreed to upgrade, otherwise false
+     * @return True if the user has agreed to update, otherwise false
      */
     boolean askUserToUpdateFirmware();
 
@@ -38,12 +39,6 @@ public interface SystemNotificationManager
 
     void showCalibrationDialogue();
 
-    void showDetectedPrintInProgressNotification();
-
-    /**
-     *
-     * @param result
-     */
     void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result);
 
     void showGCodePostProcessFailedNotification();
@@ -85,6 +80,7 @@ public interface SystemNotificationManager
     boolean showApplicationUpgradeDialog(String applicationName);
 
     public PurgeResponse showPurgeDialog();
+    public PurgeResponse showPurgeDialog(boolean allowAutoPrint);
 
     public boolean showJobsTransferringShutdownDialog();
 
@@ -95,14 +91,6 @@ public interface SystemNotificationManager
     /**
      * Show a dialog to the user asking them to choose between available Continue, Abort or Retry
      * actions when a printer error has occurred.
-     *
-     * @param title
-     * @param message
-     * @param showContinueOption
-     * @param showAbortOption
-     * @param showRetryOption
-     * @param showOKOption
-     * @return
      */
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
         boolean showContinueOption,
@@ -120,7 +108,7 @@ public interface SystemNotificationManager
 
     public void hideKeepPushingFilamentNotification();
 
-    public void showEjectFailedDialog(Printer printer);
+    public void showEjectFailedDialog(Printer printer, int nozzleNumber);
 
     public void showFilamentMotionCheckBanner();
 
@@ -129,4 +117,8 @@ public interface SystemNotificationManager
     public void showFilamentStuckMessage();
 
     public void showLoadFilamentNowMessage();
+    
+    public boolean showModelIsInvalidDialog(Set<String> modelNames);
+    
+    public void clearAllDialogsOnDisconnect();
 }

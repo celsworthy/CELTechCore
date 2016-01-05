@@ -1,16 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
-import celtech.coreUI.components.ProjectTab;
-import celtech.coreUI.visualisation.importers.obj.ObjImporter;
-import celtech.coreUI.visualisation.importers.stl.STLImporter;
-import celtech.coreUI.visualisation.importers.ModelLoadResult;
-import celtech.coreUI.visualisation.importers.gcode.GCodeImporterLines;
-import celtech.coreUI.visualisation.importers.stl.STLImporter;
+import celtech.appManager.Project;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.utils.threed.importers.obj.ObjImporter;
+import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,18 +28,11 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
         getStenographer(ModelLoaderTask.class.getName());
 
     private final List<File> modelFilesToLoad;
-    private ProjectTab targetProjectTab = null;
-    private ResourceBundle languageBundle = null;
     private final DoubleProperty percentProgress = new SimpleDoubleProperty();
-    private final boolean relayout;
 
-    public ModelLoaderTask(List<File> modelFilesToLoad, ProjectTab targetProjectTab,
-        boolean relayout)
+    public ModelLoaderTask(List<File> modelFilesToLoad)
     {
         this.modelFilesToLoad = modelFilesToLoad;
-        this.relayout = relayout;
-        this.targetProjectTab = targetProjectTab;
-        languageBundle = Lookup.getLanguageBundle();
 
         percentProgress.addListener(new ChangeListener<Number>()
         {
@@ -62,7 +49,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
     {
         List<ModelLoadResult> modelLoadResultList = new ArrayList<>();
 
-        updateTitle(languageBundle.getString("dialogs.loadModelTitle"));
+        updateTitle(Lookup.i18n("dialogs.loadModelTitle"));
 
         for (File modelFileToLoad : modelFilesToLoad)
         {
@@ -70,29 +57,23 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
 
             ModelLoadResult modelLoadResult = null;
             String modelFilePath = modelFileToLoad.getAbsolutePath();
-            updateMessage(languageBundle.getString("dialogs.gcodeLoadMessagePrefix")
+            updateMessage(Lookup.i18n("dialogs.gcodeLoadMessagePrefix")
                 + modelFileToLoad.getName());
             updateProgress(0, 100);
             if (modelFilePath.toUpperCase().endsWith("OBJ"))
             {
                 ObjImporter reader = new ObjImporter();
-                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath,
-                                                  targetProjectTab);
+                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath);
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
-                modelLoadResult = reader.loadFile(this, modelFileToLoad, targetProjectTab,
-                                                  percentProgress);
-            } else if (modelFilePath.toUpperCase().endsWith("GCODE"))
-            {
-                GCodeImporterLines reader = new GCodeImporterLines();
-                modelLoadResult = reader.loadFile(this, modelFilePath, targetProjectTab,
+                modelLoadResult = reader.loadFile(this, modelFileToLoad,
                                                   percentProgress);
             }
             modelLoadResultList.add(modelLoadResult);
         }
 
-        return new ModelLoadResults(modelLoadResultList, relayout);
+        return new ModelLoadResults(modelLoadResultList);
     }
 
     /**

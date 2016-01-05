@@ -23,49 +23,71 @@ public class CalibrationMenuConfiguration
     public BooleanProperty nozzleHeightCalibrationEnabled = new SimpleBooleanProperty(false);
     public BooleanProperty xyAlignmentCalibrationEnabled = new SimpleBooleanProperty(false);
 
+    private final boolean displayOpening;
+    private final boolean displayHeight;
+    private final boolean displayAlignment;
+
     public Printer currentlySelectedPrinter;
 
+    public CalibrationMenuConfiguration(boolean displayOpening,
+            boolean displayHeight,
+            boolean displayAlignment)
+    {
+        this.displayOpening = displayOpening;
+        this.displayHeight = displayHeight;
+        this.displayAlignment = displayAlignment;
+    }
+
     public void configureCalibrationMenu(VerticalMenu calibrationMenu,
-        CalibrationInsetPanelController calibrationInsetPanelController)
+            CalibrationInsetPanelController calibrationInsetPanelController)
     {
 
         if (currentlySelectedPrinter != null)
         {
             nozzleOpeningCalibrationEnabled.bind(
-                currentlySelectedPrinter.canCalibrateNozzleOpeningProperty());
+                    currentlySelectedPrinter.canCalibrateNozzleOpeningProperty());
             nozzleHeightCalibrationEnabled.bind(
-                currentlySelectedPrinter.canCalibrateNozzleHeightProperty());
+                    currentlySelectedPrinter.canCalibrateNozzleHeightProperty());
             xyAlignmentCalibrationEnabled.bind(
-                currentlySelectedPrinter.canCalibrateXYAlignmentProperty());
+                    currentlySelectedPrinter.canCalibrateXYAlignmentProperty());
         }
 
         calibrationMenu.setTitle(Lookup.i18n("calibrationPanel.title"));
-        Callable doOpeningCalibration = () ->
-        {
-            calibrationInsetPanelController.setCalibrationMode(
-                CalibrationMode.NOZZLE_OPENING);
-            return null;
-        };
-        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleOpening"),
-                                doOpeningCalibration, null);
-        Callable doHeightCalibration = () ->
-        {
-            calibrationInsetPanelController.setCalibrationMode(
-                CalibrationMode.NOZZLE_HEIGHT);
-            return null;
-        };
-        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleHeight"),
-                                doHeightCalibration, null);
-        Callable doXYAlignmentCalibration = () ->
-        {
-            calibrationInsetPanelController.setCalibrationMode(
-                CalibrationMode.X_AND_Y_OFFSET);
-            return null;
-        };
-        calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"),
-                                doXYAlignmentCalibration, null);
 
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(selectedPrinterListener);
+        if (displayOpening)
+        {
+            VerticalMenu.NoArgsVoidFunc doOpeningCalibration = () ->
+            {
+                calibrationInsetPanelController.setCalibrationMode(
+                        CalibrationMode.NOZZLE_OPENING);
+            };
+            calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleOpening"),
+                    doOpeningCalibration, null);
+        }
+
+        if (displayHeight)
+        {
+            VerticalMenu.NoArgsVoidFunc doHeightCalibration = () ->
+            {
+                calibrationInsetPanelController.setCalibrationMode(
+                        CalibrationMode.NOZZLE_HEIGHT);
+            };
+            calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleHeight"),
+                    doHeightCalibration, null);
+        }
+
+        if (displayAlignment)
+        {
+            VerticalMenu.NoArgsVoidFunc doXYAlignmentCalibration = () ->
+            {
+                calibrationInsetPanelController.setCalibrationMode(
+                        CalibrationMode.X_AND_Y_OFFSET);
+            };
+            calibrationMenu.addItem(Lookup.i18n("calibrationMenu.nozzleAlignment"),
+                    doXYAlignmentCalibration, null);
+        }
+
+        Lookup.getSelectedPrinterProperty().addListener(selectedPrinterListener);
     }
 
     private ChangeListener<Printer> selectedPrinterListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newPrinter) ->

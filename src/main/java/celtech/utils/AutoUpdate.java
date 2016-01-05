@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils;
 
 import celtech.Lookup;
-import celtech.appManager.Notifier;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import java.io.BufferedReader;
@@ -15,7 +9,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
@@ -88,7 +81,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
+                            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
                         }
                     });
                     keepRunning = false;
@@ -100,8 +93,8 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
-                                                                 + applicationName);
+                            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
+                                    + applicationName);
                         }
                     });
                     keepRunning = false;
@@ -127,7 +120,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Notifier.showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
+                            Lookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
                         }
                     });
                     try
@@ -174,7 +167,7 @@ public class AutoUpdate extends Thread
             if (responseCode == 200)
             {
                 BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+                        new InputStreamReader(con.getInputStream()));
                 String inputLine;
                 StringBuffer response = new StringBuffer();
 

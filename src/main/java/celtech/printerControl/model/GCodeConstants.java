@@ -41,6 +41,8 @@ public class GCodeConstants
      *
      */
     protected static final String goToTargetFirstLayerBedTemperature = "M139";
+    protected static final String goToTargetFirstLayerBedTemperatureE = "M139 E";
+    protected static final String goToTargetFirstLayerBedTemperatureD = "M139 D";
 
     /**
      *
@@ -60,32 +62,38 @@ public class GCodeConstants
     /**
      *
      */
-    protected static final String setFirstLayerNozzleTemperatureTarget = "M103 S";
+    protected static final String setFirstLayerNozzleHeaterTemperatureTarget0 = "M103 S";
+     protected static final String setFirstLayerNozzleHeaterTemperatureTarget1 = "M103 T";
 
     /**
      *
      */
-    protected static final String setNozzleTemperatureTarget = "M104 S";
+    protected static final String setNozzleHeaterTemperatureTarget0 = "M104 S";
+    protected static final String setNozzleHeaterTemperatureTarget1 = "M104 T";
 
     /**
      *
      */
-    protected static final String goToTargetFirstLayerNozzleTemperature = "M103";
+    protected static final String goToTargetFirstLayerNozzleHeaterTemperature0 = "M103 S";
+    protected static final String goToTargetFirstLayerNozzleHeaterTemperature1 = "M103 T";
 
     /**
      *
      */
-    protected static final String goToTargetNozzleTemperature = "M104";
+    protected static final String goToTargetNozzleHeaterTemperature0 = "M104 S";
+    protected static final String goToTargetNozzleHeaterTemperature1 = "M104 T";
 
     /**
      *
      */
-    protected static final String waitForNozzleTemperature = "M109";
+    protected static final String waitForNozzleHeaterTemperature0 = "M109 S";
+    protected static final String waitForNozzleHeaterTemperature1 = "M109 T";
 
     /**
      *
      */
-    protected static final String switchNozzleHeaterOff = "M104 S0";
+    protected static final String switchNozzleHeaterOff0 = "M104 S0";
+    protected static final String switchNozzleHeaterOff1 = "M104 T0";
 
     /**
      *

@@ -5,102 +5,179 @@ import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
 import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.visualisation.exporters.STLOutputConverter;
+import celtech.printerControl.model.Head;
+import celtech.utils.threed.exporters.STLOutputConverter;
 import celtech.printerControl.model.Printer;
+import celtech.utils.Time.TimeUtils;
+import celtech.utils.threed.ThreeDUtils;
+import celtech.utils.threed.exporters.AMFOutputConverter;
+import celtech.utils.threed.exporters.MeshFileOutputConverter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
  * @author ianhudson
  */
-public class SlicerTask extends Task<SliceResult>
+public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(SlicerTask.class.
-        getName());
+            getName());
     private String printJobUUID = null;
+    private final String printJobDirectory;
     private Project project = null;
-    private FilamentContainer filament = null;
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;
     private Printer printerToUse = null;
-    private String tempModelFilename = null;
-    private String tempGcodeFilename = null;
+    private static final TimeUtils timeUtils = new TimeUtils();
+    private static final String slicerTimerName = "Slicer";
 
-    /**
-     *
-     * @param printJobUUID
-     * @param project
-     * @param printQuality
-     * @param settings
-     * @param printerToUse
-     */
     public SlicerTask(String printJobUUID, Project project, PrintQualityEnumeration printQuality,
-        SlicerParametersFile settings, Printer printerToUse)
+            SlicerParametersFile settings, Printer printerToUse)
     {
         this.printJobUUID = printJobUUID;
+        this.printJobDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
+                + File.separator;
         this.project = project;
         this.printQuality = printQuality;
         this.settings = settings;
         this.printerToUse = printerToUse;
+        updateProgress(0.0, 100.0);
+    }
 
-        tempModelFilename = printJobUUID + ApplicationConfiguration.stlTempFileExtension;
-        tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
+    public SlicerTask(String printJobUUID,
+            String printJobDirectory,
+            Project project, PrintQualityEnumeration printQuality,
+            SlicerParametersFile settings, Printer printerToUse)
+    {
+        this.printJobUUID = printJobUUID;
+        this.printJobDirectory = printJobDirectory;
+        this.project = project;
+        this.printQuality = printQuality;
+        this.settings = settings;
+        this.printerToUse = printerToUse;
+        updateProgress(0.0, 100.0);
     }
 
     @Override
     protected SliceResult call() throws Exception
     {
-        boolean succeeded = false;
+        if (isCancelled())
+        {
+            return null;
+        }
 
-        String workingDirectory = ApplicationConfiguration.getPrintSpoolDirectory() + printJobUUID
-            + File.separator;
-        String configFile = printJobUUID + ApplicationConfiguration.printProfileFileExtension;
-
+        steno.info("slice " + project + " " + settings.getProfileName());
         updateTitle("Slicer");
         updateMessage("Preparing model for conversion");
-        updateProgress(0, 100);
+        updateProgress(0.0, 100.0);
 
-        STLOutputConverter outputConverter = new STLOutputConverter(project, printJobUUID);
-        outputConverter.outputSTLFile();
+        return doSlicing(printJobUUID, settings, printJobDirectory, project,
+                printQuality, printerToUse, this, steno);
+    }
 
-        MachineType machineType = ApplicationConfiguration.getMachineType();
-        ArrayList<String> commands = new ArrayList<>();
-
+    public static SliceResult doSlicing(String printJobUUID, SlicerParametersFile settings,
+            String printJobDirectory, Project project, PrintQualityEnumeration printQuality,
+            Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno)
+    {
+        steno.info("Starting slicing");
+        timeUtils.timerStart(project, slicerTimerName);
+        
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-        String windowsSlicerCommand = "";
-        String macSlicerCommand = "";
-        String linuxSlicerCommand = "";
-        String configLoadCommand = "";
-        String combinedConfigSection = "";
-        String verboseOutputCommand = "";
-        String progressOutputCommand = "";
-
         if (settings.getSlicerOverride() != null)
         {
             slicerType = settings.getSlicerOverride();
         }
 
+        MeshFileOutputConverter outputConverter = null;
+
+        if (slicerType == SlicerType.Slic3r)
+        {
+            outputConverter = new AMFOutputConverter();
+        } else
+        {
+            outputConverter = new STLOutputConverter();
+        }
+
+        List<String> createdMeshFiles = null;
+
+        // Output multiple files if we are using Cura
+        if (printerToUse == null
+                || printerToUse.headProperty().get() == null
+                || printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+        {
+            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+                    true);
+        } else
+        {
+            createdMeshFiles = outputConverter.outputFile(project, printJobUUID, printJobDirectory,
+                    false);
+        }
+
+        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
+
+        boolean succeeded = sliceFile(printJobUUID, printJobDirectory, slicerType, createdMeshFiles, centreOfPrintedObject, progressReceiver, steno);
+
+        timeUtils.timerStop(project, slicerTimerName);
+        steno.info("Slicer Timer Report");
+        steno.info("============");
+        steno.info(slicerTimerName + " " + timeUtils.timeTimeSoFar_ms(project, slicerTimerName) / 1000.0 + " seconds");
+        steno.info("============");
+
+        return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
+                succeeded);
+    }
+
+    public static boolean sliceFile(String printJobUUID,
+            String printJobDirectory,
+            SlicerType slicerType,
+            List<String> createdMeshFiles,
+            Vector3D centreOfPrintedObject,
+            ProgressReceiver progressReceiver,
+            Stenographer steno)
+    {
+        boolean succeeded = false;
+
+        String tempGcodeFilename = printJobUUID + ApplicationConfiguration.gcodeTempFileExtension;
+
+        String configFile = printJobUUID + ApplicationConfiguration.printProfileFileExtension;
+
+        MachineType machineType = ApplicationConfiguration.getMachineType();
+        ArrayList<String> commands = new ArrayList<>();
+
+        String windowsSlicerCommand = "";
+        String macSlicerCommand = "";
+        String linuxSlicerCommand = "";
+        String configLoadCommand = "";
+        //The next variable is only required for Slic3r
+        String printCenterCommand = "";
+        String combinedConfigSection = "";
+        String verboseOutputCommand = "";
+        String progressOutputCommand = "";
+
         switch (slicerType)
         {
             case Slic3r:
                 windowsSlicerCommand = "\"" + ApplicationConfiguration.
-                    getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
+                        getCommonApplicationDirectory() + "Slic3r\\slic3r.exe\"";
                 macSlicerCommand = "Slic3r.app/Contents/MacOS/slic3r";
                 linuxSlicerCommand = "Slic3r/bin/slic3r";
                 configLoadCommand = "--load";
                 combinedConfigSection = configLoadCommand + " " + configFile;
+                printCenterCommand = "--print-center";
                 break;
             case Cura:
                 windowsSlicerCommand = "\"" + ApplicationConfiguration.
-                    getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
+                        getCommonApplicationDirectory() + "Cura\\CuraEngine.exe\"";
                 macSlicerCommand = "Cura/CuraEngine";
                 linuxSlicerCommand = "Cura/CuraEngine";
                 verboseOutputCommand = "-v";
@@ -110,7 +187,7 @@ public class SlicerTask extends Task<SliceResult>
                 break;
         }
 
-        steno.info("Selected slicer is " + slicerType);
+        steno.debug("Selected slicer is " + slicerType + " : " + Thread.currentThread().getName());
 
         switch (machineType)
         {
@@ -118,45 +195,67 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \""
-                    + workingDirectory
-                    + "\" && "
-                    + windowsSlicerCommand
-                    + " "
-                    + verboseOutputCommand
-                    + " "
-                    + progressOutputCommand
-                    + " "
-                    + combinedConfigSection
-                    + " -o "
-                    + tempGcodeFilename
-                    + " "
-                    + tempModelFilename
-                    + " && popd\"");
+                String win95PrintCommand = "\"pushd \""
+                        + printJobDirectory
+                        + "\" && "
+                        + windowsSlicerCommand
+                        + " "
+                        + verboseOutputCommand
+                        + " "
+                        + progressOutputCommand
+                        + " "
+                        + combinedConfigSection
+                        + " -o "
+                        + tempGcodeFilename;
+                for (String fileName : createdMeshFiles)
+                {
+                    win95PrintCommand += " \"";
+                    win95PrintCommand += fileName;
+                    win95PrintCommand += "\"";
+                }
+                win95PrintCommand += " && popd\"";
+                commands.add(win95PrintCommand);
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"pushd \""
-                    + workingDirectory
-                    + "\" && "
-                    + windowsSlicerCommand
-                    + " "
-                    + verboseOutputCommand
-                    + " "
-                    + progressOutputCommand
-                    + " "
-                    + combinedConfigSection
-                    + " -o "
-                    + tempGcodeFilename
-                    + " "
-                    + tempModelFilename
-                    + " && popd\"");
+                String windowsPrintCommand = "\"pushd \""
+                        + printJobDirectory
+                        + "\" && "
+                        + windowsSlicerCommand
+                        + " "
+                        + verboseOutputCommand
+                        + " "
+                        + progressOutputCommand
+                        + " "
+                        + combinedConfigSection
+                        + " -o "
+                        + tempGcodeFilename;
+
+                if (!printCenterCommand.equals(""))
+                {
+                    windowsPrintCommand += " " + printCenterCommand;
+                    windowsPrintCommand += " "
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ());
+                }
+
+//                windowsPrintCommand += " *.stl";
+                for (String fileName : createdMeshFiles)
+                {
+                    windowsPrintCommand += " \"";
+                    windowsPrintCommand += fileName;
+                    windowsPrintCommand += "\"";
+                }
+                windowsPrintCommand += " && popd\"";
+                steno.info(windowsPrintCommand);
+                commands.add(windowsPrintCommand);
                 break;
             case MAC:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
-                    + macSlicerCommand);
+                        + macSlicerCommand);
                 if (!verboseOutputCommand.equals(""))
                 {
                     commands.add(verboseOutputCommand);
@@ -169,12 +268,22 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
-                commands.add(tempModelFilename);
+                if (!printCenterCommand.equals(""))
+                {
+                    commands.add(printCenterCommand);
+                    commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
+                }
+                for (String fileName : createdMeshFiles)
+                {
+                    commands.add(fileName);
+                }
                 break;
             case LINUX_X86:
             case LINUX_X64:
                 commands.add(ApplicationConfiguration.getCommonApplicationDirectory()
-                    + linuxSlicerCommand);
+                        + linuxSlicerCommand);
                 if (!verboseOutputCommand.equals(""))
                 {
                     commands.add(verboseOutputCommand);
@@ -187,7 +296,17 @@ public class SlicerTask extends Task<SliceResult>
                 commands.add(configFile);
                 commands.add("-o");
                 commands.add(tempGcodeFilename);
-                commands.add(tempModelFilename);
+                if (!printCenterCommand.equals(""))
+                {
+                    commands.add(printCenterCommand);
+                    commands.add(String.format(Locale.UK, "%.3f", centreOfPrintedObject.getX())
+                            + ","
+                            + String.format(Locale.UK, "%.3f", centreOfPrintedObject.getZ()));
+                }
+                for (String fileName : createdMeshFiles)
+                {
+                    commands.add(fileName);
+                }
                 break;
             default:
                 steno.error("Couldn't determine how to run slicer");
@@ -195,26 +314,27 @@ public class SlicerTask extends Task<SliceResult>
 
         if (commands.size() > 0)
         {
+            steno.debug("Slicer command is " + String.join(" ", commands));
             ProcessBuilder slicerProcessBuilder = new ProcessBuilder(commands);
             if (machineType != MachineType.WINDOWS && machineType != MachineType.WINDOWS_95)
             {
-                slicerProcessBuilder.directory(new File(workingDirectory));
+                steno.debug("Set working directory (Non-Windows) to " + printJobDirectory);
+                slicerProcessBuilder.directory(new File(printJobDirectory));
             }
 
             Process slicerProcess = null;
-
             try
             {
                 slicerProcess = slicerProcessBuilder.start();
                 // any error message?
-                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(this, slicerProcess.
-                                                                           getErrorStream(), "ERROR",
-                                                                           slicerType);
+                SlicerOutputGobbler errorGobbler = new SlicerOutputGobbler(progressReceiver, slicerProcess.
+                        getErrorStream(), "ERROR",
+                        slicerType);
 
                 // any output?
-                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(this, slicerProcess.
-                                                                            getInputStream(),
-                                                                            "OUTPUT", slicerType);
+                SlicerOutputGobbler outputGobbler = new SlicerOutputGobbler(progressReceiver, slicerProcess.
+                        getInputStream(),
+                        "OUTPUT", slicerType);
 
                 // kick them off
                 errorGobbler.start();
@@ -224,13 +344,13 @@ public class SlicerTask extends Task<SliceResult>
                 switch (exitStatus)
                 {
                     case 0:
-                        steno.info("Slicer terminated successfully ");
+                        steno.debug("Slicer terminated successfully ");
                         succeeded = true;
                         break;
                     default:
-                        steno.info("Failure when invoking slicer with command line: " + String.join(
-                            " ", commands));
-                        steno.info("Slicer terminated with unknown exit code " + exitStatus);
+                        steno.error("Failure when invoking slicer with command line: " + String.join(
+                                " ", commands));
+                        steno.error("Slicer terminated with unknown exit code " + exitStatus);
                         break;
                 }
             } catch (IOException ex)
@@ -246,21 +366,16 @@ public class SlicerTask extends Task<SliceResult>
             }
         } else
         {
-            steno.error("Couldn't run autoupdate - no commands for OS ");
+            steno.error("Couldn't run slicer - no commands for OS ");
         }
 
-        return new SliceResult(printJobUUID, project, filament, printQuality, settings, printerToUse,
-                               succeeded);
+        return succeeded;
     }
 
-    /**
-     *
-     * @param message
-     * @param workDone
-     */
-    protected void progressUpdateFromSlicer(String message, int workDone)
+    @Override
+    public void progressUpdateFromSlicer(String message, float workDone)
     {
         updateMessage(message);
-        updateProgress(workDone, 100);
+        updateProgress(workDone, 100.0);
     }
 }

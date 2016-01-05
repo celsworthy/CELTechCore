@@ -8,6 +8,7 @@ package celtech.utils.threed;
 import celtech.modelcontrol.ModelContainer;
 import java.util.List;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
@@ -16,6 +17,9 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  */
 public class ThreeDUtils
 {
+    public static final Point3D X_AXIS_JFX = new Point3D(1, 0, 0);
+    public static final Point3D Y_AXIS_JFX = new Point3D(0, 1, 0);
+    public static final Point3D Z_AXIS_JFX = new Point3D(0, 0, 1);
 
     public static Vector3D calculateCentre(List<ModelContainer> models)
     {

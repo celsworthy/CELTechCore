@@ -1,9 +1,8 @@
 package celtech.coreUI.keycommands;
 
-import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.Lookup;
+import celtech.printerControl.comms.DummyPrinterCommandInterface;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
@@ -26,9 +25,101 @@ public class HiddenKey
     private String parameterCaptureBuffer = "";
     private boolean parameterCaptureInProgress = false;
 
+    private final EventHandler<KeyEvent> hiddenErrorCommandEventHandler = (KeyEvent event) ->
+    {
+
+        switch (event.getCode())
+        {
+            case DIGIT1:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:",
+                                     DummyPrinterCommandInterface.defaultRoboxAttachCommand);
+                }
+                break;
+            case DIGIT2:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:",
+                                     DummyPrinterCommandInterface.defaultRoboxAttachCommand2);
+                }
+                break;
+            case DIGIT3:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:", "ATTACH EXTRUDER 1");
+                }
+                break;
+            case DIGIT4:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    triggerListeners("dummy:", "ATTACH REEL RBX-PLA-OR022 1");
+                }
+                break;
+            case B:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger B_STUCK
+                    triggerListeners("dummy:", "ERROR B_STUCK");
+                }
+                break;
+            case E:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger E_FILAMENT_SLIP
+                    triggerListeners("dummy:", "ERROR E_FILAMENT_SLIP");
+                }
+                break;
+
+            case M:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    if (Lookup.getSelectedPrinterProperty().get().
+                        extrudersProperty().get(0).filamentLoadedProperty().get())
+                    {
+                        triggerListeners("dummy:", "UNLOAD 0");
+                    } else
+                    {
+                        triggerListeners("dummy:", "LOAD 0");
+                    }
+
+                }
+                break;
+            case N:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    if (Lookup.getSelectedPrinterProperty().get().
+                        extrudersProperty().get(1).filamentLoadedProperty().get())
+                    {
+                        triggerListeners("dummy:", "UNLOAD 1");
+                    } else
+                    {
+                        triggerListeners("dummy:", "LOAD 1");
+                    }
+
+                }
+                break;
+            case D:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger D_FILAMENT_SLIP
+                    triggerListeners("dummy:", "ERROR D_FILAMENT_SLIP");
+                }
+            case S:
+                if (event.isShortcutDown() && event.isAltDown())
+                {
+                    // trigger detach printer
+                    triggerListeners("dummy:", "DETACH PRINTER");
+                }
+
+                break;
+
+        }
+    };
+
     private final EventHandler<KeyEvent> hiddenCommandEventHandler = (KeyEvent event) ->
     {
-        steno.debug("Got character " + event.getCharacter());
+        steno.debug("Got character [" + event.getCharacter() + "]");
 
         if (parameterCaptureInProgress)
         {
@@ -49,8 +140,7 @@ public class HiddenKey
 
             for (String commandSequence : commandSequences)
             {
-                if (commandSequence.equals(hiddenCommandKeyBuffer + event.
-                    getCharacter()))
+                if (commandSequence.equals(hiddenCommandKeyBuffer + event.getCharacter()))
                 {
                     hiddenCommandKeyBuffer = "";
                     triggerListeners(commandSequence);
@@ -109,6 +199,7 @@ public class HiddenKey
         if (!captureKeys)
         {
             scene.addEventHandler(KeyEvent.KEY_TYPED, hiddenCommandEventHandler);
+            scene.addEventHandler(KeyEvent.KEY_PRESSED, hiddenErrorCommandEventHandler);
             captureKeys = true;
         }
     }

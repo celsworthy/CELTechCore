@@ -7,7 +7,6 @@ package celtech.appManager;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.PrintJob;
 import celtech.utils.SystemUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,115 +19,29 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 /**
- *
- * @author Ian Hudson @ Liberty Systems Limited
+ * ProjectHeader is not used except when loading legacy Project files.
+ * @author tony
  */
 public class ProjectHeader implements Serializable
 {
+
     private static final long serialVersionUID = 1L;
     private final transient SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
     private String projectUUID = null;
     private StringProperty projectNameProperty = null;
     private String projectPath = null;
-    private ObjectProperty<Date> lastSavedDate = new SimpleObjectProperty<>();
-    private ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
-    private ObservableList<PrintJob> print = FXCollections.observableArrayList();
+    private final ObjectProperty<Date> lastModifiedDate = new SimpleObjectProperty<>();
 
-    /**
-     *
-     */
     public ProjectHeader()
     {
         projectUUID = SystemUtils.generate16DigitID();
         Date now = new Date();
-        projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled") + formatter.format(now));
+        projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
+            + formatter.format(now));
         projectPath = ApplicationConfiguration.getProjectDirectory();
         lastModifiedDate.set(now);
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public final void setProjectName(String value)
-    {
-        projectNameProperty.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final String getProjectName()
-    {
-        return projectNameProperty.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final StringProperty projectNameProperty()
-    {
-        return projectNameProperty;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public final String getProjectPath()
-    {
-        return projectPath;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setProjectPath(String value)
-    {
-        projectPath = value;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final String getUUID()
-    {
-        return projectUUID;
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public final void setProjectUUID(String value)
-    {
-        projectUUID = value;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final Date getLastModifiedDate()
-    {
-        return lastModifiedDate.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public final ObjectProperty<Date> getLastModifiedDateProperty()
-    {
-        return lastModifiedDate;
     }
 
     private void writeObject(ObjectOutputStream out)
@@ -147,8 +60,8 @@ public class ProjectHeader implements Serializable
         projectUUID = in.readUTF();
         projectNameProperty = new SimpleStringProperty(in.readUTF());
         projectPath = in.readUTF();
-        lastModifiedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
-        lastSavedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
+        Object lastModifiedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
+        Object lastSavedDate = new SimpleObjectProperty<>((Date)(in.readObject()));
     }
 
     private void readObjectNoData()
@@ -157,4 +70,5 @@ public class ProjectHeader implements Serializable
 
     }
 
+   
 }

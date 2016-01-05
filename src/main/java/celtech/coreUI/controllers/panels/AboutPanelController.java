@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.SettingsScreenState;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterIdentity;
@@ -12,7 +11,6 @@ import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -26,8 +24,6 @@ import javafx.scene.input.ClipboardContent;
  */
 public class AboutPanelController implements Initializable, PrinterListChangesListener
 {
-
-    private SettingsScreenState settingsScreenState = null;
     private final Clipboard clipboard = Clipboard.getSystemClipboard();
     private final ClipboardContent content = new ClipboardContent();
     
@@ -39,6 +35,12 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
 
     @FXML
     private Label version;
+
+    @FXML
+    private void viewREADME(ActionEvent event)
+    {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.WELCOME);
+    }
 
     @FXML
     private void okPressed(ActionEvent event)
@@ -69,7 +71,6 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        settingsScreenState = SettingsScreenState.getInstance();
         Lookup.getPrinterListChangesNotifier().addListener(this);
         version.setText(ApplicationConfiguration.getApplicationVersion());
     }
@@ -103,7 +104,11 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        headSerialNumber.setText(printer.headProperty().get().uniqueIDProperty().get());
+        headSerialNumber.setText(printer.headProperty().get().typeCodeProperty().get() + "-"
+                + printer.headProperty().get().getWeekNumber() + printer.headProperty().get().getYearNumber() + "-"
+                + printer.headProperty().get().getPONumber() + "-"
+                + printer.headProperty().get().getSerialNumber() + "-"
+                + printer.headProperty().get().getChecksum());
     }
 
     @Override
@@ -124,6 +129,16 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
 
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
+    {
+    }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
 }

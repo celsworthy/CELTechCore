@@ -1,6 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
-import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -11,7 +12,7 @@ public class DebugDataResponse extends RoboxRxPacket
 
     private final String charsetToUse = "US-ASCII";
 
-    private String debugResponse = "";
+    private List<Integer> debugResponse = new ArrayList<>();
 
     /**
      *
@@ -27,24 +28,24 @@ public class DebugDataResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
-        try
-        {
-            int byteOffset = 1;
-         
-            int lengthOfData = 256;
-            
-            debugResponse = new String(byteData, byteOffset, lengthOfData, charsetToUse);
-            byteOffset += lengthOfData;
+        int byteOffset = 1;
 
-            success = true;
-        } catch (UnsupportedEncodingException ex)
+        int lengthOfData = 256;
+
+        while (byteOffset <= lengthOfData)
         {
-            steno.error("Failed to convert byte array to Debug Data Response");
+            if ((byteData[byteOffset] & 1) > 0)
+            {
+                debugResponse.add(byteOffset - 1);
+            }
+            byteOffset++;
         }
+
+        success = true;
 
         return success;
     }
@@ -73,8 +74,14 @@ public class DebugDataResponse extends RoboxRxPacket
      *
      * @return
      */
-    public String getDebugData()
+    public List<Integer> getDebugData()
     {
         return debugResponse;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 257;
     }
 }

@@ -3,7 +3,10 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.Lookup;
+import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.StandardColours;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.PrinterStatus;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
@@ -44,7 +47,44 @@ public class PrinterComponent extends Pane
     public enum Status
     {
 
-        READY, PRINTING, PAUSED, NOTIFICATION, ERROR
+        NO_INDICATOR(""),
+        READY("printerStatus.idle"),
+        PRINTING("printerStatus.printing"),
+        PAUSED("printerStatus.paused"),
+        NOTIFICATION(""),
+        ERROR("");
+
+        private final String i18nString;
+
+        private Status(String i18nString)
+        {
+            this.i18nString = i18nString;
+        }
+
+        /**
+         *
+         * @return
+         */
+        public String getI18nString()
+        {
+            String stringToOutput = "";
+
+            if (!i18nString.equals(""))
+            {
+                stringToOutput = Lookup.i18n(i18nString);
+            }
+            return stringToOutput;
+        }
+
+        /**
+         *
+         * @return
+         */
+        @Override
+        public String toString()
+        {
+            return getI18nString();
+        }
     }
 
     @FXML
@@ -59,9 +99,18 @@ public class PrinterComponent extends Pane
     @FXML
     private PrinterSVGComponent printerSVG;
     private final Printer printer;
-    private ChangeListener<String> nameListener;
-    private ChangeListener<Color> colorListener;
-    private ChangeListener<Number> progressListener;
+    private ChangeListener<String> nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+    {
+        setName(newValue);
+    };
+    private ChangeListener<Color> colorListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
+    {
+        setColour(newValue);
+    };
+    private ChangeListener<Number> progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        setProgress((double) newValue);
+    };
 
     public PrinterComponent(Printer printer)
     {
@@ -107,37 +156,39 @@ public class PrinterComponent extends Pane
         setStyle("-fx-background-color: white;");
 
         name.setFill(Color.WHITE);
-        String nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
+        String nameText;
+
+        if (printer != null)
+        {
+            nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
+            setColour(printer.getPrinterIdentity().printerColourProperty().get());
+            printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
+            printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
+            printer.getPrintEngine().progressProperty().addListener(progressListener);
+            printer.printerStatusProperty().addListener(
+                    (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
+                    {
+                        updateStatus(newValue, printer.pauseStatusProperty().get());
+                    });
+
+            printer.pauseStatusProperty().addListener(
+                    (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
+                    {
+                        updateStatus(printer.printerStatusProperty().get(), newValue);
+                    });
+            updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
+        } else
+        {
+            nameText = Lookup.i18n("sidePanel_printerStatus.notConnected");
+            String style = "-fx-background-color: #" + colourToString(StandardColours.LIGHT_GREY) + ";";
+            innerPane.setStyle(style);
+            setStatus(Status.NO_INDICATOR);
+        }
+
         nameText = fitNameToWidth(nameText);
         name.setText(nameText);
-        setColour(printer.getPrinterIdentity().printerColourProperty().get());
-
-        progressListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            setProgress((double) newValue);
-        };
-
-        nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-        {
-            setName(newValue);
-        };
-
-        colorListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
-        {
-            setColour(newValue);
-        };
-
-        printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
-        printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
-        printer.getPrintEngine().progressProperty().addListener(progressListener);
-        printer.printerStatusProperty().addListener(
-            (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
-            {
-                updateStatus(newValue);
-            });
 
         setSize(Size.SIZE_LARGE);
-        updateStatus(printer.printerStatusProperty().get());
     }
 
     public void setProgress(double progress)
@@ -172,36 +223,39 @@ public class PrinterComponent extends Pane
         }
     }
 
-    private void updateStatus(PrinterStatus newStatus)
+    private void updateStatus(PrinterStatus printerStatus, PauseStatus pauseStatus)
     {
         Status status;
-        switch (newStatus)
+        switch (printerStatus)
         {
-            case ERROR:
-                status = Status.ERROR;
-                break;
+//            case ERROR:
+//                status = Status.ERROR;
+//                break;
             case OPENING_DOOR:
-            case EXECUTING_MACRO:
-            case POST_PROCESSING:
-            case PRINTING:
-            case SENDING_TO_PRINTER:
-            case SLICING:
+//            case POST_PROCESSING:
+            case PRINTING_PROJECT:
+//            case SLICING:
                 status = Status.PRINTING;
-                break;
-            case PAUSING:
-            case PAUSED:
-                status = Status.PAUSED;
                 break;
             default:
                 status = Status.READY;
                 break;
         }
+
+        if (pauseStatus == PauseStatus.PAUSED
+                || pauseStatus == PauseStatus.PAUSE_PENDING)
+
+        {
+            status = Status.PAUSED;
+        }
+
         setStatus(status);
-        progressBar.setStatus(newStatus);
+        progressBar.setStatus(status);
     }
 
     /**
-     * Redraw the component. Reposition child nodes according to selection state and size.
+     * Redraw the component. Reposition child nodes according to selection state
+     * and size.
      */
     private void redraw()
     {
@@ -273,7 +327,7 @@ public class PrinterComponent extends Pane
         }
 
         name.setStyle("-fx-font-size: " + fontSize
-            + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
+                + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
         name.setLayoutX(progressBarX);
 
         Font font = name.getFont();
@@ -326,7 +380,7 @@ public class PrinterComponent extends Pane
     }
 
     /**
-     * Fit the printer name to the available space
+     * Fit the printer name to the available space.
      */
     public String fitNameToWidth(String name)
     {

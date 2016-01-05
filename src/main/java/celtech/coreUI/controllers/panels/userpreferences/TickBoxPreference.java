@@ -1,7 +1,7 @@
 package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
-import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
+import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.CheckBox;
@@ -11,7 +11,7 @@ import javafx.scene.control.Control;
  *
  * @author Ian
  */
-public class TickBoxPreference implements PreferencesTopInsetPanelController.Preference
+public class TickBoxPreference implements PreferencesInnerPanelController.Preference
 {
 
     private final CheckBox control;
@@ -31,6 +31,11 @@ public class TickBoxPreference implements PreferencesTopInsetPanelController.Pre
             {
                 updateValueFromControl();
             });
+        booleanProperty.addListener(
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            control.setSelected(newValue);
+        });
     }
 
     @Override

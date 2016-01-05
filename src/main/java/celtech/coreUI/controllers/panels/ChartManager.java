@@ -6,6 +6,8 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeaterMode;
+import celtech.printerControl.model.Printer;
+import celtech.printerControl.model.PrinterAncillarySystems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,8 +23,8 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 
 /**
- * ChartManager is an auxiliary class to PrinterStatusSidePanelController and manages the
- * temperature chart.
+ * ChartManager is an auxiliary class to PrinterStatusSidePanelController and
+ * manages the temperature chart.
  *
  * @author tony
  */
@@ -35,9 +37,9 @@ class ChartManager
     private final LineChart.Series<Number, Number> ambientTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> bedTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(
-        ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+            ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
     private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
-        ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+            ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
 
     private ReadOnlyIntegerProperty bedTargetTemperatureProperty;
     private ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty;
@@ -45,11 +47,11 @@ class ChartManager
     private ReadOnlyIntegerProperty bedTemperatureProperty;
     private ReadOnlyIntegerProperty ambientTemperatureProperty;
     private ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty;
-    private Label legendNozzle;
+    private final List<Label> legendNozzle = new ArrayList<>();
     private Label legendBed;
     private Label legendAmbient;
-    private List<NozzleChartData> nozzleChartDataSets = new ArrayList<>();
-    private int nozzleTargetTempFirstIndex = 2;
+    private final List<NozzleChartData> nozzleChartDataSets = new ArrayList<>();
+    private final int nozzleTargetTempFirstIndex = 2;
 
     private final int ambientIndexOffset = 0;
     private final int bedIndexOffset = 1;
@@ -57,25 +59,74 @@ class ChartManager
 
     private final String ambientBugColour = "#145019";
     private final String bedBugColour = "#a07800";
-    private final String nozzleBugColour = "#8c0000";
+    private final List<String> nozzleBugColour = new ArrayList<>();
     private final String ambientLineColour = "#1eb43c";
     private final String bedLineColour = "#ffc800";
-    private final String nozzleLineColour = "#ff0000";
+    private final List<String> nozzleLineColour = new ArrayList<>();
 
     private final String rhTriangleBugCSS
-        = "-fx-background-radius: 0; "
-        + "-fx-shape: \"M0,6 L12,0 L12,12 L0,6 Z\"; "
-        + "-fx-scale-x: 2; "
-        + "-fx-scale-y: 2; ";
+            = "-fx-background-radius: 0; "
+            + "-fx-shape: \"M0,6 L12,0 L12,12 L0,6 Z\"; "
+            + "-fx-scale-x: 2; "
+            + "-fx-scale-y: 2; ";
 
-    private final String graphLineCSS
-        = "-fx-stroke-width: 3; ";
+    private final String rhTriangleBugUpperOnlyCSS
+            = "-fx-background-radius: 0; "
+            + "-fx-shape: \"M0,12 L24,12 L24,24 L0,12 Z\"; "
+            + "-fx-alignment: bottom-center; ";
+
+    private final String rhTriangleBugLowerOnlyCSS
+            = "-fx-background-radius: 0; "
+            + "-fx-shape: \"M0,6 L12,0 L12,6 L0,6 Z\"; "
+            + "-fx-padding: 8 0 0 0;";
+
+    private final String graphLineCSS = "-fx-stroke-width: 3; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
+    private final String graphLineFatCSS = "-fx-stroke-width: 4; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
+    private final String graphLineThinCSS = "-fx-stroke-width: 2; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
+    private int dashedLineCounter = 0;
+
+    private enum BugType
+    {
+
+        ALL, UPPER, LOWER
+    }
 
     public ChartManager(LineChart<Number, Number> chart)
     {
         this.chart = chart;
         ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
+
+        nozzleBugColour.add("#8c0000");
+        nozzleBugColour.add("#006e96");
+
+        nozzleLineColour.add("#ff0000");
+        nozzleLineColour.add("#0096e1");
+
+    }
+
+    public void bindPrinter(Printer printer)
+    {
+        PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
+        setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
+        setBedData(ancillarySystems.getBedTemperatureHistory());
+        setAmbientTemperatureProperty(ancillarySystems.ambientTemperatureProperty());
+        setBedTemperatureProperty(ancillarySystems.bedTemperatureProperty());
+
+        setTargetAmbientTemperatureProperty(
+                ancillarySystems.ambientTargetTemperatureProperty());
+        setBedHeaterModeProperty(ancillarySystems.bedHeaterModeProperty());
+
+        setTargetBedTemperatureProperty(ancillarySystems.bedTargetTemperatureProperty());
+        setTargetBedFirstLayerTemperatureProperty(ancillarySystems.
+                bedFirstLayerTargetTemperatureProperty());
+    }
+
+    public void unbindPrinter()
+    {
+        clearAmbientData();
+        clearBedData();
+        clearLegendLabels();
     }
 
     public void setAmbientData(XYChart.Series<Number, Number> ambientData)
@@ -95,71 +146,100 @@ class ChartManager
      */
     private void updateChartDataSources()
     {
+        dashedLineCounter = 0;
+
         chart.getData().clear();
 
         chart.applyCss();
 
         //Set up the ambient bug
-        setupBug(ambientIndexOffset, ambientTargetTemperatureSeries, ambientBugColour);
+        setupBug(ambientIndexOffset, ambientTargetTemperatureSeries, ambientBugColour, BugType.ALL);
 
         //Set up the bed bug
-        setupBug(bedIndexOffset, bedTargetTemperatureSeries, bedBugColour);
+        setupBug(bedIndexOffset, bedTargetTemperatureSeries, bedBugColour, BugType.ALL);
 
         //Set up the nozzle bugs
         for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
         {
+            BugType bugType;
+            if (nozzleCounter % 2 == 0)
+            {
+                bugType = BugType.UPPER;
+            } else
+            {
+                bugType = BugType.LOWER;
+            }
             setupBug(nozzleTargetTempFirstIndex + nozzleCounter, nozzleChartDataSets.get(
-                     nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour);
+                    nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour.get(nozzleCounter), BugType.ALL);
         }
 
         int startOfLineSection = firstNozzleIndexOffset + nozzleChartDataSets.size();
-        setupChartLine(startOfLineSection + ambientIndexOffset, ambientData, ambientLineColour);
-        setupChartLine(startOfLineSection + bedIndexOffset, bedData, bedLineColour);
+        setupChartLine(startOfLineSection + ambientIndexOffset, ambientData, ambientLineColour, false);
+        setupChartLine(startOfLineSection + bedIndexOffset, bedData, bedLineColour, false);
+
+        boolean dashedNozzleLines = nozzleChartDataSets.size() > 1;
 
         for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
         {
             setupChartLine(startOfLineSection + firstNozzleIndexOffset + nozzleCounter,
-                           nozzleChartDataSets.get(nozzleCounter).getNozzleTemperatureSeries(),
-                           nozzleLineColour
-            );
+                    nozzleChartDataSets.get(nozzleCounter).getNozzleTemperatureSeries(),
+                    nozzleLineColour.get(nozzleCounter),
+                    dashedNozzleLines);
         }
     }
 
-    private void setupBug(int offset, XYChart.Series<Number, Number> series, String webColour)
+    private void setupBug(int offset, XYChart.Series<Number, Number> series, String webColour, BugType bugType)
     {
         chart.getData().add(offset, series);
-        Set<Node> symbolNodes = chart.lookupAll(".default-color"
-            + offset
-            + ".chart-line-symbol");
+        Set<Node> symbolNodes = chart.lookupAll(".default-color" + offset + ".chart-line-symbol");
 
         symbolNodes.forEach(symbolNode ->
         {
-            symbolNode.setStyle(rhTriangleBugCSS + "-fx-background-color: " + webColour
-                + "; ");
+            switch (bugType)
+            {
+                case ALL:
+                    symbolNode.setStyle(rhTriangleBugCSS + "-fx-background-color: " + webColour + "; ");
+                    break;
+                case LOWER:
+                    symbolNode.setStyle(rhTriangleBugLowerOnlyCSS + "-fx-background-color: " + webColour + "; ");
+                    break;
+                case UPPER:
+                    symbolNode.setStyle(rhTriangleBugUpperOnlyCSS + "-fx-background-color: " + webColour + "; ");
+                    break;
+            }
         });
     }
 
-    private void setupChartLine(int offset, XYChart.Series<Number, Number> series, String webColour)
+    private void setupChartLine(int offset, XYChart.Series<Number, Number> series, String webColour,
+            boolean dashed)
     {
         chart.getData().add(offset, series);
 
-        Set<Node> symbolNodes = chart.lookupAll(".default-color"
-            + offset
-            + ".chart-line-symbol");
+        Set<Node> symbolNodes = chart.lookupAll(".default-color" + offset + ".chart-line-symbol");
 
         symbolNodes.forEach(symbolNode ->
         {
             symbolNode.setStyle("visibility: hidden;");
         });
 
-        Node lineNode = chart.lookup(".default-color"
-            + offset
-            + ".chart-series-line");
+        Node lineNode = chart.lookup(".default-color" + offset + ".chart-series-line");
 
         if (lineNode != null)
         {
-            lineNode.setStyle(graphLineCSS + "-fx-stroke: " + webColour
-                + "; ");
+            if (dashed)
+            {
+                if (dashedLineCounter > 0)
+                {
+                    lineNode.setStyle(graphLineThinCSS + "-fx-stroke: " + webColour);
+                } else
+                {
+                    lineNode.setStyle(graphLineFatCSS + "-fx-stroke: " + webColour);
+                }
+                dashedLineCounter++;
+            } else
+            {
+                lineNode.setStyle(graphLineCSS + "-fx-stroke: " + webColour + "; ");
+            }
         }
     }
 
@@ -181,7 +261,7 @@ class ChartManager
     };
 
     void setTargetAmbientTemperatureProperty(
-        ReadOnlyIntegerProperty ambientTargetTemperatureProperty)
+            ReadOnlyIntegerProperty ambientTargetTemperatureProperty)
     {
         if (this.ambientTargetTemperatureProperty != null)
         {
@@ -198,7 +278,7 @@ class ChartManager
     };
 
     void setTargetBedTemperatureProperty(
-        ReadOnlyIntegerProperty bedTargetTemperatureProperty)
+            ReadOnlyIntegerProperty bedTargetTemperatureProperty)
     {
         if (this.bedTargetTemperatureProperty != null)
         {
@@ -216,7 +296,7 @@ class ChartManager
     };
 
     void setTargetBedFirstLayerTemperatureProperty(
-        ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty)
+            ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty)
     {
         if (this.bedFirstLayerTargetTemperatureProperty != null)
         {
@@ -258,9 +338,11 @@ class ChartManager
         }
     }
 
-    void setLegendLabels(Label legendNozzle, Label legendBed, Label legendAmbient)
+    void setLegendLabels(Label legendNozzleS, Label legendNozzleT, Label legendBed, Label legendAmbient)
     {
-        this.legendNozzle = legendNozzle;
+        this.legendNozzle.clear();
+        this.legendNozzle.add(legendNozzleS);
+        this.legendNozzle.add(legendNozzleT);
         this.legendBed = legendBed;
         this.legendAmbient = legendAmbient;
         updateLegend();
@@ -268,7 +350,7 @@ class ChartManager
 
     void clearLegendLabels()
     {
-        this.legendNozzle = null;
+        this.legendNozzle.clear();
         this.legendBed = null;
         this.legendAmbient = null;
         updateLegend();
@@ -282,13 +364,7 @@ class ChartManager
 
         if (legendBed != null && bedTemperatureProperty != null)
         {
-            if (bedTemperatureProperty.get() >= ApplicationConfiguration.minTempToDisplayOnGraph)
-            {
-                legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
-            } else
-            {
-                legendBedText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");
-            }
+            legendBedText += String.format(" %s%s", bedTemperatureProperty.get(), degreesC);
         }
 
         if (legendAmbient != null && ambientTemperatureProperty != null)
@@ -338,18 +414,18 @@ class ChartManager
         updateLegend();
     }
 
-    void addNozzle(XYChart.Series<Number, Number> nozzleTemperatureData,
-        ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty,
-        ReadOnlyIntegerProperty nozzleTargetTemperatureProperty,
-        ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
-        ReadOnlyIntegerProperty nozzleTemperatureProperty)
+    void addNozzle(int nozzleNumber, XYChart.Series<Number, Number> nozzleTemperatureData,
+            ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty,
+            ReadOnlyIntegerProperty nozzleTargetTemperatureProperty,
+            ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
+            ReadOnlyIntegerProperty nozzleTemperatureProperty)
     {
-        NozzleChartData nozzleChartData = new NozzleChartData(nozzleTemperatureData,
-                                                              nozzleHeaterModeProperty,
-                                                              nozzleTargetTemperatureProperty,
-                                                              nozzleFirstLayerTargetTemperatureProperty,
-                                                              nozzleTemperatureProperty,
-                                                              legendNozzle);
+        NozzleChartData nozzleChartData = new NozzleChartData(nozzleNumber, nozzleTemperatureData,
+                nozzleHeaterModeProperty,
+                nozzleTargetTemperatureProperty,
+                nozzleFirstLayerTargetTemperatureProperty,
+                nozzleTemperatureProperty,
+                legendNozzle.get(nozzleNumber));
 
         nozzleChartDataSets.add(nozzleChartData);
 

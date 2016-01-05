@@ -1,5 +1,6 @@
 package celtech.services.postProcessor;
 
+import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.printerControl.model.Printer;
 import celtech.services.ControllableService;
@@ -12,47 +13,37 @@ import javafx.concurrent.Task;
  */
 public class PostProcessorService extends Service<GCodePostProcessingResult> implements ControllableService
 {
-    private String printJobUUID = null;
-    private SlicerParametersFile settings = null;
-    private Printer printerToUse = null;
+    private String printJobUUID;
+    private Printer printerToUse;
+    private Project project;
+    private SlicerParametersFile settings;
 
-    /**
-     *
-     * @param printJobUUID
-     */
     public void setPrintJobUUID(String printJobUUID)
     {
         this.printJobUUID = printJobUUID;
     }
 
-    /**
-     *
-     * @param settings
-     */
-    public void setSettings(SlicerParametersFile settings)
-    {
-        this.settings = settings;
-    }
-
-    /**
-     *
-     * @param printerToUse
-     */
     public void setPrinterToUse(Printer printerToUse)
     {
         this.printerToUse = printerToUse;
     }
 
+    public void setProject(Project project)
+    {
+        this.project = project;
+    }
+    
+    public void setSettings(SlicerParametersFile settings)
+    {
+        this.settings = settings;
+    }
+    
     @Override
     protected Task<GCodePostProcessingResult> createTask()
     {
-        return new PostProcessorTask(printJobUUID, settings, printerToUse);
+        return new PostProcessorTask(printJobUUID, printerToUse, project, settings);
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public boolean cancelRun()
     {

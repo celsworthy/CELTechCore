@@ -8,25 +8,17 @@ import celtech.Lookup;
  */
 public enum PrinterStatus
 {
+
     IDLE("printerStatus.idle"),
-    SLICING("printerStatus.slicing"),
-    POST_PROCESSING("printerStatus.postProcessing"),
-    SENDING_TO_PRINTER("printerStatus.sendingToPrinter"),
-    PRINTING("printerStatus.printing"),
-    EXECUTING_MACRO("printerStatus.executingMacro"),
-    PAUSING("printerStatus.pausing"),
-    PAUSED("printerStatus.paused"),
-    RESUMING("printerStatus.resuming"),
+    PRINTING_PROJECT("printerStatus.printing"),
+    RUNNING_TEST("printerStatus.runningTest"),
+    RUNNING_MACRO_FILE("printerStatus.executingMacro"),
     REMOVING_HEAD("printerStatus.removingHead"),
     PURGING_HEAD("printerStatus.purging"),
-    CANCELLING("printerStatus.cancelling"),
     OPENING_DOOR("printerStatus.openingDoor"),
     CALIBRATING_NOZZLE_ALIGNMENT("printerStatus.calibratingNozzleAlignment"),
     CALIBRATING_NOZZLE_HEIGHT("printerStatus.calibratingNozzleHeight"),
-    CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening"),
-    LOADING_FILAMENT("printerStatus.loadingFilament"),
-    EJECTING_FILAMENT("printerStatus.ejectingFilament"),
-    ERROR("printerStatus.error");
+    CALIBRATING_NOZZLE_OPENING("printerStatus.calibratingNozzleOpening");
 
     private final String i18nString;
 

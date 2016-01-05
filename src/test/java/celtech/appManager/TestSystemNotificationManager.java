@@ -7,6 +7,7 @@ import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.tasks.TaskResponder;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  *
@@ -28,11 +29,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void showCalibrationDialogue()
-    {
-    }
-
-    @Override
-    public void showDetectedPrintInProgressNotification()
     {
     }
 
@@ -178,7 +174,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
-        boolean showContinueOption, boolean showAbortOption, boolean showRetryOption, boolean showOKOption)
+            boolean showContinueOption, boolean showAbortOption, boolean showRetryOption, boolean showOKOption)
     {
         return Optional.empty();
     }
@@ -205,7 +201,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showEjectFailedDialog(Printer printer)
+    public void showEjectFailedDialog(Printer printer, int nozzleNumber)
     {
     }
 
@@ -232,12 +228,27 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     @Override
     public void showFilamentMotionCheckBanner()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void hideFilamentMotionCheckBanner()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean showModelIsInvalidDialog(Set<String> modelNames)
+    {
+        return false;
+    }
+
+    @Override
+    public void clearAllDialogsOnDisconnect()
+    {
+    }
+
+    @Override
+    public PurgeResponse showPurgeDialog(boolean allowAutoPrint)
+    {
+        return PurgeResponse.PRINT_WITH_PURGE;
     }
 }

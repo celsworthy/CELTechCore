@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
 import celtech.configuration.UserPreferences;
-import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
+import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
@@ -12,7 +12,7 @@ import libertysystems.stenographer.LogLevel;
  *
  * @author Ian
  */
-public class LogLevelPreference implements PreferencesTopInsetPanelController.Preference
+public class LogLevelPreference implements PreferencesInnerPanelController.Preference
 {
 
     private final ComboBox<LogLevel> control;
@@ -23,6 +23,7 @@ public class LogLevelPreference implements PreferencesTopInsetPanelController.Pr
         this.userPreferences = userPreferences;
 
         control = new ComboBox<>();
+        control.getStyleClass().add("cmbCleanCombo");
         control.setPrefWidth(250);
         control.setMinWidth(control.getPrefWidth());
         control.getItems().setAll(LogLevel.values());

@@ -1,8 +1,5 @@
 package celtech.configuration;
 
-import ca.beq.util.win32.registry.RegistryKey;
-import ca.beq.util.win32.registry.RegistryValue;
-import ca.beq.util.win32.registry.RootKey;
 import celtech.appManager.ProjectMode;
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,131 +32,76 @@ public class ApplicationConfiguration
     private static String applicationName = null;
     private static String applicationShortName = null;
 
-    /**
-     *
-     */
     public static final String resourcePath = "/celtech/resources/";
 
-    /**
-     *
-     */
     public static final String modelResourcePath = resourcePath + "models/";
 
-    /**
-     *
-     */
     public static final String imageResourcePath = resourcePath + "images/";
 
-    /**
-     *
-     */
     public static final String fxmlResourcePath = resourcePath + "fxml/";
 
-    /**
-     *
-     */
     public static final String fxmlPanelResourcePath = resourcePath + "fxml/panels/";
-    
+
     public static final String fxmlDiagramsResourcePath = resourcePath + "fxml/diagrams/";
 
-    /**
-     *
-     */
+    public static final String fxmlButtonsResourcePath = resourcePath + "fxml/buttons/";
+
     public static final String fxmlUtilityPanelResourcePath = resourcePath + "fxml/utilityPanels/";
 
-    /**
-     *
-     */
     public static final String fxmlPopupResourcePath = resourcePath + "fxml/popups/";
 
-    /**
-     *
-     */
     public static final String fontResourcePath = resourcePath + "fonts/";
 
-    /**
-     *
-     */
     public static final String cssResourcePath = resourcePath + "css/";
 
-    /**
-     *
-     */
     public static final String macroFileExtension = ".gcode";
 
-    /**
-     *
-     */
     public static final String macroFileSubpath = "Macros/";
 
-    /**
-     *
-     */
+    public static final String timeAndCostFileSubpath = "TimeCostTemp/";
+
     private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
-    
+
     private static final String dialogsCSSFile = cssResourcePath + "dialogsOverride.css";
 
-    /**
-     *
-     */
     public static final double DEFAULT_WIDTH = 1440;
 
-    /**
-     *
-     */
     public static final double DEFAULT_HEIGHT = 900;
 
-    /**
-     *
-     */
     public static final double DESIRED_ASPECT_RATIO = DEFAULT_WIDTH / DEFAULT_HEIGHT;
 
     public static final int NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP = 210;
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(ApplicationConfiguration.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(
+            ApplicationConfiguration.class.getName());
     private static Configuration configuration = null;
     private static String applicationInstallDirectory = null;
 
-    /**
-     *
-     */
     public static final String applicationConfigComponent = "ApplicationConfiguration";
     private static String userStorageDirectory = null;
 
-    /**
-     *
-     */
     public static final String userStorageDirectoryComponent = "UserDataStorageDirectory";
     private static String applicationStorageDirectory = null;
 
-    /**
-     *
-     */
     public static final String applicationStorageDirectoryComponent = "ApplicationDataStorageDirectory";
 
     private static String commonApplicationDirectory = null;
 
     private static String projectFileStorageDirectory = null;
-    private static String projectFileDirectoryPath = "Projects";
+    public static String projectFileDirectoryPath = "Projects";
 
-    /**
-     *
-     */
     public static final String projectFileExtension = ".robox";
-    private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst("\\.", "");
+    public static final String projectModelsFileExtension = ".models";
+    public static final String demoPrintFilename = "demoPrint.gcode";
+    private static final String supportedProjectFileExtension = projectFileExtension.replaceFirst(
+            "\\.", "");
 
-    /**
-     *
-     */
     public static final String[] supportedModelExtensions =
     {
         "stl",
         "obj"
     };
 
-    /**
-     *
-     */
     public static final String[] supportedProcessedModelExtensions =
     {
 //        "gcode"
@@ -167,117 +109,58 @@ public class ApplicationConfiguration
 
     private static String printFileSpoolDirectory = null;
 
-    /**
-     *
-     */
     public static final String printSpoolStorageDirectoryPath = "PrintJobs";
 
-    /**
-     *
-     */
     public static final String modelStorageDirectoryPath = "Models";
 
-    /**
-     *
-     */
     public static final String printFileExtension = ".prt";
 
     private static String filamentFileDirectory = null;
     private static String userFilamentFileDirectory = null;
 
-    /**
-     *
-     */
     public static final String filamentDirectoryPath = "Filaments";
 
-    /**
-     *
-     */
     public static final String filamentFileExtension = ".roboxfilament";
 
-    /**
-     *
-     */
     public static final int mmOfFilamentOnAReel = 240000;
 
-    /**
-     *
-     */
     public static final float filamentDiameterToYieldVolumetricExtrusion = 1.1283791670955125738961589031215f;
 
     private static final String commonFileDirectoryPath = "CEL Robox" + File.separator;
 
     private static String myMiniFactoryDownloadsDirectory = null;
-    
+
     private static String headFileDirectory = null;
     public static final String headDirectoryPath = "Heads";
 
-    /**
-     *
-     */
     public static final String headFileExtension = ".roboxhead";
 
     private static String printProfileFileDirectory = null;
     private static String userPrintProfileFileDirectory = null;
 
-    /**
-     *
-     */
     public static final String printProfileDirectoryPath = "PrintProfiles";
 
-    /**
-     *
-     */
     public static final String printProfileFileExtension = ".roboxprofile";
 
-    /**
-     *
-     */
-    public static final String customSettingsProfileName = "CustomSettings";
+    public static final String customSettingsProfileName = "Custom";
 
-    /**
-     *
-     */
-    public static final String draftSettingsProfileName = "DraftSettings";
+    public static final String draftSettingsProfileName = "Draft";
 
-    /**
-     *
-     */
-    public static final String normalSettingsProfileName = "NormalSettings";
+    public static final String normalSettingsProfileName = "Normal";
 
-    /**
-     *
-     */
-    public static final String fineSettingsProfileName = "FineSettings";
+    public static final String fineSettingsProfileName = "Fine";
 
-    /**
-     *
-     */
     public static final String stlTempFileExtension = ".stl";
 
-    /**
-     *
-     */
+    public static final String amfTempFileExtension = ".amf";
     public static final String gcodeTempFileExtension = ".gcode";
 
-    /**
-     *
-     */
     public static final String gcodePostProcessedFileHandle = "_robox";
 
-    /**
-     *
-     */
     public static final float bedHotAboveDegrees = 60.0f;
 
-    /**
-     *
-     */
     public static final float maxTempToDisplayOnGraph = 300;
 
-    /**
-     *
-     */
     public static final float minTempToDisplayOnGraph = 35;
 
     public static final int maxPermittedTempDifferenceForPurge = 15;
@@ -290,38 +173,20 @@ public class ApplicationConfiguration
     private static String applicationVersion = null;
     private static String applicationLanguageRaw = null;
 
-    /**
-     *
-     */
     public static final String projectDataFilename = "projects.dat";
 
     private static String applicationTitleAndVersion = null;
 
-    /**
-     *
-     */
     public static final Color xAxisColour = Color.RED;
 
-    /**
-     *
-     */
     public static final Color zAxisColour = Color.GREEN;
 
     private static MachineType machineType = null;
 
-    /**
-     *
-     */
     public static final Duration notificationDisplayDelay = Duration.seconds(5);
 
-    /**
-     *
-     */
     public static final Pos notificationPosition = Pos.BOTTOM_RIGHT;
 
-    /**
-     *
-     */
     public static final int maxPrintSpoolFiles = 20;
     /**
      * The extension for statistics files in print spool directories
@@ -332,36 +197,25 @@ public class ApplicationConfiguration
      * Used in testing only
      */
     public static void setInstallationProperties(Properties testingProperties,
-        String applicationInstallDirectory, String commonApplicationDirectory,
-        String userStorageDirectory)
+            String applicationInstallDirectory, String userStorageDirectory)
     {
         installationProperties = testingProperties;
         ApplicationConfiguration.applicationInstallDirectory = applicationInstallDirectory;
-        ApplicationConfiguration.commonApplicationDirectory = commonApplicationDirectory;
         ApplicationConfiguration.userStorageDirectory = userStorageDirectory;
     }
 
-    /**
-     *
-     */
     private static boolean autoRepairHeads = true;
 
-    /**
-     *
-     */
     private static boolean autoRepairReels = true;
 
     /**
-     * These variables are used to position the head correctly over the bed The actual travel of the mechanical system is not the same as the theoretical travel (to allow for door opening positions
-     * etc)
+     * These variables are used to position the head correctly over the bed The
+     * actual travel of the mechanical system is not the same as the theoretical
+     * travel (to allow for door opening positions etc)
      */
     public static final int xPrintOffset = 6;
     public static final int yPrintOffset = 6;
 
-    /**
-     *
-     * @return
-     */
     public static MachineType getMachineType()
     {
         if (machineType == null)
@@ -415,10 +269,6 @@ public class ApplicationConfiguration
         return machineType;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationName()
     {
         if (configuration == null)
@@ -428,7 +278,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                        "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -436,19 +287,17 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationName = configuration.getFilenameString(applicationConfigComponent, "ApplicationName", null);
+                applicationName = configuration.getFilenameString(applicationConfigComponent,
+                        "ApplicationName", null);
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't determine application name - the application will not run correctly");
+                steno.error(
+                        "Couldn't determine application name - the application will not run correctly");
             }
         }
         return applicationName;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationShortName()
     {
         if (configuration == null)
@@ -458,7 +307,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                        "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -466,21 +316,18 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationShortName = configuration.getFilenameString(applicationConfigComponent, "ApplicationShortName", null);
+                applicationShortName = configuration.getFilenameString(applicationConfigComponent,
+                        "ApplicationShortName", null);
                 steno.debug("Application short name = " + applicationShortName);
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't determine application short name - the application will not run correctly");
+                steno.error(
+                        "Couldn't determine application short name - the application will not run correctly");
             }
         }
         return applicationShortName;
     }
 
-    /**
-     *
-     * @param classToCheck
-     * @return
-     */
     public static String getApplicationInstallDirectory(Class classToCheck)
     {
         if (configuration == null)
@@ -490,7 +337,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                        "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -498,7 +346,9 @@ public class ApplicationConfiguration
         {
             try
             {
-                String fakeAppDirectory = configuration.getFilenameString(applicationConfigComponent, "FakeInstallDirectory", null);
+                String fakeAppDirectory = configuration.getFilenameString(applicationConfigComponent,
+                        "FakeInstallDirectory",
+                        null);
                 if (fakeAppDirectory == null)
                 {
                     try
@@ -511,10 +361,12 @@ public class ApplicationConfiguration
                         applicationInstallDirectory = actualPath;
                     } catch (URISyntaxException ex)
                     {
-                        steno.error("URI Syntax Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
+                        steno.error(
+                                "URI Syntax Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
                     } catch (IOException ex)
                     {
-                        steno.error("IO Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
+                        steno.error(
+                                "IO Exception whilst attempting to determine the application path - the application is unlikely to run correctly.");
                     }
                 } else
                 {
@@ -522,16 +374,13 @@ public class ApplicationConfiguration
                 }
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                        "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
         return applicationInstallDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getCommonApplicationDirectory()
     {
         if (commonApplicationDirectory == null)
@@ -542,19 +391,11 @@ public class ApplicationConfiguration
         return commonApplicationDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getBinariesDirectory()
     {
         return getCommonApplicationDirectory() + "bin/";
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getUserStorageDirectory()
     {
         if (configuration == null)
@@ -564,25 +405,21 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                        "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
-
-        String regValueToUse = "Personal";
 
         if (configuration != null && userStorageDirectory == null)
         {
             if (getMachineType() == MachineType.WINDOWS)
             {
-                RegistryKey regKey = new RegistryKey(RootKey.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders");
+                String registryValue = WindowsRegistry.currentUser("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal");
 
-                if (regKey.exists())
+                if (registryValue != null)
                 {
-                    if (regKey.hasValue(regValueToUse))
-                    {
-                        RegistryValue value = regKey.getValue(regValueToUse);
-                        userStorageDirectory = value.getStringValue() + "\\" + commonFileDirectoryPath;
-                    }
+                    userStorageDirectory = registryValue + "\\"
+                            + commonFileDirectoryPath;
                 }
             }
 
@@ -592,21 +429,20 @@ public class ApplicationConfiguration
             {
                 try
                 {
-                    userStorageDirectory = configuration.getFilenameString(applicationConfigComponent, userStorageDirectoryComponent, null) + commonFileDirectoryPath;
+                    userStorageDirectory = configuration.getFilenameString(
+                            applicationConfigComponent, userStorageDirectoryComponent, null)
+                            + commonFileDirectoryPath;
                     steno.debug("User storage directory = " + userStorageDirectory);
                 } catch (ConfigNotLoadedException ex)
                 {
-                    steno.error("Couldn't determine user storage location - the application will not run correctly");
+                    steno.error(
+                            "Couldn't determine user storage location - the application will not run correctly");
                 }
             }
         }
         return userStorageDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationStorageDirectory()
     {
         if (configuration == null)
@@ -616,7 +452,8 @@ public class ApplicationConfiguration
                 configuration = Configuration.getInstance();
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't load configuration - the application cannot derive the install directory");
+                steno.error(
+                        "Couldn't load configuration - the application cannot derive the install directory");
             }
         }
 
@@ -624,46 +461,39 @@ public class ApplicationConfiguration
         {
             try
             {
-                applicationStorageDirectory = configuration.getFilenameString(applicationConfigComponent, applicationStorageDirectoryComponent, null);
+                applicationStorageDirectory = configuration.getFilenameString(
+                        applicationConfigComponent, applicationStorageDirectoryComponent, null);
                 steno.debug("Application storage directory = " + applicationStorageDirectory);
             } catch (ConfigNotLoadedException ex)
             {
-                steno.error("Couldn't determine application storage location - the application will not run correctly");
+                steno.error(
+                        "Couldn't determine application storage location - the application will not run correctly");
             }
         }
         return applicationStorageDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getProjectDirectory()
     {
-        if (projectFileStorageDirectory == null)
+
+        projectFileStorageDirectory = getUserStorageDirectory() + projectFileDirectoryPath + '/';
+
+        File dirHandle = new File(projectFileStorageDirectory);
+
+        if (!dirHandle.exists())
         {
-            projectFileStorageDirectory = getUserStorageDirectory() + projectFileDirectoryPath + '/';
-
-            File dirHandle = new File(projectFileStorageDirectory);
-
-            if (!dirHandle.exists())
-            {
-                dirHandle.mkdirs();
-            }
+            dirHandle.mkdirs();
         }
 
         return projectFileStorageDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getPrintSpoolDirectory()
     {
         if (printFileSpoolDirectory == null)
         {
-            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath + File.separator;
+            printFileSpoolDirectory = getUserStorageDirectory() + printSpoolStorageDirectoryPath
+                    + File.separator;
 
             File dirHandle = new File(printFileSpoolDirectory);
 
@@ -676,31 +506,20 @@ public class ApplicationConfiguration
         return printFileSpoolDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getUserFilamentDirectory()
     {
-        if (userFilamentFileDirectory == null)
+        userFilamentFileDirectory = getUserStorageDirectory() + filamentDirectoryPath + '/';
+
+        File dirHandle = new File(userFilamentFileDirectory);
+
+        if (!dirHandle.exists())
         {
-            userFilamentFileDirectory = getUserStorageDirectory() + filamentDirectoryPath + '/';
-
-            File dirHandle = new File(userFilamentFileDirectory);
-
-            if (!dirHandle.exists())
-            {
-                dirHandle.mkdirs();
-            }
+            dirHandle.mkdirs();
         }
 
         return userFilamentFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationFilamentDirectory()
     {
         if (filamentFileDirectory == null)
@@ -711,10 +530,6 @@ public class ApplicationConfiguration
         return filamentFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationHeadDirectory()
     {
         if (headFileDirectory == null)
@@ -725,36 +540,27 @@ public class ApplicationConfiguration
         return headFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getUserPrintProfileDirectory()
     {
-        if (userPrintProfileFileDirectory == null)
+        userPrintProfileFileDirectory = getUserStorageDirectory() + printProfileDirectoryPath
+                + '/';
+
+        File dirHandle = new File(userPrintProfileFileDirectory);
+
+        if (!dirHandle.exists())
         {
-            userPrintProfileFileDirectory = getUserStorageDirectory() + printProfileDirectoryPath + '/';
-
-            File dirHandle = new File(userPrintProfileFileDirectory);
-
-            if (!dirHandle.exists())
-            {
-                dirHandle.mkdirs();
-            }
+            dirHandle.mkdirs();
         }
 
         return userPrintProfileFileDirectory;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationPrintProfileDirectory()
     {
         if (printProfileFileDirectory == null)
         {
-            printProfileFileDirectory = getCommonApplicationDirectory() + printProfileDirectoryPath + '/';
+            printProfileFileDirectory = getCommonApplicationDirectory() + printProfileDirectoryPath
+                    + '/';
         }
 
         return printProfileFileDirectory;
@@ -773,7 +579,7 @@ public class ApplicationConfiguration
             installationProperties.load(input);
         } catch (IOException ex)
         {
-            ex.printStackTrace();
+            steno.exception("loading project", ex);
         } finally
         {
             if (input != null)
@@ -781,18 +587,14 @@ public class ApplicationConfiguration
                 try
                 {
                     input.close();
-                } catch (IOException e)
+                } catch (IOException ex)
                 {
-                    e.printStackTrace();
+                    steno.exception("loading project", ex);
                 }
             }
         }
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationVersion()
     {
         if (installationProperties == null)
@@ -807,10 +609,6 @@ public class ApplicationConfiguration
         return applicationVersion;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getApplicationInstallationLanguage()
     {
         if (installationProperties == null)
@@ -820,35 +618,23 @@ public class ApplicationConfiguration
 
         if (applicationLanguageRaw == null)
         {
-            applicationLanguageRaw = installationProperties.getProperty("language").replaceAll("_", "-");
+            applicationLanguageRaw = installationProperties.getProperty("language").replaceAll("_",
+                    "-");
         }
 
         return applicationLanguageRaw;
     }
 
-    /**
-     *
-     * @param titleAndVersion
-     */
     public static void setTitleAndVersion(String titleAndVersion)
     {
         applicationTitleAndVersion = titleAndVersion;
     }
 
-    /**
-     *
-     * @return
-     */
     public static String getTitleAndVersion()
     {
         return applicationTitleAndVersion;
     }
 
-    /**
-     *
-     * @param projectMode
-     * @return
-     */
     public static ArrayList<String> getSupportedFileExtensionWildcards(ProjectMode projectMode)
     {
         ArrayList<String> returnVal = new ArrayList<>();
@@ -871,12 +657,6 @@ public class ApplicationConfiguration
                     returnVal.add("*." + extension);
                 }
                 break;
-            case GCODE:
-                for (String extension : supportedProcessedModelExtensions)
-                {
-                    returnVal.add("*." + extension);
-                }
-                break;
             default:
                 break;
         }
@@ -884,11 +664,6 @@ public class ApplicationConfiguration
         return returnVal;
     }
 
-    /**
-     *
-     * @param projectMode
-     * @return
-     */
     public static ArrayList<String> getSupportedFileExtensions(ProjectMode projectMode)
     {
         ArrayList<String> returnVal = new ArrayList<>();
@@ -908,12 +683,6 @@ public class ApplicationConfiguration
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)
-                {
-                    returnVal.add(extension);
-                }
-                break;
-            case GCODE:
-                for (String extension : supportedProcessedModelExtensions)
                 {
                     returnVal.add(extension);
                 }
@@ -940,7 +709,8 @@ public class ApplicationConfiguration
 
         try
         {
-            File inputFile = new File(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+            File inputFile = new File(getApplicationStorageDirectory() + getApplicationName()
+                    + ".properties");
             if (inputFile.exists())
             {
                 input = new FileInputStream(inputFile);
@@ -978,11 +748,6 @@ public class ApplicationConfiguration
         }
     }
 
-    /**
-     *
-     * @param whichProperty
-     * @return
-     */
     public static String getLastDirectory(DirectoryMemoryProperty whichProperty)
     {
         if (applicationMemoryProperties == null)
@@ -990,16 +755,12 @@ public class ApplicationConfiguration
             loadApplicationMemoryProperties();
         }
 
-        String directory = applicationMemoryProperties.getProperty(fileMemoryItem + whichProperty.name());
+        String directory = applicationMemoryProperties.getProperty(fileMemoryItem
+                + whichProperty.name());
 
         return directory;
     }
 
-    /**
-     *
-     * @param whichProperty
-     * @param directoryName
-     */
     public static void setLastDirectory(DirectoryMemoryProperty whichProperty, String directoryName)
     {
         if (applicationMemoryProperties == null)
@@ -1021,7 +782,8 @@ public class ApplicationConfiguration
 
         if (applicationMemoryProperties.getProperty(userLocaleItem) != null)
         {
-            localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(userLocaleItem));
+            localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(
+                    userLocaleItem));
         } else
         {
             localeToReturn = Locale.forLanguageTag(getApplicationInstallationLanguage());
@@ -1054,7 +816,8 @@ public class ApplicationConfiguration
 
         try
         {
-            output = new FileOutputStream(getApplicationStorageDirectory() + getApplicationName() + ".properties");
+            output = new FileOutputStream(getApplicationStorageDirectory() + getApplicationName()
+                    + ".properties");
 
             applicationMemoryProperties.save(output, getApplicationName() + " runtime properties");
         } catch (IOException ex)
@@ -1076,7 +839,8 @@ public class ApplicationConfiguration
     }
 
     /**
-     * This method supplies the application-specific download directory component for updates It is a hack and should be removed...
+     * This method supplies the application-specific download directory
+     * component for updates It is a hack and should be removed...
      *
      * @param applicationName
      * @return
@@ -1117,21 +881,17 @@ public class ApplicationConfiguration
     {
         autoRepairReels = value;
     }
-    
+
     public static String getMainCSSFile()
     {
         return ApplicationConfiguration.class.getResource(mainCSSFile).toExternalForm();
     }
-    
+
     public static String getDialogsCSSFile()
     {
         return ApplicationConfiguration.class.getResource(dialogsCSSFile).toExternalForm();
-    }    
-    
-     /**
-     *
-     * @return
-     */
+    }
+
     public static String getMyMiniFactoryDownloadDirectory()
     {
         if (myMiniFactoryDownloadsDirectory == null)
@@ -1148,7 +908,7 @@ public class ApplicationConfiguration
 
         return myMiniFactoryDownloadsDirectory;
     }
-    
+
     public static String getApplicationModelDirectory()
     {
         return getCommonApplicationDirectory().concat(modelStorageDirectoryPath).concat("/");

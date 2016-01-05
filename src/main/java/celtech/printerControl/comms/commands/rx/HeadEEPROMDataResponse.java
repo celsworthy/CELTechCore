@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
@@ -17,6 +13,26 @@ import java.text.ParseException;
  */
 public class HeadEEPROMDataResponse extends RoboxRxPacket
 {
+    //V736 firmware
+    //0x00: head type code (16)
+    //0x10: serial number (24)
+    //0x28: max temp Celsius (8)
+    //0x30: thermistor beta (8)
+    //0x38: thermistor tcal (8)
+    //0x40: nozzle 0 X offset (8)
+    //0x48: nozzle 0 Y offset (8)
+    //0x50: nozzle 0 Z offset (8)
+    //0x58: nozzle 0 B offset (8)
+    //0x60: Filament 0 ID (8) e.g. PLARD057,  SPCMF001
+    //0x68: Filament 1 ID (8)
+    //0x70: nozzle 1 X offset (8)
+    //0x78: nozzle 1 Y offset (8)
+    //0x80: nozzle 1 Z offset (8)    
+    //0x88: nozzle 1 B offset (8)
+    //0x90: spare (24)
+    //0xa8: melting temperature of material in nozzle heater 1 (8)
+    //0xb0: melting temperature of material in nozzle heater 0 (8)
+    //0xb8: hour counter (8)
 
     private final String charsetToUse = "US-ASCII";
 
@@ -26,6 +42,11 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
     private String headTypeCode;
     private String uniqueID;
+    private String weekNumber = "";
+    private String yearNumber = "";
+    private String PONumber = "";
+    private String serialNumber = "";
+    private String checksum = "";
     private float maximumTemperature = 0;
     private float thermistorBeta = 0;
     private float thermistorTCal = 0;
@@ -35,29 +56,25 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
     private float nozzle1ZOffset = 0;
     private float nozzle1BOffset = 0;
 
+    private String filament0ID = "";
+    private String filament1ID = "";
+
     private float nozzle2XOffset = 0;
     private float nozzle2YOffset = 0;
     private float nozzle2ZOffset = 0;
     private float nozzle2BOffset = 0;
 
-    private float lastFilamentTemperature = 0;
+    private float lastFilamentTemperature0 = 0;
+    private float lastFilamentTemperature1 = 0;
     private float hoursUsed = 0;
 
-    /**
-     *
-     */
     public HeadEEPROMDataResponse()
     {
         super(RxPacketTypeEnum.HEAD_EEPROM_DATA, false, false);
     }
 
-    /**
-     *
-     * @param byteData
-     * @return
-     */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -74,7 +91,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += uniqueIDBytes;
 
             String maxTempString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                              charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -85,7 +102,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String thermistorBetaString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -96,7 +113,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String thermistorTCalString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -107,7 +124,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle1XOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -118,7 +135,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle1YOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -130,7 +147,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle1ZOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -142,7 +159,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle1BOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -157,7 +174,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             byteOffset += 16;
 
             String nozzle2XOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -168,7 +185,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle2YOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -180,7 +197,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle2ZOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -192,7 +209,7 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             String nozzle2BOffsetString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                     charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -204,24 +221,38 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
             }
 
             //Empty section
-            byteOffset += 32;
+            byteOffset += 24;
 
-            String lastFilamentTemperatureString = new String(byteData, byteOffset,
-                                                              decimalFloatFormatBytes, charsetToUse);
+            String lastFilamentTemperatureString1 = new String(byteData, byteOffset,
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
-                lastFilamentTemperature = decimalFloatFormatter.parse(
-                    lastFilamentTemperatureString.trim()).floatValue();
+                lastFilamentTemperature1 = decimalFloatFormatter.parse(
+                        lastFilamentTemperatureString1.trim()).floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse last filament temperature - "
-                    + lastFilamentTemperatureString);
+                steno.error("Couldn't parse last filament temperature 1 - "
+                        + lastFilamentTemperatureString1);
+            }
+
+            String lastFilamentTemperatureString0 = new String(byteData, byteOffset,
+                    decimalFloatFormatBytes, charsetToUse);
+            byteOffset += decimalFloatFormatBytes;
+
+            try
+            {
+                lastFilamentTemperature0 = decimalFloatFormatter.parse(
+                        lastFilamentTemperatureString0.trim()).floatValue();
+            } catch (ParseException ex)
+            {
+                steno.error("Couldn't parse last filament temperature 0 - "
+                        + lastFilamentTemperatureString0);
             }
 
             String hoursUsedString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -232,6 +263,15 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse hours used - " + hoursUsedString);
             }
 
+            if (uniqueID.length() == 24)
+            {
+                String inTheBeginning = uniqueID;
+                weekNumber = inTheBeginning.substring(8, 10);
+                yearNumber = inTheBeginning.substring(10, 12);
+                PONumber = inTheBeginning.substring(12, 19);
+                serialNumber = inTheBeginning.substring(19, 23);
+                checksum = inTheBeginning.substring(23, 24);
+            }
             success = true;
         } catch (UnsupportedEncodingException ex)
         {
@@ -241,10 +281,6 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         return success;
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public String toString()
     {
@@ -261,139 +297,102 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         return outputString.toString();
     }
 
-    /**
-     *
-     * @return
-     */
     public float getMaximumTemperature()
     {
         return maximumTemperature;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle1XOffset()
     {
         return nozzle1XOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle1YOffset()
     {
         return nozzle1YOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle1ZOffset()
     {
         return nozzle1ZOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle1BOffset()
     {
         return nozzle1BOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle2XOffset()
     {
         return nozzle2XOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle2YOffset()
     {
         return nozzle2YOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle2ZOffset()
     {
         return nozzle2ZOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getNozzle2BOffset()
     {
         return nozzle2BOffset;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getHeadHours()
     {
         return hoursUsed;
     }
 
-    /**
-     *
-     * @return
-     */
     public String getTypeCode()
     {
         return headTypeCode;
     }
 
-    /**
-     *
-     * @return
-     */
     public String getUniqueID()
     {
         return uniqueID;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getBeta()
     {
         return thermistorBeta;
     }
 
-    /**
-     *
-     * @return
-     */
     public float getTCal()
     {
         return thermistorTCal;
     }
 
-    /**
-     *
-     * @return
-     */
-    public float getLastFilamentTemperature()
+    public float getLastFilamentTemperature(int nozzleHeaterNumber)
     {
-        return lastFilamentTemperature;
+        if (nozzleHeaterNumber == 0)
+        {
+            return lastFilamentTemperature0;
+        } else if (nozzleHeaterNumber == 1)
+        {
+            return lastFilamentTemperature1;
+        } else
+        {
+            throw new RuntimeException("unrecognised nozzle heater number: " + nozzleHeaterNumber);
+        }
+    }
+
+    public String getFilamentID(int nozzleHeaterNumber)
+    {
+        if (nozzleHeaterNumber == 0)
+        {
+            return filament0ID;
+        } else if (nozzleHeaterNumber == 1)
+        {
+            return filament1ID;
+        } else
+        {
+            throw new RuntimeException("unrecognised nozzle heater number: " + nozzleHeaterNumber);
+        }
     }
 
     public void updateContents(Head attachedHead)
@@ -404,11 +403,20 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
 
         if (attachedHead.getNozzleHeaters().size() > 0)
         {
-            NozzleHeater heater = attachedHead.getNozzleHeaters().get(0);
-            maximumTemperature = heater.maximumTemperatureProperty().get();
-            thermistorBeta = heater.betaProperty().get();
-            thermistorTCal = heater.tCalProperty().get();
-            lastFilamentTemperature = heater.lastFilamentTemperatureProperty().get();
+            NozzleHeater heater0 = attachedHead.getNozzleHeaters().get(0);
+            maximumTemperature = heater0.maximumTemperatureProperty().get();
+            thermistorBeta = heater0.betaProperty().get();
+            thermistorTCal = heater0.tCalProperty().get();
+            lastFilamentTemperature0 = heater0.lastFilamentTemperatureProperty().get();
+            filament0ID = heater0.filamentIDProperty().get();
+
+            if (attachedHead.getNozzleHeaters().size() > 1)
+            {
+                NozzleHeater heater1 = attachedHead.getNozzleHeaters().get(1);
+                lastFilamentTemperature1 = heater1.lastFilamentTemperatureProperty().get();
+                filament1ID = heater1.filamentIDProperty().get();
+            }
+
         }
         hoursUsed = attachedHead.headHoursProperty().get();
 
@@ -494,9 +502,24 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         this.nozzle2BOffset = nozzle2BOffset;
     }
 
-    public void setLastFilamentTemperature(float lastFilamentTemperature)
+    public void setLastFilamentTemperature0(float lastFilamentTemperature)
     {
-        this.lastFilamentTemperature = lastFilamentTemperature;
+        this.lastFilamentTemperature0 = lastFilamentTemperature;
+    }
+
+    public void setLastFilamentTemperature1(float lastFilamentTemperature)
+    {
+        this.lastFilamentTemperature1 = lastFilamentTemperature;
+    }
+
+    public void setFilament0ID(String filamentID)
+    {
+        filament0ID = filamentID;
+    }
+
+    public void setFilament1ID(String filamentID)
+    {
+        filament1ID = filamentID;
     }
 
     public void setHoursUsed(float hoursUsed)
@@ -504,10 +527,36 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         this.hoursUsed = hoursUsed;
     }
 
+    public String getWeekNumber()
+    {
+        return weekNumber;
+    }
+
+    public String getYearNumber()
+    {
+        return yearNumber;
+    }
+
+    public String getPONumber()
+    {
+        return PONumber;
+    }
+
+    public String getSerialNumber()
+    {
+        return serialNumber;
+    }
+
+    public String getChecksum()
+    {
+        return checksum;
+    }
+
     /**
-     * This method is used to populate the response data prior to head update
-     * It should be used for test purposes ONLY
-     * @param headWriteCommand 
+     * This method is used to populate the response data prior to head update It
+     * should be used for test purposes ONLY.
+     *
+     * @param headWriteCommand
      */
     public void updateFromWrite(WriteHeadEEPROM headWriteCommand)
     {
@@ -518,16 +567,26 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
         maximumTemperature = headWriteCommand.getMaximumTemperature();
         thermistorBeta = headWriteCommand.getThermistorBeta();
         thermistorTCal = headWriteCommand.getThermistorTCal();
-        lastFilamentTemperature = headWriteCommand.getLastFilamentTemperature();
+        lastFilamentTemperature0 = headWriteCommand.getLastFilamentTemperature0();
+        lastFilamentTemperature1 = headWriteCommand.getLastFilamentTemperature1();
 
         nozzle1XOffset = headWriteCommand.getNozzle1XOffset();
         nozzle1YOffset = headWriteCommand.getNozzle1YOffset();
         nozzle1ZOffset = headWriteCommand.getNozzle1ZOffset();
         nozzle1BOffset = headWriteCommand.getNozzle1BOffset();
 
+        filament0ID = headWriteCommand.getFilament0ID();
+        filament1ID = headWriteCommand.getFilament1ID();
+
         nozzle2XOffset = headWriteCommand.getNozzle2XOffset();
         nozzle2YOffset = headWriteCommand.getNozzle2YOffset();
         nozzle2ZOffset = headWriteCommand.getNozzle2ZOffset();
         nozzle2BOffset = headWriteCommand.getNozzle2BOffset();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 193;
     }
 }

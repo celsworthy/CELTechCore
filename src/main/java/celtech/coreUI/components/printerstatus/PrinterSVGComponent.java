@@ -1,7 +1,6 @@
 /*
  * Copyright 2014 CEL UK
  */
-
 package celtech.coreUI.components.printerstatus;
 
 import java.io.IOException;
@@ -17,14 +16,20 @@ import javafx.scene.transform.Scale;
  */
 public class PrinterSVGComponent extends Pane
 {
-    
-    @FXML Pane printerIcon;
-    
-    @FXML Pane readyIcon;
-    @FXML Pane printingIcon;
-    @FXML Pane pausedIcon;
-    @FXML Pane notificationIcon;
-    @FXML Pane errorIcon;
+
+    @FXML
+    Pane printerIcon;
+
+    @FXML
+    Pane readyIcon;
+    @FXML
+    Pane printingIcon;
+    @FXML
+    Pane pausedIcon;
+    @FXML
+    Pane notificationIcon;
+    @FXML
+    Pane errorIcon;
 
     private void hideAllIcons()
     {
@@ -34,7 +39,7 @@ public class PrinterSVGComponent extends Pane
         notificationIcon.setVisible(false);
         errorIcon.setVisible(false);
     }
-    
+
     public PrinterSVGComponent()
     {
         URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/printerSVG.fxml");
@@ -50,33 +55,38 @@ public class PrinterSVGComponent extends Pane
             throw new RuntimeException(exception);
         }
     }
-    
-    public void setStatus(PrinterComponent.Status status) {
+
+    public void setStatus(PrinterComponent.Status status)
+    {
         hideAllIcons();
 
-        switch (status) {
-            case READY: 
+        switch (status)
+        {
+            case READY:
                 readyIcon.setVisible(true);
                 break;
-            case PAUSED: 
+            case PAUSED:
                 pausedIcon.setVisible(true);
                 break;
-            case NOTIFICATION: 
+            case NOTIFICATION:
                 notificationIcon.setVisible(true);
                 break;
-            case PRINTING: 
+            case PRINTING:
                 printingIcon.setVisible(true);
                 break;
-            case ERROR: 
+            case ERROR:
                 errorIcon.setVisible(true);
-                break;                
+                break;
+            case NO_INDICATOR:
+                break;
         }
     }
-    
-    public void setSize(double size) {
-        Scale scale = new Scale(size/260.0, size/260.0, 0, 0);
+
+    public void setSize(double size)
+    {
+        Scale scale = new Scale(size / 260.0, size / 260.0, 0, 0);
         getTransforms().clear();
         getTransforms().add(scale);
     }
-    
+
 }

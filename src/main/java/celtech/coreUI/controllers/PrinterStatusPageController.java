@@ -2,43 +2,42 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.JogButton;
-import celtech.coreUI.visualisation.threed.StaticModelOverlay;
+import celtech.coreUI.controllers.utilityPanels.OuterPanelController;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
+import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -51,12 +50,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        PrinterStatusPageController.class.getName());
+            PrinterStatusPageController.class.getName());
     private Printer printerToUse = null;
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
-    private StaticModelOverlay staticModelOverlay = null;
 
     private String transferringDataString = null;
 
@@ -66,187 +64,95 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private NumberFormat fiveDPformatter;
 
     @FXML
-    private ImageView printerSilhouette;
-
-    @FXML
-    private JogButton x_minus1;
-
-    @FXML
-    private JogButton x_minus100;
-
-    @FXML
-    private JogButton z_plus0_1;
-
-    @FXML
-    private JogButton z_plus10;
-
-    @FXML
-    private JogButton z_minus0_1;
-
-    @FXML
-    private JogButton y_plus10;
-
-    @FXML
-    private JogButton extruder_minus20;
-
-    @FXML
-    private JogButton z_minus1;
-
-    @FXML
-    private JogButton x_plus100;
-
-    @FXML
-    private JogButton y_minus1;
-
-    @FXML
-    private JogButton x_plus10;
-
-    @FXML
-    private JogButton y_minus10;
-
-    @FXML
-    private ImageView printerOpenImage;
-
-    @FXML
-    private ImageView reel;
-
-    @FXML
-    private JogButton x_plus1;
-
-    @FXML
-    private Button pausePrintButton;
-
-    @FXML
-    private JogButton extruder_plus100;
-
-    @FXML
-    private Rectangle printerColourRectangle;
+    private AnchorPane container;
 
     @FXML
     private StackPane statusPane;
 
     @FXML
-    private JogButton extruder_minus5;
+    private ImageView baseNoReels;
 
     @FXML
-    private JogButton y_plus100;
+    private ImageView baseReel2;
 
     @FXML
-    private JogButton y_minus100;
+    private ImageView baseReel1;
 
     @FXML
-    private Text progressTitle;
+    private ImageView reel1Background;
+    private ColorAdjust reel1BackgroundColourEffect = new ColorAdjust();
 
     @FXML
-    private Button resumePrintButton;
+    private ImageView reel2Background;
+    private ColorAdjust reel2BackgroundColourEffect = new ColorAdjust();
 
     @FXML
-    private JogButton extruder_minus100;
+    private ImageView baseReelBoth;
 
     @FXML
-    private JogButton x_minus10;
+    private ImageView doorClosed;
 
     @FXML
-    private ProgressBar progressBar;
+    private ImageView doorOpen;
 
     @FXML
-    private ProgressBar secondProgressBar;
+    private ImageView singleMaterialHead;
 
     @FXML
-    private JogButton y_plus1;
+    private ImageView ambientLight;
+
+    private ColorAdjust ambientColourEffect = new ColorAdjust();
 
     @FXML
-    private Text progressPercent;
+    private ImageView dualMaterialHead;
 
     @FXML
-    private Text secondProgressPercent;
-
-    @FXML
-    private Text progressETC;
-
-    @FXML
-    private Text progressLayers;
-
-    @FXML
-    private Text progressLayerLabel;
-
-    @FXML
-    private Text progressETCLabel;
-
-    @FXML
-    private Button cancelPrintButton;
-
-    @FXML
-    private JogButton extruder_plus20;
-
-    @FXML
-    private JogButton z_plus1;
-
-    @FXML
-    private Rectangle filamentRectangle;
-
-    @FXML
-    private JogButton extruder_plus5;
-
-    @FXML
-    private ImageView printerClosedImage;
-
-    @FXML
-    private VBox progressGroup;
-
-    @FXML
-    private JogButton z_minus10;
-
-    @FXML
-    private Text progressMessage;
+    private ImageView bed;
 
     @FXML
     private Group temperatureWarning;
 
     @FXML
-    private AnchorPane container;
+    private VBox extruder1Controls;
+
+    @FXML
+    private VBox extruder2Controls;
+
+    @FXML
+    private HBox xAxisControls;
+
+    @FXML
+    private VBox yAxisControls;
+
+    @FXML
+    private VBox zAxisControls;
+
+    @FXML
+    private VBox disconnectedText;
+
+    @FXML
+    private HyperlinkedLabel disconnectedLinkedText;
 
     private Node[] advancedControls = null;
 
     private Printer lastSelectedPrinter = null;
 
-    private final BooleanProperty showProgressGroup = new SimpleBooleanProperty(false);
+    private VBox vBoxLeft = new VBox();
+    private VBox vBoxRight = new VBox();
+    private VBox gcodePanel = null;
+    private VBox diagnosticPanel = null;
+    private VBox projectPanel = null;
+    private VBox parentPanel = null;
 
-    @FXML
-    void pausePrint(ActionEvent event)
+    private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
-        try
-        {
-            printerToUse.pause();
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't pause printer");
-        }
-    }
+        setupBaseDisplay();
+    };
 
-    @FXML
-    void resumePrint(ActionEvent event)
+    private final ChangeListener<Boolean> filamentLoadedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
-        try
-        {
-            printerToUse.resume();
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't resume print");
-        }
-    }
-
-    @FXML
-    void cancelPrint(ActionEvent event)
-    {
-        try
-        {
-            printerToUse.cancel(null);
-        } catch (PrinterException ex)
-        {
-            steno.error("Couldn't resume print");
-        }
-    }
+        setupBaseDisplay();
+    };
 
     @FXML
     void jogButton(ActionEvent event)
@@ -256,7 +162,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         try
         {
             printerToUse.jogAxis(button.getAxis(), button.getDistance(), button.getFeedRate(),
-                                 button.getUseG1());
+                    button.getUseG1());
         } catch (PrinterException ex)
         {
             steno.error("Failed to jog printer - " + ex.getMessage());
@@ -275,10 +181,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         Lookup.getPrinterListChangesNotifier().addListener(this);
 
         Lookup.getUserPreferences().advancedModeProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                setAdvancedControlsVisibility();
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    setAdvancedControlsVisibility();
+                });
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -291,219 +197,259 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         ResourceBundle i18nBundle = Lookup.getLanguageBundle();
 
         transferringDataString = i18nBundle.getString(
-            "PrintQueue.SendingToPrinter");
-
-        progressLayerLabel.setText(i18nBundle.getString("dialogs.progressLayerLabel"));
-        progressETCLabel.setText(i18nBundle.getString("dialogs.progressETCLabel"));
+                "PrintQueue.SendingToPrinter");
 
         printerColourChangeListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
         {
-            printerColourRectangle.setFill(
-                colourMap.printerToDisplayColour(
-                    newValue));
+            setupAmbientLight();
         };
 
         printerStatusChangeListener = (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
         {
-            processPrinterStatusChange(printerToUse.printerStatusProperty().get());
+            setAdvancedControlsVisibility();
         };
 
-        printerSilhouette.setVisible(true);
-        printerClosedImage.setVisible(false);
-        printerOpenImage.setVisible(false);
-        printerColourRectangle.setVisible(false);
+        pauseStatusChangeListener = (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
+        {
+            setAdvancedControlsVisibility();
+        };
 
-        progressGroup.visibleProperty().bind(showProgressGroup);
+        doorClosed.setVisible(false);
+        doorOpen.setVisible(false);
+
+        ambientLight.setEffect(ambientColourEffect);
+        reel1Background.setEffect(reel1BackgroundColourEffect);
+        reel2Background.setEffect(reel2BackgroundColourEffect);
+
+        setupBaseDisplay();
+        setupAmbientLight();
+        setupHead();
 
         temperatureWarning.setVisible(false);
 
-        reel.setVisible(false);
-        filamentRectangle.setVisible(false);
-
         advancedControls = new Node[]
         {
-            extruder_minus100, extruder_minus20, extruder_minus5, extruder_plus100, extruder_plus20, extruder_plus5,
-            x_minus1, x_minus10, x_minus100, x_plus1, x_plus10, x_plus100,
-            y_minus1, y_minus10, y_minus100, y_plus1, y_plus10, y_plus100,
-            z_minus0_1, z_minus1, z_minus10, z_plus0_1, z_plus1, z_plus10
+            xAxisControls,
+            yAxisControls,
+            zAxisControls
         };
+
         setAdvancedControlsVisibility();
 
-        pausePrintButton.setVisible(false);
-        resumePrintButton.setVisible(false);
-        cancelPrintButton.setVisible(false);
+        AnchorPane.setTopAnchor(vBoxLeft, 30.0);
+        AnchorPane.setBottomAnchor(vBoxLeft, 30.0);
+        loadInsetPanels();
 
-        if (Lookup.getCurrentlySelectedPrinterProperty().get() != null)
-        {
-            Printer printer = Lookup.getCurrentlySelectedPrinterProperty().get();
-            processPrinterStatusChange(printer.printerStatusProperty().get());
-        }
-
-        Lookup.getCurrentlySelectedPrinterProperty().addListener(
-            new ChangeListener<Printer>()
-            {
-                @Override
-                public void changed(ObservableValue<? extends Printer> ov,
-                    Printer t, Printer selectedPrinter)
+        Lookup.getSelectedPrinterProperty().addListener(
+                new ChangeListener<Printer>()
                 {
-                    printerToUse = selectedPrinter;
-
-                    if (selectedPrinter == null)
+                    @Override
+                    public void changed(ObservableValue<? extends Printer> ov,
+                            Printer t, Printer selectedPrinter)
                     {
-                        printerSilhouette.setVisible(true);
-                    } else
-                    {
-                        printerSilhouette.setVisible(false);
-                    }
+                        printerToUse = selectedPrinter;
 
-                    if (selectedPrinter == null)
-                    {
-                        unbindFromSelectedPrinter();
+                        setupBaseDisplay();
 
-                        showProgressGroup.set(false);
-                        printerColourRectangle.setVisible(false);
-
-                        temperatureWarning.setVisible(false);
-
-                        reel.setVisible(false);
-                        filamentRectangle.setVisible(false);
-
-                        processPrinterStatusChange(null);
-                    } else
-                    {
-                        unbindFromSelectedPrinter();
-
-                        progressBar.progressProperty().bind(selectedPrinter.getPrintEngine().
-                            progressProperty());
-                        progressPercent.textProperty().bind(
-                            Bindings.multiply(selectedPrinter.getPrintEngine().progressProperty(),
-                                              100).asString("%.0f%%"));
-                        BooleanBinding progressVisible
-                        = selectedPrinter.printerStatusProperty().isNotEqualTo(
-                            PrinterStatus.PRINTING)
-                        .or(Bindings.and(
-                                selectedPrinter.getPrintEngine().
-                                linesInPrintingFileProperty().greaterThan(
-                                    0),
-                                selectedPrinter.getPrintEngine().
-                                progressProperty().greaterThanOrEqualTo(
-                                    0)));
-                        BooleanBinding progressETCVisible
-                        = Bindings.and(
-                            selectedPrinter.getPrintEngine().etcAvailableProperty(),
-                            Bindings.or(
-                                selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatus.PRINTING),
-                                selectedPrinter.printerStatusProperty().isEqualTo(
-                                    PrinterStatus.SENDING_TO_PRINTER)));
-                        progressPercent.visibleProperty().bind(progressVisible);
-                        progressETC.visibleProperty().bind(progressETCVisible);
-                        progressETC.textProperty().bind(new StringBinding()
+                        if (selectedPrinter == null)
                         {
-                            {
-                                super.bind(
-                                    selectedPrinter.getPrintEngine().
-                                    progressETCProperty());
-                            }
+                            unbindFromSelectedPrinter();
 
-                            @Override
-                            protected String computeValue()
-                            {
-                                int secondsRemaining = selectedPrinter.getPrintEngine().
-                                progressETCProperty().get();
-                                secondsRemaining += 30;
-                                if (secondsRemaining > 60)
-                                {
-                                    String hoursMinutes = convertToHoursMinutes(
-                                        secondsRemaining);
-                                    return hoursMinutes;
-                                } else
-                                {
-                                    return i18nBundle.getString("dialogs.lessThanOneMinute");
-                                }
-                            }
-                        });
-                        progressLayers.textProperty().bind(new StringBinding()
+                            setupBaseDisplay();
+                            setupAmbientLight();
+
+                            temperatureWarning.setVisible(false);
+                        } else
                         {
-                            {
-                                super.bind(
-                                    selectedPrinter.getPrintEngine().progressCurrentLayerProperty(),
-                                    selectedPrinter.getPrintEngine().progressNumLayersProperty());
-                            }
+                            unbindFromSelectedPrinter();
 
-                            @Override
-                            protected String computeValue()
-                            {
-                                int currentLayer = selectedPrinter.getPrintEngine().
-                                progressCurrentLayerProperty().get();
-                                int totalLayers = selectedPrinter.getPrintEngine().
-                                progressNumLayersProperty().get();
-                                return (currentLayer + 1) + "/" + totalLayers;
-                            }
-                        });
-                        progressLayers.visibleProperty().bind(progressETCVisible);
-                        progressLayerLabel.visibleProperty().bind(progressETCVisible);
-                        progressETCLabel.visibleProperty().bind(progressETCVisible);
-                        secondProgressBar.visibleProperty().bind(
-                            selectedPrinter.getPrintEngine().
-                            sendingDataToPrinterProperty());
-                        secondProgressBar.progressProperty().bind(
-                            selectedPrinter.getPrintEngine().
-                            secondaryProgressProperty());
-                        secondProgressPercent.visibleProperty().bind(
-                            selectedPrinter.getPrintEngine().
-                            sendingDataToPrinterProperty());
-                        secondProgressPercent.textProperty().bind(
-                            Bindings.format(
-                                "%s %.0f%%", transferringDataString,
-                                Bindings.multiply(
-                                    selectedPrinter.getPrintEngine().
-                                    secondaryProgressProperty(),
-                                    100)));
-                        progressTitle.textProperty().bind(Bindings.when(selectedPrinter.
-                                printerStatusProperty()
-                                .isEqualTo(PrinterStatus.EXECUTING_MACRO))
-                            .then(selectedPrinter.macroTypeProperty().asString())
-                            .otherwise(selectedPrinter.printerStatusProperty().asString()));
-                        progressMessage.textProperty().bind(
-                            selectedPrinter.getPrintEngine().messageProperty());
+                            setupBaseDisplay();
+                            setupAmbientLight();
+                            selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
+                                    printerColourChangeListener);
 
-                        printerColourRectangle.setVisible(true);
-                        printerColourRectangle.setFill(
-                            colourMap.printerToDisplayColour(
-                                selectedPrinter.getPrinterIdentity().printerColourProperty().get()));
-                        selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
-                            printerColourChangeListener);
+                            temperatureWarning.visibleProperty().bind(
+                                    selectedPrinter.getPrinterAncillarySystems().bedTemperatureProperty()
+                                    .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
 
-                        temperatureWarning.visibleProperty().bind(
-                            selectedPrinter.getPrinterAncillarySystems().bedTemperatureProperty()
-                            .greaterThan(ApplicationConfiguration.bedHotAboveDegrees));
+                            selectedPrinter.printerStatusProperty().addListener(
+                                    printerStatusChangeListener);
+                            selectedPrinter.pauseStatusProperty().addListener(
+                                    pauseStatusChangeListener);
+                            doorOpen.visibleProperty().bind(selectedPrinter.
+                                    getPrinterAncillarySystems().doorOpenProperty());
+                            doorClosed.visibleProperty().bind(selectedPrinter.
+                                    getPrinterAncillarySystems().doorOpenProperty().not());
 
-                        //TODO The printer status page only has room to display one filament colour at the moment...
-                        if (selectedPrinter.reelsProperty().get(0) != null)
-                        {
-                            filamentRectangle.setFill(selectedPrinter.reelsProperty().get(0).
-                                displayColourProperty().get());
+                            selectedPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+
+                            selectedPrinter.extrudersProperty().forEach(extruder ->
+                                    {
+                                        extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
+                            });
                         }
 
-                        processPrinterStatusChange(selectedPrinter.printerStatusProperty().get());
-                        bindToSelectedPrinter(selectedPrinter);
-                        selectedPrinter.printerStatusProperty().addListener(
-                            printerStatusChangeListener);
+                        setAdvancedControlsVisibility();
 
-                        printerOpenImage.visibleProperty().bind(selectedPrinter.
-                            getPrinterAncillarySystems().lidOpenProperty());
-                        printerClosedImage.visibleProperty().bind(selectedPrinter.
-                            getPrinterAncillarySystems().lidOpenProperty().not());
-
+                        lastSelectedPrinter = selectedPrinter;
                     }
+                });
 
-                    lastSelectedPrinter = selectedPrinter;
-                }
-            });
+        disconnectedLinkedText.replaceText(Lookup.i18n("printerStatus.noPrinterAttached"));
+    }
 
-//        staticModelOverlay = new StaticModelOverlay(statusPane.getWidth(), statusPane.getHeight());
-//        statusPane.getChildren().add(staticModelOverlay.getSubScene());
+    private void setupBaseDisplay()
+    {
+        if (printerToUse == null)
+        {
+            baseNoReels.setVisible(false);
+            baseReel1.setVisible(false);
+            baseReel2.setVisible(false);
+            baseReelBoth.setVisible(false);
+            extruder1Controls.setVisible(false);
+            extruder2Controls.setVisible(false);
+            bed.setVisible(false);
+            vBoxLeft.setVisible(false);
+            vBoxRight.setVisible(false);
+            disconnectedText.setVisible(true);
+        } else
+        {
+            vBoxLeft.setVisible(true);
+            vBoxRight.setVisible(true);
+            disconnectedText.setVisible(false);
+            if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
+                    && (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1)))
+            {
+                baseNoReels.setVisible(false);
+                baseReel1.setVisible(false);
+                baseReel2.setVisible(false);
+                baseReelBoth.setVisible(true);
+                extruder1Controls.setVisible(true);
+                extruder2Controls.setVisible(true);
+                bed.setVisible(true);
+            } else if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
+                    && (!printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && !printerToUse.effectiveFilamentsProperty().containsKey(1)))
+            {
+                baseNoReels.setVisible(false);
+                baseReel1.setVisible(true);
+                baseReel2.setVisible(false);
+                baseReelBoth.setVisible(false);
+                extruder1Controls.setVisible(true);
+                extruder2Controls.setVisible(false);
+                bed.setVisible(true);
+            } else if ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1))
+                    && (!printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && !printerToUse.effectiveFilamentsProperty().containsKey(0)))
+            {
+                baseNoReels.setVisible(false);
+                baseReel1.setVisible(false);
+                baseReel2.setVisible(true);
+                baseReelBoth.setVisible(false);
+                extruder1Controls.setVisible(false);
+                extruder2Controls.setVisible(true);
+                bed.setVisible(true);
+            } else
+            {
+                baseNoReels.setVisible(true);
+                baseReel1.setVisible(false);
+                baseReel2.setVisible(false);
+                baseReelBoth.setVisible(false);
+                extruder1Controls.setVisible(false);
+                extruder2Controls.setVisible(false);
+                bed.setVisible(true);
+            }
+        }
+
+        setupReel1Colour();
+        setupReel2Colour();
+    }
+
+    private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
+    {
+        effect.setHue(hueConverter(desiredColor.getHue()));
+        effect.setBrightness(desiredColor.getBrightness() - 1);
+        effect.setSaturation(desiredColor.getSaturation());
+//        steno.info("Colour - h=" + hueConverter(desiredColor.getHue()) + " s=" + desiredColor.getSaturation() + " b" + desiredColor.getBrightness());
+    }
+
+    private void setupReel1Colour()
+    {
+        if (printerToUse == null
+                || !printerToUse.effectiveFilamentsProperty().containsKey(0)
+                || printerToUse.effectiveFilamentsProperty().get(0) == null)
+        {
+            reel1Background.setVisible(false);
+        } else
+        {
+            Color reel1Colour = printerToUse.effectiveFilamentsProperty().get(0).getDisplayColour();
+            setColorAdjustFromDesiredColour(reel1BackgroundColourEffect, reel1Colour);
+            reel1Background.setVisible(true);
+        }
+    }
+
+    private void setupReel2Colour()
+    {
+        if (printerToUse == null
+                || !printerToUse.effectiveFilamentsProperty().containsKey(1)
+                || printerToUse.effectiveFilamentsProperty().get(1) == null)
+        {
+            reel2Background.setVisible(false);
+        } else
+        {
+            Color reel2Colour = printerToUse.effectiveFilamentsProperty().get(1).getDisplayColour();
+            setColorAdjustFromDesiredColour(reel2BackgroundColourEffect, reel2Colour);
+            reel2Background.setVisible(true);
+        }
+    }
+
+    private double hueConverter(double hueCyl)
+    {
+        double returnedHue = 0;
+        if (hueCyl <= 180)
+        {
+            returnedHue = hueCyl / 180.0;
+        } else
+        {
+            returnedHue = -(360 - hueCyl) / 180.0;
+        }
+        return returnedHue;
+    }
+
+    private void setupAmbientLight()
+    {
+        if (printerToUse == null)
+        {
+            ambientLight.setVisible(false);
+        } else
+        {
+            Color ambientColour = colourMap.printerToDisplayColour(printerToUse.getPrinterIdentity().printerColourProperty().get());
+            setColorAdjustFromDesiredColour(ambientColourEffect, ambientColour);
+            ambientLight.setVisible(true);
+        }
+    }
+
+    private void setupHead()
+    {
+        if (printerToUse == null
+                || printerToUse.headProperty().get() == null)
+        {
+            singleMaterialHead.setVisible(false);
+            dualMaterialHead.setVisible(false);
+        } else
+        {
+            if (printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+            {
+                singleMaterialHead.setVisible(true);
+                dualMaterialHead.setVisible(false);
+            } else if (printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                singleMaterialHead.setVisible(false);
+                dualMaterialHead.setVisible(true);
+            } else
+            {
+                singleMaterialHead.setVisible(false);
+                dualMaterialHead.setVisible(false);
+            }
+        }
     }
 
     private void setAdvancedControlsVisibility()
@@ -511,33 +457,24 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         boolean visible = false;
 
         if (printerToUse != null
-            && Lookup.getUserPreferences().isAdvancedMode())
+                && Lookup.getUserPreferences().isAdvancedMode())
         {
             switch (printerToUse.printerStatusProperty().get())
             {
                 case IDLE:
                     visible = true;
                     break;
-                case PAUSING:
-                    visible = false;
+                default:
                     break;
-                case RESUMING:
-                    visible = false;
-                    break;
+            }
+
+            switch (printerToUse.pauseStatusProperty().get())
+            {
                 case PAUSED:
                     visible = true;
                     break;
-                case SENDING_TO_PRINTER:
-                    visible = false;
-                    break;
-                case PRINTING:
-                    visible = false;
-                    break;
-                case EXECUTING_MACRO:
-                    visible = false;
-                    break;
-                case SLICING:
-                case POST_PROCESSING:
+                case PAUSE_PENDING:
+                case RESUME_PENDING:
                     visible = false;
                     break;
                 default:
@@ -551,85 +488,19 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         }
     }
 
-    private void bindToSelectedPrinter(Printer printer)
-    {
-        pausePrintButton.visibleProperty().bind(printer.canPauseProperty());
-        resumePrintButton.visibleProperty().bind(printer.canResumeProperty());
-        cancelPrintButton.visibleProperty().bind(printer.canCancelProperty());
-    }
-
-    private void processPrinterStatusChange(PrinterStatus printerStatus)
-    {
-        setAdvancedControlsVisibility();
-        if (printerStatus != null)
-        {
-            switch (printerStatus)
-            {
-                case IDLE:
-                    showProgressGroup.set(false);
-                    break;
-                case PAUSING:
-                    showProgressGroup.set(false);
-                    break;
-                case RESUMING:
-                    showProgressGroup.set(false);
-                    break;
-                case PAUSED:
-                    showProgressGroup.set(false);
-                    break;
-                case SENDING_TO_PRINTER:
-                    if (!lastSelectedPrinter.macroTypeProperty().isNotNull().get())
-                    {
-                        showProgressGroup.set(true);
-                    } else
-                    {
-                        showProgressGroup.set(false);
-                    }
-                    break;
-                case PRINTING:
-                    showProgressGroup.set(true);
-//                    staticModelOverlay.showModelForPrintJob(lastSelectedPrinter.printJobIDProperty().get());
-                    break;
-                case EXECUTING_MACRO:
-                    if (lastSelectedPrinter.macroTypeProperty().isNotNull().get()
-                        && lastSelectedPrinter.macroTypeProperty().get().isInterruptible())
-                    {
-                        showProgressGroup.set(true);
-                    } else
-                    {
-                        showProgressGroup.set(false);
-                    }
-                    break;
-                case SLICING:
-                case POST_PROCESSING:
-                    showProgressGroup.set(true);
-                    break;
-                default:
-                    showProgressGroup.set(false);
-                    break;
-            }
-        }
-    }
-
-    private String convertToHoursMinutes(int seconds)
-    {
-        int minutes = (int) (seconds / 60);
-        int hours = minutes / 60;
-        minutes = minutes - (60 * hours);
-        return String.format("%02d:%02d", hours, minutes);
-    }
-
     /**
      *
      * @param parent
      */
     public void configure(VBox parent)
     {
+        parentPanel = parent;
+
         parent.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable,
-                Number oldValue, Number newValue)
+                    Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
             }
@@ -638,7 +509,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable,
-                Number oldValue, Number newValue)
+                    Number oldValue, Number newValue)
             {
                 resizePrinterDisplay(parent);
             }
@@ -647,11 +518,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void resizePrinterDisplay(VBox parent)
     {
-        final double beginWidth = 750;
-        final double beginHeight = 660;
+        final double beginWidth = 1500;
+        final double beginHeight = 1106;
         final double aspect = beginWidth / beginHeight;
-
-        double displayAspect = parent.getWidth() / parent.getHeight();
+        double gcodePanelWidthToSubtract = (gcodePanel.isVisible() == true) ? vBoxLeft.getWidth() : 0.0;
+        double parentWidth = parent.getWidth() - gcodePanelWidthToSubtract - vBoxRight.getWidth();
+        double parentHeight = parent.getHeight();
+        double displayAspect = parentWidth / parentHeight;
 
         double newWidth = 0;
         double newHeight = 0;
@@ -659,57 +532,149 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         if (displayAspect >= aspect)
         {
             // Drive from height
-            newWidth = parent.getHeight() * aspect;
-            newHeight = parent.getHeight();
+            newWidth = parentHeight * aspect;
+            newHeight = parentHeight;
         } else
         {
             //Drive from width
-            newHeight = parent.getWidth() / aspect;
-            newWidth = parent.getWidth();
+            newHeight = parentWidth / aspect;
+            newWidth = parentWidth;
         }
 
-        double xScale = Double.min((newWidth / beginWidth), 1.0);
-        double yScale = Double.min((newHeight / beginHeight), 1.0);
-
+        double xScale = Double.max((newWidth / beginWidth), 0.4);
+        double yScale = Double.max((newHeight / beginHeight), 0.4);
+        
         statusPane.setScaleX(xScale);
         statusPane.setScaleY(yScale);
     }
 
     private void unbindFromSelectedPrinter()
     {
-        progressBar.progressProperty().unbind();
-        progressPercent.textProperty().unbind();
-        progressTitle.textProperty().unbind();
-        progressMessage.textProperty().unbind();
-        secondProgressBar.visibleProperty().unbind();
-        secondProgressBar.progressProperty().unbind();
-        secondProgressPercent.textProperty().unbind();
-
-        reel.visibleProperty().unbind();
         if (lastSelectedPrinter != null)
         {
             lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
-                printerColourChangeListener);
-
+                    printerColourChangeListener);
             lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
-
-            pausePrintButton.visibleProperty().unbind();
-            pausePrintButton.setVisible(false);
-            resumePrintButton.visibleProperty().unbind();
-            resumePrintButton.setVisible(false);
-            cancelPrintButton.visibleProperty().unbind();
-            cancelPrintButton.setVisible(false);
+            lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
+            lastSelectedPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+            lastSelectedPrinter.extrudersProperty().forEach(extruder ->
+            {
+                extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
+            });
         }
-
-        filamentRectangle.visibleProperty().unbind();
 
         temperatureWarning.visibleProperty().unbind();
         temperatureWarning.setVisible(false);
 
-        printerOpenImage.visibleProperty().unbind();
-        printerOpenImage.setVisible(false);
-        printerClosedImage.visibleProperty().unbind();
-        printerClosedImage.setVisible(false);
+        doorOpen.visibleProperty().unbind();
+        doorOpen.setVisible(false);
+        doorClosed.visibleProperty().unbind();
+        doorClosed.setVisible(false);
+    }
+
+    private VBox loadInsetPanel(String innerPanelFXMLName, String title,
+            BooleanProperty visibleProperty)
+    {
+        URL insetPanelURL = getClass().getResource(
+                ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
+        FXMLLoader loader = new FXMLLoader(insetPanelURL, Lookup.getLanguageBundle());
+        VBox wrappedPanel = null;
+        try
+        {
+            VBox insetPanel = loader.load();
+            if (title != null)
+            {
+                wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
+                wrappedPanel.visibleProperty().bind(visibleProperty);
+                final VBox panelToChangeHeightOf = wrappedPanel;
+                panelVisibilityAction(visibleProperty.get(), panelToChangeHeightOf);
+                wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
+                {
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
+                    {
+                        panelVisibilityAction(visible, panelToChangeHeightOf);
+                    }
+                });
+            } else
+            {
+                wrappedPanel = insetPanel;
+            }
+        } catch (IOException ex)
+        {
+            steno.exception("Unable to load inset panel: " + innerPanelFXMLName, ex);
+        }
+        return wrappedPanel;
+    }
+
+    private void panelVisibilityAction(boolean visible, VBox panel)
+    {
+        if (visible)
+        {
+            panel.setMaxHeight(1000);
+        } else
+        {
+            panel.setMinHeight(0);
+            panel.setMaxHeight(0);
+        }
+    }
+
+    private VBox wrapPanelInOuterPanel(Node insetPanel, String title,
+            BooleanProperty visibleProperty)
+    {
+        URL outerPanelURL = getClass().getResource(
+                ApplicationConfiguration.fxmlUtilityPanelResourcePath + "outerStatusPanel.fxml");
+        FXMLLoader loader = new FXMLLoader(outerPanelURL, Lookup.getLanguageBundle());
+        VBox outerPanel = null;
+        try
+        {
+            outerPanel = loader.load();
+            OuterPanelController outerPanelController = loader.getController();
+            outerPanelController.setInnerPanel(insetPanel);
+            outerPanelController.setTitle(Lookup.i18n(title));
+            outerPanelController.setPreferredVisibility(visibleProperty);
+        } catch (IOException ex)
+        {
+            steno.exception("Unable to load outer panel", ex);
+        }
+        return outerPanel;
+    }
+
+    private void loadInsetPanels()
+    {
+        vBoxLeft.setSpacing(30);
+        diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
+                Lookup.getUserPreferences().showDiagnosticsProperty());
+        gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
+                Lookup.getUserPreferences().showGCodeProperty());
+        gcodePanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
+        VBox.setVgrow(gcodePanel, Priority.ALWAYS);
+        vBoxLeft.getChildren().add(diagnosticPanel);
+        vBoxLeft.getChildren().add(gcodePanel);
+
+        vBoxRight.setSpacing(30);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null);
+        projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
+
+        Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
+                Lookup.getUserPreferences().showAdjustmentsProperty());
+        vBoxRight.getChildren().add(projectPanel);
+        vBoxRight.getChildren().add(printAdjustmentsPanel);
+
+        container.getChildren().add(vBoxLeft);
+        AnchorPane.setTopAnchor(vBoxLeft, 30.0);
+        AnchorPane.setLeftAnchor(vBoxLeft, 30.0);
+        AnchorPane.setBottomAnchor(vBoxLeft, 90.0);
+        container.getChildren().add(vBoxRight);
+        AnchorPane.setTopAnchor(vBoxRight, 30.0);
+        AnchorPane.setRightAnchor(vBoxRight, 30.0);
+
     }
 
     @Override
@@ -725,42 +690,41 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @Override
     public void whenHeadAdded(Printer printer)
     {
+        setupHead();
     }
 
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
+        setupHead();
     }
 
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
-        if (reelIndex == 0)
-        {
-            //TODO modify to support multiple reels
-            filamentRectangle.setFill(printer.reelsProperty().get(0).displayColourProperty().get());
-            filamentRectangle.setVisible(true);
-            reel.setVisible(true);
-        }
+        setupBaseDisplay();
     }
 
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
-        if (reelIndex == 0)
-        {
-            //TODO modify to support multiple reels
-            filamentRectangle.setVisible(false);
-            this.reel.setVisible(false);
-        }
+        setupBaseDisplay();
     }
 
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
-        if (printer.reelsProperty().get(0) != null)
-        {
-            filamentRectangle.setFill(printer.reelsProperty().get(0).displayColourProperty().get());
-        }
+        setupBaseDisplay();
     }
+
+    @Override
+    public void whenExtruderAdded(Printer printer, int extruderIndex)
+    {
+    }
+
+    @Override
+    public void whenExtruderRemoved(Printer printer, int extruderIndex)
+    {
+    }
+
 }

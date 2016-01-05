@@ -3,11 +3,13 @@
  */
 package celtech.utils.tasks;
 
+import javafx.beans.property.BooleanProperty;
+
 /**
  *
  * @author tony
  */
-public class Cancellable
+public interface Cancellable
 {
-    public boolean cancelled = false;
+    public BooleanProperty cancelled();
 }

@@ -1,7 +1,5 @@
 package celtech.gcodetranslator;
 
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.gcodetranslator.events.BlankLineEvent;
 import celtech.gcodetranslator.events.CommentEvent;
@@ -35,7 +33,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class GCodeFileParser
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(GCodeFileParser.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(
+            GCodeFileParser.class.getName());
     private final ArrayList<GCodeTranslationEventHandler> listeners = new ArrayList<>();
 
     /**
@@ -60,8 +59,11 @@ public class GCodeFileParser
      *
      * @param inputfilename
      * @param percentProgress
+     * @param slicerType
+     * @throws celtech.gcodetranslator.PostProcessingError
      */
-    public void parse(String inputfilename, DoubleProperty percentProgress)
+    public void parse(final String inputfilename, DoubleProperty percentProgress,
+            final SlicerType slicerType) throws PostProcessingError
     {
         File inputFile = new File(inputfilename);
 
@@ -71,7 +73,6 @@ public class GCodeFileParser
 
         ArrayList<String> lineRepository = new ArrayList<>();
 
-        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
         ExtrusionTask currentExtrusionTask = null;
 
         try
@@ -85,7 +86,10 @@ public class GCodeFileParser
                 double percentSoFar = ((double) linesSoFar / (double) linesInFile) * 100;
                 if (percentSoFar - lastPercentSoFar >= 1)
                 {
-                    percentProgress.set(percentSoFar);
+                    if (percentProgress != null)
+                    {
+                        percentProgress.set(percentSoFar);
+                    }
                     lastPercentSoFar = percentSoFar;
                 }
 
@@ -340,7 +344,8 @@ public class GCodeFileParser
                                 if (comment != null)
                                 {
                                     // Look for the extrusion type in the comment
-                                    ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+                                    ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(
+                                            slicerType, comment);
                                     event.setExtrusionTask(foundExtrusionTask);
                                     if (foundExtrusionTask != null)
                                     {
@@ -407,7 +412,8 @@ public class GCodeFileParser
                     if (slicerType == SlicerType.Cura)
                     {
                         // Pre-post processing enrichment for Cura - extrusion type is in the comments...
-                        ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(slicerType, comment);
+                        ExtrusionTask foundExtrusionTask = ExtrusionTask.lookupExtrusionTaskFromComment(
+                                slicerType, comment);
 
                         if (foundExtrusionTask != null)
                         {
@@ -435,30 +441,22 @@ public class GCodeFileParser
                 if (eventToOutput != null)
                 {
                     eventToOutput.setLinesSoFar(linesSoFar);
-                    try
+                    if (eventToOutput instanceof ExtrusionEvent
+                            && ((ExtrusionEvent)eventToOutput).getExtrusionTask() == null)
                     {
-                        for (GCodeTranslationEventHandler listener : listeners)
-                        {
-                            listener.processEvent(eventToOutput);
-                        }
-                    } catch (PostProcessingError ex)
+                        throw new PostProcessingError("Unable to determine extrusion task type");
+                    }
+                    for (GCodeTranslationEventHandler listener : listeners)
                     {
-                        steno.error("Error processing event - aborting - " + eventToOutput);
-                        ex.printStackTrace();
+                        listener.processEvent(eventToOutput);
                     }
                 }
             }
 
             //End of file - poke the processor
-            try
+            for (GCodeTranslationEventHandler listener : listeners)
             {
-                for (GCodeTranslationEventHandler listener : listeners)
-                {
-                    listener.processEvent(new EndOfFileEvent());
-                }
-            } catch (PostProcessingError ex)
-            {
-                steno.error("Error processing end of file event");
+                listener.processEvent(new EndOfFileEvent());
             }
         } catch (FileNotFoundException ex)
         {

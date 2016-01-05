@@ -1,12 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- *//*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils;
 
+import celtech.printerControl.comms.commands.GCodeMacros;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -28,7 +22,8 @@ import libertysystems.stenographer.StenographerFactory;
 public class SystemUtils
 {
 
-    private static Stenographer steno = StenographerFactory.getStenographer(SystemUtils.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(SystemUtils.class.
+            getName());
 
     /**
      *
@@ -256,13 +251,13 @@ public class SystemUtils
 
 //set ch to "current" character to be processed
             char ch = inputString
-                .charAt(i);
+                    .charAt(i);
 
 // throw exception for invalid characters
             if (validChars.indexOf(ch) == -1)
             {
                 throw new InvalidChecksumException(
-                    "\"" + ch + "\" is an invalid character");
+                        "\"" + ch + "\" is an invalid character");
             }
 
 // our "digit" is calculated using ASCII value - 48
@@ -317,6 +312,24 @@ public class SystemUtils
      */
     public static int countLinesInFile(File aFile, String commentCharacter)
     {
+        return countLinesInFile(aFile, commentCharacter, null, false, false);
+    }
+
+    /**
+     *
+     * @param aFile
+     * @param commentCharacter
+     * @param headType
+     * @param useNozzle0
+     * @param useNozzle1
+     * @return
+     */
+    public static int countLinesInFile(File aFile,
+            String commentCharacter,
+            String headType,
+            boolean useNozzle0,
+            boolean useNozzle1)
+    {
         LineNumberReader reader = null;
         int numberOfLines = 0;
         try
@@ -327,7 +340,11 @@ public class SystemUtils
             while ((lineRead = reader.readLine()) != null)
             {
                 lineRead = lineRead.trim();
-                if (lineRead.startsWith(commentCharacter) == false && lineRead.equals("") == false)
+                if (GCodeMacros.isMacroExecutionDirective(lineRead))
+                {
+                    numberOfLines += GCodeMacros.getNumberOfOperativeLinesInMacro(lineRead, headType, useNozzle0, useNozzle1);
+                } else if (lineRead.startsWith(commentCharacter) == false && lineRead.equals("")
+                        == false)
                 {
                     numberOfLines++;
                 }
@@ -389,7 +406,8 @@ public class SystemUtils
      * @param fileextension
      * @return
      */
-    public static String getIncrementalFilenameOnly(String directory, String filename, String fileextension)
+    public static String getIncrementalFilenameOnly(String directory, String filename,
+            String fileextension)
     {
         String chosenFilename = null;
 
@@ -402,7 +420,8 @@ public class SystemUtils
 //        {
         while (notFound)
         {
-            File outfile = new File(directory + File.separator + filename + "_" + suffix + fileextension);
+            File outfile = new File(directory + File.separator + filename + "_" + suffix
+                    + fileextension);
             if (!outfile.exists())
             {
                 chosenFilename = outfile.getName().replaceFirst("\\..*$", "");
@@ -431,7 +450,8 @@ public class SystemUtils
         if (!(image instanceof RenderedImage))
         {
             BufferedImage bufferedImage = new BufferedImage(image.getWidth(null),
-                                                            image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+                    image.getHeight(null),
+                    BufferedImage.TYPE_INT_ARGB);
             Graphics g = bufferedImage.createGraphics();
             g.drawImage(image, 0, 0, null);
             g.dispose();
@@ -454,5 +474,4 @@ public class SystemUtils
     {
         return gcode.trim().replaceFirst(";.*$", "").replaceFirst("\\s+$", "");
     }
-
 }

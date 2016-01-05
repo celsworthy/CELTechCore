@@ -15,6 +15,7 @@ public class RoboxRxPacketFactory
      *
      */
     public final static byte commandByteMask = (byte) 0x80;
+    public final static float USE_LATEST_FIRMWARE_VERSION = -1;
 
     private RoboxRxPacketFactory()
     {
@@ -87,6 +88,19 @@ public class RoboxRxPacketFactory
      */
     public static RoboxRxPacket createPacket(byte[] inputBytes) throws InvalidCommandByteException, UnableToGenerateRoboxPacketException, UnknownPacketTypeException
     {
+        return createPacket(inputBytes, USE_LATEST_FIRMWARE_VERSION);
+    }
+    
+    /**
+     *
+     * @param inputBytes
+     * @return
+     * @throws InvalidCommandByteException
+     * @throws UnableToGenerateRoboxPacketException
+     * @throws UnknownPacketTypeException
+     */
+    public static RoboxRxPacket createPacket(byte[] inputBytes, float requiredFirmwareVersion) throws InvalidCommandByteException, UnableToGenerateRoboxPacketException, UnknownPacketTypeException
+    {
         RoboxRxPacket returnVal = null;
 
         if ((inputBytes[0] & commandByteMask) != commandByteMask)
@@ -102,64 +116,64 @@ public class RoboxRxPacketFactory
             {
                 case STATUS_RESPONSE:
                     StatusResponse statusResponse = new StatusResponse();
-                    statusResponse.populatePacket(inputBytes);
+                    statusResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = statusResponse;
                     break;
                 case ACK_WITH_ERRORS:
                     AckResponse ackResponse = new AckResponse();
-                    ackResponse.populatePacket(inputBytes);
+                    ackResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = ackResponse;
                     break;
                 case FIRMWARE_RESPONSE:
                     FirmwareResponse fwResponse = new FirmwareResponse();
-                    fwResponse.populatePacket(inputBytes);
+                    fwResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = fwResponse;
                     break;
                 case PRINTER_ID_RESPONSE:
                     PrinterIDResponse printerIDResponse = new PrinterIDResponse();
-                    printerIDResponse.populatePacket(inputBytes);
+                    printerIDResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = printerIDResponse;
                     break;
                 case REEL_0_EEPROM_DATA:
                     ReelEEPROMDataResponse reel0EepromDataResponse = new ReelEEPROMDataResponse();
-                    reel0EepromDataResponse.populatePacket(inputBytes);
+                    reel0EepromDataResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     reel0EepromDataResponse.setReelNumber(0);
                     returnVal = reel0EepromDataResponse;
                     break;
                 case REEL_1_EEPROM_DATA:
                     ReelEEPROMDataResponse reel1EepromDataResponse = new ReelEEPROMDataResponse();
-                    reel1EepromDataResponse.populatePacket(inputBytes);
+                    reel1EepromDataResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     reel1EepromDataResponse.setReelNumber(1);
                     returnVal = reel1EepromDataResponse;
                     break;
                 case HEAD_EEPROM_DATA:
                     HeadEEPROMDataResponse headEepromDataResponse = new HeadEEPROMDataResponse();
-                    headEepromDataResponse.populatePacket(inputBytes);
+                    headEepromDataResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = headEepromDataResponse;
                     break;
                 case GCODE_RESPONSE:
                     GCodeDataResponse gcodeDataResponse = new GCodeDataResponse();
-                    gcodeDataResponse.populatePacket(inputBytes);
+                    gcodeDataResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = gcodeDataResponse;
                     break;
                 case LIST_FILES_RESPONSE:
                     ListFilesResponse listFilesResponse = new ListFilesResponseImpl();
-                    listFilesResponse.populatePacket(inputBytes);
+                    listFilesResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = listFilesResponse;
                     break;
                 case HOURS_COUNTER:
                     HoursCounterResponse hoursResponse = new HoursCounterResponse();
-                    hoursResponse.populatePacket(inputBytes);
+                    hoursResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = hoursResponse;
                     break;
                 case DEBUG_DATA:
                     DebugDataResponse debugResponse = new DebugDataResponse();
-                    debugResponse.populatePacket(inputBytes);
+                    debugResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = debugResponse;
                     break;
                 case SEND_FILE:
                     SendFile sendFileResponse = new SendFile();
-                    sendFileResponse.populatePacket(inputBytes);
+                    sendFileResponse.populatePacket(inputBytes, requiredFirmwareVersion);
                     returnVal = sendFileResponse;
                     break;
                 default:

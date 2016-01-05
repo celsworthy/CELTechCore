@@ -19,7 +19,7 @@
                                         <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" labelText="%buttonText.toLayout" onAction="#forwardPressed" />
                                     </children>
                                 </StackPane>
-                                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" tagOrientation="WEST" />
+                                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
                             </children>
                         </StackPane>
                     </children>
@@ -45,7 +45,7 @@
                                 <FlowPane fx:id="statusButtonHBox" alignment="CENTER" prefWrapLength="200">
                                     <children>
                                         <GraphicButtonWithLabel fx:id="unlockDoorButton" fxmlFileName="unlockDoorButton" labelText="%buttonText.unlockDoor" onAction="#unlockDoor" />
-                                        <GraphicButtonWithLabel fx:id="ejectFilamentButton" fxmlFileName="ejectFilamentButton" labelText="%buttonText.ejectFilament" onAction="#ejectFilament0" />
+                                        <GraphicButtonWithLabel fx:id="ejectFilamentButton" fxmlFileName="ejectFilamentButton" labelText="%buttonText.ejectFilament" onAction="#ejectFilament" />
                                         <StackPane>
                                             <children>
                                                 <GraphicButtonWithLabel fx:id="fineNozzleButton" fxmlFileName="fineNozzleButton" labelText="%buttonText.fineNozzle" onAction="#selectNozzle0" />
@@ -59,6 +59,7 @@
                                             </children>
                                         </StackPane>
                                         <GraphicButtonWithLabel fx:id="calibrateButton" fxmlFileName="calibrateButton" labelText="%buttonText.calibrate" onAction="#calibrate" />
+                                        <GraphicButtonWithLabel fx:id="purgeButton" fxmlFileName="purgeButton" labelText="%buttonText.purge" onAction="#purge" />
                                         <GraphicButtonWithLabel fx:id="homeButton" fxmlFileName="homeAxesButton" labelText="%buttonText.home" onAction="#homeAll" />
                                         <GraphicButtonWithLabel fx:id="removeHeadButton" fxmlFileName="removeHeadButton" labelText="%buttonText.removeHead" onAction="#removeHead" />
                                         <GraphicToggleButtonWithLabel fx:id="headFanButton" fxmlFileName="headFanButton" labelText="%buttonText.headFan" onAction="#toggleHeadFan" />
@@ -68,12 +69,21 @@
                                 </FlowPane>
                                 <FlowPane fx:id="layoutButtonHBox" alignment="CENTER" prefWrapLength="200">
                                     <children>
-                                        <GraphicButtonWithLabel fx:id="addModelButton" fxmlFileName="addToProjectButton" labelText="%buttonText.addModel"  onAction="#addModel" />
+                                        <GraphicButtonWithLabel fx:id="undoButton" fxmlFileName="undoButton" labelText="%buttonText.undo" onAction="#undo" />
+                                        <GraphicButtonWithLabel fx:id="redoButton" fxmlFileName="redoButton" labelText="%buttonText.redo" onAction="#redo" />
+                                        <GraphicButtonWithLabel fx:id="addModelButton" fxmlFileName="addToProjectButton" labelText="%buttonText.addModel" onAction="#addModel" />
                                         <GraphicButtonWithLabel fx:id="addCloudModelButton" fxmlFileName="addCloudModelToProjectButton" labelText="%buttonText.addModelFromCloud" onAction="#addCloudModel" />
                                         <GraphicButtonWithLabel fx:id="deleteModelButton" fxmlFileName="deleteModelButton" labelText="%buttonText.removeModel" onAction="#deleteModel" />
                                         <GraphicButtonWithLabel fx:id="duplicateModelButton" fxmlFileName="copyModelButton" labelText="%buttonText.duplicateModel" onAction="#copyModel" />
                                         <GraphicToggleButtonWithLabel id="snapToGroundButton" fx:id="snapToGroundButton" fxmlFileName="snapToGroundButton" labelText="%buttonText.layFlat" onAction="#snapToGround" />
                                         <GraphicButtonWithLabel fx:id="distributeModelsButton" fxmlFileName="layoutModelButton" labelText="%buttonText.autoLayout" onAction="#autoLayoutModels" />
+                                        <StackPane>
+                                            <children>
+                                        <GraphicButtonWithLabel fx:id="groupButton" fxmlFileName="groupButton" labelText="%buttonText.group" onAction="#group" />
+                                        <GraphicButtonWithLabel fx:id="ungroupButton" fxmlFileName="groupButton" labelText="%buttonText.ungroup" onAction="#ungroup" />
+                                            </children>
+                                        </StackPane>
+                                        <!--<GraphicButtonWithLabel fx:id="cutButton" fxmlFileName="cutButton" labelText="%buttonText.cut" onAction="#startCut" />-->
                                     </children>
                                 </FlowPane>
                             </children>
@@ -86,7 +96,7 @@
             </opaqueInsets>
         </BorderPane>
     </children>
-<padding>
-<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</padding>
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+    </padding>
 </VBox>

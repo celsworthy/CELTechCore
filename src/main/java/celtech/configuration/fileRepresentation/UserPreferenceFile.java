@@ -2,6 +2,7 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
+import celtech.configuration.units.CurrencySymbol;
 import libertysystems.stenographer.LogLevel;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
@@ -13,6 +14,7 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 public class UserPreferenceFile
 {
+
     private SlicerType slicerType = null;
     private boolean safetyFeaturesOn = true;
     private String languageTag = "";
@@ -21,6 +23,19 @@ public class UserPreferenceFile
     private boolean advancedMode = false;
     private boolean firstUse = true;
     private boolean detectLoadedFilament = true;
+    private CurrencySymbol currencySymbol = CurrencySymbol.POUND;
+    private float currencyGBPToLocalMultiplier = 1;
+    private boolean showDiagnostics = true;
+    private boolean showGCode = true;
+    private boolean showAdjustments = true;
+    private boolean showMetricUnits = true;
+    private boolean goProTriggerEnabled = false;
+    private String goProWifiPassword = "";
+    private String goProXMove = "";
+    private String goProYMove = "";
+    private int goProDelay = 2;
+    private int goProDelayBeforeCapture = 2;
+    private boolean loosePartSplitOnLoad = true;
 
     public String getLanguageTag()
     {
@@ -86,8 +101,9 @@ public class UserPreferenceFile
     {
         return firstUse;
     }
-    
-    public boolean isDetectLoadedFilament() {
+
+    public boolean isDetectLoadedFilament()
+    {
         return detectLoadedFilament;
     }
 
@@ -95,11 +111,141 @@ public class UserPreferenceFile
     {
         this.firstUse = value;
     }
-    
+
     public void setDetectLoadedFilament(boolean value)
     {
         this.detectLoadedFilament = value;
-    }    
+    }
+
+    public CurrencySymbol getCurrencySymbol()
+    {
+        return currencySymbol;
+    }
+
+    public void setCurrencySymbol(CurrencySymbol currencySymbol)
+    {
+        this.currencySymbol = currencySymbol;
+    }
+
+    public float getCurrencyGBPToLocalMultiplier()
+    {
+        return currencyGBPToLocalMultiplier;
+    }
+
+    public void setCurrencyGBPToLocalMultiplier(float currencyGBPToLocalMultiplier)
+    {
+        this.currencyGBPToLocalMultiplier = currencyGBPToLocalMultiplier;
+    }
+
+    public boolean isShowDiagnostics()
+    {
+        return showDiagnostics;
+    }
+
+    public boolean isShowGCode()
+    {
+        return showGCode;
+    }
+
+    public boolean isShowAdjustments()
+    {
+        return showAdjustments;
+    }
+
+    public void setShowDiagnostics(boolean showDiagnostics)
+    {
+        this.showDiagnostics = showDiagnostics;
+    }
+
+    public void setShowGCode(boolean showGCode)
+    {
+        this.showGCode = showGCode;
+    }
+
+    public void setShowAdjustments(boolean showAdjustments)
+    {
+        this.showAdjustments = showAdjustments;
+    }
+
+    public boolean isShowMetricUnits()
+    {
+        return showMetricUnits;
+    }
+
+    public void setShowMetricUnits(boolean showMetricUnits)
+    {
+        this.showMetricUnits = showMetricUnits;
+    }
+
+    public boolean isGoProTriggerEnabled()
+    {
+        return goProTriggerEnabled;
+    }
+
+    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
+    {
+        this.goProTriggerEnabled = goProTriggerEnabled;
+    }
+
+    public String getGoProWifiPassword()
+    {
+        return goProWifiPassword;
+    }
+
+    public void setGoProWifiPassword(String goProWifiPassword)
+    {
+        this.goProWifiPassword = goProWifiPassword;
+    }
+
+    public void setGoProXMove(String goProXMove)
+    {
+        this.goProXMove = goProXMove;
+    }
+
+    public String getGoProXMove()
+    {
+        return goProXMove;
+    }
+
+    public void setGoProYMove(String goProYMove)
+    {
+        this.goProYMove = goProYMove;
+    }
+
+    public String getGoProYMove()
+    {
+        return goProYMove;
+    }
+
+    public void setGoProDelay(int goProDelay)
+    {
+        this.goProDelay = goProDelay;
+    }
+
+    public int getGoProDelay()
+    {
+        return goProDelay;
+    }
+
+    public void setGoProDelayBeforeCapture(int goProDelayBeforeCapture)
+    {
+        this.goProDelayBeforeCapture = goProDelayBeforeCapture;
+    }
+
+    public int getGoProDelayBeforeCapture()
+    {
+        return goProDelayBeforeCapture;
+    }
+
+    public boolean isLoosePartSplitOnLoad()
+    {
+        return loosePartSplitOnLoad;
+    }
+
+    public void setLoosePartSplitOnLoad(boolean loosePartSplitOnLoad)
+    {
+        this.loosePartSplitOnLoad = loosePartSplitOnLoad;
+    }
 
     public void populateFromSettings(UserPreferences userPreferences)
     {
@@ -111,5 +257,18 @@ public class UserPreferenceFile
         setAdvancedMode(userPreferences.isAdvancedMode());
         setFirstUse(userPreferences.isFirstUse());
         setDetectLoadedFilament(userPreferences.getDetectLoadedFilament());
+        setCurrencySymbol(userPreferences.getCurrencySymbol());
+        setCurrencyGBPToLocalMultiplier(userPreferences.getcurrencyGBPToLocalMultiplier());
+        setShowDiagnostics(userPreferences.getShowDiagnostics());
+        setShowGCode(userPreferences.getShowGCode());
+        setShowAdjustments(userPreferences.getShowAdjustments());
+        setShowMetricUnits(userPreferences.isShowMetricUnits());
+        setGoProTriggerEnabled(userPreferences.isGoProTriggerEnabled());
+        setGoProWifiPassword(userPreferences.getGoProWifiPassword());
+        setGoProXMove(userPreferences.getGoProXMove());
+        setGoProYMove(userPreferences.getGoProYMove());
+        setGoProDelay(userPreferences.getGoProDelay());
+        setGoProDelayBeforeCapture(userPreferences.getGoProDelayBeforeCapture());
+        setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
     }
 }

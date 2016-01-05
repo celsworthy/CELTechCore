@@ -1,5 +1,7 @@
 package celtech.utils.tasks;
 
+import javafx.concurrent.Task;
+
 /**
  *
  * @author Ian
@@ -18,6 +20,12 @@ public interface TaskExecutor
     public void respondOnGUIThread(TaskResponder responder, boolean success, String message, Object returnedObject);
     public void respondOnCurrentThread(TaskResponder responder, boolean success, String message);
     public void runOnGUIThread(Runnable runnable);
+    public void runOnBackgroundThread(Runnable runnable);
+    
+    /**
+     * Run the given Task in a daemon thread.
+     */
+    public void runTaskAsDaemon(Task task);
 
     /**
      * Run the given action in a background thread, using the given success and failure handlers.

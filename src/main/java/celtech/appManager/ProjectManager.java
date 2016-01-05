@@ -9,14 +9,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import static org.apache.commons.lang.StringEscapeUtils.escapeJava;
 
 /**
  *
@@ -24,22 +26,18 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProjectManager implements Savable, Serializable
 {
-
+    
     private static ProjectManager instance = null;
     private static List<Project> openProjects = new ArrayList<>();
     private final static String projectFileName = "projects.dat";
-    private final static Stenographer steno = StenographerFactory.getStenographer(ProjectManager.class.getName());
+    private final static Stenographer steno = StenographerFactory.getStenographer(
+            ProjectManager.class.getName());
     private final static ProjectFileFilter fileFilter = new ProjectFileFilter();
-
+    
     private ProjectManager()
     {
-
     }
-
-    /**
-     *
-     * @return
-     */
+    
     public static ProjectManager getInstance()
     {
         if (instance == null)
@@ -56,101 +54,92 @@ public class ProjectManager implements Savable, Serializable
         
         return instance;
     }
-
+    
     private static ProjectManager loadState()
     {
-        File projectDirHandle = new File(ApplicationConfiguration.getProjectDirectory());
-
-        if (!projectDirHandle.exists())
-        {
-            projectDirHandle.mkdirs();
-        }
-
         ProjectManager pm = null;
-        try
+        
+        Path projectPath = Paths.get(ApplicationConfiguration.getProjectDirectory());
+        if (!Files.exists(projectPath))
         {
-            steno.debug("load project manager from " + ApplicationConfiguration.getProjectDirectory() + projectFileName);
-            FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
-            ObjectInputStream reader = new ObjectInputStream(projectFile);
-            pm = new ProjectManager();
-            int numberOfOpenProjects = reader.readInt();
-            for (int counter = 0; counter < numberOfOpenProjects; counter++)
+            try
             {
-                String projectName = reader.readUTF();
-                Project project = loadProject(projectName);
-                if (project != null)
-                {
-                    pm.projectOpened(project);
-                }
-                else
-                {
-                    steno.warning("Project Manager tried to load " + projectName + " but it couldn't be opened");
-                }
+                Files.createDirectories(projectPath);
+            } catch (IOException ex)
+            {
+                ex.printStackTrace();
+                steno.error("Failed to create project directory");
             }
-            reader.close();
-        } catch (Exception ex)
-        {
-            ex.printStackTrace();
-            steno.error("Failed to load project manager: " + ex);
         }
+        
+        Path projectDataFilePath = Paths.get(ApplicationConfiguration.getProjectDirectory() + projectFileName);
+        
+        if (Files.exists(projectDataFilePath))
+        {
+            try
+            {
+                steno.debug("load project manager from " + ApplicationConfiguration.getProjectDirectory() + projectFileName);
+                FileInputStream projectFile = new FileInputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName);
+                ObjectInputStream reader = new ObjectInputStream(projectFile);
+                pm = new ProjectManager();
+                int numberOfOpenProjects = reader.readInt();
+                for (int counter = 0; counter < numberOfOpenProjects; counter++)
+                {
+                    String projectPathData = reader.readUTF();
+                    Project project = loadProject(projectPathData);
+                    if (project != null)
+                    {
+                        pm.projectOpened(project);
+                    } else
+                    {
+                        steno.warning("Project Manager tried to load " + projectPathData
+                                + " but it couldn't be opened");
+                    }
+                }
+                reader.close();
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+                steno.error("Failed to load project manager: " + ex);
+            }
+        }
+        
         return pm;
     }
-
-    /**
-     *
-     * @param projectName
-     * @return
-     */
-    public static Project loadProject(String projectName)
+    
+    public static Project loadProject(String projectPath)
     {
-        File projectFile = new File(projectName);
-        return loadProject(projectFile);
+        String basePath = projectPath.substring(0, projectPath.lastIndexOf('.'));
+        return Project.loadProject(basePath);
     }
-
-    /**
-     *
-     * @param projectFile
-     * @return
-     */
-    public static Project loadProject(File projectFile)
-    {
-        Project loadedProject = null;
-
-        try
-        {
-            FileInputStream projectFileStream = new FileInputStream(projectFile);
-            ObjectInputStream reader = new ObjectInputStream(projectFileStream);
-            loadedProject = (Project) reader.readObject();
-            reader.close();
-
-            loadedProject.getProjectHeader().setProjectPath(projectFile.getParent());
-        } catch (ClassNotFoundException ex)
-        {
-            steno.error("Couldn't locate class while loading project " + projectFile.getAbsolutePath());
-        } catch (Exception ex)
-        {
-            steno.error("Failed to load project " + projectFile.getAbsolutePath());
-        } 
-
-        return loadedProject;
-    }
-
-    /**
-     *
-     * @return
-     */
+    
     @Override
     public boolean saveState()
     {
         boolean savedSuccessfully = false;
-
+        
         try
         {
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(ApplicationConfiguration.getProjectDirectory() + projectFileName));
-            out.writeInt(openProjects.size());
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(
+                    ApplicationConfiguration.getProjectDirectory() + projectFileName));
+            
+            int numberOfProjectsWithModels = 0;
+            for (Project candidateProject : openProjects)
+            {
+                if (!candidateProject.getTopLevelModels().isEmpty())
+                {
+                    numberOfProjectsWithModels++;
+                }
+            }
+            
+            out.writeInt(numberOfProjectsWithModels);
+            
             for (Project project : openProjects)
             {
-                out.writeUTF(project.getAbsolutePath());
+                if (project.getTopLevelModels().size() > 0)
+                {
+                    out.writeUTF(project.getAbsolutePath());
+                }
             }
             out.close();
         } catch (FileNotFoundException ex)
@@ -160,80 +149,53 @@ public class ProjectManager implements Savable, Serializable
         {
             steno.error("Couldn't write project manager state to file");
         }
-
+        
         return savedSuccessfully;
     }
-
-    /**
-     *
-     * @param project
-     */
+    
     public void projectOpened(Project project)
     {
-        if (! openProjects.contains(project)) {
+        if (!openProjects.contains(project))
+        {
             openProjects.add(project);
         }
     }
-
-    /**
-     *
-     * @param project
-     */
+    
     public void projectClosed(Project project)
     {
         openProjects.remove(project);
     }
-
-    /**
-     *
-     * @return
-     */
+    
     public List<Project> getOpenProjects()
     {
         return openProjects;
     }
-
-    /**
-     *
-     * @return
-     */
-    public ObservableList<Project> getAvailableProjects()
+    
+    private Set<String> getAvailableProjectNames()
     {
-        ObservableList<Project> availableProjects = FXCollections.observableArrayList();
-
+        Set<String> availableProjectNames = new HashSet<>();
+        
         File projectDir = new File(ApplicationConfiguration.getProjectDirectory());
         File[] projectFiles = projectDir.listFiles(fileFilter);
         for (File file : projectFiles)
         {
-            try
-            {
-                FileInputStream projectFile = new FileInputStream(file);
-                ObjectInputStream reader = new ObjectInputStream(projectFile);
-                Project project = (Project) reader.readObject();
-                availableProjects.add(project);
-                reader.close();
-            } catch (IOException ex)
-            {
-                steno.error("Failed to load project manager");
-            } catch (ClassNotFoundException ex)
-            {
-                steno.error("Failure whilst loading available project headers");
-            }
+            String[] fileNameElements = file.getAbsolutePath().split(escapeJava(File.separator));
+            String fileName = fileNameElements[fileNameElements.length - 1];
+            String projectName = fileName.substring(0, fileName.length() - 6);
+            availableProjectNames.add(projectName);
         }
-        return availableProjects;
+        return availableProjectNames;
     }
     
-    public Set<String> getOpenAndAvailableProjectNames() {
+    public Set<String> getOpenAndAvailableProjectNames()
+    {
         Set<String> openAndAvailableProjectNames = new HashSet<>();
         for (Project project : openProjects)
         {
             openAndAvailableProjectNames.add(project.getProjectName());
         }
-        for (Project project : getAvailableProjects())
-        {
-            openAndAvailableProjectNames.add(project.getProjectName());
-        }
+        openAndAvailableProjectNames.addAll(getAvailableProjectNames());
         return openAndAvailableProjectNames;
     }
-
+    
 }

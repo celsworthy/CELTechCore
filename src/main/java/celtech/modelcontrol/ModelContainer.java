@@ -1,25 +1,35 @@
 package celtech.modelcontrol;
 
+import celtech.Lookup;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
+import celtech.coreUI.visualisation.CameraViewChangeListener;
+import celtech.coreUI.visualisation.Edge;
+import celtech.coreUI.visualisation.ScreenExtents;
+import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
-import celtech.coreUI.visualisation.importers.FloatArrayList;
-import celtech.coreUI.visualisation.importers.IntegerArrayList;
+import celtech.coreUI.visualisation.collision.CollisionShapeListener;
+import celtech.coreUI.visualisation.collision.HullComputer;
+import celtech.coreUI.visualisation.metaparts.FloatArrayList;
+import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.Math.MathUtils;
-import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
-import celtech.utils.gcode.representation.GCodeElement;
-import celtech.utils.gcode.representation.GCodeMeshData;
-import celtech.utils.gcode.representation.MovementType;
+import celtech.utils.threed.MeshCutter2;
+import celtech.utils.threed.MeshSeparator;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -28,253 +38,373 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
+import javafx.scene.Camera;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.ObservableFaceArray;
 import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.univariate.BrentOptimizer;
+import org.apache.commons.math3.optim.univariate.SearchInterval;
+import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
+import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider
+public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
+        ScreenExtentsProvider, CameraViewChangeListener
 {
 
     private static final long serialVersionUID = 1L;
-    private Stenographer steno = null;
-    private PrintBed printBed = null;
+    protected static int nextModelId = 1;
+    /**
+     * The modelId is only guaranteed unique at the project level because it
+     * could be reloaded with duplicate values from saved models into other
+     * projects.
+     */
+    protected int modelId;
+    private Stenographer steno;
+    private PrintBed printBed;
     private boolean isCollided = false;
-    private BooleanProperty isSelected = null;
-    private BooleanProperty isOffBed = null;
-    private SimpleStringProperty modelName = null;
-    private int numberOfMeshes = 0;
-    private ModelContentsEnumeration modelContentsType = ModelContentsEnumeration.MESH;
-    //GCode only
-    private final ObservableList<String> fileLines = FXCollections.observableArrayList();
-    private GCodeMeshData gcodeMeshData = null;
-    private GCodeElement lastSelectedPart = null;
-    private IntegerProperty selectedGCodeLine = new SimpleIntegerProperty(0);
-    private IntegerProperty linesOfGCode = new SimpleIntegerProperty(0);
-    private IntegerProperty currentLayer = new SimpleIntegerProperty(0);
-    private IntegerProperty numberOfLayers = new SimpleIntegerProperty(0);
-    private IntegerProperty maxLayerVisible = new SimpleIntegerProperty(0);
-    private IntegerProperty minLayerVisible = new SimpleIntegerProperty(0);
+    private BooleanProperty isSelected;
+    private BooleanProperty isOffBed;
+    private SimpleStringProperty modelName;
+    private boolean isInvalidMesh = false;
 
     ModelBounds originalModelBounds;
 
-    private Scale transformScalePreferred;
-    private Rotate transformRotateSnapToGround;
-    private Translate transformSnapToGroundYAdjust;
+    protected Scale transformScalePreferred;
+    private Translate transformDropToBedYAdjust;
     private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
-    private Rotate transformRotateYPreferred;
-    private Translate transformMoveToCentre;
+    private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
+    private static final Point3D X_AXIS = new Point3D(1, 0, 0);
+    private Rotate transformRotateTwistPreferred;
+    private Rotate transformRotateTurnPreferred;
+    private Rotate transformRotateLeanPreferred;
     private Translate transformMoveToPreferred;
     private Translate transformBedCentre;
 
-    private Group meshGroup = new Group();
+    private MeshView meshView;
 
-    static int SNAP_FACE_INDEX_NOT_SELECTED = -1;
-    /**
-     * The index of the face that the user has requested face the bed.
-     */
-    private int snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
     /**
      * Property wrapper around the scale.
      */
-    private DoubleProperty preferredScale;
+    private DoubleProperty preferredXScale;
+    private DoubleProperty preferredYScale;
+    private DoubleProperty preferredZScale;
     /**
-     * Property wrapper around the rotationY.
+     * Property wrappers around the rotations.
      */
-    private DoubleProperty preferredRotationY;
+    private DoubleProperty preferredRotationTwist;
+    private DoubleProperty preferredRotationLean;
+    private DoubleProperty preferredRotationTurn;
 
     private double bedCentreOffsetX;
     private double bedCentreOffsetY;
     private double bedCentreOffsetZ;
-    private ModelBounds lastTransformedBounds;
-    private SelectionHighlighter selectionHighlighter = null;
-    List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
-    private Set<Node> selectedMarkers;
+
+    /**
+     * The bounds of the object in its parent. For top level objects this is
+     * also the bounds in the bed coordinates. They are kept valid even after
+     * translates etc.
+     */
+    protected ModelBounds lastTransformedBoundsInParent;
+    private SelectionHighlighter selectionHighlighter;
+    private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
+    private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
+
+    /**
+     * Print the part using the extruder of the given number.
+     */
+    protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
+
+    private double cameraDistance = 1;
+
+    private File modelFile;
+
+    private Group bed;
+
+    private Camera cameraViewingMe = null;
+    private ScreenExtents extents = null;
+
+    private List<Transform> rotationTransforms;
+
+    private MeshView collisionShape = null;
+    private List<CollisionShapeListener> collisionShapeListeners = new ArrayList<>();
 
     public ModelContainer()
     {
-        super();
-        this.getChildren().add(meshGroup);
     }
 
-    /**
-     *
-     * @param name
-     * @param meshToAdd
-     */
-    public ModelContainer(String name, MeshView meshToAdd)
+    public ModelContainer(File modelFile, MeshView meshView)
     {
-        super();
-        this.getChildren().add(meshGroup);
-        modelContentsType = ModelContentsEnumeration.MESH;
-        meshGroup.getChildren().add(meshToAdd);
-        numberOfMeshes = 1;
-        initialise(name);
+        this.meshView = meshView;
+        getChildren().add(meshView);
+
+        initialise(modelFile);
         initialiseTransforms();
     }
 
-    /**
-     *
-     * @param name
-     * @param meshes
-     */
-    public ModelContainer(String name, ArrayList<MeshView> meshes)
+    public ModelContainer(File modelFile, MeshView meshView, int extruderAssociation)
     {
-        super();
-        this.getChildren().add(meshGroup);
-        modelContentsType = ModelContentsEnumeration.MESH;
-        meshGroup.getChildren().addAll(meshes);
-        numberOfMeshes = meshes.size();
-        initialise(name);
-        initialiseTransforms();
+        this(modelFile, meshView);
+        associateWithExtruderNumber.set(extruderAssociation);
     }
 
     /**
-     *
-     * @param name
-     * @param gcodeMeshData
-     * @param fileLines
+     * Return the parent ModelGroup else return null.
      */
-    public ModelContainer(String name, GCodeMeshData gcodeMeshData, ArrayList<String> fileLines)
+    public ModelContainer getParentModelContainer()
     {
-        super();
-        this.getChildren().add(meshGroup);
-        modelContentsType = ModelContentsEnumeration.GCODE;
-        numberOfMeshes = 0;
-        initialise(name);
-        initialiseTransforms();
-        setUpGCodeRelated(gcodeMeshData, fileLines);
+        if (getParent() instanceof ModelContainer)
+        {
+            return (ModelContainer) getParent();
+        } else if (getParent() != null && getParent().getParent() instanceof ModelContainer)
+        {
+            return (ModelContainer) getParent().getParent();
+        } else
+        {
+            return null;
+        }
     }
 
-    private void setUpGCodeRelated(GCodeMeshData gcodeMeshData1, ArrayList<String> fileLines1)
+    public File getModelFile()
     {
-        meshGroup.getChildren().add(gcodeMeshData1.getAllParts());
-        this.gcodeMeshData = gcodeMeshData1;
-        this.fileLines.addAll(fileLines1);
-        linesOfGCode.set(fileLines1.size());
-        selectedGCodeLineProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                highlightGCodeLine(t1.intValue());
-            }
-        });
-        minLayerVisible.set(0);
-        maxLayerVisible.set(gcodeMeshData1.getReferencedArrays().size());
-        minLayerVisible.addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                setMinVisibleLayer(t1.intValue());
-            }
-        });
-        maxLayerVisible.addListener(new ChangeListener<Number>()
-        {
-
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                setMaxVisibleLayer(t1.intValue());
-            }
-        });
-        numberOfLayers.set(gcodeMeshData1.getReferencedArrays().size());
+        return modelFile;
     }
 
-    private void initialiseTransforms()
+    public Scale getTransformScale()
+    {
+        return transformScalePreferred;
+    }
+
+    /**
+     * Clear the meshes so as to free memory.
+     */
+    public void clearMeshes()
+    {
+        getChildren().clear();
+    }
+
+    public void setUseExtruder0(boolean useExtruder0)
+    {
+        associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
+    }
+
+    public void printTransforms()
+    {
+        System.out.println("Transforms for: " + getId());
+        System.out.println("==============================================");
+        System.out.println("transformscalepreferred is " + transformScalePreferred);
+        System.out.println("transformMovetopreferred is " + transformMoveToPreferred);
+        System.out.println("transformSnapToGroundYAdjust is " + transformDropToBedYAdjust);
+        System.out.println("transformRotateLeanPreferred is " + transformRotateLeanPreferred);
+        System.out.println("transformRotateTwistPreferred " + transformRotateTwistPreferred);
+        System.out.println("transformRotateTurnPreferred " + transformRotateTurnPreferred);
+        System.out.println("transformBedCentre " + transformBedCentre);
+        System.out.println("==============================================");
+    }
+
+    public List<Transform> getRotationTransforms()
+    {
+        return rotationTransforms;
+    }
+
+    protected void initialiseTransforms()
     {
         transformScalePreferred = new Scale(1, 1, 1);
-        transformRotateSnapToGround = new Rotate(0, 0, 0);
-        transformSnapToGroundYAdjust = new Translate(0, 0, 0);
-        transformRotateYPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
-        transformMoveToCentre = new Translate(0, 0, 0);
+        transformDropToBedYAdjust = new Translate(0, 0, 0);
         transformMoveToPreferred = new Translate(0, 0, 0);
         transformBedCentre = new Translate(0, 0, 0);
 
+        transformRotateLeanPreferred = new Rotate(0, 0, 0, 0, X_AXIS);
+        transformRotateTwistPreferred = new Rotate(0, 0, 0, 0, Y_AXIS);
+        transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
+        rotationTransforms.add(transformRotateTurnPreferred);
+        rotationTransforms.add(transformRotateLeanPreferred);
+        rotationTransforms.add(transformRotateTwistPreferred);
+
         setBedCentreOffsetTransform();
 
-        getTransforms().addAll(transformSnapToGroundYAdjust, transformMoveToPreferred,
-                               transformMoveToCentre, transformBedCentre,
-                               transformRotateYPreferred, transformRotateSnapToGround);
-        meshGroup.getTransforms().addAll(transformScalePreferred);
+        /**
+         * Rotations (which are all around the centre of the model) must be
+         * applied before any translations.
+         */
+        getTransforms().addAll(transformDropToBedYAdjust,
+                transformMoveToPreferred,
+                transformBedCentre,
+                transformRotateTurnPreferred,
+                transformRotateLeanPreferred,
+                transformRotateTwistPreferred
+        );
 
-        originalModelBounds = calculateBounds();
+        if (meshView != null)
+        {
+            meshView.getTransforms().addAll(transformScalePreferred);
+            HullComputer hullComputer = new HullComputer(meshView);
 
-        double centreXOffset = -originalModelBounds.getCentreX();
-        double centreYOffset = -originalModelBounds.getMaxY();
-        double centreZOffset = -originalModelBounds.getCentreZ();
+            hullComputer.setOnSucceeded(workerStateEvent ->
+            {
+                collisionShape = hullComputer.getValue();
+                for (CollisionShapeListener listener : collisionShapeListeners)
+                {
+                    listener.collisionShapeAvailable(this);
+                }
+            });
 
-        transformMoveToCentre.setX(centreXOffset);
-        transformMoveToCentre.setY(centreYOffset);
-        transformMoveToCentre.setZ(centreZOffset);
+            Lookup.getTaskExecutor().runTaskAsDaemon(hullComputer);
+        }
 
-        transformRotateYPreferred.setPivotX(originalModelBounds.getCentreX());
-        transformRotateYPreferred.setPivotY(originalModelBounds.getCentreY());
-        transformRotateYPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        updateOriginalModelBounds();
 
-        transformMoveToPreferred.setX(0);
-        transformMoveToPreferred.setY(0);
-        transformMoveToPreferred.setZ(0);
-
-        lastTransformedBounds = calculateBoundsInParent();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
-
+        notifyScreenExtentsChange();
     }
 
-    private void initialise(String name)
+    public void updateOriginalModelBounds()
     {
+        originalModelBounds = calculateBoundsInLocal();
+        setScalePivotToCentreOfModel();
+        setRotationPivotsToCentreOfModel();
+    }
+
+    void setScalePivotToCentreOfModel()
+    {
+        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX()
+                + getBoundsInLocal().getWidth() / 2.0);
+        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY()
+                + getBoundsInLocal().getHeight() / 2.0);
+        transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ()
+                + getBoundsInLocal().getDepth() / 2.0);
+    }
+
+    void setRotationPivotsToCentreOfModel()
+    {
+        transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
+
+        transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
+
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
+    }
+
+    public void moveToCentre()
+    {
+        translateTo(bedCentreOffsetX, bedCentreOffsetZ);
+
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+    }
+
+    protected void initialise(File modelFile)
+    {
+        this.modelFile = modelFile;
+        modelId = nextModelId;
+        nextModelId += 1;
+
         shapeChangeListeners = new ArrayList<>();
+        screenExtentsChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
 
-        modelName = new SimpleStringProperty(name);
-        selectedGCodeLine = new SimpleIntegerProperty(0);
-        linesOfGCode = new SimpleIntegerProperty(0);
-        currentLayer = new SimpleIntegerProperty(0);
-        numberOfLayers = new SimpleIntegerProperty(0);
-        maxLayerVisible = new SimpleIntegerProperty(0);
-        minLayerVisible = new SimpleIntegerProperty(0);
+        if (modelFile != null)
+        {
+            modelName = new SimpleStringProperty(modelFile.getName());
+            this.setId(modelFile.getName() + Integer.toString(modelId));
+        } else
+        {
+            modelName = new SimpleStringProperty("group " + modelId);
+            this.setId("group " + modelId);
+        }
 
-        preferredScale = new SimpleDoubleProperty(1);
-        preferredRotationY = new SimpleDoubleProperty(0);
+        preferredXScale = new SimpleDoubleProperty(1);
+        preferredYScale = new SimpleDoubleProperty(1);
+        preferredZScale = new SimpleDoubleProperty(1);
+        preferredRotationLean = new SimpleDoubleProperty(0);
+        preferredRotationTwist = new SimpleDoubleProperty(0);
+        preferredRotationTurn = new SimpleDoubleProperty(0);
+        rotationTransforms = new ArrayList<>();
+        collisionShapeListeners = new ArrayList<>();
+    }
 
-        selectedMarkers = new HashSet<>();
+    void clearBedTransform()
+    {
+        updateLastTransformedBoundsInParentForTranslateByX(-bedCentreOffsetX);
+        updateLastTransformedBoundsInParentForTranslateByZ(-bedCentreOffsetZ);
+        transformBedCentre.setX(0);
+        transformBedCentre.setY(0);
+        transformBedCentre.setZ(0);
+    }
 
-        this.setId(name);
+    private Translate currenttransformBedCentre;
+
+    double currentDropY;
+
+    public void saveAndClearDropToBedYTransform()
+    {
+        currentDropY = transformDropToBedYAdjust.getY();
+        transformDropToBedYAdjust.setY(0);
+    }
+
+    public void restoreDropToBedYTransform()
+    {
+        transformDropToBedYAdjust.setY(currentDropY);
+    }
+
+    public void saveAndClearBedTransform()
+    {
+        currenttransformBedCentre = transformBedCentre.clone();
+        transformBedCentre.setX(0);
+        transformBedCentre.setY(0);
+        transformBedCentre.setZ(0);
+    }
+
+    public void restoreBedTransform()
+    {
+        transformBedCentre.setX(currenttransformBedCentre.getX());
+        transformBedCentre.setY(currenttransformBedCentre.getY());
+        transformBedCentre.setZ(currenttransformBedCentre.getZ());
     }
 
     /**
-     * Set transformBedCentre according to the position of the centre of the bed.
+     * Set transformBedCentre according to the position of the centre of the
+     * bed.
      */
-    private void setBedCentreOffsetTransform()
+    public void setBedCentreOffsetTransform()
     {
         bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX();
         bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY();
@@ -282,6 +412,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
+        updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
+        updateLastTransformedBoundsInParentForTranslateByZ(bedCentreOffsetZ);
     }
 
     /**
@@ -292,41 +424,81 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public ModelContainer makeCopy()
     {
         MeshView newMeshView = new MeshView();
-
-        newMeshView.setMesh(this.getMeshView().getMesh());
+        newMeshView.setMesh(meshView.getMesh());
         newMeshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
         newMeshView.setCullFace(CullFace.BACK);
-        newMeshView.setId(this.getMeshView().getId());
+        newMeshView.setId(meshView.getId());
 
-        ModelContainer copy = new ModelContainer(this.modelName.get(), newMeshView);
-        copy.setScale(this.getScale());
-        copy.setRotationY(this.getRotationY());
-        copy.setSnapFaceIndex(snapFaceIndex);
+        ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
+        copy.setUseExtruder0(associateWithExtruderNumber.get() == 0);
+        copy.setState(this.getState());
+        copy.recalculateScreenExtents();
         return copy;
     }
 
-    /**
-     *
-     * @param xMove
-     * @param zMove
-     */
     public void translateBy(double xMove, double zMove)
     {
-
-        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
-        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + zMove);
-
-        updateLastTransformedBoundsForTranslateByX(xMove);
-        updateLastTransformedBoundsForTranslateByZ(zMove);
-
-        keepOnBedXZ();
-        checkOffBed();
-
+        translateBy(xMove, 0, zMove);
     }
 
-    public ModelBounds getTransformedBounds()
+    public void translateBy(double xMove, double yMove, double zMove)
     {
-        return lastTransformedBounds;
+        Point3D localPoint = new Point3D(xMove, yMove, zMove);
+
+        List<ModelContainer> useMyTransforms = new ArrayList<>();
+
+        Node currentNode = this;
+        while (currentNode != bed
+                && currentNode.getParent() != null)
+        {
+            Parent parent = currentNode.getParent();
+            if (parent instanceof ModelContainer)
+            {
+                useMyTransforms.add((ModelContainer) parent);
+            } else if (parent instanceof ModelGroup)
+            {
+                useMyTransforms.add((ModelGroup) parent);
+            }
+
+            currentNode = parent;
+        }
+
+        for (int containerIndex = useMyTransforms.size() - 1; containerIndex >= 0; containerIndex--)
+        {
+            List<Transform> parentTransforms = useMyTransforms.get(containerIndex).getRotationTransforms();
+            try
+            {
+                Transform concatenatedTransforms = parentTransforms.get(2).createInverse()
+                        .createConcatenation(parentTransforms.get(1).createInverse()
+                                .createConcatenation(parentTransforms.get(0).createInverse()));
+                localPoint = concatenatedTransforms.deltaTransform(localPoint);
+            } catch (NonInvertibleTransformException ex)
+            {
+                steno.error("Couldn't invert rotation transform");
+            }
+        }
+
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + localPoint.getX());
+        transformMoveToPreferred.setY(transformMoveToPreferred.getY() + localPoint.getY());
+        transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + localPoint.getZ());
+
+        updateLastTransformedBoundsInParentForTranslateByX(localPoint.getX());
+        updateLastTransformedBoundsInParentForTranslateByY(localPoint.getY());
+        updateLastTransformedBoundsInParentForTranslateByZ(localPoint.getZ());
+
+        checkOffBed();
+
+//        keepOnBedXZ();
+    }
+
+    public double getMoveToPreferredX()
+    {
+        return transformMoveToPreferred.getX();
+    }
+
+    public double getMoveToPreferredZ()
+    {
+        return transformMoveToPreferred.getZ();
     }
 
     public ModelBounds getLocalBounds()
@@ -335,66 +507,64 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     *
-     * @param xPosition
-     * @param zPosition
+     * N.BÃ¯Â¼Å½It only works for top level objects ieÃ¯Â¼Å½top level groups or
+     * ungrouped models.
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
-        double newXPosition = xPosition - bedCentreOffsetX + getTransformedBounds().getWidth() / 2.0;
-        double newZPosition = zPosition - bedCentreOffsetZ + getTransformedBounds().getHeight()
-            / 2.0;
+        double newXPosition = xPosition - bedCentreOffsetX
+                + lastTransformedBoundsInParent.getWidth() / 2.0;
+        double newZPosition = zPosition - bedCentreOffsetZ
+                + lastTransformedBoundsInParent.getHeight() / 2.0;
         double deltaXPosition = newXPosition - transformMoveToPreferred.getX();
         double deltaZPosition = newZPosition - transformMoveToPreferred.getZ();
-        transformMoveToPreferred.setX(newXPosition);
-        transformMoveToPreferred.setZ(newZPosition);
-        updateLastTransformedBoundsForTranslateByX(deltaXPosition);
-        updateLastTransformedBoundsForTranslateByZ(deltaZPosition);
-        checkOffBed();
-        notifyShapeChange();
+        translateBy(deltaXPosition, deltaZPosition);
     }
 
     /**
-     * This method checks if the model is off the print bed and if so it adjusts the
-     * transformMoveToPreferred to bring it back to the nearest edge of the bed.
+     * This method checks if the model is off the print bed and if so it adjusts
+     * the transformMoveToPreferred to bring it back to the nearest edge of the
+     * bed. N.B. It only works for top level objects i.e. top level groups or
+     * ungrouped models.
      */
     private void keepOnBedXZ()
     {
         double deltaX = 0;
 
         double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0
-            + 1;
+                + 1;
         double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
-            - 1;
-        if (getTransformedBounds().getMinX() < minBedX)
+                - 1;
+        if (lastTransformedBoundsInParent.getMinX() < minBedX)
         {
-            deltaX = -(getTransformedBounds().getMinX() - minBedX);
+            deltaX = -(lastTransformedBoundsInParent.getMinX() - minBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        } else if (getTransformedBounds().getMaxX() > maxBedX)
+        } else if (lastTransformedBoundsInParent.getMaxX() > maxBedX)
         {
-            deltaX = -(getTransformedBounds().getMaxX() - maxBedX);
+            deltaX = -(lastTransformedBoundsInParent.getMaxX() - maxBedX);
             transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
         }
-        updateLastTransformedBoundsForTranslateByX(deltaX);
+        updateLastTransformedBoundsInParentForTranslateByX(deltaX);
 
         double deltaZ = 0;
         double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0
-            + 1;
+                + 1;
         double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
-            - 1;
-        if (getTransformedBounds().getMinZ() < minBedZ)
+                - 1;
+        if (lastTransformedBoundsInParent.getMinZ() < minBedZ)
         {
-            deltaZ = -(getTransformedBounds().getMinZ() - minBedZ);
+            deltaZ = -(lastTransformedBoundsInParent.getMinZ() - minBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        } else if (getTransformedBounds().getMaxZ() > maxBedZ)
+        } else if (lastTransformedBoundsInParent.getMaxZ() > maxBedZ)
         {
-            deltaZ = -(getTransformedBounds().getMaxZ() - maxBedZ);
+            deltaZ = -(lastTransformedBoundsInParent.getMaxZ() - maxBedZ);
             transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
         }
-        updateLastTransformedBoundsForTranslateByZ(deltaZ);
+        updateLastTransformedBoundsInParentForTranslateByZ(deltaZ);
 
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
@@ -404,23 +574,14 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         translateXTo(xPosition);
         translateZTo(zPosition);
-
-        checkOffBed();
-
     }
 
-    /**
-     *
-     */
     public void centreObjectOnBed()
     {
         transformMoveToPreferred.setX(0);
         transformMoveToPreferred.setZ(0);
     }
 
-    /**
-     *
-     */
     public void shrinkToFitBed()
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
@@ -433,7 +594,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double relativeYSize = printableBoundingBox.getHeight() / -printVolumeBounds.getHeight();
         double relativeZSize = printableBoundingBox.getDepth() / printVolumeBounds.getDepth();
         steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize + " Z "
-            + relativeZSize);
+                + relativeZSize);
 
         if (relativeXSize > relativeYSize && relativeXSize > relativeZSize)
         {
@@ -459,160 +620,291 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         if (scaling != 1.0f)
         {
-            setScale(scaling);
+            setXScale(scaling);
+            setYScale(scaling);
+            setZScale(scaling);
         }
+
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
     }
 
-    /**
-     *
-     * @param hasCollided
-     */
     public void setCollision(boolean hasCollided)
     {
         this.isCollided = hasCollided;
-        updateMaterial();
     }
 
-    private void updateMaterial()
-    {
-        MeshView meshView = getMeshView();
-        if (meshView != null)
-        {
-            if (isOffBed.get())
-            {
-                meshView.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
-            } else if (isCollided)
-            {
-                meshView.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
-            } else
-            {
-                meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-            }
-        } else
-        {
-            for (Node node : ((Group) (meshGroup.getChildrenUnmodifiable().get(0))).
-                getChildrenUnmodifiable())
-            {
-                if (node instanceof MeshView)
-                {
-                    if (isOffBed.get())
-                    {
-                        ((MeshView) node).setMaterial(ApplicationMaterials.getOffBedModelMaterial());
-                    } else if (isCollided)
-                    {
-                        ((MeshView) node).setMaterial(
-                            ApplicationMaterials.getCollidedModelMaterial());
-                    } else
-                    {
-                        ((MeshView) node).
-                            setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     *
-     * @return
-     */
     public boolean isCollided()
     {
         return isCollided;
     }
 
-    /**
-     *
-     * @param modelName
-     */
     public void setModelName(String modelName)
     {
         this.modelName.set(modelName);
     }
 
-    /**
-     *
-     * @return
-     */
     public String getModelName()
     {
         return modelName.get();
     }
 
-    public void setSnapFaceIndex(int snapFaceIndex)
-    {
-        this.snapFaceIndex = snapFaceIndex;
-        if (snapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
-        {
-            Vector3D faceNormal = getFaceNormal(snapFaceIndex);
-            Vector3D downVector = new Vector3D(0, 1, 0);
-
-            Rotation result = new Rotation(faceNormal, downVector);
-            Vector3D axis = result.getAxis();
-            double angleDegrees = result.getAngle() * RAD_TO_DEG;
-
-            transformRotateSnapToGround.setAxis(new Point3D(axis.getX(), axis.getY(), axis.getZ()));
-            transformRotateSnapToGround.setAngle(angleDegrees);
-            transformRotateSnapToGround.setPivotX(originalModelBounds.getCentreX());
-            transformRotateSnapToGround.setPivotY(originalModelBounds.getCentreY());
-            transformRotateSnapToGround.setPivotZ(originalModelBounds.getCentreZ());
-
-            dropToBedAndUpdateLastTransformedBounds();
-        }
-    }
-
     /**
-     *
-     * @param scaleFactor
-     */
-    public void setScale(double scaleFactor)
-    {
-        preferredScale.set(scaleFactor);
-        transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
-        transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
-        transformScalePreferred.setPivotZ(originalModelBounds.getCentreZ());
-        transformScalePreferred.setX(preferredScale.get());
-        transformScalePreferred.setY(preferredScale.get());
-        transformScalePreferred.setZ(preferredScale.get());
-
-        dropToBedAndUpdateLastTransformedBounds();
-        checkOffBed();
-        notifyShapeChange();
-    }
-
-    /**
+     * Return a set of all descendent ModelContainers (and include this one)
+     * that have MeshView children.
      *
      * @return
      */
-    public double getScale()
+    public Set<ModelContainer> getModelsHoldingMeshViews()
     {
-        return preferredScale.get();
+        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
+        modelsHoldingMeshViews.add(this);
+        return modelsHoldingMeshViews;
     }
 
     /**
-     *
-     * @param value
+     * Return a set of all descendent ModelContainers (and include this one)
+     * that have ModelContainer children.
      */
-    public void setRotationY(double value)
+    public Collection<? extends ModelContainer> getModelsHoldingModels()
     {
-        preferredRotationY.set(value);
-        transformRotateYPreferred.setAngle(value);
+        Set<ModelContainer> modelsHoldingModels = new HashSet<>();
+        return modelsHoldingModels;
+    }
 
-        dropToBedAndUpdateLastTransformedBounds();
+    public void addGroupStructure(Map<Integer, Set<Integer>> groupStructure)
+    {
+    }
+
+    /**
+     * Rotate the model in Lean and Twist so that the chosen face is pointing
+     * down (ie aligned with the Y axis). Lean is easy to get, and we then use
+     * an optimiser to establish Twist.
+     *
+     * @param snapFaceIndex
+     */
+    public void snapToGround(MeshView meshView, int snapFaceIndex)
+    {
+        Vector3D faceNormal = getFaceNormal(meshView, snapFaceIndex);
+        Vector3D downVector = new Vector3D(0, 1, 0);
+
+        Rotation requiredRotation = new Rotation(faceNormal, downVector);
+
+        /**
+         * get angle that Y is moved through, to give RL (lean rotation).
+         */
+        Vector3D yPrime = requiredRotation.applyTo(new Vector3D(0, -1, 0));
+        Vector3D Y = new Vector3D(0, -1, 0);
+        double leanAngle = Vector3D.angle(yPrime, Y);
+        setRotationLean(Math.toDegrees(leanAngle));
+
+        if (Math.abs(leanAngle - 180) < 0.02)
+        {
+            // no twist required, we can stop here
+            return;
+        }
+
+        // Calculate twist using an optimizer (typically needs less than 30 iterations in
+        // this example)
+        long start = System.nanoTime();
+        BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
+        UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(70),
+                new UnivariateObjectiveFunction(
+                        new ApplyTwist(meshView,
+                                snapFaceIndex)),
+                GoalType.MINIMIZE,
+                new SearchInterval(0, 360));
+        steno.debug("optimiser took " + (int) ((System.nanoTime() - start) * 10e-6) + " ms"
+                + " and "
+                + optimizer.getEvaluations() + " evaluations");
+        setRotationTwist(pair.getPoint());
+
+        dropToBed();
+    }
+
+    private static Point3D toPoint3D(Vector3D vector)
+    {
+        return new Point3D(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    /**
+     * Return the maximum and minimum y values of the coordinates of this model
+     * in bed coords.
+     */
+    public List<Float> getMaxAndMinYInBedCoords()
+    {
+        List<Float> maxMin = new ArrayList<>();
+        ModelBounds modelBounds = calculateBoundsInBedCoordinateSystem();
+        maxMin.add((float) modelBounds.getMaxY());
+        maxMin.add((float) modelBounds.getMinY());
+        return maxMin;
+    }
+
+    public void setBedReference(Group bed)
+    {
+        this.bed = bed;
+
+    }
+
+    private class ApplyTwist implements UnivariateFunction
+    {
+
+        final Vector3D faceNormal;
+        final Vector3D faceCentre;
+        Transform localToBedTransform;
+        Node bed;
+
+        public ApplyTwist(MeshView meshView, int faceIndex)
+        {
+            faceNormal = getFaceNormal(meshView, faceIndex);
+            faceCentre = getFaceCentre(meshView, faceIndex);
+            bed = getRootModelContainer(meshView).getParent();
+        }
+
+        Point3D getRotatedFaceNormal()
+        {
+
+            Point3D rotatedFaceCentre = bed.sceneToLocal(localToScene(toPoint3D(faceCentre)));
+
+            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(localToScene(toPoint3D(
+                    faceCentre.add(faceNormal))));
+
+            Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
+            return rotatedFaceNormal;
+        }
+
+        @Override
+        public double value(double twistDegrees)
+        {
+            // This value function returns how far off the resultant rotated face normal is
+            // from the Y axis. The optimiser tries to minimise this function (i.e. align
+            // rotated face normal with Y).
+            setRotationTwist(twistDegrees);
+            Point3D rotatedFaceNormal = getRotatedFaceNormal();
+            double deviation = rotatedFaceNormal.angle(Y_AXIS);
+            return deviation;
+        }
+    }
+
+    private void updateScaleTransform()
+    {
+        dropToBed();
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
-    public double getRotationY()
+    public void setXScale(double scaleFactor)
     {
-        return transformRotateYPreferred.getAngle();
+        preferredXScale.set(scaleFactor);
+        transformScalePreferred.setX(scaleFactor);
+        updateScaleTransform();
+    }
+
+    public void setYScale(double scaleFactor)
+    {
+        preferredYScale.set(scaleFactor);
+        transformScalePreferred.setY(scaleFactor);
+        updateScaleTransform();
+    }
+
+    public void setZScale(double scaleFactor)
+    {
+        preferredZScale.set(scaleFactor);
+        transformScalePreferred.setZ(scaleFactor);
+        updateScaleTransform();
     }
 
     /**
-     *
-     * @param selected
+     * We present the rotations to the user as Lean - Twist - Turn.
      */
+    private void updateTransformsFromLeanTwistTurnAngles()
+    {
+        // Twist - around object Y axis
+        transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateTwistPreferred.setAngle(preferredRotationTwist.get());
+        transformRotateTwistPreferred.setAxis(Y_AXIS);
+
+        // Lean - around Z axis
+        transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateLeanPreferred.setAngle(preferredRotationLean.get());
+        transformRotateLeanPreferred.setAxis(Z_AXIS);
+
+        // Turn - around bed Y axis
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
+        transformRotateTurnPreferred.setAxis(Y_AXIS);
+    }
+
+    public double getXScale()
+    {
+        return preferredXScale.get();
+    }
+
+    public double getYScale()
+    {
+        return preferredYScale.get();
+    }
+
+    public double getZScale()
+    {
+        return preferredZScale.get();
+    }
+
+    public void setRotationTwist(double value)
+    {
+        preferredRotationTwist.set(value);
+        updateTransformsFromLeanTwistTurnAngles();
+
+        dropToBed();
+        checkOffBed();
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    public double getRotationTwist()
+    {
+        return preferredRotationTwist.get();
+    }
+
+    public void setRotationTurn(double value)
+    {
+        preferredRotationTurn.set(value);
+        updateTransformsFromLeanTwistTurnAngles();
+
+        dropToBed();
+        checkOffBed();
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    public double getRotationTurn()
+    {
+        return preferredRotationTurn.get();
+    }
+
+    public void setRotationLean(double value)
+    {
+        preferredRotationLean.set(value);
+        updateTransformsFromLeanTwistTurnAngles();
+
+        dropToBed();
+        checkOffBed();
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    public double getRotationLean()
+    {
+        return preferredRotationLean.get();
+    }
+
     public void setSelected(boolean selected)
     {
         if (selected)
@@ -621,370 +913,207 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             {
                 addSelectionHighlighter();
             }
-            showSelectedMarkers();
+            showSelectionHighlighter();
         } else
         {
-            hideSelectedMarkers();
+            hideSelectionHighlighter();
         }
         isSelected.set(selected);
     }
 
-    /**
-     *
-     * @return
-     */
     public boolean isSelected()
     {
         return isSelected.get();
     }
 
-    /**
-     *
-     * @return
-     */
     public BooleanProperty isSelectedProperty()
     {
         return isSelected;
     }
 
     private void writeObject(ObjectOutputStream out)
-        throws IOException
+            throws IOException
     {
         out.writeUTF(modelName.get());
 
-        out.writeObject(modelContentsType);
+        // unused
+        out.writeInt(0);
 
-        if (modelContentsType == ModelContentsEnumeration.MESH)
-        {
-            out.writeInt(numberOfMeshes);
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
 
-            for (Node node : meshGroup.getChildren())
-            {
-                if (node instanceof MeshView)
-                {
-                    MeshView mesh = (MeshView) node;
-                    TriangleMesh triMesh = (TriangleMesh) mesh.getMesh();
+        int[] smoothingGroups = triMesh.getFaceSmoothingGroups().toArray(null);
+        out.writeObject(smoothingGroups);
 
-                    int[] smoothingGroups = triMesh.getFaceSmoothingGroups().toArray(null);
-                    out.writeObject(smoothingGroups);
+        int[] faces = triMesh.getFaces().toArray(null);
+        out.writeObject(faces);
 
-                    int[] faces = triMesh.getFaces().toArray(null);
-                    out.writeObject(faces);
-
-                    float[] points = triMesh.getPoints().toArray(null);
-                    out.writeObject(points);
-                }
-            }
-        } else
-        {
-//            out.writeInt(getChildren().size());
-//            for (Node node : getChildren())
-//            {
-//                out.writeObject(node);
-//            }
-        }
+        float[] points = triMesh.getPoints().toArray(null);
+        out.writeObject(points);
 
         out.writeDouble(transformMoveToPreferred.getX());
         out.writeDouble(transformMoveToPreferred.getZ());
-        out.writeDouble(getScale());
-        out.writeDouble(getRotationY());
-        out.writeInt(snapFaceIndex);
+        out.writeDouble(getXScale());
+        out.writeDouble(getRotationTwist());
+        // was not used (was snapFaceIndex) - now modelId
+        out.writeInt(modelId);
+        out.writeInt(associateWithExtruderNumber.get());
+        out.writeDouble(getYScale());
+        out.writeDouble(getZScale());
+        out.writeDouble(getRotationLean());
+        out.writeDouble(getRotationTurn());
+
+        out.writeDouble(transformDropToBedYAdjust.getY());
+    }
+
+    private MeshView readContainer_1_03_00_Contents(ObjectInputStream in) throws IOException, ClassNotFoundException
+    {
+        ModelContentsEnumeration modelContentsType = (ModelContentsEnumeration) in.readObject();
+
+        int numberOfMeshes = in.readInt();
+
+        int[] smoothingGroups = (int[]) in.readObject();
+        int[] faces = (int[]) in.readObject();
+        float[] points = (float[]) in.readObject();
+
+        TriangleMesh triMesh = new TriangleMesh();
+
+        FloatArrayList texCoords = new FloatArrayList();
+        texCoords.add(0f);
+        texCoords.add(0f);
+
+        triMesh.getPoints().addAll(points);
+        triMesh.getTexCoords().addAll(texCoords.toFloatArray());
+        triMesh.getFaces().addAll(faces);
+        triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+
+        MeshView newMesh = new MeshView(triMesh);
+        newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+        newMesh.setCullFace(CullFace.BACK);
+        newMesh.setId(modelName + "_mesh");
+
+        return newMesh;
     }
 
     private void readObject(ObjectInputStream in)
-        throws IOException, ClassNotFoundException
+            throws IOException, ClassNotFoundException
     {
+        associateWithExtruderNumber = new SimpleIntegerProperty(0);
+
         String modelName = in.readUTF();
-        meshGroup = new Group();
-        getChildren().add(meshGroup);
 
-        modelContentsType = (ModelContentsEnumeration) in.readObject();
-
-        if (modelContentsType == ModelContentsEnumeration.MESH)
+        try
         {
-            numberOfMeshes = in.readInt();
+            int numberOfMeshesNowUnused = in.readInt();
 
-            for (int i = 0; i < numberOfMeshes; i++)
-            {
-                int[] smoothingGroups = (int[]) in.readObject();
-                int[] faces = (int[]) in.readObject();
-                float[] points = (float[]) in.readObject();
+            int[] smoothingGroups = (int[]) in.readObject();
+            int[] faces = (int[]) in.readObject();
+            float[] points = (float[]) in.readObject();
 
-                TriangleMesh triMesh = new TriangleMesh();
+            TriangleMesh triMesh = new TriangleMesh();
 
-                FloatArrayList texCoords = new FloatArrayList();
-                texCoords.add(0f);
-                texCoords.add(0f);
+            FloatArrayList texCoords = new FloatArrayList();
+            texCoords.add(0f);
+            texCoords.add(0f);
 
-                triMesh.getPoints().addAll(points);
-                triMesh.getTexCoords().addAll(texCoords.toFloatArray());
-                triMesh.getFaces().addAll(faces);
-                triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
+            triMesh.getPoints().addAll(points);
+            triMesh.getTexCoords().addAll(texCoords.toFloatArray());
+            triMesh.getFaces().addAll(faces);
+            triMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
 
-                MeshView newMesh = new MeshView(triMesh);
-                newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
-                newMesh.setCullFace(CullFace.BACK);
-                newMesh.setId(modelName + "_mesh");
-
-                meshGroup.getChildren().add(newMesh);
-            }
-
-        } else
+            meshView = new MeshView(triMesh);
+            meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+            meshView.setCullFace(CullFace.BACK);
+            meshView.setId(modelName + "_mesh");
+        } catch (IOException ex)
         {
-//            int numNodes = in.readInt();
-//            
-//            for (int i = 0; i < numNodes; i++)
-//            {
-//                Node node = (Node)in.readObject();
-//                getChildren().add(node);
-//            }
+            meshView = readContainer_1_03_00_Contents(in);
         }
-//        this.getTransforms().clear();
-//        this.getTransforms().addAll(new Xform(RotateOrder.XYZ).getTransforms());
+        
+        getChildren().add(meshView);
 
-        initialise(modelName);
+        initialise(new File(modelName));
 
         double storedX = in.readDouble();
+        double storedY = 0;
         double storedZ = in.readDouble();
-        double storedScale = in.readDouble();
-        double storedRotationY = in.readDouble();
-        int storedSnapFaceIndex = in.readInt();
+        double storedScaleX = in.readDouble();
+        double storedRotationTwist = in.readDouble();
+        int storedSnapFaceIndexLegacy = in.readInt();
+        int storedModelId = storedSnapFaceIndexLegacy;
+
+        double storedScaleY = storedScaleX;
+        double storedScaleZ = storedScaleX;
+        double storedRotationLean = 0d;
+        double storedRotationTurn = 0d;
+        boolean convertSnapFace = false;
+        if (in.available() > 0)
+        {
+            // Introduced in version 1.??
+            associateWithExtruderNumber.set(in.readInt());
+            storedScaleY = in.readDouble();
+            storedScaleZ = in.readDouble();
+            storedRotationLean = in.readDouble();
+            storedRotationTurn = in.readDouble();
+            if (storedModelId > 0)
+            {
+                modelId = storedModelId;
+            }
+        } else
+        {
+            convertSnapFace = true;
+        }
+
+        if (in.available() > 0)
+        {
+            storedY = in.readDouble();
+        }
 
         initialiseTransforms();
 
         transformMoveToPreferred.setX(storedX);
         transformMoveToPreferred.setZ(storedZ);
-        setScale(storedScale);
-        setRotationY(storedRotationY);
-        if (storedSnapFaceIndex != SNAP_FACE_INDEX_NOT_SELECTED)
+        transformDropToBedYAdjust.setY(storedY);
+
+        preferredXScale.set(storedScaleX);
+        preferredYScale.set(storedScaleY);
+        preferredZScale.set(storedScaleZ);
+        preferredRotationLean.set(storedRotationLean);
+        preferredRotationTwist.set(storedRotationTwist);
+        preferredRotationTurn.set(storedRotationTurn);
+
+        transformScalePreferred.setX(storedScaleX);
+        transformScalePreferred.setY(storedScaleY);
+        transformScalePreferred.setZ(storedScaleZ);
+
+        updateTransformsFromLeanTwistTurnAngles();
+
+        if (convertSnapFace)
         {
-            snapToGround(storedSnapFaceIndex);
-        } else
-        {
-            snapFaceIndex = SNAP_FACE_INDEX_NOT_SELECTED;
+            snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
 
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     private void readObjectNoData()
-        throws ObjectStreamException
+            throws ObjectStreamException
     {
 
     }
 
-    /**
-     *
-     * @return
-     */
     public MeshView getMeshView()
     {
-        if (meshGroup.getChildrenUnmodifiable().get(0) instanceof MeshView)
-        {
-            return (MeshView) (meshGroup.getChildrenUnmodifiable().get(0));
-        } else
-        {
-            return null;
-        }
+        return meshView;
     }
 
-    /**
-     *
-     * @return
-     */
-    public ObservableList<Node> getMeshes()
+    public IntegerProperty getAssociateWithExtruderNumberProperty()
     {
-        if (modelContentsType == ModelContentsEnumeration.MESH)
-        {
-            return meshGroup.getChildren();
-        } else
-        {
-            return null;
-        }
+        return associateWithExtruderNumber;
     }
 
-    /**
-     *
-     * @return
-     */
-    public ModelContentsEnumeration getModelContentsType()
-    {
-        return modelContentsType;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public ObservableList<String> getGCodeLines()
-    {
-        return fileLines;
-    }
-
-    private void highlightGCodeLine(int lineNumber)
-    {
-        if (modelContentsType == ModelContentsEnumeration.GCODE)
-        {
-            if (lastSelectedPart != null)
-            {
-//                lastSelectedPart.getGcodeVisualRepresentation().setMaterial(ApplicationMaterials.getGCodeMaterial(lastSelectedPart.getMovementType(), false));
-            }
-
-            GCodeElement selectedPart = gcodeMeshData.getReferencedElements().get(lineNumber);
-
-            if (selectedPart != null)
-            {
-                Group parentLayer = (Group) selectedPart.getGcodeVisualRepresentation().getParent().
-                    getParent().getParent();
-                currentLayer.set(Integer.valueOf(parentLayer.getId()));
-//                selectedPart.getGcodeVisualRepresentation().setMaterial(ApplicationMaterials.getGCodeMaterial(selectedPart.getMovementType(), true));
-                lastSelectedPart = selectedPart;
-            }
-        }
-    }
-
-    /**
-     *
-     * @param lineNumber
-     */
-    public void selectGCodeLine(int lineNumber)
-    {
-        highlightGCodeLine(lineNumber);
-        setSelectedGCodeLine(lineNumber);
-    }
-
-    /**
-     *
-     * @param value
-     */
-    public void setSelectedGCodeLine(int value)
-    {
-        selectedGCodeLine.set(value);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public int getSelectedGCodeLine()
-    {
-        return selectedGCodeLine.get();
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty selectedGCodeLineProperty()
-    {
-        return selectedGCodeLine;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty linesOfGCodeProperty()
-    {
-        return linesOfGCode;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty minLayerVisibleProperty()
-    {
-        return minLayerVisible;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty maxLayerVisibleProperty()
-    {
-        return maxLayerVisible;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty currentLayerProperty()
-    {
-        return currentLayer;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public IntegerProperty numberOfLayersProperty()
-    {
-        return numberOfLayers;
-    }
-
-    /**
-     *
-     * @param visible
-     */
-    public void showTravel(boolean visible)
-    {
-        for (GCodeElement element : gcodeMeshData.getReferencedElements().values())
-        {
-            if (element.getMovementType() == MovementType.TRAVEL)
-            {
-                element.getGcodeVisualRepresentation().setVisible(visible);
-            }
-        }
-    }
-
-    /**
-     *
-     * @param visible
-     */
-    public void showSupport(boolean visible)
-    {
-        for (GCodeElement element : gcodeMeshData.getReferencedElements().values())
-        {
-            if (element.getMovementType() == MovementType.EXTRUDE_SUPPORT)
-            {
-                element.getGcodeVisualRepresentation().setVisible(visible);
-            }
-        }
-    }
-
-    private void setMinVisibleLayer(int layerNumber)
-    {
-        for (int i = 0; i < layerNumber; i++)
-        {
-            gcodeMeshData.getReferencedArrays().get(i).setVisible(false);
-        }
-
-        for (int i = layerNumber; i < maxLayerVisible.get(); i++)
-        {
-            gcodeMeshData.getReferencedArrays().get(i).setVisible(true);
-        }
-    }
-
-    private void setMaxVisibleLayer(int layerNumber)
-    {
-        for (int i = maxLayerVisible.get(); i < gcodeMeshData.getReferencedArrays().size(); i++)
-        {
-            gcodeMeshData.getReferencedArrays().get(i).setVisible(false);
-        }
-
-        for (int i = minLayerVisible.get(); i < maxLayerVisible.get(); i++)
-        {
-            gcodeMeshData.getReferencedArrays().get(i).setVisible(true);
-        }
-    }
-
-    /**
-     *
-     * @param width
-     */
     public void resizeWidth(double width)
     {
         ModelBounds bounds = getLocalBounds();
@@ -992,14 +1121,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double originalWidth = bounds.getWidth();
 
         double newScale = width / originalWidth;
-        setScale(newScale);
+        setXScale(newScale);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
-    /**
-     *
-     * @param height
-     */
     public void resizeHeight(double height)
     {
         ModelBounds bounds = getLocalBounds();
@@ -1008,14 +1134,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double newScale = height / currentHeight;
 
-        setScale(newScale);
+        setYScale(newScale);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
-    /**
-     *
-     * @param depth
-     */
     public void resizeDepth(double depth)
     {
 
@@ -1025,17 +1148,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         double newScale = depth / currentDepth;
 
-        setScale(newScale);
+        setZScale(newScale);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
-     *
-     * @param x
+     * N.B. It only works for top level objects i.e. top level groups or
+     * ungrouped models.
      */
     public void translateXTo(double xPosition)
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -1054,18 +1178,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
-        updateLastTransformedBoundsForTranslateByX(requiredTranslation);
+        updateLastTransformedBoundsInParentForTranslateByX(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     /**
-     *
+     * N.B. It only works for top level objects i.e. top level groups or
+     * ungrouped models.
      */
     public void translateZTo(double zPosition)
-
     {
-        ModelBounds bounds = getTransformedBounds();
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
@@ -1084,66 +1209,91 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double requiredTranslation = finalZPosition - currentZPosition;
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
 
-        updateLastTransformedBoundsForTranslateByZ(requiredTranslation);
+        updateLastTransformedBoundsInParentForTranslateByZ(requiredTranslation);
         checkOffBed();
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
-    private void checkOffBed()
+    public double getYAdjust()
     {
-        ModelBounds bounds = getTransformedBounds();
+        return transformDropToBedYAdjust.getY();
+    }
+
+    /**
+     * This method is used during an ungroup to blend the group's transform into
+     * this one, thereby keeping this model in the same place.
+     */
+    public void applyGroupTransformToThis(ModelGroup modelGroup)
+    {
+        double scaleFactor = getXScale() * modelGroup.getXScale();
+        preferredXScale.set(scaleFactor);
+        transformScalePreferred.setX(scaleFactor);
+
+        scaleFactor = getYScale() * modelGroup.getYScale();
+        preferredYScale.set(scaleFactor);
+        transformScalePreferred.setY(scaleFactor);
+
+        scaleFactor = getZScale() * modelGroup.getZScale();
+        preferredZScale.set(scaleFactor);
+        transformScalePreferred.setZ(scaleFactor);
+
+        // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
+        // from centre of group and up/down, which needs to be taken into account
+        translateBy(modelGroup.getMoveToPreferredX(),
+                modelGroup.getMoveToPreferredZ());
+
+        transformDropToBedYAdjust.setY(modelGroup.getYAdjust());
+
+    }
+
+    /**
+     * Check if this object is off the bed. N.B. It only works for top level
+     * objects i.e. top level groups or ungrouped models.
+     */
+    public void checkOffBed()
+    {
+        ModelBounds bounds = lastTransformedBoundsInParent;
 
         double epsilon = 0.001;
 
         if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
-            || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
-                                       epsilon) == MathUtils.MORE_THAN
-            || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
-            || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
-                                       epsilon) == MathUtils.MORE_THAN
-            || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
-            || MathUtils.compareDouble(bounds.getMinY(), printBed.getPrintVolumeMinimums().getY(),
-                                       epsilon) == MathUtils.LESS_THAN)
+                || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
+                        epsilon) == MathUtils.MORE_THAN
+                || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
+                || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
+                        epsilon) == MathUtils.MORE_THAN
+                || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
+                || MathUtils.compareDouble(bounds.getMinY(), printBed.getPrintVolumeMinimums().getY(),
+                        epsilon) == MathUtils.LESS_THAN)
         {
             isOffBed.set(true);
         } else
         {
             isOffBed.set(false);
         }
-
-        updateMaterial();
     }
 
-    /**
-     *
-     * @return
-     */
     public BooleanProperty isOffBedProperty()
     {
         return isOffBed;
     }
 
-    public void deltaRotateAroundY(double newValue)
-    {
-        transformRotateYPreferred.setAngle(transformRotateYPreferred.getAngle() + newValue);
-        lastTransformedBounds = calculateBoundsInParent();
-    }
-
     /**
-     * Calculate max/min X,Y,Z before the transforms have been applied (ie the original model
-     * dimensions before any transforms).
+     * Calculate max/min X,Y,Z before the transforms have been applied (ie the
+     * original model dimensions before any transforms).
      */
-    private ModelBounds calculateBounds()
+    ModelBounds calculateBoundsInLocal()
     {
-        TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
-        ObservableFloatArray originalPoints = mesh.getPoints();
-
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE;
         double maxY = -Double.MAX_VALUE;
         double maxZ = -Double.MAX_VALUE;
+
+        TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
+        ObservableFloatArray originalPoints = mesh.getPoints();
 
         for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
         {
@@ -1169,18 +1319,68 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreZ = minZ + (newdepth / 2);
 
         return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                               newheight, newdepth, newcentreX, newcentreY,
-                               newcentreZ);
+                newheight, newdepth, newcentreX, newcentreY,
+                newcentreZ);
+    }
+
+    public Set<MeshView> descendentMeshViews()
+    {
+        Set<MeshView> descendentMeshViews = new HashSet<>();
+        descendentMeshViews.add(meshView);
+
+        return descendentMeshViews;
+    }
+
+    public static ModelContainer getRootModelContainer(MeshView meshView)
+    {
+        return (ModelContainer) ((ModelContainer) meshView.getParent()).getRootModelContainer();
+    }
+
+    public ModelContainer getRootModelContainer()
+    {
+        ModelContainer parentModelContainer = this;
+
+        while (parentModelContainer.getParentModelContainer() instanceof ModelContainer)
+        {
+            parentModelContainer = parentModelContainer.getParentModelContainer();
+        }
+        return (ModelContainer) parentModelContainer;
     }
 
     /**
-     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the parent node).
+     * Return a BedToLocal converter for this ModelContainer. N.B. Before using
+     * this the bed centre transform and dropToBed transform must be cleared,
+     * otherwise it does not work for the purposes intended.
      */
-    public ModelBounds calculateBoundsInParent()
+    public MeshCutter2.BedToLocalConverter getBedToLocalConverter()
     {
-        TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
-        ObservableFloatArray originalPoints = mesh.getPoints();
+        return new MeshCutter2.BedToLocalConverter()
+        {
 
+            @Override
+            public Point3D localToBed(Point3D point)
+            {
+                Point3D pointScene = localToScene(point);
+                Point3D pointBed = bed.sceneToLocal(pointScene);
+                return pointBed;
+            }
+
+            @Override
+            public Point3D bedToLocal(Point3D point)
+            {
+                Point3D pointScene = bed.localToScene(point);
+                return sceneToLocal(pointScene);
+            }
+        };
+
+    }
+
+    /**
+     * Calculate max/min X,Y,Z after all the transforms have been applied all
+     * the way to the bed coordinate system.
+     */
+    public ModelBounds calculateBoundsInBedCoordinateSystem()
+    {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double minZ = Double.MAX_VALUE;
@@ -1188,21 +1388,36 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double maxY = -Double.MAX_VALUE;
         double maxZ = -Double.MAX_VALUE;
 
-        for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+        for (Node meshViewNode : descendentMeshViews())
         {
-            float xPos = originalPoints.get(pointOffset);
-            float yPos = originalPoints.get(pointOffset + 1);
-            float zPos = originalPoints.get(pointOffset + 2);
+            MeshView meshView = (MeshView) meshViewNode;
 
-            Point3D pointInParent = localToParent(meshGroup.localToParent(xPos, yPos, zPos));
+            ModelContainer rootModelContainer = getRootModelContainer(meshView);
 
-            minX = Math.min(pointInParent.getX(), minX);
-            minY = Math.min(pointInParent.getY(), minY);
-            minZ = Math.min(pointInParent.getZ(), minZ);
+            TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
+            ObservableFloatArray originalPoints = mesh.getPoints();
 
-            maxX = Math.max(pointInParent.getX(), maxX);
-            maxY = Math.max(pointInParent.getY(), maxY);
-            maxZ = Math.max(pointInParent.getZ(), maxZ);
+            for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+            {
+                float xPos = originalPoints.get(pointOffset);
+                float yPos = originalPoints.get(pointOffset + 1);
+                float zPos = originalPoints.get(pointOffset + 2);
+
+                Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
+
+                Point3D pointInBed = rootModelContainer.localToParent(
+                        rootModelContainer.sceneToLocal(pointInScene));
+//                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is "
+//                    + pointInBed.toString());
+
+                minX = Math.min(pointInBed.getX(), minX);
+                minY = Math.min(pointInBed.getY(), minY);
+                minZ = Math.min(pointInBed.getZ(), minZ);
+
+                maxX = Math.max(pointInBed.getX(), maxX);
+                maxY = Math.max(pointInBed.getY(), maxY);
+                maxZ = Math.max(pointInBed.getZ(), maxZ);
+            }
         }
 
         double newwidth = maxX - minX;
@@ -1214,23 +1429,118 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreZ = minZ + (newdepth / 2);
 
         return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                               newheight, newdepth, newcentreX, newcentreY,
-                               newcentreZ);
+                newheight, newdepth, newcentreX, newcentreY,
+                newcentreZ);
     }
 
     /**
+     * Calculate max/min X,Y,Z after the transforms have been applied (ie in the
+     * parent node).
+     */
+    public ModelBounds calculateBoundsInParentCoordinateSystem()
+    {
+
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        ModelContainer parentModelContainer = getParentModelContainer();
+        if (parentModelContainer == null)
+        {
+            return calculateBoundsInBedCoordinateSystem();
+        }
+
+        for (Node meshViewNode : descendentMeshViews())
+        {
+            MeshView meshView = (MeshView) meshViewNode;
+
+            TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
+            ObservableFloatArray originalPoints = mesh.getPoints();
+
+            for (int pointOffset = 0; pointOffset < originalPoints.size(); pointOffset += 3)
+            {
+                float xPos = originalPoints.get(pointOffset);
+                float yPos = originalPoints.get(pointOffset + 1);
+                float zPos = originalPoints.get(pointOffset + 2);
+
+                Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
+                Point3D pointInParent = parentModelContainer.sceneToLocal(pointInScene);
+
+                minX = Math.min(pointInParent.getX(), minX);
+                minY = Math.min(pointInParent.getY(), minY);
+                minZ = Math.min(pointInParent.getZ(), minZ);
+
+                maxX = Math.max(pointInParent.getX(), maxX);
+                maxY = Math.max(pointInParent.getY(), maxY);
+                maxZ = Math.max(pointInParent.getZ(), maxZ);
+            }
+        }
+
+        double newwidth = maxX - minX;
+        double newdepth = maxZ - minZ;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+        double newcentreZ = minZ + (newdepth / 2);
+
+        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                newheight, newdepth, newcentreX, newcentreY,
+                newcentreZ);
+    }
+
+    /**
+     * Try to split into parts. If the ModelContainer is composed of more than
+     * one part then make a group of them.
+     */
+    public ModelContainer splitIntoParts()
+    {
+        Set<ModelContainer> parts = new HashSet<>();
+        ModelContainer.State state = getState();
+        String modelName = getModelName();
+
+        ModelContainer modelContainer = this;
+
+        List<TriangleMesh> subMeshes = MeshSeparator.separate((TriangleMesh) getMeshView().getMesh());
+        if (subMeshes.size() > 1)
+        {
+            int ix = 1;
+            for (TriangleMesh subMesh : subMeshes)
+            {
+                MeshView meshView = new MeshView(subMesh);
+                ModelContainer newModelContainer = new ModelContainer(
+                        getModelFile(), meshView);
+                newModelContainer.setState(state);
+                newModelContainer.associateWithExtruderNumber.set(associateWithExtruderNumber.get());
+                parts.add(newModelContainer);
+
+                newModelContainer.setModelName(modelName + " " + ix);
+
+                ix++;
+            }
+            modelContainer = new ModelGroup(parts);
+        }
+        return modelContainer;
+    }
+
+    /**
+     * THIS METHOD IS NOT CURRENTLY IN USE PROBABLY SHOULD BE BINNED IN FAVOUR
+     * OF AN APPROACH SIMILAR TO THE SPLIT FUNCTION
      *
      * @return
      */
     public ArrayList<ModelContainer> cutToSize()
     {
-        TriangleMesh mesh = (TriangleMesh) getMeshView().getMesh();
+        TriangleMesh mesh = (TriangleMesh) meshView.getMesh();
         ObservableFaceArray originalFaces = mesh.getFaces();
         ObservableFloatArray originalPoints = mesh.getPoints();
 
         double minPrintableY = printBed.getPrintVolumeMinimums().getY();
         int numberOfBins = (int) Math.
-            ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
+                ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
 
         ArrayList<ModelContainer> outputMeshes = new ArrayList<>();
 
@@ -1250,21 +1560,21 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             float y1Pos = originalPoints.get(vertex1Ref + 1);
             float z1Pos = originalPoints.get(vertex1Ref + 2);
             int vertex1Bin = (int) Math.floor((Math.abs(y1Pos) + originalModelBounds.getMaxY())
-                / -minPrintableY);
+                    / -minPrintableY);
 
             int vertex2Ref = originalFaces.get(triOffset + 2) * 3;
             float x2Pos = originalPoints.get(vertex2Ref);
             float y2Pos = originalPoints.get(vertex2Ref + 1);
             float z2Pos = originalPoints.get(vertex2Ref + 2);
             int vertex2Bin = (int) Math.floor((Math.abs(y2Pos) + originalModelBounds.getMaxY())
-                / -minPrintableY);
+                    / -minPrintableY);
 
             int vertex3Ref = originalFaces.get(triOffset + 4) * 3;
             float x3Pos = originalPoints.get(vertex3Ref);
             float y3Pos = originalPoints.get(vertex3Ref + 1);
             float z3Pos = originalPoints.get(vertex3Ref + 2);
             int vertex3Bin = (int) Math.floor((Math.abs(y3Pos) + originalModelBounds.getMaxY())
-                / -minPrintableY);
+                    / -minPrintableY);
 
 //            steno.info("Considering " + y1Pos + ":" + y2Pos + ":" + y3Pos);
             if (vertex1Bin == vertex2Bin && vertex1Bin == vertex3Bin)
@@ -1314,7 +1624,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshView.setCullFace(CullFace.BACK);
             meshView.setId(getId() + "-" + binCounter);
 
-            ModelContainer modelContainer = new ModelContainer(getModelName(), meshView);
+            ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
 
             outputMeshes.add(modelContainer);
         }
@@ -1323,7 +1633,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     * This compareTo implementation compares based on the overall size of the model.
+     * This compareTo implementation compares based on the overall size of the
+     * model.
      */
     @Override
     public int compareTo(Object o) throws ClassCastException
@@ -1343,49 +1654,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
-     *
-     * @return
-     */
-    public double getTotalWidth()
-    {
-        double totalwidth = originalModelBounds.getWidth() * preferredScale.get();
-        return totalwidth;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getTotalDepth()
-    {
-        double totaldepth = originalModelBounds.getDepth() * preferredScale.get();
-        return totaldepth;
-    }
-
-    /**
-     *
-     * @return
-     */
-    public double getTotalSize()
-    {
-        return getTotalWidth() + getTotalDepth();
-    }
-
-    public void snapToGround(int faceNumber)
-    {
-        setSnapFaceIndex(faceNumber);
-
-        checkOffBed();
-        notifyShapeChange();
-    }
-
-    /**
      * Return the face normal for the face of the given index.
      *
      */
-    private Vector3D getFaceNormal(int faceNumber) throws MathArithmeticException
+    Vector3D getFaceNormal(MeshView meshView, int faceNumber) throws MathArithmeticException
     {
-        MeshView meshView = getMeshView();
         TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
         int baseFaceIndex = faceNumber * 6;
         int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
@@ -1402,10 +1675,27 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return currentVectorNormalised;
     }
 
+    Vector3D getFaceCentre(MeshView meshView, int faceNumber)
+    {
+        TriangleMesh triMesh = (TriangleMesh) meshView.getMesh();
+        int baseFaceIndex = faceNumber * 6;
+        int v1PointIndex = triMesh.getFaces().get(baseFaceIndex);
+        int v2PointIndex = triMesh.getFaces().get(baseFaceIndex + 2);
+        int v3PointIndex = triMesh.getFaces().get(baseFaceIndex + 4);
+        ObservableFloatArray points = triMesh.getPoints();
+        Vector3D v1 = convertToVector3D(points, v1PointIndex);
+        Vector3D v2 = convertToVector3D(points, v2PointIndex);
+        Vector3D v3 = convertToVector3D(points, v3PointIndex);
+
+        return new Vector3D((v1.getX() + v2.getX() + v3.getX()) / 3.0d,
+                (v1.getY() + v2.getY() + v3.getY()) / 3.0d,
+                (v1.getZ() + v2.getZ() + v3.getZ()) / 3.0d);
+    }
+
     private Vector3D convertToVector3D(ObservableFloatArray points, int v1PointIndex)
     {
         Vector3D v1 = new Vector3D(points.get(v1PointIndex * 3), points.get((v1PointIndex * 3)
-                                   + 1), points.get((v1PointIndex * 3) + 2));
+                + 1), points.get((v1PointIndex * 3) + 2));
         return v1;
     }
 
@@ -1414,13 +1704,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return originalModelBounds;
     }
 
-    private void dropToBedAndUpdateLastTransformedBounds()
+    public void dropToBed()
     {
-        // Correct transformRotateSnapToGroundYAdjust for change in height (Y)
-        transformSnapToGroundYAdjust.setY(0);
-        ModelBounds modelBoundsParent = calculateBoundsInParent();
-        transformSnapToGroundYAdjust.setY(-modelBoundsParent.getMaxY());
-        lastTransformedBounds = calculateBoundsInParent();
+        // Correct transformPostRotationYAdjust for change in height (Y)
+        transformDropToBedYAdjust.setY(0);
+        ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
+        transformDropToBedYAdjust.setY(-modelBoundsParent.getMaxY());
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     @Override
@@ -1443,12 +1733,17 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public double getTransformedCentreZ()
     {
-        return getTransformedBounds().getCentreZ();
+        return lastTransformedBoundsInParent.getCentreZ();
     }
 
     public double getTransformedCentreX()
     {
-        return getTransformedBounds().getCentreX();
+        return lastTransformedBoundsInParent.getCentreX();
+    }
+
+    public double getTransformedCentreY()
+    {
+        return lastTransformedBoundsInParent.getCentreY();
     }
 
     @Override
@@ -1460,7 +1755,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledHeight()
     {
-        return getLocalBounds().getHeight() * preferredScale.doubleValue();
+        return getLocalBounds().getHeight() * preferredYScale.doubleValue();
     }
 
     @Override
@@ -1472,118 +1767,497 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     @Override
     public double getScaledDepth()
     {
-        return getLocalBounds().getDepth() * preferredScale.doubleValue();
+        return getLocalBounds().getDepth() * preferredZScale.doubleValue();
     }
 
     @Override
     public double getOriginalWidth()
     {
-        return getTransformedBounds().getWidth();
+        return getLocalBounds().getWidth();
     }
 
     @Override
     public double getScaledWidth()
     {
-        return getLocalBounds().getWidth() * preferredScale.doubleValue();
+        return getLocalBounds().getWidth() * preferredXScale.doubleValue();
+    }
+
+    /**
+     * Get the width on the bed but ONLY for top-level models.
+     */
+    public double getTotalWidth()
+    {
+        double totalwidth = lastTransformedBoundsInParent.getWidth();
+        return totalwidth;
+    }
+
+    /**
+     * Get the depth on the bed but ONLY for top-level models.
+     */
+    public double getTotalDepth()
+    {
+        double totaldepth = lastTransformedBoundsInParent.getDepth();
+        return totaldepth;
+    }
+
+    /**
+     * Get a relative measure of the total size on the bed but ONLY for
+     * top-level models.
+     */
+    public double getTotalSize()
+    {
+        return getTotalWidth() + getTotalDepth();
     }
 
     public void addSelectionHighlighter()
     {
-        selectionHighlighter = new SelectionHighlighter(this);
+        selectionHighlighter = new SelectionHighlighter(this, cameraDistance);
         getChildren().add(selectionHighlighter);
-        selectedMarkers.add(selectionHighlighter);
         notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
-    private void updateLastTransformedBoundsForTranslateByX(double deltaCentreX)
+    private void updateLastTransformedBoundsInParentForTranslateByX(double deltaCentreX)
     {
-        lastTransformedBounds.translateX(deltaCentreX);
-        notifyShapeChange();
-    }
-
-    private void updateLastTransformedBoundsForTranslateByZ(double deltaCentreZ)
-    {
-        lastTransformedBounds.translateZ(deltaCentreZ);
-        notifyShapeChange();
-    }
-
-    private void showSelectedMarkers()
-    {
-        for (Node selectedMarker : selectedMarkers)
+        if (lastTransformedBoundsInParent != null)
         {
-            selectedMarker.setVisible(true);
+            lastTransformedBoundsInParent.translateX(deltaCentreX);
         }
+        notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
-    private void hideSelectedMarkers()
+    private void updateLastTransformedBoundsInParentForTranslateByY(double deltaCentreY)
     {
-        for (Node selectedMarker : selectedMarkers)
+        if (lastTransformedBoundsInParent != null)
         {
-            selectedMarker.setVisible(false);
+            lastTransformedBoundsInParent.translateY(deltaCentreY);
         }
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    private void updateLastTransformedBoundsInParentForTranslateByZ(double deltaCentreZ)
+    {
+        if (lastTransformedBoundsInParent != null)
+        {
+            lastTransformedBoundsInParent.translateZ(deltaCentreZ);
+        }
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    private void showSelectionHighlighter()
+    {
+
+        selectionHighlighter.setVisible(true);
+    }
+
+    private void hideSelectionHighlighter()
+    {
+        selectionHighlighter.setVisible(false);
     }
 
     @Override
-    public void addShapeChangeListener(ShapeChangeListener listener)
+    public void addShapeChangeListener(ShapeProvider.ShapeChangeListener listener)
     {
         shapeChangeListeners.add(listener);
     }
 
-    /**
-     * This method must be called at the end of any operation that changes one or more of the
-     * transforms.
-     */
-    private void notifyShapeChange()
+    @Override
+    public void removeShapeChangeListener(ShapeProvider.ShapeChangeListener listener)
     {
-        for (ShapeChangeListener shapeChangeListener : shapeChangeListeners)
+        shapeChangeListeners.remove(listener);
+    }
+
+    /**
+     * This method must be called at the end of any operation that changes one
+     * or more of the transforms.
+     */
+    public void notifyShapeChange()
+    {
+        for (ShapeProvider.ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
             shapeChangeListener.shapeChanged(this);
         }
     }
 
-    public double getPreferredScale()
-    {
-        return preferredScale.get();
-    }
-
-    /**
-     * @param preferredScale the preferredScale to set
-     */
-    public void setPreferredScale(double preferredScale)
-    {
-        this.preferredScale.set(preferredScale);
-        setScale(preferredScale);
-    }
-
-    public DoubleProperty preferredScaleProperty()
-    {
-        return preferredScale;
-    }
-
-    /**
-     * @return the preferredYRotation
-     */
-    public double getPreferredRotationY()
-    {
-        return preferredRotationY.get();
-    }
-
-    /**
-     * @param preferredYRotation the preferredYRotation to set
-     */
-    public void setPreferredRotationY(double preferredYRotation)
-    {
-        this.preferredRotationY.set(preferredYRotation);
-        setRotationY(preferredYRotation);
-    }
-
-    public DoubleProperty preferredRotationYProperty()
-    {
-        return preferredRotationY;
-    }
-
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
-        return localToParent(meshGroup.localToParent(vertexX, vertexY, vertexZ));
+        return bed.sceneToLocal(meshView.localToScene(vertexX, vertexY, vertexZ));
+    }
+
+    /**
+     * If this model is associated with the given extruder number then recolour
+     * it to the given colour, also taking into account if it is misplaced (off
+     * the bed). Also call the same method on any child ModelContainers.
+     *
+     * @param extruder0Material
+     * @param extruder1Material
+     * @param showMisplacedColour
+     */
+    public void updateColour(final PhongMaterial extruder0Material, final PhongMaterial extruder1Material,
+            boolean showMisplacedColour)
+    {
+        boolean offBed = getRootModelContainer().isOffBed.get();
+        if (showMisplacedColour)
+        {
+            if (offBed)
+            {
+                meshView.setMaterial(ApplicationMaterials.getOffBedModelMaterial());
+            } else if (isCollided)
+            {
+                meshView.setMaterial(ApplicationMaterials.getCollidedModelMaterial());
+            }
+        }
+        if (!showMisplacedColour || (!offBed && !isCollided))
+        {
+            switch (associateWithExtruderNumber.get())
+            {
+                case 0:
+                    if (extruder0Material == null)
+                    {
+                        meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                    } else
+                    {
+                        meshView.setMaterial(extruder0Material);
+                    }
+                    break;
+                case 1:
+                    if (extruder1Material == null)
+                    {
+                        meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                    } else
+                    {
+                        meshView.setMaterial(extruder1Material);
+                    }
+                    break;
+                default:
+                    meshView.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void addScreenExtentsChangeListener(ScreenExtentsProvider.ScreenExtentsListener listener)
+    {
+        recalculateScreenExtents();
+        screenExtentsChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeScreenExtentsChangeListener(
+            ScreenExtentsProvider.ScreenExtentsListener listener)
+    {
+        screenExtentsChangeListeners.remove(listener);
+    }
+
+    public void notifyScreenExtentsChange()
+    {
+        if (recalculateScreenExtents())
+        {
+            for (ScreenExtentsProvider.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+            {
+                screenExtentsListener.screenExtentsChanged(this);
+            }
+        }
+    }
+
+    public boolean recalculateScreenExtents()
+    {
+        boolean extentsChanged = false;
+
+        if (getLocalBounds() != null)
+        {
+            double halfWidth = getScaledWidth() / 2;
+            double halfDepth = getScaledDepth() / 2;
+            double halfHeight = getScaledHeight() / 2;
+            double minX = getCentreX() - halfWidth;
+            double maxX = getCentreX() + halfWidth;
+            double minZ = getCentreZ() - halfDepth;
+            double maxZ = getCentreZ() + halfDepth;
+            double minY = getCentreY() - halfHeight;
+            double maxY = getCentreY() + halfHeight;
+
+            Point2D frontLeftBottom = localToScreen(minX, maxY, minZ);
+            Point2D frontRightBottom = localToScreen(maxX, maxY, minZ);
+            Point2D backLeftBottom = localToScreen(minX, maxY, maxZ);
+            Point2D backRightBottom = localToScreen(maxX, maxY, maxZ);
+            Point2D frontLeftTop = localToScreen(minX, minY, minZ);
+            Point2D frontRightTop = localToScreen(maxX, minY, minZ);
+            Point2D backLeftTop = localToScreen(minX, minY, maxZ);
+            Point2D backRightTop = localToScreen(maxX, minY, maxZ);
+
+//            Point3D frontLeftBottomScene = localToScene(minX, maxY, minZ);
+//            Point3D frontRightBottomScene = localToScene(maxX, maxY, minZ);
+//            Point3D backLeftBottomScene = localToScene(minX, maxY, maxZ);
+//            Point3D backRightBottomScene = localToScene(maxX, maxY, maxZ);
+//            Point3D frontLeftTopScene = localToScene(minX, minY, minZ);
+//            Point3D frontRightTopScene = localToScene(maxX, minY, minZ);
+//            Point3D backLeftTopScene = localToScene(minX, minY, maxZ);
+//            Point3D backRightTopScene = localToScene(maxX, minY, maxZ);
+//            Point2D frontLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, minZ));
+//            Point2D frontRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, minZ));
+//            Point2D backLeftBottom = CameraHelper.project(cameraViewingMe, localToScene(minX, maxY, maxZ));
+//            Point2D backRightBottom = CameraHelper.project(cameraViewingMe, localToScene(maxX, maxY, maxZ));
+//            Point2D frontLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, minZ));
+//            Point2D frontRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, minZ));
+//            Point2D backLeftTop = CameraHelper.project(cameraViewingMe, localToScene(minX, minY, maxZ));
+//            Point2D backRightTop = CameraHelper.project(cameraViewingMe, localToScene(maxX, minY, maxZ));
+////        Point3D frontLeftBottomCamera = cameraTransform.sceneToLocal(frontLeftBottomScene);
+//        Point3D frontRightBottomCamera = cameraTransform.sceneToLocal(frontRightBottomScene);
+//        Point3D backLeftBottomCamera = cameraTransform.sceneToLocal(backLeftBottomScene);
+//        Point3D backRightBottomCamera = cameraTransform.sceneToLocal(backRightBottomScene);
+//        Point3D frontLeftTopCamera = cameraTransform.sceneToLocal(frontLeftTopScene);
+//        Point3D frontRightTopCamera = cameraTransform.sceneToLocal(frontRightTopScene);
+//        Point3D backLeftTopCamera = cameraTransform.sceneToLocal(backLeftTopScene);
+//        Point3D backRightTopCamera = cameraTransform.sceneToLocal(backRightTopScene);
+//
+//        Point2D frontLeftBottom = cameraTransform.localToScreen(frontLeftBottomCamera);
+//        Point2D frontRightBottom = cameraTransform.localToScreen(frontRightBottomCamera);
+//        Point2D backLeftBottom = cameraTransform.localToScreen(backLeftBottomCamera);
+//        Point2D backRightBottom = cameraTransform.localToScreen(backRightBottomCamera);
+//        Point2D frontLeftTop = cameraTransform.localToScreen(frontLeftTopCamera);
+//        Point2D frontRightTop = cameraTransform.localToScreen(frontRightTopCamera);
+//        Point2D backLeftTop = cameraTransform.localToScreen(backLeftTopCamera);
+//        Point2D backRightTop = cameraTransform.localToScreen(backRightTopCamera);
+            ScreenExtents lastExtents = extents;
+            if (extents == null && frontLeftBottom != null)
+            {
+                extents = new ScreenExtents();
+            }
+
+            if (extents != null && frontLeftBottom != null)
+            {
+                extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
+                extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
+                extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
+                extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
+
+                extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
+                extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
+                extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
+                extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
+
+                extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
+                extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
+                extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
+                extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
+
+                extents.recalculateMaxMin();
+            }
+
+            if (extents != null
+                    && !extents.equals(lastExtents))
+            {
+                extentsChanged = true;
+            }
+        }
+
+        return extentsChanged;
+    }
+
+    @Override
+    public ScreenExtents getScreenExtents()
+    {
+        if (extents == null)
+        {
+            recalculateScreenExtents();
+        }
+        return extents;
+    }
+
+    @Override
+    public double getTransformedHeight()
+    {
+        return getScaledHeight();
+    }
+
+    @Override
+    public double getTransformedWidth()
+    {
+        return getScaledWidth();
+    }
+
+    @Override
+    public double getTransformedDepth()
+    {
+        return getScaledDepth();
+    }
+
+    @Override
+    public void heresYourCamera(Camera camera)
+    {
+        this.cameraViewingMe = camera;
+    }
+
+    @Override
+    public void cameraViewOfYouHasChanged(double cameraDistance)
+    {
+        this.cameraDistance = cameraDistance;
+        if (selectionHighlighter != null)
+        {
+            selectionHighlighter.cameraDistanceChange(cameraDistance);
+        }
+        notifyScreenExtentsChange();
+    }
+
+    public void addChildNodes(ObservableList<Node> nodes)
+    {
+        getChildren().addAll(nodes);
+    }
+
+    public void addChildNode(Node node)
+    {
+        getChildren().add(node);
+    }
+
+    public ObservableList<Node> getMeshGroupChildren()
+    {
+        return getChildren();
+
+    }
+
+    public Set<ModelContainer> getChildModelContainers()
+    {
+        return Collections.EMPTY_SET;
+    }
+
+    public Set<ModelContainer> getDescendentModelContainers()
+    {
+        return Collections.EMPTY_SET;
+
+    }
+
+    /**
+     * State captures the state of all the transforms being applied to this
+     * ModelContainer. It is used as an efficient way of applying Undo and Redo
+     * to changes to a Set of ModelContainers.
+     */
+    public static class State
+    {
+
+        public int modelId;
+        public double x;
+        public double y;
+        public double z;
+        public double preferredXScale;
+        public double preferredYScale;
+        public double preferredZScale;
+        public double preferredRotationTwist;
+        public double preferredRotationTurn;
+        public double preferredRotationLean;
+
+        public State()
+        {
+        }
+
+        @JsonCreator
+        public State(
+                @JsonProperty("modelId") int modelId,
+                @JsonProperty("x") double x,
+                @JsonProperty("y") double y,
+                @JsonProperty("z") double z,
+                @JsonProperty("preferredXScale") double preferredXScale,
+                @JsonProperty("preferredYScale") double preferredYScale,
+                @JsonProperty("preferredZScale") double preferredZScale,
+                @JsonProperty("preferredRotationTwist") double preferredRotationTwist,
+                @JsonProperty("preferredRotationTurn") double preferredRotationTurn,
+                @JsonProperty("preferredRotationLean") double preferredRotationLean)
+        {
+            this.modelId = modelId;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.preferredXScale = preferredXScale;
+            this.preferredYScale = preferredYScale;
+            this.preferredZScale = preferredZScale;
+            this.preferredRotationTwist = preferredRotationTwist;
+            this.preferredRotationTurn = preferredRotationTurn;
+            this.preferredRotationLean = preferredRotationLean;
+        }
+
+        /**
+         * The assignment operator.
+         */
+        public void assignFrom(State fromState)
+        {
+            this.x = fromState.x;
+            this.y = fromState.y;
+            this.z = fromState.z;
+            this.preferredXScale = fromState.preferredXScale;
+            this.preferredYScale = fromState.preferredYScale;
+            this.preferredZScale = fromState.preferredZScale;
+            this.preferredRotationTwist = fromState.preferredRotationTwist;
+            this.preferredRotationTurn = fromState.preferredRotationTurn;
+            this.preferredRotationLean = fromState.preferredRotationLean;
+        }
+    }
+
+    public State getState()
+    {
+        return new State(modelId,
+                transformMoveToPreferred.getX(),
+                transformDropToBedYAdjust.getY(),
+                transformMoveToPreferred.getZ(),
+                preferredXScale.get(), preferredYScale.get(), preferredZScale.get(),
+                preferredRotationTwist.get(), preferredRotationTurn.get(),
+                preferredRotationLean.get());
+    }
+
+    public void setState(State state)
+    {
+        transformMoveToPreferred.setX(state.x);
+        transformMoveToPreferred.setZ(state.z);
+        transformDropToBedYAdjust.setY(state.y);
+
+        preferredXScale.set(state.preferredXScale);
+        transformScalePreferred.setX(state.preferredXScale);
+        preferredYScale.set(state.preferredYScale);
+        transformScalePreferred.setY(state.preferredYScale);
+        preferredZScale.set(state.preferredZScale);
+        transformScalePreferred.setZ(state.preferredZScale);
+
+        preferredRotationLean.set(state.preferredRotationLean);
+        preferredRotationTwist.set(state.preferredRotationTwist);
+        preferredRotationTurn.set(state.preferredRotationTurn);
+
+        updateTransformsFromLeanTwistTurnAngles();
+
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        notifyScreenExtentsChange();
+        notifyShapeChange();
+    }
+
+    public int getModelId()
+    {
+        return modelId;
+    }
+
+    public boolean isInvalidMesh()
+    {
+        return isInvalidMesh;
+    }
+
+    public void setIsInvalidMesh(boolean isInvalidMesh)
+    {
+        this.isInvalidMesh = isInvalidMesh;
+    }
+
+    public MeshView getCollisionShape()
+    {
+        return collisionShape;
+    }
+
+    public MeshView addCollisionShapeListener(CollisionShapeListener collisionShapeListener)
+    {
+        collisionShapeListeners.add(collisionShapeListener);
+        return collisionShape;
+    }
+
+    public void removeCollisionShapeListener(CollisionShapeListener collisionShapeListener)
+    {
+        collisionShapeListeners.remove(collisionShapeListener);
     }
 }

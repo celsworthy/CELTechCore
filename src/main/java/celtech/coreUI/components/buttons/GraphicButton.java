@@ -1,6 +1,6 @@
 package celtech.coreUI.components.buttons;
 
-import celtech.coreUI.components.HideableTooltip;
+import celtech.configuration.ApplicationConfiguration;
 import java.io.IOException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -20,6 +20,12 @@ public class GraphicButton extends Button
     public GraphicButton()
     {
         loadFXML();
+        getStyleClass().add("graphic-button");
+        setPickOnBounds(false);
+    }
+    
+    public GraphicButton(String fxmlFileName) {
+        setFxmlFileName(fxmlFileName);
         getStyleClass().add("graphic-button");
         setPickOnBounds(false);
     }
@@ -63,7 +69,7 @@ public class GraphicButton extends Button
         if (fxmlFileName.get().equalsIgnoreCase("") == false)
         {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "/celtech/resources/fxml/buttons/" + fxmlFileName.get() + ".fxml"));
+                ApplicationConfiguration.fxmlButtonsResourcePath + fxmlFileName.get() + ".fxml"));
             fxmlLoader.setRoot(this);
             fxmlLoader.setController(this);
 
@@ -75,7 +81,7 @@ public class GraphicButton extends Button
             } catch (IOException exception)
             {
                 exception.printStackTrace();
-                throw new RuntimeException(exception);
+//                throw new RuntimeException(exception);
             }
         }
     }

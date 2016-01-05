@@ -1,5 +1,7 @@
 package celtech.coreUI.components;
 
+import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.MachineType;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -14,6 +16,8 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -24,7 +28,7 @@ public class HyperlinkedLabel extends TextFlow
 
     private StringProperty text = new SimpleStringProperty("");
     private static final Pattern hyperlinkPattern = Pattern.compile(
-        "\\<a href=\"([^\"]+)\">([^<]+)</a>");
+            "\\<a href=\"([^\"]+)\">([^<]+)</a>");
     private Map<String, URI> hyperlinkMap = new HashMap<>();
 
     public void replaceText(String newText)
@@ -58,14 +62,15 @@ public class HyperlinkedLabel extends TextFlow
                     {
                         Hyperlink newhyperlink = (Hyperlink) event.getSource();
                         final String clickedLinkText = newhyperlink == null ? "" : newhyperlink.
-                            getText();
+                                getText();
                         if (hyperlinkMap.containsKey(clickedLinkText))
                         {
                             URI linkToVisit = hyperlinkMap.get(clickedLinkText);
-                            System.out.println("Link clicked: Text=" + clickedLinkText + " uri="
-                                + linkToVisit.
-                                toString());
-                            if (Desktop.isDesktopSupported())
+                            if (Desktop.isDesktopSupported()
+                                    && ApplicationConfiguration.getMachineType()
+                                    != MachineType.LINUX_X86
+                                    && ApplicationConfiguration.getMachineType()
+                                    != MachineType.LINUX_X64)
                             {
                                 try
                                 {
@@ -73,13 +78,13 @@ public class HyperlinkedLabel extends TextFlow
                                 } catch (IOException ex)
                                 {
                                     System.err.println("Error when attempting to browse to "
-                                        + linkToVisit.
-                                        toString());
+                                            + linkToVisit.
+                                            toString());
                                 }
                             } else
                             {
                                 System.err.println(
-                                    "Couldn't get Desktop - not able to support hyperlinks");
+                                        "Couldn't get Desktop - not able to support hyperlinks");
                             }
                         }
                     });
@@ -88,11 +93,11 @@ public class HyperlinkedLabel extends TextFlow
                 } catch (URISyntaxException ex)
                 {
                     System.err.println("Error attempting to create UI hyperlink from "
-                        + linkURLString);
+                            + linkURLString);
                 }
             } else
             {
-                System.out.println("Error rendering dialog text: " + newText);
+                System.err.println("Error rendering dialog text: " + newText);
             }
         }
 

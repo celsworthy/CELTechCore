@@ -1,6 +1,7 @@
 package celtech.utils.tasks;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -15,6 +16,22 @@ public class LiveTaskExecutor implements TaskExecutor
         LiveTaskExecutor.class.getName());
 
     @Override
+    public void runTaskAsDaemon(Task task)
+    {
+        runOnGUIThread(new Runnable()
+        {
+
+            @Override
+            public void run()
+            {
+                Thread th = new Thread(task);
+                th.setDaemon(true);
+                th.start();
+            }
+        });
+    }
+
+    @Override
     public void runOnGUIThread(Runnable runnable)
     {
         if (Platform.isFxApplicationThread())
@@ -24,6 +41,14 @@ public class LiveTaskExecutor implements TaskExecutor
         {
             Platform.runLater(runnable);
         }
+    }
+
+    @Override
+    public void runOnBackgroundThread(Runnable runnable)
+    {
+        Thread th = new Thread(runnable);
+        th.setDaemon(true);
+        th.start();
     }
 
     @Override
@@ -78,8 +103,7 @@ public class LiveTaskExecutor implements TaskExecutor
 
             } catch (Exception ex)
             {
-                ex.printStackTrace();
-                steno.error("Failure running task: " + ex);
+                steno.exception("Failure running task: ", ex);
                 try
                 {
                     if (failureHandler != null)

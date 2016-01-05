@@ -4,6 +4,7 @@
 package celtech.services.printing;
 
 import celtech.gcodetranslator.PrintJobStatistics;
+import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.model.ETCCalculator;
 import celtech.printerControl.model.HardwarePrinter;
@@ -22,6 +23,7 @@ import org.junit.Test;
  */
 public class ETCCalculatorTest
 {
+    private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
 
     List<Double> layerNumberToDistanceTravelled;
     List<Double> layerNumberToPredictedDuration;
@@ -57,7 +59,7 @@ public class ETCCalculatorTest
         layerNumberToLineNumber.add(6, 91);
         layerNumberToLineNumber.add(7, 100);
 
-        testPrinter = new HardwarePrinter(null, new TestCommandInterface(null, "Test Printer", false, 500));
+        testPrinter = new HardwarePrinter(null, new TestCommandInterface(null, printerHandle, false, 500));
 
         testPrinter.setBedTargetTemperature(120);
         testPrinter.setBedTargetTemperature(120);

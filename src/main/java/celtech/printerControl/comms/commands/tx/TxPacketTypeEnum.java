@@ -8,12 +8,6 @@ import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
  */
 public enum TxPacketTypeEnum
 {
-
-    /**
-     *
-     *//**
-     *
-     */
     STATUS_REQUEST((byte) 0xB0, 1, false, RxPacketTypeEnum.STATUS_RESPONSE),
 
     /**
@@ -139,12 +133,7 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    SET_REEL_LED_COLOUR((byte) 0xc4, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
-
-    /**
-     *
-     */
-    CONTROL_REEL_LED((byte) 0xc4, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_REEL_LED_COLOUR((byte) 0xc5, 7, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *
@@ -154,7 +143,12 @@ public enum TxPacketTypeEnum
     /**
      *
      */
-    SET_FEED_RATE_MULTIPLIER((byte) 0xc4, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+    SET_E_FEED_RATE_MULTIPLIER((byte) 0xc4, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
+
+    /**
+     *
+     */
+    SET_D_FEED_RATE_MULTIPLIER((byte) 0xc7, 9, false, RxPacketTypeEnum.ACK_WITH_ERRORS),
 
     /**
      *

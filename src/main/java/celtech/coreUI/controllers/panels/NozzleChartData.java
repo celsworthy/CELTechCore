@@ -24,7 +24,7 @@ public class NozzleChartData
     private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
 
     private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
-        ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+            ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
     private final ReadOnlyIntegerProperty nozzleTargetTemperatureProperty;
     private final ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty;
     private final ReadOnlyIntegerProperty nozzleTemperatureProperty;
@@ -53,7 +53,7 @@ public class NozzleChartData
         updateNozzleReadout();
     };
 
-    public NozzleChartData(XYChart.Series<Number, Number> nozzleTemperatureData,
+    public NozzleChartData(int nozzleNumber, XYChart.Series<Number, Number> nozzleTemperatureData,
         ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty,
         ReadOnlyIntegerProperty nozzleTargetTemperatureProperty,
         ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
@@ -70,7 +70,7 @@ public class NozzleChartData
 
         this.nozzleFirstLayerTargetTemperatureProperty = nozzleFirstLayerTargetTemperatureProperty;
         nozzleFirstLayerTargetTemperatureProperty.addListener(
-            nozzleFirstLayerTargetTemperatureListener);
+                nozzleFirstLayerTargetTemperatureListener);
 
         this.nozzleTemperatureProperty = nozzleTemperatureProperty;
         nozzleTemperatureProperty.addListener(nozzleTemperatureListener);
@@ -80,7 +80,7 @@ public class NozzleChartData
         this.nozzleReadout = nozzleReadout;
 
         degreesC = Lookup.i18n("misc.degreesC");
-        legendNozzleStartingText = Lookup.i18n("printerStatus.temperatureGraphNozzleLabel");
+        legendNozzleStartingText = Lookup.i18n("printerStatus.temperatureGraphNozzleLabel" + nozzleNumber);
 
         updateNozzleTargetPoint();
     }
@@ -100,21 +100,21 @@ public class NozzleChartData
         if (this.nozzleFirstLayerTargetTemperatureProperty != null)
         {
             this.nozzleFirstLayerTargetTemperatureProperty.removeListener(
-                nozzleFirstLayerTargetTemperatureListener);
+                    nozzleFirstLayerTargetTemperatureListener);
         }
 
         if (this.nozzleTemperatureProperty != null)
         {
             nozzleTemperatureProperty.removeListener(nozzleTemperatureListener);
         }
-        
+
         nozzleReadout.setText("");
     }
 
     private void updateNozzleTargetPoint()
     {
         if (nozzleHeaterModeProperty == null || nozzleTargetTemperatureProperty == null
-            || nozzleFirstLayerTargetTemperatureProperty == null)
+                || nozzleFirstLayerTargetTemperatureProperty == null)
         {
             return;
         }
@@ -124,6 +124,9 @@ public class NozzleChartData
         } else if (nozzleHeaterModeProperty.get() == HeaterMode.FIRST_LAYER)
         {
             nozzleTargetPoint.setYValue(nozzleFirstLayerTargetTemperatureProperty.get());
+        } else if (nozzleHeaterModeProperty.get() == HeaterMode.FILAMENT_EJECT)
+        {
+            nozzleTargetPoint.setYValue(140.0);
         } else
         {
             nozzleTargetPoint.setYValue(nozzleTargetTemperatureProperty.get());
@@ -139,8 +142,8 @@ public class NozzleChartData
             if (nozzleTemperatureProperty.get() >= ApplicationConfiguration.minTempToDisplayOnGraph)
             {
                 legendNozzleText += String.format(" %s%s",
-                                                  nozzleTemperatureProperty.get(),
-                                                  degreesC);
+                        nozzleTemperatureProperty.get(),
+                        degreesC);
             } else
             {
                 legendNozzleText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.comms.commands.rx;
 
 import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
@@ -44,7 +40,7 @@ public class PrinterIDResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
 
         boolean success = false;
@@ -250,6 +246,12 @@ public class PrinterIDResponse extends RoboxRxPacket
     public void setPrinterFriendlyName(String printerFriendlyName)
     {
         this.printerFriendlyName = printerFriendlyName;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 257;
     }
 
 }

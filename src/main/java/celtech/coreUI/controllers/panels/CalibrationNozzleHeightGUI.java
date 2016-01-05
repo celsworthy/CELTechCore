@@ -3,10 +3,11 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.printerControl.model.calibration.StateTransitionManager;
-import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.printerControl.model.calibration.StateTransition;
-import celtech.services.calibration.NozzleOffsetCalibrationState;
+import celtech.Lookup;
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.StateTransitionManager.GUIName;
+import celtech.printerControl.model.StateTransition;
+import celtech.printerControl.model.calibration.NozzleHeightCalibrationState;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -26,11 +27,11 @@ public class CalibrationNozzleHeightGUI
         CalibrationNozzleHeightGUI.class.getName());
 
     private CalibrationInsetPanelController controller;
-    StateTransitionManager<NozzleOffsetCalibrationState> stateManager;
+    StateTransitionManager<NozzleHeightCalibrationState> stateManager;
     Map<GUIName, Region> namesToButtons = new HashMap<>();
 
     public CalibrationNozzleHeightGUI(CalibrationInsetPanelController controller,
-        StateTransitionManager<NozzleOffsetCalibrationState> stateManager)
+        StateTransitionManager<NozzleHeightCalibrationState> stateManager)
     {
         this.controller = controller;
         this.stateManager = stateManager;
@@ -40,20 +41,20 @@ public class CalibrationNozzleHeightGUI
             @Override
             public void changed(ObservableValue observable, Object oldValue, Object newValue)
             {
-                setState((NozzleOffsetCalibrationState) newValue);
+                setState((NozzleHeightCalibrationState) newValue);
             }
         });
         populateNamesToButtons(controller);
     }
 
-    private void showAppropriateButtons(NozzleOffsetCalibrationState state)
+    private void showAppropriateButtons(NozzleHeightCalibrationState state)
     {
         controller.hideAllInputControlsExceptStepNumber();
         if (state.showCancelButton())
         {
             controller.cancelCalibrationButton.setVisible(true);
         }
-        for (StateTransition<NozzleOffsetCalibrationState> allowedTransition : this.stateManager.getTransitions())
+        for (StateTransition<NozzleHeightCalibrationState> allowedTransition : this.stateManager.getTransitions())
         {
             if (namesToButtons.containsKey(allowedTransition.getGUIName()))
             {
@@ -62,7 +63,7 @@ public class CalibrationNozzleHeightGUI
         }
     }
 
-    public void setState(NozzleOffsetCalibrationState state)
+    public void setState(NozzleHeightCalibrationState state)
     {
         steno.debug("GUI going to state " + state);
         controller.calibrationStatus.setText(state.getStepTitle());
@@ -82,8 +83,6 @@ public class CalibrationNozzleHeightGUI
                 break;
             case HEATING:
                 controller.showSpinner();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 stepNo = 2;
                 break;
             case HEAD_CLEAN_CHECK:
@@ -104,6 +103,8 @@ public class CalibrationNozzleHeightGUI
                 stepNo = 7;
                 break;
             case DONE:
+                break;
+            case CANCELLED:
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FINISHED:
@@ -115,7 +116,7 @@ public class CalibrationNozzleHeightGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format("Step %s of 7", stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf7"), stepNo));
         }
     }
 

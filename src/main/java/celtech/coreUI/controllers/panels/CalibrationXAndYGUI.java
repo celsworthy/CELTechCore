@@ -3,10 +3,11 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.printerControl.model.calibration.StateTransitionManager;
-import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.printerControl.model.calibration.StateTransition;
-import celtech.services.calibration.CalibrationXAndYState;
+import celtech.Lookup;
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.StateTransitionManager.GUIName;
+import celtech.printerControl.model.StateTransition;
+import celtech.printerControl.model.calibration.CalibrationXAndYState;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -80,8 +81,6 @@ public class CalibrationXAndYGUI
             case PRINT_PATTERN:
                 controller.calibrationMenu.disableNonSelectedItems();
                 controller.showSpinner();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.PRINT);
                 stepNo = 1;
                 break;
             case GET_Y_OFFSET:
@@ -96,7 +95,7 @@ public class CalibrationXAndYGUI
 //            case PRINT_CIRCLE_CHECK:
 //                stepNo = 3;
 //                break;
-            case DONE:
+            case CANCELLED:
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FINISHED:
@@ -108,7 +107,7 @@ public class CalibrationXAndYGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format("Step %s of 2", stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf2"), stepNo));
         }
     }
 

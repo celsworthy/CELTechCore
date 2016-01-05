@@ -30,6 +30,8 @@ public enum RoboxCommsState
     /**
      *
      */
-    CONNECTED
+    CONNECTED,
+    
+    DISCONNECTED
 
 }

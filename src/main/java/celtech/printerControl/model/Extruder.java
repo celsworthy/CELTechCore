@@ -20,6 +20,7 @@ public class Extruder
     protected final BooleanProperty isFitted = new SimpleBooleanProperty(false);
     protected final FloatProperty filamentDiameter = new SimpleFloatProperty(0);
     protected final FloatProperty extrusionMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty lastFeedrateMultiplierInUse = new SimpleFloatProperty(0);
 
     public Extruder(String extruderAxisLetter)
     {
@@ -59,5 +60,10 @@ public class Extruder
     public ReadOnlyFloatProperty extrusionMultiplierProperty()
     {
         return extrusionMultiplier;
+    }
+
+    public ReadOnlyFloatProperty lastFeedrateMultiplierInUseProperty()
+    {
+        return lastFeedrateMultiplierInUse;
     }
 }

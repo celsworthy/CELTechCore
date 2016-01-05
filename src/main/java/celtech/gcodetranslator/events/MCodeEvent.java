@@ -6,7 +6,6 @@ package celtech.gcodetranslator.events;
  */
 public class MCodeEvent extends GCodeParseEvent
 {
-
     private int mNumber;
     private boolean sNumberPresent = false;
     private int sNumber;

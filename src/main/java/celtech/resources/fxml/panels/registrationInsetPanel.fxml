@@ -7,7 +7,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.RegistrationInsetPanelController">
+<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
       <TopMenuStrip />        
         <HBox styleClass="blue-inset-panel" VBox.vgrow="ALWAYS">

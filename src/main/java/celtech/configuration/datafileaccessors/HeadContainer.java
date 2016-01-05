@@ -3,6 +3,7 @@ package celtech.configuration.datafileaccessors;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeadFileFilter;
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.printerControl.model.Head.HeadType;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class HeadContainer
     private static final ObservableMap<String, HeadFile> completeHeadMap = FXCollections.observableHashMap();
     private static final ObjectMapper mapper = new ObjectMapper();
     public static final String defaultHeadID = "RBX01-SM";
+    public static final HeadType defaultHeadType = HeadType.SINGLE_MATERIAL_HEAD;
 
     private HeadContainer()
     {
@@ -59,10 +61,6 @@ public class HeadContainer
         return headList;
     }
 
-    /**
-     *
-     * @return
-     */
     public static HeadContainer getInstance()
     {
         if (instance == null)
@@ -73,11 +71,6 @@ public class HeadContainer
         return instance;
     }
 
-    /**
-     *
-     * @param headID
-     * @return
-     */
     public static HeadFile getHeadByID(String headID)
     {
         if (instance == null)
@@ -89,10 +82,6 @@ public class HeadContainer
         return returnedHead;
     }
 
-    /**
-     *
-     * @return
-     */
     public static ObservableList<HeadFile> getCompleteHeadList()
     {
         if (instance == null)

@@ -15,12 +15,13 @@ import java.text.ParseException;
  */
 public class StatusResponse extends RoboxRxPacket
 {
-    /* v712 firmware
-     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff
+    /*
+     V740 firmware
+     status: <0xe1> iiiiiiiiiiiiiiii llllllll p b x y z e d b g h i j a m n k mmmmmmmm nnnnnnnn ccccccccl rrrrrrrr uuuuuuuu dddddddd o pppppppp qqqqqqqq aaaaaaaa r ssssssss tttttttt u c v w x p s xxxxxxxx yyyyyyyy zzzzzzzz bbbbbbbb t eeeeeeee gggggggg hhhhhhhh jjjjjjjj ffffffff kkkkkkkk q
      iiiiiiiiiiiiiiii = id of running job
      llllllll = line # of running job in hex
      p = pause ('0'->normal, '1'->pause pending, '2'->paused, '3'->resume pending)
-     b = busy ('0'->not busy, '1'->busy, '2'->loading filament, '3'->unloading filament)
+     b = busy ('0'->not busy, '1'->busy, '2'->loading E filament, '3'->unloading E filament, '4'->loading D filament, '5'->unloading D filament)
      x = X switch state
      y = Y switch state
      z = Z switch state
@@ -34,12 +35,11 @@ public class StatusResponse extends RoboxRxPacket
      a = Z top switch state
      m = extruder E ('0'->not present, '1'->present)
      n = extruder D ('0'->not present, '1'->present)
-     k = nozzle 0 heater mode ('0'->off, '1'->normal, '2'->first layer)
-
+     k = nozzle 0 heater mode ('0'->off, '1'->normal, '2'->first layer, '3' -> filament eject)
      mmmmmmmm = nozzle 0 temperature (decimal float format)
      nnnnnnnn = nozzle 0 target (decimal float format)
      cccccccc = nozzle 0 first layer target (decimal float format)
-     l = nozzle 1 heater mode ('0'-> off, '1'-<normal, '2'->first layer)
+     l = nozzle 1 heater mode ('0'-> off, '1'-<normal, '2'->first layer, '3' -> filament eject)
      rrrrrrrr = nozzle 1 temperature (decimal float format)
      uuuuuuuu = nozzle 1 target (decimal float format)
      dddddddd = nozzle 1 first layer target (decimal float format)
@@ -66,10 +66,15 @@ public class StatusResponse extends RoboxRxPacket
      gggggggg = E filament multiplier (decimal float format)
      hhhhhhhh = D filament diameter (decimal float format)
      jjjjjjjj = D filament multiplier (decimal float format)
-     ffffffff = Feed rate multiplier (decimal float format)
-     total length = 212
+     ffffffff = E feed rate multiplier (decimal float format)
+     kkkkkkkk = D feed rate multiplier (decimal float format)
+     q = head power ('0'->off, '1'->on)
+     total length = 221
      */
 
+    /**
+     * In v699 t and q are not present
+     */
     private final String charsetToUse = "US-ASCII";
     private String runningPrintJobID = null;
     private final int runningPrintJobIDBytes = 16;
@@ -84,8 +89,8 @@ public class StatusResponse extends RoboxRxPacket
     private boolean filament1SwitchStatus = false;
     private boolean filament2SwitchStatus = false;
     private boolean nozzleSwitchStatus = false;
-    private boolean lidSwitchStatus = false;
-    private boolean reelButtonStatus = false;
+    private boolean doorOpen = false;
+    private boolean reelButtonPressed = false;
     private boolean EIndexStatus = false;
     private boolean DIndexStatus = false;
     private boolean topZSwitchStatus = false;
@@ -136,8 +141,10 @@ public class StatusResponse extends RoboxRxPacket
     private float EFilamentMultiplier = 0;
     private float DFilamentDiameter = 0;
     private float DFilamentMultiplier = 0;
-    private float feedRateMultiplier = 0;
+    private float feedRateEMultiplier = 0;
+    private float feedRateDMultiplier = 0;
     private WhyAreWeWaitingState whyAreWeWaitingState = WhyAreWeWaitingState.NOT_WAITING;
+    private boolean headPowerOn = false;
 
     /**
      *
@@ -233,18 +240,18 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public boolean isLidSwitchStatus()
+    public boolean isDoorOpen()
     {
-        return lidSwitchStatus;
+        return doorOpen;
     }
 
     /**
      *
      * @return
      */
-    public boolean isReelButtonStatus()
+    public boolean isReelButtonPressed()
     {
-        return reelButtonStatus;
+        return reelButtonPressed;
     }
 
     /**
@@ -568,9 +575,18 @@ public class StatusResponse extends RoboxRxPacket
      *
      * @return
      */
-    public float getFeedRateMultiplier()
+    public float getFeedRateEMultiplier()
     {
-        return feedRateMultiplier;
+        return feedRateEMultiplier;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public float getFeedRateDMultiplier()
+    {
+        return feedRateDMultiplier;
     }
 
     /**
@@ -580,6 +596,20 @@ public class StatusResponse extends RoboxRxPacket
     public WhyAreWeWaitingState getWhyAreWeWaitingState()
     {
         return whyAreWeWaitingState;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isHeadPowerOn()
+    {
+        return headPowerOn;
+    }
+
+    public void setHeadPowerOn(boolean value)
+    {
+        headPowerOn = value;
     }
 
     public void setRunningPrintJobID(String runningPrintJobID)
@@ -637,16 +667,6 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzleSwitchStatus = nozzleSwitchStatus;
     }
 
-    public void setLidSwitchStatus(boolean lidSwitchStatus)
-    {
-        this.lidSwitchStatus = lidSwitchStatus;
-    }
-
-    public void setReelButtonStatus(boolean reelButtonStatus)
-    {
-        this.reelButtonStatus = reelButtonStatus;
-    }
-
     public void setEIndexStatus(boolean EIndexStatus)
     {
         this.EIndexStatus = EIndexStatus;
@@ -677,6 +697,11 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzle0HeaterMode = nozzleHeaterMode;
     }
 
+    public void setNozzle1HeaterMode(HeaterMode nozzleHeaterMode)
+    {
+        this.nozzle1HeaterMode = nozzleHeaterMode;
+    }
+
     public void setNozzle0HeaterModeString(String nozzleHeaterModeString)
     {
         this.nozzle0HeaterModeString = nozzleHeaterModeString;
@@ -692,6 +717,11 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzle0Temperature = nozzleTemperature;
     }
 
+    public void setNozzle1Temperature(int nozzleTemperature)
+    {
+        this.nozzle1Temperature = nozzleTemperature;
+    }
+
     public void setNozzle0TargetTemperatureString(String nozzleTargetTemperatureString)
     {
         this.nozzle0TargetTemperatureString = nozzleTargetTemperatureString;
@@ -702,8 +732,13 @@ public class StatusResponse extends RoboxRxPacket
         this.nozzle0TargetTemperature = nozzleTargetTemperature;
     }
 
+    public void setNozzle1TargetTemperature(int nozzleTargetTemperature)
+    {
+        this.nozzle1TargetTemperature = nozzleTargetTemperature;
+    }
+
     public void setNozzle0FirstLayerTargetTemperatureString(
-        String nozzleFirstLayerTargetTemperatureString)
+            String nozzleFirstLayerTargetTemperatureString)
     {
         this.nozzle0FirstLayerTargetTemperatureString = nozzleFirstLayerTargetTemperatureString;
     }
@@ -833,14 +868,24 @@ public class StatusResponse extends RoboxRxPacket
         this.EFilamentDiameter = filamentDiameter;
     }
 
-    public void setFilamentMultiplier(float filamentMultiplier)
+    public void setFilamentEMultiplier(float filamentMultiplier)
     {
         this.EFilamentMultiplier = filamentMultiplier;
     }
 
-    public void setFeedRateMultiplier(float feedRateMultiplier)
+    public void setFilamentDMultiplier(float filamentMultiplier)
     {
-        this.feedRateMultiplier = feedRateMultiplier;
+        this.DFilamentMultiplier = filamentMultiplier;
+    }
+
+    public void setFeedRateEMultiplier(float feedRateMultiplier)
+    {
+        this.feedRateEMultiplier = feedRateMultiplier;
+    }
+
+    public void setFeedRateDMultiplier(float feedRateMultiplier)
+    {
+        this.feedRateDMultiplier = feedRateMultiplier;
     }
 
     public void setWhyAreWeWaitingState(WhyAreWeWaitingState whyAreWeWaitingState)
@@ -865,7 +910,7 @@ public class StatusResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -876,11 +921,11 @@ public class StatusResponse extends RoboxRxPacket
             int byteOffset = 1;
 
             this.runningPrintJobID = new String(byteData, byteOffset, runningPrintJobIDBytes,
-                                                charsetToUse);
+                    charsetToUse);
             byteOffset += runningPrintJobIDBytes;
 
             this.printJobLineNumberString = new String(byteData, byteOffset, printJobLineNumberBytes,
-                                                       charsetToUse);
+                    charsetToUse);
             byteOffset += printJobLineNumberBytes;
 
             this.printJobLineNumber = Integer.valueOf(printJobLineNumberString, 16);
@@ -911,10 +956,10 @@ public class StatusResponse extends RoboxRxPacket
             this.nozzleSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
-            this.lidSwitchStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
+            this.doorOpen = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
-            this.reelButtonStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
+            this.reelButtonPressed = (byteData[byteOffset] & 1) > 0 ? false : true;
             byteOffset += 1;
 
             this.EIndexStatus = (byteData[byteOffset] & 1) > 0 ? true : false;
@@ -936,96 +981,96 @@ public class StatusResponse extends RoboxRxPacket
             this.nozzle0HeaterModeString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
             this.nozzle0HeaterMode = HeaterMode.modeFromValue(Integer.valueOf(
-                nozzle0HeaterModeString, 16));
+                    nozzle0HeaterModeString, 16));
 
             this.nozzle0TemperatureString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                       charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.nozzle0Temperature = decimalFloatFormatter.parse(nozzle0TemperatureString).
-                    intValue();
+                        intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle temperature - " + nozzle0TemperatureString);
             }
 
             this.nozzle0TargetTemperatureString = new String(byteData, byteOffset,
-                                                             decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.nozzle0TargetTemperature = decimalFloatFormatter.parse(
-                    nozzle0TargetTemperatureString).intValue();
+                        nozzle0TargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle target temperature - "
-                    + nozzle0TargetTemperatureString);
+                        + nozzle0TargetTemperatureString);
             }
 
             this.nozzle0FirstLayerTargetTemperatureString = new String(byteData, byteOffset,
-                                                                       decimalFloatFormatBytes,
-                                                                       charsetToUse);
+                    decimalFloatFormatBytes,
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.nozzle0FirstLayerTargetTemperature = decimalFloatFormatter.parse(
-                    nozzle0FirstLayerTargetTemperatureString).intValue();
+                        nozzle0FirstLayerTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle first layer target temperature - "
-                    + nozzle0FirstLayerTargetTemperatureString);
+                        + nozzle0FirstLayerTargetTemperatureString);
             }
 
             // Nozzle 1
             this.nozzle1HeaterModeString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
             this.nozzle1HeaterMode = HeaterMode.modeFromValue(Integer.valueOf(
-                nozzle1HeaterModeString, 16));
+                    nozzle1HeaterModeString, 16));
 
             this.nozzle1TemperatureString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                       charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.nozzle1Temperature = decimalFloatFormatter.parse(nozzle1TemperatureString).
-                    intValue();
+                        intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle temperature - " + nozzle1TemperatureString);
             }
 
             this.nozzle1TargetTemperatureString = new String(byteData, byteOffset,
-                                                             decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.nozzle1TargetTemperature = decimalFloatFormatter.parse(
-                    nozzle1TargetTemperatureString).intValue();
+                        nozzle1TargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle target temperature - "
-                    + nozzle1TargetTemperatureString);
+                        + nozzle1TargetTemperatureString);
             }
 
             this.nozzle1FirstLayerTargetTemperatureString = new String(byteData, byteOffset,
-                                                                       decimalFloatFormatBytes,
-                                                                       charsetToUse);
+                    decimalFloatFormatBytes,
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.nozzle1FirstLayerTargetTemperature = decimalFloatFormatter.parse(
-                    nozzle1FirstLayerTargetTemperatureString).intValue();
+                        nozzle1FirstLayerTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse nozzle first layer target temperature - "
-                    + nozzle1FirstLayerTargetTemperatureString);
+                        + nozzle1FirstLayerTargetTemperatureString);
             }
 
             this.bedHeaterModeString = new String(byteData, byteOffset, 1, charsetToUse);
@@ -1033,7 +1078,7 @@ public class StatusResponse extends RoboxRxPacket
             this.bedHeaterMode = HeaterMode.modeFromValue(Integer.valueOf(bedHeaterModeString, 16));
 
             this.bedTemperatureString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                   charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
@@ -1045,61 +1090,61 @@ public class StatusResponse extends RoboxRxPacket
             }
 
             this.bedTargetTemperatureString = new String(byteData, byteOffset,
-                                                         decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.bedTargetTemperature = decimalFloatFormatter.parse(bedTargetTemperatureString).
-                    intValue();
+                        intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse bed target temperature - " + bedTargetTemperatureString);
             }
 
             this.bedFirstLayerTargetTemperatureString = new String(byteData, byteOffset,
-                                                                   decimalFloatFormatBytes,
-                                                                   charsetToUse);
+                    decimalFloatFormatBytes,
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.bedFirstLayerTargetTemperature = decimalFloatFormatter.parse(
-                    bedFirstLayerTargetTemperatureString).intValue();
+                        bedFirstLayerTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse bed first layer target temperature - "
-                    + bedFirstLayerTargetTemperatureString);
+                        + bedFirstLayerTargetTemperatureString);
             }
 
             this.ambientFanOn = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
 
             this.ambientTemperatureString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                       charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.ambientTemperature = decimalFloatFormatter.parse(ambientTemperatureString).
-                    intValue();
+                        intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse ambient temperature - " + ambientTemperatureString);
             }
 
             this.ambientTargetTemperatureString = new String(byteData, byteOffset,
-                                                             decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
 
             try
             {
                 this.ambientTargetTemperature = decimalFloatFormatter.parse(
-                    ambientTargetTemperatureString).intValue();
+                        ambientTargetTemperatureString).intValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse ambient target temperature - "
-                    + ambientTargetTemperatureString);
+                        + ambientTargetTemperatureString);
             }
 
             this.headFanOn = (byteData[byteOffset] & 1) > 0 ? true : false;
@@ -1108,22 +1153,22 @@ public class StatusResponse extends RoboxRxPacket
             String whyAreWeWaitingStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
             this.whyAreWeWaitingState = WhyAreWeWaitingState.modeFromValue(Integer.valueOf(
-                whyAreWeWaitingStateString, 16));
+                    whyAreWeWaitingStateString, 16));
 
             String headEEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
             this.headEEPROMState = EEPROMState.modeFromValue(Integer.valueOf(headEEPROMStateString,
-                                                                             16));
+                    16));
 
             String reel0EEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
             this.reel0EEPROMState = EEPROMState.modeFromValue(Integer.
-                valueOf(reel0EEPROMStateString, 16));
+                    valueOf(reel0EEPROMStateString, 16));
 
             String reel1EEPROMStateString = new String(byteData, byteOffset, 1, charsetToUse);
             byteOffset += 1;
             this.reel1EEPROMState = EEPROMState.modeFromValue(Integer.
-                valueOf(reel1EEPROMStateString, 16));
+                    valueOf(reel1EEPROMStateString, 16));
 
             this.dualReelAdaptorPresent = (byteData[byteOffset] & 1) > 0 ? true : false;
             byteOffset += 1;
@@ -1132,7 +1177,7 @@ public class StatusResponse extends RoboxRxPacket
             byteOffset += 1;
 
             String headXPositionString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                    charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -1143,7 +1188,7 @@ public class StatusResponse extends RoboxRxPacket
             }
 
             String headYPositionString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                    charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -1154,7 +1199,7 @@ public class StatusResponse extends RoboxRxPacket
             }
 
             String headZPositionString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                    charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -1165,7 +1210,7 @@ public class StatusResponse extends RoboxRxPacket
             }
 
             String BPositionString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
@@ -1175,36 +1220,39 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse B position - " + BPositionString);
             }
 
-            String nozzleInUseString = new String(byteData, byteOffset, 1, charsetToUse);
-            try
+            if (requiredFirmwareVersion >= 701)
             {
-                this.nozzleInUse = decimalFloatFormatter.parse(nozzleInUseString).intValue();
-            } catch (ParseException ex)
-            {
-                steno.error("Couldn't parse nozzle in use - " + nozzleInUseString);
+                String nozzleInUseString = new String(byteData, byteOffset, 1, charsetToUse);
+                try
+                {
+                    this.nozzleInUse = decimalFloatFormatter.parse(nozzleInUseString).intValue();
+                } catch (ParseException ex)
+                {
+                    steno.error("Couldn't parse nozzle in use - " + nozzleInUseString);
+                }
+                byteOffset += 1;
             }
-            byteOffset += 1;
 
             // E Filament
             String filamentDiameterString = new String(byteData, byteOffset, decimalFloatFormatBytes,
-                                                       charsetToUse);
+                    charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
                 this.EFilamentDiameter = decimalFloatFormatter.parse(filamentDiameterString).
-                    floatValue();
+                        floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament diameter - " + filamentDiameterString);
             }
 
             String filamentMultiplierString = new String(byteData, byteOffset,
-                                                         decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
                 this.EFilamentMultiplier = decimalFloatFormatter.parse(filamentMultiplierString).
-                    floatValue();
+                        floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament multiplier - " + filamentMultiplierString);
@@ -1212,39 +1260,60 @@ public class StatusResponse extends RoboxRxPacket
 
             // D Filament
             String DfilamentDiameterString = new String(byteData, byteOffset,
-                                                        decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
                 this.DFilamentDiameter = decimalFloatFormatter.parse(DfilamentDiameterString).
-                    floatValue();
+                        floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament diameter - " + DfilamentDiameterString);
             }
 
             String DfilamentMultiplierString = new String(byteData, byteOffset,
-                                                          decimalFloatFormatBytes, charsetToUse);
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
                 this.DFilamentMultiplier = decimalFloatFormatter.parse(DfilamentMultiplierString).
-                    floatValue();
+                        floatValue();
             } catch (ParseException ex)
             {
                 steno.error("Couldn't parse filament multiplier - " + DfilamentMultiplierString);
             }
 
-            String feedRateMultiplierString = new String(byteData, byteOffset,
-                                                         decimalFloatFormatBytes, charsetToUse);
+            String feedRateEMultiplierString = new String(byteData, byteOffset,
+                    decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.feedRateMultiplier = decimalFloatFormatter.parse(feedRateMultiplierString).
-                    floatValue();
+                this.feedRateEMultiplier = decimalFloatFormatter.parse(feedRateEMultiplierString).
+                        floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse feed rate multiplier - " + feedRateMultiplierString);
+                steno.error("Couldn't parse feed rate multiplier - " + feedRateEMultiplierString);
+            }
+
+            if (requiredFirmwareVersion >= 740)
+            {
+                String feedRateDMultiplierString = new String(byteData, byteOffset,
+                        decimalFloatFormatBytes, charsetToUse);
+                byteOffset += decimalFloatFormatBytes;
+                try
+                {
+                    this.feedRateDMultiplier = decimalFloatFormatter.parse(feedRateDMultiplierString).
+                            floatValue();
+                } catch (ParseException ex)
+                {
+                    steno.error("Couldn't parse D feed rate multiplier - " + feedRateDMultiplierString);
+                }
+            }
+
+            if (requiredFirmwareVersion >= 724)
+            {
+                this.headPowerOn = (byteData[byteOffset] & 1) > 0;
+                byteOffset += 1;
             }
 
             success = true;
@@ -1273,9 +1342,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Print line number: " + getPrintJobLineNumber());
         outputString.append("\n");
-        outputString.append("Pause status: " + getPauseStatus());
+        outputString.append("Pause status: " + getPauseStatus().name());
         outputString.append("\n");
-        outputString.append("Busy status: " + getBusyStatus());
+        outputString.append("Busy status: " + getBusyStatus().name());
         outputString.append("\n");
         outputString.append("X switch status: " + isxSwitchStatus());
         outputString.append("\n");
@@ -1289,9 +1358,9 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Nozzle switch status: " + isNozzleSwitchStatus());
         outputString.append("\n");
-        outputString.append("Lid switch status: " + isLidSwitchStatus());
+        outputString.append("Door open: " + isDoorOpen());
         outputString.append("\n");
-        outputString.append("Reel button status: " + isReelButtonStatus());
+        outputString.append("Reel button pressed: " + isReelButtonPressed());
         outputString.append("\n");
         outputString.append("E index status: " + isEIndexStatus());
         outputString.append("\n");
@@ -1303,17 +1372,19 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("Extruder D present: " + isExtruderDPresent());
         outputString.append("\n");
-        outputString.append("Extruder heater on: " + getNozzle0HeaterMode());
+        outputString.append("Nozzle 0 heater mode: " + getNozzle0HeaterMode());
         outputString.append("\n");
         outputString.append("Nozzle 0 first layer target temperature: "
-            + getNozzle0FirstLayerTargetTemperature());
+                + getNozzle0FirstLayerTargetTemperature());
         outputString.append("\n");
         outputString.append("Nozzle 0 target temperature: " + getNozzle0TargetTemperature());
         outputString.append("\n");
         outputString.append("Nozzle 0 temperature: " + getNozzle0Temperature());
         outputString.append("\n");
+        outputString.append("Nozzle 1 heater mode: " + getNozzle1HeaterMode());
+        outputString.append("\n");
         outputString.append("Nozzle 1 first layer target temperature: "
-            + getNozzle1FirstLayerTargetTemperature());
+                + getNozzle1FirstLayerTargetTemperature());
         outputString.append("\n");
         outputString.append("Nozzle 1 target temperature: " + getNozzle1TargetTemperature());
         outputString.append("\n");
@@ -1326,7 +1397,7 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("Bed target temperature: " + getBedTargetTemperature());
         outputString.append("\n");
         outputString.append("Bed first layer target temperature: "
-            + getBedFirstLayerTargetTemperature());
+                + getBedFirstLayerTargetTemperature());
         outputString.append("\n");
         outputString.append("Ambient fan on: " + isAmbientFanOn());
         outputString.append("\n");
@@ -1358,20 +1429,38 @@ public class StatusResponse extends RoboxRxPacket
         outputString.append("\n");
         outputString.append("E Filament diameter: " + EFilamentDiameter);
         outputString.append("\n");
-        outputString.append("E Filament diameter: " + EFilamentDiameter);
-        outputString.append("\n");
-        outputString.append("E Filament diameter: " + EFilamentDiameter);
+        outputString.append("E Filament multiplier: " + EFilamentMultiplier);
         outputString.append("\n");
         outputString.append("D Filament diameter: " + DFilamentDiameter);
         outputString.append("\n");
-        outputString.append("E Filament multiplier: " + EFilamentMultiplier);
-        outputString.append("\n");
         outputString.append("D Filament multiplier: " + DFilamentMultiplier);
         outputString.append("\n");
-        outputString.append("Feed rate multiplier: " + feedRateMultiplier);
+        outputString.append("E Feed rate multiplier: " + feedRateEMultiplier);
+        outputString.append("\n");
+        outputString.append("D Feed rate multiplier: " + feedRateDMultiplier);
+        outputString.append("\n");
+        outputString.append("Head power on: " + headPowerOn);
         outputString.append("\n");
         outputString.append(">>>>>>>>>>\n");
 
         return outputString.toString();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        if (requiredFirmwareVersion >= 740 || requiredFirmwareVersion == RoboxRxPacketFactory.USE_LATEST_FIRMWARE_VERSION)
+        {
+            return 221;
+        } else if (requiredFirmwareVersion >= 724)
+        {
+            return 213;
+        } else if (requiredFirmwareVersion >= 701)
+        {
+            return 212;
+        } else
+        {
+            return 211;
+        }
     }
 }

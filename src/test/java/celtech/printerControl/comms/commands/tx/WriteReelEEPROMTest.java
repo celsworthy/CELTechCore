@@ -1,7 +1,6 @@
 /*
  * Copyright 2014 CEL UK
  */
-
 package celtech.printerControl.comms.commands.tx;
 
 import celtech.configuration.MaterialType;
@@ -34,16 +33,16 @@ public class WriteReelEEPROMTest
         Color displayColour = Color.RED;
         WriteReel0EEPROM instance = new WriteReel0EEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
-                                reelFirstLayerBedTemperature, reelBedTemperature,
-                                reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
-                                reelFeedRateMultiplier, reelRemainingFilament, friendlyName,
-                                materialType, displayColour);
+                reelFirstLayerBedTemperature, reelBedTemperature,
+                reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
+                reelFeedRateMultiplier, reelRemainingFilament, friendlyName,
+                materialType, displayColour);
         String bufferString = instance.messagePayload;
         assertEquals(192, bufferString.length());
         System.out.println(bufferString);
-        assertEquals("ABCDEF          FF0000                        11      22      33      44      55      66      77      88TkFNRTE=                      A                                                       99", bufferString);
+        assertEquals("ABCDEF          FF0000                        11      22      33      44      55      66      77      88TkFNRTE=                                A                                             99", bufferString);
     }
-    
+
     @Test
     public void testPopulateEEPROMArabicName()
     {
@@ -62,17 +61,14 @@ public class WriteReelEEPROMTest
         Color displayColour = Color.BLUE;
         WriteReel0EEPROM instance = new WriteReel0EEPROM();
         instance.populateEEPROM(filamentID, reelFirstLayerNozzleTemperature, reelNozzleTemperature,
-                                reelFirstLayerBedTemperature, reelBedTemperature,
-                                reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
-                                reelFeedRateMultiplier, reelRemainingFilament, friendlyName,
-                                materialType, displayColour);
+                reelFirstLayerBedTemperature, reelBedTemperature,
+                reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
+                reelFeedRateMultiplier, reelRemainingFilament, friendlyName,
+                materialType, displayColour);
         String bufferString = instance.messagePayload;
         assertEquals(192, bufferString.length());
         System.out.println(bufferString);
-        assertEquals("ABCABC          0000FF                        11      22      33      44      55      66      77      882LPZhNin2YU=                  C                                                       99", bufferString);
-    }    
+        assertEquals("ABCABC          0000FF                        11      22      33      44      55      66      77      882LPZhNin2YU=                            C                                             99", bufferString);
+    }
 
-  
-
-    
 }

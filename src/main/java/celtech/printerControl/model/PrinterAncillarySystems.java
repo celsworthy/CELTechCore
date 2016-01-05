@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.printerControl.model;
 
 import celtech.configuration.ApplicationConfiguration;
@@ -39,10 +34,12 @@ public class PrinterAncillarySystems
     protected final BooleanProperty headFanOn = new SimpleBooleanProperty(false);
     protected final BooleanProperty ambientFanOn = new SimpleBooleanProperty(false);
     protected final BooleanProperty bAxisHome = new SimpleBooleanProperty(false);
-    protected final BooleanProperty lidOpen = new SimpleBooleanProperty(false);
+    protected final BooleanProperty doorOpen = new SimpleBooleanProperty(false);
     protected final BooleanProperty dualReelAdaptorPresent = new SimpleBooleanProperty(false);
-    protected final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty feedRateEMultiplier = new SimpleFloatProperty(0);
+    protected final FloatProperty feedRateDMultiplier = new SimpleFloatProperty(0);
     protected final FloatProperty hoursCounter = new SimpleFloatProperty(0);
+    protected final BooleanProperty sdCardInserted = new SimpleBooleanProperty(false);
 
     protected final ObjectProperty<HeaterMode> bedHeaterMode = new SimpleObjectProperty<>(HeaterMode.OFF);
     protected final IntegerProperty ambientTemperature = new SimpleIntegerProperty(0);
@@ -119,9 +116,9 @@ public class PrinterAncillarySystems
         return bAxisHome;
     }
 
-    public ReadOnlyBooleanProperty lidOpenProperty()
+    public ReadOnlyBooleanProperty doorOpenProperty()
     {
-        return lidOpen;
+        return doorOpen;
     }
     
     public ReadOnlyBooleanProperty dualReelAdaptorPresentProperty()
@@ -129,9 +126,14 @@ public class PrinterAncillarySystems
         return dualReelAdaptorPresent;
     }
       
-    public ReadOnlyFloatProperty feedRateMultiplierProperty()
+    public ReadOnlyFloatProperty feedRateEMultiplierProperty()
     {
-        return feedRateMultiplier;
+        return feedRateEMultiplier;
+    }
+    
+    public ReadOnlyFloatProperty feedRateDMultiplierProperty()
+    {
+        return feedRateDMultiplier;
     }
     
     public ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty()
@@ -172,6 +174,11 @@ public class PrinterAncillarySystems
     public ReadOnlyFloatProperty hoursCounterProperty()
     {
         return hoursCounter;
+    }
+
+    public ReadOnlyBooleanProperty sdCardInsertedProperty()
+    {
+        return sdCardInserted;
     }
 
     public XYChart.Series<Number, Number> getAmbientTemperatureHistory()

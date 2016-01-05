@@ -3,6 +3,7 @@
  */
 package celtech.utils;
 
+import celtech.printerControl.model.TestPrinter;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import static org.junit.Assert.assertTrue;
@@ -121,6 +122,16 @@ public class PrinterChangesNotifierTest
         {
             reel0Changed = true;
         }        
+
+        @Override
+        public void whenExtruderAdded(int extruderIndex)
+        {
+        }
+
+        @Override
+        public void whenExtruderRemoved(int extruderIndex)
+        {
+        }
         
     }
 

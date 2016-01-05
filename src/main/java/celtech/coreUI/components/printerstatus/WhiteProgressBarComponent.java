@@ -3,6 +3,7 @@
  */
 package celtech.coreUI.components.printerstatus;
 
+import celtech.coreUI.components.printerstatus.PrinterComponent.Status;
 import celtech.printerControl.PrinterStatus;
 import java.io.IOException;
 import java.net.URL;
@@ -103,9 +104,9 @@ public class WhiteProgressBarComponent extends Pane
         });
     }
 
-    public void setStatus(PrinterStatus status)
+    public void setStatus(Status status)
     {
-        if (status == PrinterStatus.IDLE)
+        if (status == Status.READY)
         {
             statusLabel.setText("");
         } else

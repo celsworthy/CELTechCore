@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
 import celtech.configuration.UserPreferences;
-import celtech.coreUI.controllers.panels.PreferencesTopInsetPanelController;
+import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -18,7 +18,7 @@ import javafx.util.Callback;
  *
  * @author Ian
  */
-public class LanguagePreference implements PreferencesTopInsetPanelController.Preference
+public class LanguagePreference implements PreferencesInnerPanelController.Preference
 {
 
     private final ComboBox<Object> control;
@@ -29,6 +29,7 @@ public class LanguagePreference implements PreferencesTopInsetPanelController.Pr
     {
         this.userPreferences = userPreferences;
         control = new ComboBox<>();
+        control.getStyleClass().add("cmbCleanCombo");
 
         setupCellFactory(control);
 

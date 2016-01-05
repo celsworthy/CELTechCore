@@ -3,8 +3,8 @@
  */
 package celtech.printerControl.model.calibration;
 
+import celtech.printerControl.model.StateTransitionManager;
 import celtech.printerControl.model.CalibrationNozzleOpeningActions;
-import celtech.services.calibration.NozzleOpeningCalibrationState;
 import javafx.beans.property.ReadOnlyFloatProperty;
 
 /**
@@ -13,18 +13,19 @@ import javafx.beans.property.ReadOnlyFloatProperty;
  */
 public class NozzleOpeningStateTransitionManager extends StateTransitionManager<NozzleOpeningCalibrationState>
 {
-    private final CalibrationNozzleOpeningActions actions;
 
-    public NozzleOpeningStateTransitionManager(Transitions<NozzleOpeningCalibrationState> transitions,
-        CalibrationNozzleOpeningActions actions)
+    public NozzleOpeningStateTransitionManager(
+        StateTransitionActionsFactory stateTransitionActionsFactory,
+        TransitionsFactory transitionsFactory)
     {
-        super(transitions, NozzleOpeningCalibrationState.IDLE, NozzleOpeningCalibrationState.CANCELLED);
-        this.actions = actions;
+        super(stateTransitionActionsFactory, transitionsFactory, NozzleOpeningCalibrationState.IDLE,
+              NozzleOpeningCalibrationState.CANCELLING, NozzleOpeningCalibrationState.CANCELLED,
+              NozzleOpeningCalibrationState.FAILED);
     }
-    
-        public ReadOnlyFloatProperty getBPositionProperty()
+
+    public ReadOnlyFloatProperty getBPositionProperty()
     {
-        return actions.getBPositionGUITProperty();
+        return ((CalibrationNozzleOpeningActions) actions).getBPositionGUITProperty();
     }
 
 }

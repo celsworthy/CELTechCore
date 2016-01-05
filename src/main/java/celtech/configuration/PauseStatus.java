@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package celtech.configuration;
+
+import celtech.Lookup;
 
 /**
  *
@@ -16,22 +12,19 @@ public enum PauseStatus
     /**
      *
      */
-    NOT_PAUSED(0),
-
+    NOT_PAUSED(0, null),
     /**
      *
      */
-    PAUSE_PENDING(1),
-
+    PAUSE_PENDING(1, "printerStatus.pausing"),
     /**
      *
      */
-    PAUSED(2),
-
+    PAUSED(2, "printerStatus.paused"),
     /**
      *
      */
-    RESUME_PENDING(3);
+    RESUME_PENDING(3, "printerStatus.resuming");
 
     /**
      *
@@ -41,7 +34,7 @@ public enum PauseStatus
     public static PauseStatus modeFromValue(Integer valueOf)
     {
         PauseStatus returnedMode = null;
-        
+
         for (PauseStatus mode : PauseStatus.values())
         {
             if (mode.getValue() == valueOf)
@@ -50,17 +43,19 @@ public enum PauseStatus
                 break;
             }
         }
-        
+
         return returnedMode;
     }
-    
-    private int value;
 
-    private PauseStatus(int value)
+    private int value;
+    private final String i18nString;
+
+    private PauseStatus(int value, String i18nString)
     {
         this.value = value;
+        this.i18nString = i18nString;
     }
-    
+
     /**
      *
      * @return
@@ -68,5 +63,24 @@ public enum PauseStatus
     public int getValue()
     {
         return value;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getI18nString()
+    {
+        return Lookup.i18n(i18nString);
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public String toString()
+    {
+        return getI18nString();
     }
 }

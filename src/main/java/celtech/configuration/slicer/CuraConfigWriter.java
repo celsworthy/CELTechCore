@@ -1,6 +1,7 @@
 package celtech.configuration.slicer;
 
 import celtech.configuration.SlicerType;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
@@ -82,5 +83,10 @@ public class CuraConfigWriter extends SlicerConfigWriter
     {
         outputLine(writer, "filamentDiameter", String.format(Locale.UK, "%d",
                                                              (int) (diameter * 1000)));
+    }
+
+    @Override
+    void bringDataInBounds(SlicerParametersFile profileData)
+    {
     }
 }

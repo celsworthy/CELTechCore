@@ -6,7 +6,7 @@ package celtech.configuration;
  */
 public enum CustomSlicerType
 {
-    Default(null), Slic3r(SlicerType.Slic3r), Cura(SlicerType.Cura);
+    Default(null), Cura(SlicerType.Cura);
     
     private final SlicerType slicerType;
 

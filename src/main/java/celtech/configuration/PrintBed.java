@@ -65,7 +65,7 @@ public class PrintBed
      *
      * @return
      */
-    public Point3D getPrintVolumeMinimums()
+    public static Point3D getPrintVolumeMinimums()
     {
         return printVolumeMinimums;
     }
@@ -74,7 +74,7 @@ public class PrintBed
      *
      * @return
      */
-    public Point3D getPrintVolumeMaximums()
+    public static Point3D getPrintVolumeMaximums()
     {
         return printVolumeMaximums;
     }

@@ -8,19 +8,19 @@ public interface PrinterStatusConsumer
 {
     /**
      *
-     * @param portName
+     * @param printerHandle
      */
-    public void printerConnected(String portName);
+    public void printerConnected(DeviceDetector.DetectedPrinter printerHandle);
 
     /**
      *
-     * @param portName
+     * @param printerHandle
      */
-    public void failedToConnect(String portName);
+    public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle);
 
     /**
      *
-     * @param portName
+     * @param printerHandle
      */
-    public void disconnected(String portName);  
+    public void disconnected(DeviceDetector.DetectedPrinter printerHandle);  
 }

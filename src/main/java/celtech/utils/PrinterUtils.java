@@ -6,21 +6,26 @@
 package celtech.utils;
 
 import celtech.Lookup;
+import celtech.appManager.Project;
 import celtech.appManager.PurgeResponse;
-import celtech.appManager.TaskController;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.BusyStatus;
 import celtech.configuration.Filament;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.controllers.SettingsScreenState;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.utils.tasks.Cancellable;
-import java.util.ResourceBundle;
+import java.util.Set;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -33,7 +38,7 @@ public class PrinterUtils
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        PrinterUtils.class.getName());
+            PrinterUtils.class.getName());
     private static PrinterUtils instance = null;
     private boolean purgeDialogVisible = false;
 
@@ -83,7 +88,7 @@ public class PrinterUtils
         if (task != null && !interrupted)
         {
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
-                && task.isCancelled() == false && !TaskController.isShuttingDown())
+                    && task.isCancelled() == false && !Lookup.isShuttingDown())
             {
                 try
                 {
@@ -97,7 +102,7 @@ public class PrinterUtils
         } else
         {
             while (printerToCheck.printerStatusProperty().get() != PrinterStatus.IDLE
-                && !TaskController.isShuttingDown())
+                    && !Lookup.isShuttingDown())
             {
                 try
                 {
@@ -138,13 +143,13 @@ public class PrinterUtils
         }
 
         while (printJobIDIndicatesPrinting(printerToCheck.printJobIDProperty().get())
-            && !TaskController.isShuttingDown())
+                && !Lookup.isShuttingDown())
         {
             try
             {
                 Thread.sleep(100);
 
-                if (cancellable != null && cancellable.cancelled)
+                if (cancellable != null && cancellable.cancelled().get())
                 {
                     failed = true;
                     break;
@@ -175,8 +180,7 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
-                    isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !Lookup.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -202,8 +206,7 @@ public class PrinterUtils
             {
                 StatusResponse response = printerToCheck.transmitStatusRequest();
 
-                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
-                    isShuttingDown())
+                while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !Lookup.isShuttingDown())
                 {
                     Thread.sleep(100);
                     response = printerToCheck.transmitStatusRequest();
@@ -236,13 +239,12 @@ public class PrinterUtils
         {
             StatusResponse response = printerToCheck.transmitStatusRequest();
 
-            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !TaskController.
-                isShuttingDown())
+            while (response.getBusyStatus() != BusyStatus.NOT_BUSY && !Lookup.isShuttingDown())
             {
                 Thread.sleep(100);
                 response = printerToCheck.transmitStatusRequest();
 
-                if (cancellable != null && cancellable.cancelled)
+                if (cancellable != null && cancellable.cancelled().get())
                 {
                     failed = true;
                     break;
@@ -262,38 +264,81 @@ public class PrinterUtils
     }
 
     /**
-     *
+     * For each head chamber/heater check if a purge is necessary. Return true
+     * if one or more nozzle heaters require a purge.
      * @param printer
-     * @return
+     * @param usedExtruders
+     * @return 
      */
-    public boolean isPurgeNecessary(Printer printer)
+    public static boolean isPurgeNecessary(Printer printer, Set<Integer> usedExtruders)
     {
         boolean purgeIsNecessary = false;
-        float targetNozzleTemperature = 0;
-        SettingsScreenState settingsScreenState = SettingsScreenState.getInstance();
-        Filament settingsFilament = settingsScreenState.getFilament();
 
+        for (Integer extruderNumber : usedExtruders)
+        {
+            purgeIsNecessary |= isPurgeNecessaryForExtruder(printer, extruderNumber);
+        };
+
+        return purgeIsNecessary;
+    }
+
+    /**
+     * Return true if the given nozzle heater requires a purge.
+     *
+     * @param printer
+     * @param extruderNumber
+     * @return
+     */
+    public static boolean isPurgeNecessaryForExtruder(Printer printer,
+            int extruderNumber)
+    {
+        float targetNozzleTemperature = 0;
+        Filament settingsFilament = null;
+        if (extruderNumber == 0)
+        {
+            settingsFilament = printer.effectiveFilamentsProperty().get(0);
+        } else if (extruderNumber == 1)
+        {
+            settingsFilament = printer.effectiveFilamentsProperty().get(1);
+        } else
+        {
+            throw new RuntimeException("Don't know which filament to use for nozzle heater "
+                    + extruderNumber);
+        }
         if (settingsFilament != null)
         {
             targetNozzleTemperature = settingsFilament.getNozzleTemperature();
         } else
         {
-            //TODO modify to work with multiple reels
-            targetNozzleTemperature = (float) printer.reelsProperty().get(0).
-                nozzleTemperatureProperty().get();
+            throw new RuntimeException("No filament set in printer settings");
         }
-
         // A reel is attached - check to see if the temperature is different from that stored on the head
-        //TODO modify to work with multiple heaters
-        if (Math.abs(targetNozzleTemperature
-            - printer.headProperty().get().getNozzleHeaters().get(0).
-            lastFilamentTemperatureProperty().get())
-            > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
+
+        int nozzleNumber = -1;
+
+        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            purgeIsNecessary = true;
+            if (extruderNumber == 0)
+            {
+                nozzleNumber = 1;
+            } else
+            {
+                nozzleNumber = 0;
+            }
+        } else
+        {
+            nozzleNumber = 0;
         }
 
-        return purgeIsNecessary;
+        if (Math.abs(targetNozzleTemperature
+                - printer.headProperty().get().getNozzleHeaters().get(nozzleNumber).
+                lastFilamentTemperatureProperty().get())
+                > ApplicationConfiguration.maxPermittedTempDifferenceForPurge)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -301,10 +346,10 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public PurgeResponse offerPurgeIfNecessary(Printer printer)
+    public PurgeResponse offerPurgeIfNecessary(Printer printer, Set<Integer> usedExtruders)
     {
         PurgeResponse purgeConsent = PurgeResponse.NOT_NECESSARY;
-        if (isPurgeNecessary(printer) && purgeDialogVisible == false)
+        if (isPurgeNecessary(printer, usedExtruders) && purgeDialogVisible == false)
         {
             purgeDialogVisible = true;
 
@@ -317,32 +362,48 @@ public class PrinterUtils
     }
 
     public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
-        Task task, int temperature, int tolerance, int timeoutSec) throws InterruptedException
+            Task task, int temperature, int tolerance, int timeoutSec) throws InterruptedException
     {
         return waitUntilTemperatureIsReached(temperatureProperty,
-                                             task, temperature, tolerance, timeoutSec,
-                                             (Cancellable) null);
+                task, temperature, tolerance, timeoutSec,
+                (Cancellable) null);
     }
 
     public static boolean waitUntilTemperatureIsReached(ReadOnlyIntegerProperty temperatureProperty,
-        Task task, int temperature, int tolerance, int timeoutSec, Cancellable cancellable) throws InterruptedException
+            Task task, int temperature, int tolerance, int timeoutSec, Cancellable cancellable) throws InterruptedException
     {
-        boolean failed = false;
-
         int minTemp = temperature - tolerance;
         int maxTemp = temperature + tolerance;
         long timestampAtStart = System.currentTimeMillis();
         long timeoutMillis = timeoutSec * 1000;
+        BooleanProperty failed = new SimpleBooleanProperty(false);
+
+        ChangeListener<Boolean> cancelChangeListener = new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                failed.set(true);
+            }
+        };
+
+        WeakChangeListener weakCancelChangeListener = new WeakChangeListener<>(cancelChangeListener);
+
+        if (cancellable != null)
+        {
+            cancellable.cancelled().addListener(weakCancelChangeListener);
+        }
 
         if (task != null || cancellable != null)
         {
             try
             {
                 while ((temperatureProperty.get() < minTemp
-                    || temperatureProperty.get() > maxTemp))
+                        || temperatureProperty.get() > maxTemp)
+                        && !failed.get())
                 {
                     if (task != null && task.isCancelled() || (cancellable != null
-                        && cancellable.cancelled))
+                            && cancellable.cancelled().get()))
                     {
                         break;
                     }
@@ -351,39 +412,44 @@ public class PrinterUtils
                     long currentTimeMillis = System.currentTimeMillis();
                     if ((currentTimeMillis - timestampAtStart) >= timeoutMillis)
                     {
-                        failed = true;
+                        failed.set(true);
                         break;
                     }
                 }
             } catch (InterruptedException ex)
             {
                 steno.error("Interrupted during busy check");
-                failed = true;
+                failed.set(true);
             }
         } else
         {
             try
             {
                 while (temperatureProperty.get() < minTemp
-                    || temperatureProperty.get() > maxTemp)
+                        || temperatureProperty.get() > maxTemp)
                 {
                     Thread.sleep(100);
 
                     long currentTimeMillis = System.currentTimeMillis();
                     if ((currentTimeMillis - timestampAtStart) >= timeoutMillis)
                     {
-                        failed = true;
+                        failed.set(true);
                         break;
                     }
                 }
             } catch (InterruptedException ex)
             {
                 steno.error("Interrupted during busy check");
-                failed = true;
+                failed.set(true);
             }
         }
 
-        return failed;
+        if (cancellable != null)
+        {
+            cancellable.cancelled().removeListener(weakCancelChangeListener);
+        }
+
+        return failed.get();
     }
 
     public static float deriveNozzle1OverrunFromOffsets(float nozzle1Offset, float nozzle2Offset)
@@ -409,22 +475,20 @@ public class PrinterUtils
     }
 
     public static float deriveNozzle1ZOffsetsFromOverrun(float nozzle1OverrunValue,
-        float nozzle2OverrunValue)
+            float nozzle2OverrunValue)
     {
         float offsetAverage = -nozzle1OverrunValue;
         float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
         float nozzle1Offset = offsetAverage - delta;
-        float nozzle2Offset = offsetAverage + delta;
 
         return nozzle1Offset;
     }
 
     public static float deriveNozzle2ZOffsetsFromOverrun(float nozzle1OverrunValue,
-        float nozzle2OverrunValue)
+            float nozzle2OverrunValue)
     {
         float offsetAverage = -nozzle1OverrunValue;
         float delta = (nozzle2OverrunValue - nozzle1OverrunValue) / 2;
-        float nozzle1Offset = offsetAverage - delta;
         float nozzle2Offset = offsetAverage + delta;
 
         return nozzle2Offset;
@@ -434,12 +498,28 @@ public class PrinterUtils
     {
         boolean printing = true;
         if (printJobID == null
-            || (printJobID.length() > 0
-            && printJobID.charAt(0) == '\0')
-            || printJobID.equals(""))
+                || (printJobID.length() > 0
+                && printJobID.charAt(0) == '\0')
+                || printJobID.equals(""))
         {
             printing = false;
         }
         return printing;
+    }
+
+    public static void setCancelledIfPrinterDisconnected(Printer printerToMonitor,
+            Cancellable cancellable)
+    {
+        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
+        {
+            @Override
+            public void whenPrinterRemoved(Printer printer)
+            {
+                if (printerToMonitor == printer)
+                {
+                    cancellable.cancelled().set(true);
+                }
+            }
+        });
     }
 }

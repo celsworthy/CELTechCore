@@ -1,11 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.utils.Math;
 
 import javafx.geometry.Point2D;
+import javafx.geometry.Point3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Line;
 import org.apache.commons.math3.geometry.euclidean.twod.Segment;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -47,113 +43,6 @@ public class MathUtilsTest
     {
     }
 
-//    /**
-//     * Test of invSqrt method, of class MathUtils.
-//     */
-//    @Test
-//    public void testInvSqrt()
-//    {
-//        System.out.println("invSqrt");
-//        double x = 0.0;
-//        double expResult = 0.0;
-//        double result = MathUtils.invSqrt(x);
-//        assertEquals(expResult, result, 0.0);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of matrixRotateNode method, of class MathUtils.
-//     */
-//    @Test
-//    public void testMatrixRotateNode()
-//    {
-//        System.out.println("matrixRotateNode");
-//        Node n = null;
-//        double alf = 0.0;
-//        double bet = 0.0;
-//        double gam = 0.0;
-//        MathUtils.matrixRotateNode(n, alf, bet, gam);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of sphericalToCartesianLocalSpaceAdjusted method, of class MathUtils.
-//     */
-//    @Test
-//    public void testSphericalToCartesianLocalSpaceAdjusted()
-//    {
-//        System.out.println("sphericalToCartesianLocalSpaceAdjusted");
-//        PolarCoordinate polarCoordinate = null;
-//        Point3D expResult = null;
-//        Point3D result = MathUtils.sphericalToCartesianLocalSpaceAdjusted(polarCoordinate);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of cartesianToSphericalLocalSpaceAdjusted method, of class MathUtils.
-//     */
-//    @Test
-//    public void testCartesianToSphericalLocalSpaceAdjusted()
-//    {
-//        System.out.println("cartesianToSphericalLocalSpaceAdjusted");
-//        Point3D cartesianCoordinate = null;
-//        PolarCoordinate expResult = null;
-//        PolarCoordinate result = MathUtils.cartesianToSphericalLocalSpaceAdjusted(cartesianCoordinate);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of sphericalToCartesianLocalSpaceUnadjusted method, of class MathUtils.
-//     */
-//    @Test
-//    public void testSphericalToCartesianLocalSpaceUnadjusted()
-//    {
-//        System.out.println("sphericalToCartesianLocalSpaceUnadjusted");
-//        PolarCoordinate polarCoordinate = null;
-//        Point3D expResult = null;
-//        Point3D result = MathUtils.sphericalToCartesianLocalSpaceUnadjusted(polarCoordinate);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of cartesianToSphericalLocalSpaceUnadjusted method, of class MathUtils.
-//     */
-//    @Test
-//    public void testCartesianToSphericalLocalSpaceUnadjusted()
-//    {
-//        System.out.println("cartesianToSphericalLocalSpaceUnadjusted");
-//        Point3D cartesianCoordinate = null;
-//        PolarCoordinate expResult = null;
-//        PolarCoordinate result = MathUtils.cartesianToSphericalLocalSpaceUnadjusted(cartesianCoordinate);
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of cartesianToAngleDegreesCWFromTop method, of class MathUtils.
-//     */
-//    @Test
-//    public void testCartesianToAngleDegreesCWFromTop()
-//    {
-//        System.out.println("cartesianToAngleDegreesCWFromTop");
-//        double xPos = 0.0;
-//        double yPos = 0.0;
-//        double expResult = 0.0;
-//        double result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
-//        assertEquals(expResult, result, 0.0);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
     /**
      * Test of angleDegreesToCartesianCWFromTop method, of class MathUtils.
      */
@@ -167,22 +56,62 @@ public class MathUtilsTest
         Point2D result = MathUtils.angleDegreesToCartesianCWFromTop(angle, radius, true);
         assertEquals(expResult, result);
     }
-//
-//    /**
-//     * Test of cartesianToAngleDegreesCCWFromRight method, of class MathUtils.
-//     */
-//    @Test
-//    public void testCartesianToAngleDegreesCCWFromRight()
-//    {
-//        System.out.println("cartesianToAngleDegreesCCWFromRight");
-//        double xPos = 0.0;
-//        double yPos = 0.0;
-//        double expResult = 0.0;
-//        double result = MathUtils.cartesianToAngleDegreesCCWFromRight(xPos, yPos);
-//        assertEquals(expResult, result, 0.0);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+
+    /**
+     * Test of cartesianToAngleDegreesCCWFromRight method, of class MathUtils.
+     */
+    @Test
+    public void testCartesianToAngleDegreesCWFromTop()
+    {
+        System.out.println("cartesianToAngleDegreesCWFromTop");
+        double xPos = 0.0;
+        double yPos = 0.0;
+        double expResult = 0.0;
+        double result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = 5.0;
+        yPos = 5.0;
+        expResult = 45.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = 5.0;
+        yPos = 0.0;
+        expResult = 90.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = 5.0;
+        yPos = -5.0;
+        expResult = 135.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = 0.0;
+        yPos = -5.0;
+        expResult = 180.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = -5.0;
+        yPos = -5.0;
+        expResult = 225.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = -5.0;
+        yPos = 0.0;
+        expResult = 270.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+
+        xPos = -5.0;
+        yPos = 5.0;
+        expResult = 315.0;
+        result = MathUtils.cartesianToAngleDegreesCWFromTop(xPos, yPos);
+        assertEquals(expResult, result, 0.0);
+    }
 //
 //    /**
 //     * Test of boundAzimuthRadians method, of class MathUtils.
@@ -213,6 +142,59 @@ public class MathUtilsTest
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
+
+    @Test
+    public void testSphericalToCartesianLocalSpaceAdjusted()
+    {
+        System.out.println("getsphericalToCartesianLocalSpaceAdjusted");
+
+        double radius = 100;
+        double epsilon = 0.001;
+
+        PolarCoordinate input1 = new PolarCoordinate(0, 0, radius);
+        Point3D result1 = MathUtils.sphericalToCartesianLocalSpaceAdjusted(input1);
+        assertNotNull(result1);
+        assertEquals(0, result1.getX(), epsilon);
+        assertEquals(0, result1.getY(), epsilon);
+        assertEquals(-100, result1.getZ(), epsilon);
+
+        PolarCoordinate input2 = new PolarCoordinate(Math.PI / 4, 0, radius);
+        Point3D result2 = MathUtils.sphericalToCartesianLocalSpaceAdjusted(input2);
+        assertNotNull(result2);
+        assertEquals(0, result2.getX(), epsilon);
+        assertEquals(-70.7106, result2.getY(), epsilon);
+        assertEquals(-70.7106, result2.getZ(), epsilon);
+
+        PolarCoordinate input3 = new PolarCoordinate(0, Math.PI / 2, radius);
+        Point3D result3 = MathUtils.sphericalToCartesianLocalSpaceAdjusted(input3);
+        assertNotNull(result3);
+        assertEquals(100, result3.getX(), epsilon);
+        assertEquals(0, result3.getY(), epsilon);
+        assertEquals(0, result3.getZ(), epsilon);
+    }
+
+//    @Test
+//    public void testSphericalToCartesianLocalSpaceUnadjusted()
+//    {
+//        System.out.println("getsphericalToCartesianLocalSpaceUnadjusted");
+//        
+//        double radius = 100;
+//        double epsilon = 0.001;
+//        
+//        PolarCoordinate input1 = new PolarCoordinate(0, 0, radius);
+//        Point3D result1 = MathUtils.sphericalToCartesianLocalSpaceUnadjusted(input1);
+//        assertNotNull(result1);
+//        assertEquals(0, result1.getX(), epsilon);
+//        assertEquals(0, result1.getY(), epsilon);
+//        assertEquals(-100, result1.getZ(), epsilon);
+//
+//        PolarCoordinate input2 = new PolarCoordinate(Math.PI / 4, 0, radius);
+//        Point3D result2 = MathUtils.sphericalToCartesianLocalSpaceAdjusted(input2);
+//        assertNotNull(result2);
+//        assertEquals(0, result2.getX(), epsilon);
+//        assertEquals(-70.7106, result2.getY(), epsilon);
+//        assertEquals(-70.7106, result2.getZ(), epsilon);
+//    }
     /**
      * Test of getOrthogonalLineToLinePoints method, of class MathUtils.
      */
@@ -229,8 +211,8 @@ public class MathUtilsTest
         assertEquals(expectedStartPoint, result.getStart());
         assertEquals(expectedEndPoint, result.getEnd());
     }
-    
-        /**
+
+    /**
      * Test of getOrthogonalLineToLinePoints method, of class MathUtils.
      */
     @Test
@@ -240,7 +222,7 @@ public class MathUtilsTest
         double orthogonalLength = 3;
         Vector2D startPoint = new Vector2D(0, -3);
         Vector2D endPoint = new Vector2D(10, -3);
-        Vector2D expectedStartPoint = new Vector2D(5,-6);
+        Vector2D expectedStartPoint = new Vector2D(5, -6);
         Vector2D expectedEndPoint = new Vector2D(5, 0);
         Segment result = MathUtils.getOrthogonalLineToLinePoints(orthogonalLength, endPoint, startPoint);
         assertEquals(expectedStartPoint, result.getStart());
@@ -291,7 +273,7 @@ public class MathUtilsTest
 
         Vector2D firstLineStart = new Vector2D(107.48, 65.55500005626678);
         Vector2D firstLineEnd = new Vector2D(107.48, 62.322999943733215);
-        
+
         Line firstLine = new Line(firstLineStart, firstLineEnd, 1e-12);
         Segment firstSegment = new Segment(firstLineStart, firstLineEnd, firstLine);
 

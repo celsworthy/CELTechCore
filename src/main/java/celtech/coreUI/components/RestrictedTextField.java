@@ -125,14 +125,25 @@ public class RestrictedTextField extends TextField
     @Override
     public void replaceText(int start, int end, String text)
     {
-        text = applyRestriction(text);
-        int length = this.getText().length() + text.length() - (end - start);
-
-        if ( //Control characters - always let them through
-                text.equals("")
-                || (text.matches(restrict.get()) && length <= maxLength.getValue()))
+        if (text != null)
         {
-            super.replaceText(start, end, text);
+            text = applyRestriction(text);
+            
+            int currentLength = 0;
+            
+            if(this.getText() != null)
+            {
+                currentLength = this.getText().length();
+            }
+            
+            int length = currentLength + text.length() - (end - start);
+
+            if ( //Control characters - always let them through
+                    text.equals("")
+                    || (text.matches(restrict.get()) && length <= maxLength.getValue()))
+            {
+                super.replaceText(start, end, text);
+            }
         }
     }
 
@@ -142,14 +153,15 @@ public class RestrictedTextField extends TextField
         {
             text = text.toUpperCase();
         }
-        if (directorySafeName.get()) {
+        if (directorySafeName.get())
+        {
             for (char disallowedChar : "/<>:\"\\|?*".toCharArray())
             {
                 char[] toReplace = new char[1];
                 toReplace[0] = disallowedChar;
                 text = text.replace(new String(toReplace), "");
             }
-        }     
+        }
         return text;
     }
 
@@ -180,8 +192,9 @@ public class RestrictedTextField extends TextField
     {
         this.directorySafeName.set(directorySafeName);
     }
-    
-    public Float getFloatValue() throws ParseException {
+
+    public Float getFloatValue() throws ParseException
+    {
         Number number = NumberFormat.getInstance().parse(getText());
         return number.floatValue();
     }

@@ -7,7 +7,6 @@ import celtech.printerControl.comms.commands.StringToBase64Encoder;
 import static celtech.printerControl.comms.commands.tx.WriteReel0EEPROM.FRIENDLY_NAME_LENGTH;
 import static celtech.printerControl.comms.commands.tx.WriteReel0EEPROM.MATERIAL_TYPE_LENGTH;
 import static celtech.printerControl.comms.commands.tx.WriteReel0EEPROM.REEL_EEPROM_PADDING_LENGTH;
-import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import celtech.utils.FixedDecimalFloatFormat;
 import java.io.UnsupportedEncodingException;
@@ -58,7 +57,7 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -426,5 +425,11 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     public int getReelNumber()
     {
         return reelNumber;
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 193;
     }
 }

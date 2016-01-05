@@ -1,12 +1,10 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.configuration.EEPROMState;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.coreUI.DisplayManager;
+import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
@@ -39,6 +37,7 @@ public class Reel implements RepairableComponent
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(Reel.class.getName());
+    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
     protected final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     protected final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     protected final StringProperty filamentID = new SimpleStringProperty();
@@ -275,7 +274,7 @@ public class Reel implements RepairableComponent
 
         RepairResult result = RepairResult.NO_REPAIR_NECESSARY;
 
-        Filament referenceFilamentData = FilamentContainer.getFilamentByID(filamentID.get());
+        Filament referenceFilamentData = filamentContainer.getFilamentByID(filamentID.get());
         if (referenceFilamentData != null)
         {
             if (ambientTemperature.get() != referenceFilamentData.getAmbientTemperature())
@@ -326,19 +325,19 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (displayColour.get().equals(referenceFilamentData.getDisplayColour()) == false)
+            if (! colourToString(displayColour.get()).equals(colourToString(referenceFilamentData.getDisplayColour())))
             {
                 displayColour.set(referenceFilamentData.getDisplayColour());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (filamentID.get().equals(referenceFilamentData.getFilamentID()) == false)
+            if (! filamentID.get().equals(referenceFilamentData.getFilamentID()))
             {
                 filamentID.set(referenceFilamentData.getFilamentID());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            if (friendlyFilamentName.get().equals(referenceFilamentData.getFriendlyFilamentName()) == false)
+            if (!friendlyFilamentName.get().trim().equals(referenceFilamentData.getFriendlyFilamentName().trim()))
             {
                 friendlyFilamentName.set(referenceFilamentData.getFriendlyFilamentName());
                 result = RepairResult.REPAIRED_WRITE_ONLY;
@@ -350,7 +349,7 @@ public class Reel implements RepairableComponent
                 result = RepairResult.REPAIRED_WRITE_ONLY;
             }
 
-            steno.info("Reel data bounds check - result is " + result.name());
+            steno.debug("Reel data bounds check - result is " + result.name());
         } else
         {
             steno.warning("Reel bounds check requested but reference data could not be obtained.");
@@ -363,7 +362,7 @@ public class Reel implements RepairableComponent
     @Override
     public void resetToDefaults()
     {
-        Filament referenceFilament = FilamentContainer.getFilamentByID(filamentID.get());
+        Filament referenceFilament = filamentContainer.getFilamentByID(filamentID.get());
         if (referenceFilament != null)
         {
             updateContents(referenceFilament);
@@ -379,30 +378,4 @@ public class Reel implements RepairableComponent
     {
     }
 
-    public static boolean isFilamentIDValid(String filamentID)
-    {
-        boolean filamentIDIsValid = false;
-
-        if (filamentID != null
-            && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
-            || filamentID.matches("^U.*")))
-        {
-            filamentIDIsValid = true;
-        }
-
-        return filamentIDIsValid;
-    }
-
-    public static boolean isFilamentIDInDatabase(String filamentID)
-    {
-        boolean filamentIDIsInDatabase = false;
-
-        if (filamentID != null
-            && FilamentContainer.getFilamentByID(filamentID) != null)
-        {
-            filamentIDIsInDatabase = true;
-        }
-
-        return filamentIDIsInDatabase;
-    }
 }

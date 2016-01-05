@@ -2,27 +2,22 @@ package celtech.printerControl.comms;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.PauseStatus;
-import celtech.printerControl.PrintJob;
-import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
-import celtech.printerControl.comms.commands.tx.ReadSendFileReport;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
+import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.PrinterUtils;
-import java.io.IOException;
 import javafx.concurrent.WorkerStateEvent;
-import jssc.SerialPort;
 import libertysystems.configuration.ConfigItemIsAnArray;
 import libertysystems.configuration.ConfigNotLoadedException;
 import libertysystems.configuration.Configuration;
@@ -39,37 +34,40 @@ public abstract class CommandInterface extends Thread
     protected boolean keepRunning = true;
 
     protected Stenographer steno = StenographerFactory.getStenographer(
-        HardwareCommandInterface.class.getName());
+            HardwareCommandInterface.class.getName());
     protected PrinterStatusConsumer controlInterface = null;
-    protected String portName = null;
+    protected DeviceDetector.DetectedPrinter printerHandle = null;
     protected Printer printerToUse = null;
     protected String printerFriendlyName = "Robox";
     protected RoboxCommsState commsState = RoboxCommsState.FOUND;
-    protected SerialPort serialPort = null;
     protected PrinterID printerID = new PrinterID();
 
     protected final FirmwareLoadService firmwareLoadService = new FirmwareLoadService();
     protected String requiredFirmwareVersionString = "";
     protected float requiredFirmwareVersion = 0;
+    protected float firmwareVersionInUse = 0;
 
     protected boolean suppressPrinterIDChecks = false;
     protected int sleepBetweenStatusChecks = 1000;
     private boolean loadingFirmware = false;
+
+    protected boolean suppressComms = false;
 
     private String printerName = null;
 
     /**
      *
      * @param controlInterface
-     * @param portName
+     * @param printerHandle
      * @param suppressPrinterIDChecks
      * @param sleepBetweenStatusChecks
      */
-    public CommandInterface(PrinterStatusConsumer controlInterface, String portName,
-        boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
+    public CommandInterface(PrinterStatusConsumer controlInterface,
+            DeviceDetector.DetectedPrinter printerHandle,
+            boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         this.controlInterface = controlInterface;
-        this.portName = portName;
+        this.printerHandle = printerHandle;
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
         this.sleepBetweenStatusChecks = sleepBetweenStatusChecks;
 
@@ -79,8 +77,8 @@ public abstract class CommandInterface extends Thread
             try
             {
                 requiredFirmwareVersionString = applicationConfiguration.getString(
-                    ApplicationConfiguration.applicationConfigComponent, "requiredFirmwareVersion").
-                    trim();
+                        ApplicationConfiguration.applicationConfigComponent, "requiredFirmwareVersion").
+                        trim();
                 requiredFirmwareVersion = Float.valueOf(requiredFirmwareVersionString);
             } catch (ConfigItemIsAnArray ex)
             {
@@ -95,14 +93,14 @@ public abstract class CommandInterface extends Thread
         {
             FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
             Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            disconnectSerialPort();
+            disconnectPrinter();
         });
 
         firmwareLoadService.setOnFailed((WorkerStateEvent t) ->
         {
             FirmwareLoadResult result = (FirmwareLoadResult) t.getSource().getValue();
             Lookup.getSystemNotificationHandler().showFirmwareUpgradeStatusNotification(result);
-            disconnectSerialPort();
+            disconnectPrinter();
         });
 
         Lookup.getSystemNotificationHandler().configureFirmwareProgressDialog(firmwareLoadService);
@@ -117,23 +115,23 @@ public abstract class CommandInterface extends Thread
             switch (commsState)
             {
                 case FOUND:
-                    steno.debug("Trying to connect to printer in " + portName);
+                    steno.debug("Trying to connect to printer in " + printerHandle);
 
-                    boolean printerCommsOpen = connectToPrinter(portName);
+                    boolean printerCommsOpen = connectToPrinter();
                     if (printerCommsOpen)
                     {
-                        steno.debug("Connected to Robox on " + portName);
+                        steno.debug("Connected to Robox on " + printerHandle);
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } else
                     {
-                        steno.debug("Failed to connect to Robox on " + portName);
-                        controlInterface.failedToConnect(portName);
+                        steno.debug("Failed to connect to Robox on " + printerHandle);
+                        controlInterface.failedToConnect(printerHandle);
                         keepRunning = false;
                     }
                     break;
 
                 case CHECKING_FIRMWARE:
-                    steno.debug("Check firmware " + portName);
+                    steno.debug("Check firmware " + printerHandle);
                     if (loadingFirmware)
                     {
                         try
@@ -156,32 +154,59 @@ public abstract class CommandInterface extends Thread
                         if (firmwareResponse.getFirmwareRevisionFloat() != requiredFirmwareVersion)
                         {
                             // The firmware version is different to that associated with AutoMaker
-                            // Tell the user to update
-
                             steno.warning("Firmware version is "
-                                + firmwareResponse.getFirmwareRevisionString() + " and should be "
-                                + requiredFirmwareVersionString);
+                                    + firmwareResponse.getFirmwareRevisionString() + " and should be "
+                                    + requiredFirmwareVersionString);
 
+//                            Lookup.setFirmwareVersion()
+                            // Is the SD card present?
+                            try
+                            {
+                                StatusRequest request = (StatusRequest) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST);
+                                firmwareVersionInUse = firmwareResponse.getFirmwareRevisionFloat();
+                                StatusResponse response = (StatusResponse) writeToPrinter(request, true);
+                                if (!response.isSDCardPresent())
+                                {
+                                    steno.warning("SD Card not present");
+                                    Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(FirmwareError.SD_CARD, printerToUse);
+                                    disconnectPrinter();
+                                    keepRunning = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    Lookup.getSystemNotificationHandler().clearAllDialogsOnDisconnect();
+                                }
+                            } catch (RoboxCommsException ex)
+                            {
+                                steno.error("Failure during printer status request. " + ex.toString());
+                                break;
+                            }
+
+                            // Tell the user to update
                             loadRequiredFirmware = Lookup.getSystemNotificationHandler().
-                                askUserToUpdateFirmware();
+                                    askUserToUpdateFirmware();
                         }
+
                         if (loadRequiredFirmware)
                         {
                             loadingFirmware = true;
-                            loadFirmware(requiredFirmwareVersionString);
+                            loadFirmware(ApplicationConfiguration.getCommonApplicationDirectory()
+                                    + "robox_r" + requiredFirmwareVersionString + ".bin");
                         } else
                         {
+                            firmwareVersionInUse = firmwareResponse.getFirmwareRevisionFloat();
                             moveOnFromFirmwareCheck(firmwareResponse);
                         }
                     } catch (PrinterException ex)
                     {
                         steno.error("Exception whilst checking firmware version: " + ex);
-                        disconnectSerialPort();
+                        disconnectPrinter();
                     }
                     break;
 
                 case CHECKING_ID:
-                    steno.debug("Check id " + portName);
+                    steno.debug("Check id " + printerHandle);
 
                     PrinterIDResponse lastPrinterIDResponse = null;
 
@@ -192,12 +217,12 @@ public abstract class CommandInterface extends Thread
                         printerName = lastPrinterIDResponse.getPrinterFriendlyName();
 
                         if (printerName == null
-                            || (printerName.length() > 0
-                            && printerName.charAt(0) == '\0'))
+                                || (printerName.length() > 0
+                                && printerName.charAt(0) == '\0'))
                         {
                             steno.info("Connected to unknown printer");
                             Lookup.getSystemNotificationHandler().
-                                showNoPrinterIDDialog(printerToUse);
+                                    showNoPrinterIDDialog(printerToUse);
                             lastPrinterIDResponse = printerToUse.readPrinterID();
                         } else
                         {
@@ -212,29 +237,29 @@ public abstract class CommandInterface extends Thread
                     break;
 
                 case DETERMINING_PRINTER_STATUS:
-                    steno.debug("Determining printer status on port " + portName);
+                    steno.debug("Determining printer status on port " + printerHandle);
 
                     try
                     {
                         StatusResponse statusResponse = (StatusResponse) writeToPrinter(
-                            RoboxTxPacketFactory.createPacket(
-                                TxPacketTypeEnum.STATUS_REQUEST), true);
+                                RoboxTxPacketFactory.createPacket(
+                                        TxPacketTypeEnum.STATUS_REQUEST), true);
 
                         determinePrinterStatus(statusResponse);
 
-                        controlInterface.printerConnected(portName);
+                        controlInterface.printerConnected(printerHandle);
                         commsState = RoboxCommsState.CONNECTED;
                     } catch (RoboxCommsException ex)
                     {
                         if (printerFriendlyName != null)
                         {
                             steno.error("Failed to determine printer status on "
-                                + printerFriendlyName);
+                                    + printerFriendlyName);
                         } else
                         {
                             steno.error("Failed to determine printer status on unknown printer");
                         }
-                        disconnectSerialPort();
+                        disconnectPrinter();
                     }
 
                     break;
@@ -245,24 +270,33 @@ public abstract class CommandInterface extends Thread
                     {
                         this.sleep(sleepBetweenStatusChecks);
 
+                        if (!suppressComms)
+                        {
+                            try
+                            {
 //                        steno.debug("STATUS REQUEST: " + portName);
-                        writeToPrinter(RoboxTxPacketFactory.createPacket(
-                            TxPacketTypeEnum.STATUS_REQUEST));
+                                writeToPrinter(RoboxTxPacketFactory.createPacket(
+                                        TxPacketTypeEnum.STATUS_REQUEST));
 
-                        writeToPrinter(
-                            RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
-                    } catch (RoboxCommsException ex)
-                    {
-                        steno.error("Failure during printer status request. " + ex.toString());
+                                writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
+                            } catch (RoboxCommsException ex)
+                            {
+                                steno.error("Failure during printer status request. " + ex.toString());
+                            }
+                        }
                     } catch (InterruptedException ex)
                     {
-                        steno.debug("Comms interrupted");
+                        steno.info("Comms interrupted");
                     }
+                    break;
+
+                case DISCONNECTED:
+                    steno.debug("state is disconnected");
                     break;
             }
         }
         steno.info(
-            "Handler for " + portName + " exiting");
+                "Handler for " + printerHandle + " exiting");
     }
 
     private void moveOnFromFirmwareCheck(FirmwareResponse firmwareResponse)
@@ -277,24 +311,28 @@ public abstract class CommandInterface extends Thread
         loadingFirmware = false;
     }
 
-    private void loadFirmware(String versionToLoad)
+    public void loadFirmware(String firmwareFilePath)
     {
+        suppressComms = true;
+        this.interrupt();
         firmwareLoadService.reset();
         firmwareLoadService.setPrinterToUse(printerToUse);
-        firmwareLoadService.setFirmwareFileToLoad(
-            ApplicationConfiguration.getCommonApplicationDirectory()
-            + "robox_r" + versionToLoad + ".bin");
+        firmwareLoadService.setFirmwareFileToLoad(firmwareFilePath);
         firmwareLoadService.start();
     }
 
     public void shutdown()
     {
         steno.info("Shutdown command interface...");
+        suppressComms = true;
         if (firmwareLoadService.isRunning())
         {
             steno.info("Shutdown command interface firmware service...");
             firmwareLoadService.cancel();
         }
+        steno.debug("set state to disconnected");
+        commsState = RoboxCommsState.DISCONNECTED;
+        disconnectPrinter();
         steno.info("Shutdown command interface complete");
         keepRunning = false;
     }
@@ -311,17 +349,13 @@ public abstract class CommandInterface extends Thread
      * @return
      * @throws RoboxCommsException
      */
-    public abstract RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException;
+    public final synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
+    {
+        return writeToPrinter(messageToWrite, false);
+    }
 
-    /**
-     *
-     * @param messageToWrite
-     * @param dontPublishResult
-     * @return
-     * @throws RoboxCommsException
-     */
     public abstract RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite,
-        boolean dontPublishResult) throws RoboxCommsException;
+            boolean dontPublishResult) throws RoboxCommsException;
 
     /**
      *
@@ -334,15 +368,14 @@ public abstract class CommandInterface extends Thread
 
     /**
      *
-     * @param commsPortName
      * @return
      */
-    protected abstract boolean connectToPrinter(String commsPortName);
+    protected abstract boolean connectToPrinter();
 
     /**
      *
      */
-    protected abstract void disconnectSerialPort();
+    protected abstract void disconnectPrinter();
 
     private void determinePrinterStatus(StatusResponse statusResponse)
     {
@@ -356,43 +389,6 @@ public abstract class CommandInterface extends Thread
                 steno.error("Connected to an unknown printer that is printing");
             }
 
-            ReadSendFileReport sendFileReport = (ReadSendFileReport) RoboxTxPacketFactory.
-                createPacket(
-                    TxPacketTypeEnum.READ_SEND_FILE_REPORT);
-
-            try
-            {
-                SendFile sendFileData = (SendFile) writeToPrinter(sendFileReport, true);
-
-                if (sendFileData.getFileID() != null && !sendFileData.getFileID().equals(""))
-                {
-                    steno.info("The printer is printing an incomplete job: File ID: "
-                        + sendFileData.getFileID()
-                        + " Expected sequence number: " + sendFileData.getExpectedSequenceNumber());
-
-                    printerToUse.getPrintEngine().reEstablishTransfer(sendFileData.getFileID(),
-                                                                      sendFileData.
-                                                                      getExpectedSequenceNumber());
-                }
-            } catch (RoboxCommsException ex)
-            {
-                steno.error(
-                    "Error determining whether the printer has a partially transferred job in progress");
-            }
-
-            String printJobID = printerToUse.printJobIDProperty().get();
-
-            printerToUse.getPrintEngine().makeETCCalculatorForJobOfUUID(printJobID);
-            Lookup.getSystemNotificationHandler().
-                showDetectedPrintInProgressNotification();
-
-            if (printerToUse.pauseStatusProperty().get() == PauseStatus.PAUSED)
-            {
-                printerToUse.setPrinterStatus(PrinterStatus.PAUSED);
-            } else
-            {
-                printerToUse.setPrinterStatus(PrinterStatus.PRINTING);
-            }
         }
     }
 }

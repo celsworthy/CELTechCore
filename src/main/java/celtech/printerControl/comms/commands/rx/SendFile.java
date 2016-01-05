@@ -47,7 +47,7 @@ public class SendFile extends RoboxRxPacket
      * @return
      */
     @Override
-    public boolean populatePacket(byte[] byteData)
+    public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
 
@@ -59,8 +59,8 @@ public class SendFile extends RoboxRxPacket
             this.fileID = this.fileID.trim();
 
             String expectedSequenceNumberString = new String(byteData, byteOffset,
-                                                             expectedSequenceNumberBytes,
-                                                             charsetToUse).trim();
+                    expectedSequenceNumberBytes,
+                    charsetToUse).trim();
             byteOffset += expectedSequenceNumberBytes;
 
             if (expectedSequenceNumberString.equals("") == false)
@@ -70,7 +70,7 @@ public class SendFile extends RoboxRxPacket
             {
                 this.expectedSequenceNumber = -1;
             }
-            
+
             success = true;
         } catch (UnsupportedEncodingException ex)
         {
@@ -100,5 +100,11 @@ public class SendFile extends RoboxRxPacket
         outputString.append(">>>>>>>>>>\n");
 
         return outputString.toString();
+    }
+
+    @Override
+    public int packetLength(float requiredFirmwareVersion)
+    {
+        return 25;
     }
 }

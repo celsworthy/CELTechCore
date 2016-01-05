@@ -9,9 +9,12 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyFloatProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 
@@ -32,6 +35,8 @@ public class NozzleHeater implements Cloneable
     protected final IntegerProperty nozzleTemperature = new SimpleIntegerProperty(0);
     protected final IntegerProperty nozzleFirstLayerTargetTemperature = new SimpleIntegerProperty(0);
     protected final IntegerProperty nozzleTargetTemperature = new SimpleIntegerProperty(0);
+    
+    protected final StringProperty filamentID = new SimpleStringProperty("");
 
     private final LineChart.Series<Number, Number> nozzleTemperatureHistory = new LineChart.Series<>();
     private final ArrayList<LineChart.Data<Number, Number>> nozzleTemperatureDataPoints = new ArrayList<>();
@@ -51,7 +56,8 @@ public class NozzleHeater implements Cloneable
         float lastFilamentTemperature,
         int nozzleTemperature,
         int nozzleFirstLayerTargetTemperature,
-        int nozzleTargetTemperature)
+        int nozzleTargetTemperature,
+        String filamentID)
     {
         this.maximumTemperature.set(maximumTemperature);
         this.beta.set(beta);
@@ -60,6 +66,7 @@ public class NozzleHeater implements Cloneable
         this.nozzleTemperature.set(nozzleTemperature);
         this.nozzleFirstLayerTargetTemperature.set(nozzleFirstLayerTargetTemperature);
         this.nozzleTargetTemperature.set(nozzleTargetTemperature);
+        this.filamentID.set(filamentID);
 
         initialiseTemperatureGraph();
     }
@@ -80,38 +87,22 @@ public class NozzleHeater implements Cloneable
         return heaterMode;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty maximumTemperatureProperty()
     {
         return maximumTemperature;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty betaProperty()
     {
         return beta;
     }
 
-    /**
-     *
-     * @return
-     */
     public ReadOnlyFloatProperty tCalProperty()
     {
         return tcal;
     }
 
-    /**
-     *
-     * @return
-     */
-    public ReadOnlyFloatProperty lastFilamentTemperatureProperty()
+    public FloatProperty lastFilamentTemperatureProperty()
     {
         return lastFilamentTemperature;
     }
@@ -130,6 +121,11 @@ public class NozzleHeater implements Cloneable
     {
         return nozzleTargetTemperature;
     }
+    
+    public ReadOnlyStringProperty filamentIDProperty()
+    {
+        return filamentID;
+    }    
     
     public XYChart.Series<Number, Number> getNozzleTemperatureHistory()
     {
@@ -178,10 +174,6 @@ public class NozzleHeater implements Cloneable
 
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public NozzleHeater clone()
     {
@@ -192,7 +184,8 @@ public class NozzleHeater implements Cloneable
             lastFilamentTemperature.floatValue(),
             nozzleTemperature.intValue(),
             nozzleFirstLayerTargetTemperature.intValue(),
-            nozzleTargetTemperature.intValue()
+            nozzleTargetTemperature.intValue(),
+            filamentID.getValue()
         );
 
         return clone;

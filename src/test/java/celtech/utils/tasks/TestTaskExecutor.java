@@ -1,5 +1,7 @@
 package celtech.utils.tasks;
 
+import javafx.concurrent.Task;
+
 /**
  *
  * @author Ian
@@ -41,6 +43,12 @@ public class TestTaskExecutor implements TaskExecutor
     {
         runnable.run();
     }
+    
+    @Override
+    public void runOnBackgroundThread(Runnable runnable)
+    {
+        runnable.run();
+    }    
 
     @Override
     public void runAsTask(NoArgsVoidFunc action, NoArgsVoidFunc successHandler,
@@ -62,5 +70,10 @@ public class TestTaskExecutor implements TaskExecutor
                 ex.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void runTaskAsDaemon(Task task)
+    {
     }
 }

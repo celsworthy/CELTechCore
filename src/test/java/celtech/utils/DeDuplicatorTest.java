@@ -24,7 +24,7 @@ public class DeDuplicatorTest
         currentNames.add("PETER");
         currentNames.add("PETER1");
         String INITIAL_NAME = "JOHN";
-        String suggestedName = DeDuplicator.suggestNonDuplicateName(INITIAL_NAME, currentNames);
+        String suggestedName = DeDuplicator.suggestNonDuplicateNameCopy(INITIAL_NAME, currentNames);
         assertEquals(INITIAL_NAME, suggestedName);
     }
     
@@ -36,8 +36,8 @@ public class DeDuplicatorTest
         currentNames.add("PETER");
         currentNames.add("PETER1");
         String INITIAL_NAME = "TIM";
-        String suggestedName = DeDuplicator.suggestNonDuplicateName(INITIAL_NAME, currentNames);
-        assertEquals(INITIAL_NAME + "1", suggestedName);
+        String suggestedName = DeDuplicator.suggestNonDuplicateNameCopy(INITIAL_NAME, currentNames);
+        assertEquals(INITIAL_NAME + " (Copy)", suggestedName);
     }    
     
     @Test
@@ -49,8 +49,8 @@ public class DeDuplicatorTest
         currentNames.add("PETER1");
         currentNames.add("PETER2");
         String INITIAL_NAME = "PETER";
-        String suggestedName = DeDuplicator.suggestNonDuplicateName(INITIAL_NAME, currentNames);
-        assertEquals(INITIAL_NAME + "3", suggestedName);
+        String suggestedName = DeDuplicator.suggestNonDuplicateNameCopy(INITIAL_NAME, currentNames);
+        assertEquals(INITIAL_NAME + " (Copy)", suggestedName);
     }        
     
 }

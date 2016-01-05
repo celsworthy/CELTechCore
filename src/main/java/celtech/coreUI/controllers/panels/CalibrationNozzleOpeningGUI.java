@@ -4,10 +4,10 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.printerControl.model.calibration.StateTransitionManager;
-import celtech.printerControl.model.calibration.StateTransitionManager.GUIName;
-import celtech.printerControl.model.calibration.StateTransition;
-import celtech.services.calibration.NozzleOpeningCalibrationState;
+import celtech.printerControl.model.StateTransitionManager;
+import celtech.printerControl.model.StateTransitionManager.GUIName;
+import celtech.printerControl.model.StateTransition;
+import celtech.printerControl.model.calibration.NozzleOpeningCalibrationState;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -81,8 +81,6 @@ public class CalibrationNozzleOpeningGUI
             case HEATING:
                 controller.showSpinner();
                 controller.calibrationMenu.disableNonSelectedItems();
-                controller.setCalibrationProgressVisible(
-                    CalibrationInsetPanelController.ProgressVisibility.TEMP);
                 stepNo = 1;
                 break;
             case NO_MATERIAL_CHECK:
@@ -127,7 +125,7 @@ public class CalibrationNozzleOpeningGUI
             case FINISHED:
                 controller.calibrationMenu.reset();
                 break;
-            case DONE:    
+            case CANCELLED:    
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FAILED:
@@ -136,7 +134,7 @@ public class CalibrationNozzleOpeningGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format("Step %s of 9", stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf9"), stepNo));
         }
     }
 

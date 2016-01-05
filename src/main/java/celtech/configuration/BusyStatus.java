@@ -1,5 +1,7 @@
 package celtech.configuration;
 
+import celtech.Lookup;
+
 /**
  *
  * @author Ian
@@ -10,22 +12,32 @@ public enum BusyStatus
     /**
      *
      */
-    NOT_BUSY(0),
+    NOT_BUSY(0, null),
 
     /**
      *
      */
-    BUSY(1),
+    BUSY(1, null),
 
     /**
      *
      */
-    LOADING_FILAMENT(2),
+    LOADING_FILAMENT_E(2, "printerStatus.loadingFilamentE"),
 
     /**
      *
      */
-    UNLOADING_FILAMENT(3);
+    UNLOADING_FILAMENT_E(3, "printerStatus.ejectingFilamentE"),
+
+    /**
+     *
+     */
+    LOADING_FILAMENT_D(4, "printerStatus.loadingFilamentD"),
+
+    /**
+     *
+     */
+    UNLOADING_FILAMENT_D(5, "printerStatus.ejectingFilamentD");
 
     /**
      *
@@ -49,10 +61,12 @@ public enum BusyStatus
     }
     
     private int value;
+    private final String i18nString;
 
-    private BusyStatus(int value)
+    private BusyStatus(int value, String i18nString)
     {
         this.value = value;
+        this.i18nString = i18nString;
     }
     
     /**
@@ -62,5 +76,24 @@ public enum BusyStatus
     public int getValue()
     {
         return value;
+    }
+    
+        /**
+     *
+     * @return
+     */
+    public String getI18nString()
+    {
+        return Lookup.i18n(i18nString);
+    }
+
+    /**
+     *
+     * @return
+     */
+    @Override
+    public String toString()
+    {
+        return getI18nString();
     }
 }

@@ -34,10 +34,20 @@
 *{
     black: rgb(0,0,0);
     dark_grey: rgb(48,48,48);
-    mid_grey: rgb(64,64,64);
+    mid_grey_solid: rgb(64,64,64, 1.0);
+    mid_grey_50: rgb(64,64,64, 0.5);
+    mid_grey_30: rgb(64,64,64, 0.3);
+    white_60: rgb(255,255,255, 0.6);
     light_grey: rgb(99,99,99);
+    light_grey_30: rgb(99,99,99, 0.3);
+    superlight_grey_30: rgb(200,200,200, 0.3);
     robox_blue: #0096e1;
+    robox_blue_darker: #0087d2;
+    robox_blue_lighter: #0fa5f0;
     highlight_colour: rgb(0, 157, 226);
+    highlight_colour_orange: #ff661b;
+    highlight_colour_orange_darker: #f0570c;
+    highlight_colour_orange_lighter: #ff752a;
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -78,15 +88,16 @@
 }
 
 .standardPanel{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .project-view-background{
-    -fx-background-color: linear-gradient(to bottom, #838383, #dadada);
+    -fx-background-color:#a0a0a0;
 }
 
 .label{
     -fx-text-fill: white;
+    -fx-font-smoothing-type: lcd;
 }
 
 .header{
@@ -104,14 +115,12 @@
     -fx-fill-color: grey;
 }
 
-/*.text{
-    -fx-font-smoothing-type: gray;
-}*/
+.text { -fx-font-smoothing-type: lcd; }
 
 .text-field {
     -fx-font-size: 10pt;
     -fx-background-radius: 0px;
-    -fx-padding: 0 0 0 0;
+    /*-fx-padding: 0 0 0 0;*/
 }
 
 
@@ -168,6 +177,98 @@
 
 .button:default:hover{
     -fx-background-color: #219297;
+}
+
+.toggle-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+
+    -fx-background-radius: 0;
+
+    -fx-background-color: #1d1d1d;
+
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.toggle-button:hover{
+    -fx-background-color: hover_colour;
+}
+
+.toggle-button:pressed, .button:default:hover:pressed
+{
+    -fx-background-color: pressed_colour;
+    -fx-text-fill: background_colour;
+}
+
+.toggle-button:focused
+{
+    -fx-border-color: white, white;
+    -fx-border-width: 1, 1;
+    -fx-border-style: solid, segments(1, 1);
+    -fx-border-radius: 0, 0;
+    -fx-border-insets: 1 1 1 1, 0;
+}
+
+.toggle-button:disabled, .button:default:disabled
+{
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
+}
+
+.toggle-button:default
+{
+    -fx-background-color: #008287;
+    -fx-text-fill: #ffffff;
+}
+/*
+.toggle-button:selected {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
+}*/
+/*
+ * Model edit button
+ */
+.model-material1-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-background-color: robox_blue;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.model-material1-button:pressed, .model-material1-button:default:hover:pressed, .model-material1-button:selected:hover, .model-material1-button:selected:focused, .model-material1-button:selected
+{
+    -fx-background-color: robox_blue_darker;
+    -fx-text-fill: background_colour;
+}
+
+.model-material1-button:hover{
+    -fx-background-color: robox_blue_lighter;
+}
+
+.model-material2-button {
+    -fx-padding: 5 22 5 22;   
+    -fx-border-color: outline_colour;
+    -fx-border-width: 2;
+    -fx-background-radius: 0;
+    -fx-background-color: highlight_colour_orange;
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.model-material2-button:pressed, .model-material2-button:default:hover:pressed, .model-material2-button:selected:hover, .model-material2-button:selected:focused, .model-material2-button:selected
+{
+    -fx-background-color: highlight_colour_orange_darker;
+    -fx-text-fill: background_colour;
+}
+
+.model-material2-button:hover{
+    -fx-background-color: highlight_colour_orange_lighter;
 }
 
 /*
@@ -273,10 +374,6 @@
     -fx-border-color: transparent;
 }
 
-.toggle-button:selected {
-    -fx-background-color: light_grey;
-    -fx-background-insets: 2,2 2 2 2, 2 2 2 2, 2 2 2 2;
-}
 /*
  * Jog Button
  */
@@ -421,54 +518,6 @@
 .gizmoControlButton:pressed #rotationHandle {
     -fx-fill: gizmoRotationHandle_pressed;
 }
-
-/*******************************************************************************
- *                                                                             *
- * Toggle Button                                                               *
- *                                                                             *
- ******************************************************************************/
-/*
-.toggle-button {
-    -fx-padding: 5 22 5 22;   
-    -fx-border-color: #e2e2e2;
-    -fx-border-width: 2;
-
-    -fx-background-radius: 0;
-
-    -fx-background-color: #1d1d1d;
-
-    -fx-font-size: 11pt;
-    -fx-text-fill: #d8d8d8;
-}
-
-.toggle-button:focused {
-    -fx-border-color: white, white;
-
-    -fx-border-width: 1, 1;
-    -fx-border-style: solid, segments(1, 1);
-    -fx-border-radius: 0, 0;
-    -fx-border-insets: 1 1 1 1, 0;
-}
-
-.toggle-button:hover {
-    -fx-text-fill: #d8d8d8;
-    -fx-background-color: #3a3a3a;
-}
-
-.toggle-button:selected {
-    -fx-background-color: white;
-    -fx-text-fill: #1d1d1d;
-}
-
-.toggle-button:selected:hover {
-    -fx-background-color: #eee;
-    -fx-text-fill: #1d1d1d;
-
-    -fx-border-color: #eee;
-}
-.toggle-button:disabled {
-    -fx-opacity: -fx-disabled-opacity;
-}*/
 
 /*******************************************************************************
  *                                                                             *
@@ -736,7 +785,6 @@
     -fx-color: #1e1e1e;
 }
 
-
 .scroll-bar .track {
     -fx-background-color: #4a4a4a;
     -fx-background-insets: 0;
@@ -992,16 +1040,44 @@
 
 .purgeInstructions {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 22px;
+    -fx-font-size: 18px;
 }
 
 .purgeTitle {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 36px;
+    -fx-font-size: 24px;
 }
 
 #purgeTemperature {
     -fx-font-size: 18px;
+}
+
+.resettingPrinter {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 24px;
+    -fx-fill: white;
+}
+
+#purgeFilamentCombo {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 15px;
+}
+
+#purgeTextCurrentFilament {
+    -fx-fill: white;
+}
+
+.purgeToggle {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-color: white;
+    -fx-text-fill: black;
+    -fx-background-color: dark_grey;
+}
+
+.purgeToggle:selected {
+    -fx-color: dark_grey;
+    -fx-background-color: white;
+    -fx-text-fill: black;
 }
 
 /**
@@ -1009,17 +1085,25 @@
 */
 
 .reelLabel {
+    -fx-font-family: 'Source Sans Pro Semibold';
     -fx-font-size: 32;
-}
-.reelMaterialName {
-    -fx-font-size: 21;
-}
-.reelMaterialRemaining {
-    -fx-font-size: 18;
+    -fx-text-alignment: CENTER;
 }
 
-#reelNumberMaterial {
+.reelMaterialNameBold {
     -fx-font-family: 'Source Sans Pro Semibold';
+    -fx-font-size: 18;
+    -fx-text-alignment: CENTER;
+}
+
+.reelMaterialName {
+    -fx-font-size: 18;
+    -fx-text-alignment: CENTER;
+}
+
+.reelMaterialRemaining {
+    -fx-font-size: 18;
+    -fx-font-smoothing-type: lcd;
 }
 
 /*
@@ -1100,21 +1184,28 @@
     -fx-fill: graph_line_red;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_red;
+    -fx-stroke-width: 2px;
+    -fx-stroke-dash-array: 5 5;
 }
 .graph-blue {
     -fx-fill: graph_line_blue;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_blue;
+    -fx-stroke-width: 2px;
+    -fx-stroke-dash-array: 5 5;
+    -fx-stroke-dash-offset: 5; 
 }
 .graph-green {
     -fx-fill: graph_line_green;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_green;
+    -fx-stroke-width: 2px;
 }
 .graph-yellow {
     -fx-fill: graph_line_yellow;
     -fx-font-size: 9;
     -fx-text-fill: graph_line_yellow;
+    -fx-stroke-width: 2px;
 }
 
 .temperatureChartLegend {
@@ -1165,7 +1256,7 @@
 }
 
 .tab .tab-label{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-text-fill: white;
 }
 
@@ -1175,7 +1266,7 @@
 }
 
 .tab{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-background-radius: 0px;
     -fx-background-insets: 0px;
     -fx-border-color: black;
@@ -1263,7 +1354,7 @@ table-view .column-header-background {
 
 /*
 .tab .tab-label, .tab .nonEditableProjectTab {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-text-fill: white;
     -fx-border-color: transparent;
 }
@@ -1302,8 +1393,12 @@ table-view .column-header-background {
     -fx-font-family: 'Source Sans Pro Regular';
 }
 
+.statusPanelBackground{
+    -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #a0a0a0, #c8c8c8);
+}
+
 .statusPanel{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .statusPanelChild{
@@ -1311,7 +1406,7 @@ table-view .column-header-background {
 }
 
 .sidePanel{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .sidePanel BorderPane{
@@ -1413,17 +1508,6 @@ table-view .column-header-background {
     -fx-background-color: black;
     -fx-border-width: 0px;
 }
-/*
-.button:default
-{
-    -fx-background-color: mid_grey;
-    -fx-border-color: transparent;
-}
-
-.button:default:hover{
-    -fx-background-color: mid_grey;
-    -fx-border-color: transparent;
-}*/
 
 .slideout-control-button:hover .slideout-control-button-graphic{
     -fx-fill: white;
@@ -1442,7 +1526,7 @@ table-view .column-header-background {
  */
 
 modal-dialogue{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .RestrictedTextField{
@@ -1473,25 +1557,9 @@ modal-dialogue{
     -fx-text-fill: black;
 }
 
-.bob
-{
-    -fx-fill: purple;
-}
-
-.bob:focus
-{
-    -fx-fill: green;
-}
-/*.status-tab-graphic, .status-tab-graphi{
-    -fx-background-color: green;
-    -fx-content-display: graphic-only;
-    -fx-fill: purple;
-}*/
-
-
 /*******************************************************************************
  *                                                                             *
- * ProjectMenu                                                                    *
+ * ProjectMenu                                                                 *
  *                                                                             *
  ******************************************************************************/
 
@@ -1599,7 +1667,7 @@ modal-dialogue{
 }    
 
 .blue-inset-panel{
-    -fx-background-color: highlight_colour;
+    -fx-background-color: black;
 }
 
 .blue-inset-panel-text{
@@ -1608,6 +1676,7 @@ modal-dialogue{
 
 .inset-panel{
     -fx-background-color: light_grey;
+    -fx-padding: 0 0 0 25;
 }
 
 .inset-panel-with-menu{
@@ -1700,11 +1769,11 @@ modal-dialogue{
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
 .slider .fill {
-    -fx-background-color: #008287;
+    -fx-background-color: robox_blue;
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
 .slider .fill:hover {
-    -fx-background-color: #219297;
+    -fx-background-color: robox_blue;
 }
 .slider .fill:pressed {
     -fx-background-color: #25bbc4;
@@ -1862,7 +1931,7 @@ modal-dialogue{
 
 #verticalMenuTitle {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size:60px;
+    -fx-font-size:50px;
     -fx-fill: white;
 }
 
@@ -1873,7 +1942,7 @@ modal-dialogue{
 
 .verticalMenuOption {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 36px;
+    -fx-font-size: 30px;
 }
 
 .verticalMenuOption:selected {
@@ -1892,40 +1961,100 @@ modal-dialogue{
     -fx-background-color: light_grey;
 }
 
-/**
-* Large Progress
-*/
+.statusBar #progBar {
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
 
-#largeProgressContainer {
+.statusBar #progBar .bar {
+    -fx-background-color: white;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.statusBar #progBar .track {
+    -fx-background-color: white_60;
+    -fx-border-width: 0;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.statusBar {
+    -fx-font-family: 'Source Sans Pro Light';
     -fx-background-color: robox_blue;
+    -fx-max-height: 60px;
 }
 
-#largeProgressLabel {
-    -fx-font-size: 42px;
+.statusBar #mainLabel {
+    -fx-font-size: 28px;
 }
 
-#largeProgressBarBack {
-    -fx-border-color: white;
-    -fx-border-width: 3px;
-    -fx-border-insets: 0 -3 0 -3;
+.statusBar .smallerText {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 16px;
 }
 
-#largeProgressBarInner {
-    -fx-fill: white;
-    -fx-stroke-width: 0px;
+.statusBar .largerText {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18px;
 }
 
-#largeProgressCurrentValue {
-    -fx-text-fill: robox_blue;
-    -fx-font-size: 36px;
+.secondaryStatusBar #progBar {
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
-#largeProgressTargetLegend {
-    -fx-font-size: 19px;
+.secondaryStatusBar #progBar .bar {
+    -fx-background-color: mid_grey_solid;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
 }
 
-#largeProgressTargetValue {
-    -fx-font-size: 36px;
+.secondaryStatusBar #progBar .track {
+    -fx-background-color: mid_grey_30;
+    -fx-border-width: 0;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-min-height: 30px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+
+.secondaryStatusBar {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-background-color: white_60;
+    -fx-max-height: 60px;
+}
+
+.secondaryStatusBar #mainLabel {
+    -fx-font-size: 28px;
+    -fx-text-fill: black;
+}
+
+.secondaryStatusBar .smallerText {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 16px;
+    -fx-text-fill: black;
+}
+
+.secondaryStatusBar .largerText {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18px;
+    -fx-text-fill: black;
 }
 
 /**
@@ -1951,7 +2080,7 @@ modal-dialogue{
 }
 
 .midGreyBackground {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
 }
 
 .darkGreyBackground {
@@ -1967,13 +2096,13 @@ modal-dialogue{
 * Calibration diagram text
 */
 .mediumCalibrationText {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-font-size:20px;
     -fx-text-fill: white;
 }
 
 .smallCalibrationText {
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-font-size:14px;
     -fx-text-fill: white;
 }
@@ -2033,6 +2162,85 @@ modal-dialogue{
 }
 
 /**
+* MaterialComponent choice combo
+*/
+
+#MaterialComponentAnchorPane:selected {
+    -fx-border-color: white;
+    -fx-border-width: 3;
+}
+
+#materialColour {
+    -fx-font-family: 'Source Sans Pro Light';
+}
+
+#materialRemaining {
+    -fx-font-family: 'Source Sans Pro Light';
+}
+
+.filamentSwatchPadding {
+    -fx-padding: 0 10 0 10;
+}
+
+#materialComponentComboLabel {
+    -fx-text-fill: black;
+}
+
+// ===== Copied from caspian.css for detailed combo box styling =====
+/* -------------- CODE FOR THE NON-EDITABLE COMBO-BOX -------------- */
+
+/* ------- MAIN BUTTON ------- */
+.cmbCleanCombo {
+    /*-fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";*/
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-background-color: white;
+    /*-fx-background-radius: 5, 5, 4, 3;
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
+    -fx-padding: 0;
+}
+
+.cmbCleanCombo .combo-box-popup .list-view .list-cell {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+}
+
+.cmbCleanCombo:hover {
+    -fx-color: -fx-hover-base;
+}
+
+/*------- THIS SPECIFIES THE BUTTON COLOR WHEN THE POPUP MENU IS SHOWING -------*/
+.cmbCleanCombo:showing {
+    -fx-color: -fx-pressed-base;
+}
+
+.cmbCleanCombo:focused {
+    /*-fx-background-color: -fx-focus-color, -fx-outer-border, -fx-inner-border, -fx-body-color;
+    -fx-background-radius: 6.4, 4, 5, 3;
+    -fx-background-insets: -1.4, 0, 1, 2;*/
+}
+
+.cmbCleanCombo:disabled {
+    -fx-opacity: .4;
+}
+
+/* ------- OPEN BUTTON ------- */
+.cmbCleanCombo .arrow-button {
+    -fx-background-color: white;
+    /*-fx-background-insets: 0, 1, 2;
+    -fx-background-radius: 0 5 5 0, 0 4 4 0, 0 3 3 0;*/
+    -fx-padding: 0.5em 0.416667em 0.5em 0.416667em; /* 6 5 6 5 */
+}
+
+/* ------- ARROW* ------- */
+.cmbCleanCombo .arrow {
+    -fx-background-insets: 1 0 -1 0, 0;
+    -fx-background-color: -fx-mark-highlight-color, -fx-mark-color;
+    -fx-padding: 0.166667em 0.333333em 0.166667em 0.333333em; /* 2 4 2 4 */
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
+}
+//===================== End Copy ===========================
+
+/**
 * Preferences
 */
 
@@ -2044,12 +2252,12 @@ modal-dialogue{
 
 .preferenceLabel {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 22px;
+    -fx-font-size: 15pt;
 }
 
 .preferenceControl {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 22px;
+    -fx-font-size: 12pt;
 
 }
 
@@ -2079,13 +2287,20 @@ modal-dialogue{
 * see notificationpopup.css from NotificationBar.java jar
 */ 
 
-.notification-bar .text {
-    -fx-font-size: 14px;
-    -fx-font-family: 'Source Sans Pro Regular';
+.notification-bar {
+    -fx-background-color: robox_blue;
 }
 
-.notification-bar .label {
-    -fx-wrap-text: true;
+.notification-bar-text {
+    -fx-font-size: 18px;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-text-fill: white;
+}
+
+.notification-bar-step-text {
+    -fx-font-size: 14px;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-text-fill: white;
 }
 
 .hyperlink-plaintext
@@ -2097,7 +2312,7 @@ modal-dialogue{
  * The error dialog configuration
  */
 .error-dialog{
-    -fx-background-color: mid_grey;
+    -fx-background-color: mid_grey_solid;
     -fx-font-family: 'Source Sans Pro Regular';
     -fx-spacing: 5;
     -fx-padding: 5;
@@ -2274,4 +2489,490 @@ modal-dialogue{
 .copyable-label, .copyable-label:focused {
     -fx-background-color: transparent ;
     -fx-background-insets: 0px ;
+}
+/**
+* Extras inner panels
+*/
+
+.innerPanel {
+    -fx-background-color: light_grey;
+}
+
+/**
+* Filament Library
+*/
+
+.materialNumbers {
+    -fx-alignment: CENTER;
+}
+
+#materialsGridPane {
+    -fx-background-color: light_grey;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;    
+}
+
+#materialsGridPane .RestrictedNumberField {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+#materialsGridPane .text-field {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+#materialsGridPane .label {
+    /*-fx-padding: 0 0 0 7;*/
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+#cmbLibraryFilament {
+    -fx-pref-width: 320;
+}
+
+.filamentLibUpper {
+    -fx-pref-width: 190;
+}
+
+.filamentLibUpper:error {
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
+}
+
+.filamentLibLower {
+    -fx-pref-width: 70;
+}
+
+.filamentLibTitle {
+    -fx-text-fill: robox_blue;
+}
+
+#helpText {
+    -fx-text-fill: white;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 9pt;  
+    -fx-pref-height: 80;
+    -fx-pref-width: 120;
+    -fx-background-radius: 0px;
+    -fx-background-color: dark_grey;
+    -fx-background-insets: 0px;
+}
+
+#helpText .scroll-pane {
+    -fx-background-color: mid_grey_solid;
+}
+
+#helpText .content {
+    -fx-background-color: mid_grey_solid;
+}
+
+#cmbFilamentReelIndexLabel {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 7px;
+    -fx-text-fill: black;
+    -fx-padding: 0 0 0 8;
+}
+
+#cmbFilamentTextField {
+    -fx-text-fill: black;
+}
+.color-picker {
+    -fx-text-fill: black;
+}
+
+color-picker-label .text-field {
+    -fx-text-fill: red;
+}
+
+/**
+* Print Profiles
+*/
+
+.cmbPrintProfile {
+    -fx-pref-width: 290;
+}
+
+.cmbPrintProfile .combo-box .list-cell {
+    -fx-pref-width: 290;
+}
+
+#printProfileInnerPanel {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt; 
+
+}
+
+#printProfileInnerPanel .tab-pane, .tab-header-background {
+    -fx-background-color: light_grey;
+    -fx-border-color: light_grey;
+}
+
+#printProfileInnerPanel .tab:hover, #printProfileInnerPanel .tab:hover .tab-label{
+    -fx-background-color: light_grey;
+}
+
+#printProfileInnerPanel .tab:selected, #printProfileInnerPanel .tab:selected .tab-label{
+    -fx-background-color: highlight_colour;
+    -fx-border-color: highlight_colour;
+}
+
+#printProfileInnerPanel .tab .tab-label{
+    -fx-background-color: mid_grey_solid;
+    -fx-text-fill: white;
+}   
+
+#printProfileInnerPanel  .tab:top {
+    -fx-border-width: 0.3;
+    -fx-border-color: light_grey;
+}
+
+#printProfileInnerPanel .tab{
+    -fx-background-color: mid_grey_solid;
+    -fx-background-radius: 0px;
+    -fx-background-insets: 0px;
+    -fx-border-color: black;
+    -fx-min-width: 80;
+}
+
+#printProfileName {
+    -fx-padding: 2 2 2 2;
+}
+
+#printProfileName:error {
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
+}
+
+.printProfileGrid {
+    -fx-background-color: light_grey;
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;    
+}
+
+.printProfileGrid .RestrictedNumberField {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+.printProfileGrid .text-field {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+.printProfileGrid .label {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 10pt;
+}
+
+.printProfileGrid {
+    -fx-vgap: 8;
+}
+
+.blackTabUnderline {
+    -fx-pref-height: 30;
+    -fx-min-height: 30;
+    -fx-background-color: light_grey;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: robox_blue;
+}
+
+.printProfileTabVBox {
+    -fx-spacing: 10;
+}
+
+.printProfileDivider {
+    -fx-text-fill: robox_blue;
+}
+
+#printProfileTabPane {
+    -fx-tab-min-height: 35px;
+    -fx-tab-max-height: 35px;
+    -fx-tab-min-width: 50px;
+    -fx-tab-min-width: 50px;    
+}
+
+/**
+* PrinterGrid
+*/
+.printerGrid {
+    -fx-pref-width: 260;
+    -fx-max_width: 260;
+    -fx-min-width: 260;
+    -fx-pref-height: 260;
+    -fx-max_height: 260;
+    -fx-min-height: 260;    
+    -fx-hgap: 20;
+    -fx-vgap: 20;
+    -fx-background-color: mid_grey_solid;
+}
+
+/**
+* Settings Inset Panel
+*/
+#settingsInsetRoot {
+    -fx-background-color: mid_grey_solid;
+    -fx-font-family: 'Source Sans Pro Regular';
+}
+
+#pleaseCreateProfile {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18px;
+}
+
+
+/**
+* Layout
+*/
+
+/*#preserveAspectRatio {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 0 0 0 0;
+}
+
+#preserveAspectRatio:selected {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 0 0 0 0;
+}
+
+#preserveAspectRatio:selected:focused {
+    -fx-background-color: light_grey;
+    -fx-background-insets: 0 0 0 0;
+}*/
+
+#modelTable {
+    -fx-pref-width: 260;
+    -fx-max_width: 260;
+    -fx-min-width: 260;
+    -fx-pref-height: 260;
+    -fx-max_height: 260;
+    -fx-min-height: 260;    
+    -fx-background-color: light_grey;
+}
+
+.dimension-label
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 12pt;
+    -fx-text-alignment: center;
+    -fx-border-width: 0px;
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-pref-width: 50px;
+    -fx-max-width: 50px;
+}  
+
+.bed-axis-label
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 18pt;
+    -fx-text-alignment: center;
+}  
+
+.rotationField {
+    -fx-pref-width: 40;
+    -fx-min-width: 40;
+}
+
+/**
+* TimeCostInsetPanel
+*/
+
+#timeCostInsetRoot {
+    -fx-background-color: mid_grey_50;
+    -fx-font-family: 'Source Sans Pro Regular';
+}
+
+.timeCostIcons {
+    -fx-fill: robox_blue;
+}
+
+.timeCostIcons Rectangle  {
+    -fx-fill: robox_blue;
+}
+
+.timeCostIcons Circle {
+    -fx-fill: robox_blue;
+}
+
+.timeCostIcons SVGPath {
+    -fx-fill: robox_blue;
+}
+
+/**
+* Menu Item
+*/
+.menu-item {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 14px;
+}
+
+/**
+* Head
+*/
+
+.head_panel, .head_panel .label {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 14px;
+}
+
+/** 
+* Status inner panel
+*/
+
+.status_inner {
+    -fx-background-color: mid_grey_50; 
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;
+}
+
+.status_inner .title {
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-size: 20px;
+}
+
+.status_inner .subtitle {
+    -fx-font-size: 18px;
+}
+
+.cross_button:hover {
+    -fx-scale-x: 1.4;
+    -fx-scale-y: 1.4;
+}
+
+.cross_button:pressed {
+    -fx-scale-x: 0.7;
+    -fx-scale-y: 0.7;
+}
+
+/**
+* Diagnostics
+*/
+
+.diagnostics .radio-button:disabled {
+    -fx-opacity: 1.0;
+}
+
+.diagnostics .radio-button:selected .dot {
+    -fx-background-color: robox_blue;
+}
+
+.hovering-panel, .hovering-panel .tab-pane, .hovering-panel .grid-pane{
+    -fx-background-color: mid_grey_30;
+    -fx-border-width: 0px;
+}
+
+.fake-tab-button {
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;
+    -fx-padding: 0px;  
+    -fx-graphic-text-gap: 2px;
+    -fx-content-display: LEFT;
+
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+
+    -fx-background-color: #1d1d1d;
+    -fx-border-color: #1d1d1d;
+
+    -fx-font-size: 11pt;
+    -fx-text-fill: #d8d8d8;
+}
+
+.fake-tab-button:default
+{
+    -fx-background-color: #1d1d1d;
+    -fx-border-colour: #1d1d1d;
+}
+
+.fake-tab-button:hover{
+    -fx-background-color: hover_colour;
+    -fx-border-color: hover_colour;
+}
+
+.fake-tab-button:pressed, .fake-tab-button:default:hover:pressed
+{
+    -fx-background-color: pressed_colour;
+    -fx-border-color: pressed_colour;
+    -fx-text-fill: background_colour;
+    -fx-fill-color: background_colour;
+}
+
+.fake-tab-button:selected
+{
+    -fx-background-color: robox_blue;
+    -fx-border-color: robox_blue;
+}
+
+.fake-tab-button:disabled, .fake-tab-button:default:disabled
+{
+    -fx-opacity: 0.4;
+    -fx-background-color: #1d1d1d;
+    -fx-text-fill: white;
+}
+
+/*.fake-tab-button:default
+{
+    -fx-background-color: #008287;
+    -fx-text-fill: #ffffff;
+}*/
+
+.fake-tab-button:default:hover{
+    -fx-background-color: #219297;
+}
+
+#model-edit-panel
+{
+    -fx-spacing: 5px;
+}
+
+#model-edit-panel .label
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-size: 18px;    
+}
+
+.boldText
+{
+    -fx-font-family: 'Source Sans Pro Bold';
+    -fx-font-smoothing-type: lcd;
+}
+
+.regularText
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-smoothing-type: lcd;
+}
+
+.lightText
+{
+    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-smoothing-type: lcd;
+}
+
+.gcode-transcript
+{
+    -fx-background-color: white;
+    -fx-text-fill: black
+}
+
+.gcode-transcript .list-cell:filled:selected:focused, gcode-transcript .list-cell:filled:selected,
+.gcode-transcript .list-cell:even:filled:hover:selected,
+.gcode-transcript .list-cell:odd:filled:hover:selected,
+.gcode-transcript .list-cell:odd:filled:pressed,
+.gcode-transcript .list-cell:odd:filled:pressed:selected
+{
+    -fx-background-color: light_grey_30;
+    -fx-text-fill: black
+}
+
+.gcode-transcript .list-cell:even, .gcode-transcript .list-cell:even:filled:hover {
+    -fx-text-fill: black;
+    -fx-background-color: superlight_grey_30;
+}
+
+.gcode-transcript .list-cell:odd, .gcode-transcript .list-cell:odd:filled:hover {
+    -fx-text-fill: black;
+    -fx-background-color: white;
 }

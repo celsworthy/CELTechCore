@@ -28,4 +28,8 @@ public interface PrinterListChangesListener
     
     public void whenReelChanged(Printer printer, Reel reel);
     
+    public void whenExtruderAdded(Printer printer, int extruderIndex);
+
+    public void whenExtruderRemoved(Printer printer, int extruderIndex);    
+    
 }

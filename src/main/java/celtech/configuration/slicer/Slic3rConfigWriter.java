@@ -1,6 +1,7 @@
 package celtech.configuration.slicer;
 
 import celtech.configuration.SlicerType;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
@@ -11,6 +12,7 @@ import java.util.Locale;
  */
 public class Slic3rConfigWriter extends SlicerConfigWriter
 {
+
     public Slic3rConfigWriter()
     {
         super();
@@ -18,9 +20,19 @@ public class Slic3rConfigWriter extends SlicerConfigWriter
     }
 
     @Override
+    void bringDataInBounds(SlicerParametersFile profileData)
+    {
+        if (profileData.getFillPattern() == FillPattern.LINE
+            && profileData.getFillDensity_normalised() >= 0.99f)
+        {
+            profileData.setFillDensity_normalised(.99f);
+        }
+    }
+
+    @Override
     protected void outputLine(FileWriter writer, String variableName, boolean value) throws IOException
     {
-        int valueToWrite = (value)?1:0;
+        int valueToWrite = (value) ? 1 : 0;
         writer.append(variableName + " = " + valueToWrite + "\n");
     }
 
@@ -63,7 +75,8 @@ public class Slic3rConfigWriter extends SlicerConfigWriter
     @Override
     protected void outputPrintCentre(FileWriter writer, float centreX, float centreY) throws IOException
     {
-        outputLine(writer, "print_center", (int)centreX + "," + (int)centreY);
+        //As of 1.2.9 slic3r doesn't seem to take any notice of this variable in the config file
+        //print-center must be set on the command line
     }
 
     @Override
