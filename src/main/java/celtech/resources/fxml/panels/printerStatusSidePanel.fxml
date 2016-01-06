@@ -25,6 +25,13 @@
                             <children>
                                 <StackPane>
                                     <children>
+                                        <Group fx:id="noHead">
+                                            <Group>
+                                                <Group>
+                                                    <SVGPath fill="#FF661B" content="M7,38.631l12.634-12.633L7,13.367L12.345,8l12.635,12.631L37.633,8L43,13.342L30.343,25.999L43,38.653L37.633,44L24.979,31.366L12.345,44L7,38.631z"/>
+                                                </Group>
+                                            </Group>
+                                        </Group>
                                         <Group fx:id="singleMaterialLiteHead">
                                             <Group>
                                                 <Group>
