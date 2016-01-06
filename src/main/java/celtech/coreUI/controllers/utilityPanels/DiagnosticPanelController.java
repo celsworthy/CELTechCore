@@ -48,6 +48,15 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
     private RadioButton rbIndex0;
 
     @FXML
+    private Label extruder0Label;
+
+    @FXML
+    private Label extruder0LoadedLabel;
+
+    @FXML
+    private Label extruder0IndexLabel;
+
+    @FXML
     private Label extruder1Label;
 
     @FXML
@@ -171,6 +180,14 @@ public class DiagnosticPanelController implements Initializable, StatusInsetCont
                 Lookup.getUserPreferences().detectLoadedFilamentProperty());
             rbIndex1.selectedProperty().bind(printer.extrudersProperty().get(1).
                 indexWheelStateProperty());
+
+            ReadOnlyBooleanProperty extruder0Visible = printer.extrudersProperty().get(0).
+                isFittedProperty();
+            extruder0Label.visibleProperty().bind(extruder0Visible);
+            extruder0LoadedLabel.visibleProperty().bind(extruder0Visible);
+            extruder0IndexLabel.visibleProperty().bind(extruder0Visible);
+            rbLoaded0.visibleProperty().bind(extruder0Visible);
+            rbIndex0.visibleProperty().bind(extruder0Visible);
 
             ReadOnlyBooleanProperty extruder1Visible = printer.extrudersProperty().get(1).
                 isFittedProperty();

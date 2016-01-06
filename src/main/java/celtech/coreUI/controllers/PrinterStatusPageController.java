@@ -5,6 +5,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterColourMap;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.controllers.utilityPanels.OuterPanelController;
@@ -317,8 +318,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             vBoxLeft.setVisible(true);
             vBoxRight.setVisible(true);
             disconnectedText.setVisible(false);
-            if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
-                    && (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1)))
+
+            if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+                    || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
+                    && (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+                    || (printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT)))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
@@ -327,8 +331,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 extruder1Controls.setVisible(true);
                 extruder2Controls.setVisible(true);
                 bed.setVisible(true);
-            } else if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(0))
-                    && (!printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && !printerToUse.effectiveFilamentsProperty().containsKey(1)))
+            } else if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+                    || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
+                    && (!printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+                    || (!printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT)))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(true);
@@ -337,8 +343,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 extruder1Controls.setVisible(true);
                 extruder2Controls.setVisible(false);
                 bed.setVisible(true);
-            } else if ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() || printerToUse.effectiveFilamentsProperty().containsKey(1))
-                    && (!printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && !printerToUse.effectiveFilamentsProperty().containsKey(0)))
+            } else if ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+                    || (printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT))
+                    && (!printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+                    || (!printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT)))
             {
                 baseNoReels.setVisible(false);
                 baseReel1.setVisible(false);
@@ -375,7 +383,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (printerToUse == null
                 || !printerToUse.effectiveFilamentsProperty().containsKey(0)
-                || printerToUse.effectiveFilamentsProperty().get(0) == null)
+                || printerToUse.effectiveFilamentsProperty().get(0) == FilamentContainer.UNKNOWN_FILAMENT)
         {
             reel1Background.setVisible(false);
         } else
@@ -390,7 +398,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (printerToUse == null
                 || !printerToUse.effectiveFilamentsProperty().containsKey(1)
-                || printerToUse.effectiveFilamentsProperty().get(1) == null)
+                || printerToUse.effectiveFilamentsProperty().get(1) == FilamentContainer.UNKNOWN_FILAMENT)
         {
             reel2Background.setVisible(false);
         } else
@@ -543,7 +551,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         double xScale = Double.max((newWidth / beginWidth), 0.4);
         double yScale = Double.max((newHeight / beginHeight), 0.4);
-        
+
         statusPane.setScaleX(xScale);
         statusPane.setScaleY(yScale);
     }
