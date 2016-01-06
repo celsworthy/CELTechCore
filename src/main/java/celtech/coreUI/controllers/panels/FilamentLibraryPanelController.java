@@ -6,6 +6,7 @@ import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.RestrictedTextField;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
@@ -166,7 +167,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     private RestrictedNumberField feedRateMultiplier;
 
     @FXML
-    private TextField name;
+    private RestrictedTextField name;
 
     @FXML
     private TextField filamentID;

@@ -1,10 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.coreUI.DisplayManager;
-import celtech.coreUI.DisplayManager.DisplayScalingMode;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.model.Extruder;
@@ -17,7 +14,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -99,6 +95,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label headFeeds;
 
     @FXML
+    private Group noHead;
+
+    @FXML
     private Group singleMaterialLiteHead;
 
     @FXML
@@ -134,15 +133,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 }
             };
 
-//    private ChangeListener<Boolean> filamentLoadedListener = new ChangeListener<Boolean>()
-//    {
-//        @Override
-//        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-//        {
-//            refreshMaterialContainer(previousSelectedPrinter);
-//        }
-//    };
-
     /**
      * Initialises the controller class.
      *
@@ -160,6 +150,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 {
                     whenPrinterSelected(newValue);
                 });
+
+        showNoHead();
 
         initialiseTemperatureChart();
         controlDetailsVisibility();
@@ -234,11 +226,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setLegendLabels(legendNozzleS, legendNozzleT, legendBed, legendAmbient);
         chartManager.bindPrinter(printer);
 
-//        printer.extrudersProperty().forEach(extruder ->
-//        {
-//            extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
-//        });
-
         refreshMaterialContainer(printer);
     }
 
@@ -279,12 +266,21 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         currentAmbientTemperatureHistory = null;
         chartManager.unbindPrinter();
 
-//        printer.extrudersProperty().forEach(extruder ->
-//        {
-//            extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
-//        });
-
         unbindMaterialContainer();
+    }
+
+    private void showNoHead()
+    {
+        noHead.setVisible(true);
+        dualMaterialHead.setVisible(false);
+        singleMaterialHead.setVisible(false);
+        singleMaterialLiteHead.setVisible(false);
+
+        headTitleBold.setText("");
+        headTitleLight.setText(Lookup.i18n("headPanel.noHead.titleLight"));
+        headDescription.setText(Lookup.i18n("headPanel.noHead.description"));
+        headNozzles.setText("");
+        headFeeds.setText("");
     }
 
     private void unbindHeadProperties(Head head)
@@ -292,9 +288,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
                 graphDataPointChangeListener);
         chartManager.removeAllNozzles();
-        headPanel.setPrefHeight(0);
-        headPanel.setMinHeight(0);
-        headPanel.setVisible(false);
+
+        showNoHead();
     }
 
     private void bindHeadProperties(Head head)
@@ -313,8 +308,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     nozzleHeater.nozzleTemperatureProperty());
 
         }
-        headPanel.setPrefHeight(-1);
-        headPanel.setVisible(true);
         headTitleBold.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleBold"));
         headTitleLight.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleLight"));
         headDescription.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".description"));
@@ -323,17 +316,19 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
+            noHead.setVisible(false);
             dualMaterialHead.setVisible(true);
             singleMaterialHead.setVisible(false);
             singleMaterialLiteHead.setVisible(false);
         } else if (head.typeCodeProperty().get().equals("RBX01-SL"))
         {
+            noHead.setVisible(false);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(false);
             singleMaterialLiteHead.setVisible(true);
-        }
-        else
+        } else
         {
+            noHead.setVisible(false);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(true);
             singleMaterialLiteHead.setVisible(false);
@@ -359,12 +354,14 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void whenPrinterAdded(Printer printer)
     {
         controlDetailsVisibility();
+        headPanel.setVisible(true);
     }
 
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
         controlDetailsVisibility();
+        headPanel.setVisible(false);
     }
 
     @Override
