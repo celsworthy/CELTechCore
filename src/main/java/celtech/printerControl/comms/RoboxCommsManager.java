@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.analysis.integration.RombergIntegrator;
 
 /**
  *
@@ -124,12 +125,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
             assessCandidatePrinters(serialPrinters);
 
-            if (searchForRemotePrinters)
-            {
-                List<DeviceDetector.DetectedPrinter> remotePrinters = remoteHostDiscoveryClient.searchForDevices();
-                assessCandidatePrinters(remotePrinters);
-            }
-
             try
             {
                 this.sleep(500);
@@ -226,7 +221,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 break;
             case ROBOX_REMOTE:
                 newPrinter = new HardwarePrinter(this, new RoboxRemoteCommandInterface(
-                        this, (DeviceDetector.RemoteDetectedPrinter)detectedPrinter, suppressPrinterIDChecks,
+                        this, (DeviceDetector.RemoteDetectedPrinter) detectedPrinter, suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS), filamentLoadedGetter,
                         doNotCheckForPresenceOfHead);
                 break;
@@ -265,6 +260,22 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     @Override
     public void printerConnected(DeviceDetector.DetectedPrinter detectedPrinter)
     {
+        if (detectedPrinter instanceof DeviceDetector.RemoteDetectedPrinter)
+        {
+            //Remote printers connect automatically
+            if (keepRunning)
+            {
+                steno.info("Adding new printer " + detectedPrinter);
+
+                Printer newPrinter = makePrinter(detectedPrinter);
+                pendingPrinters.put(detectedPrinter, newPrinter);
+                newPrinter.startComms();
+            } else
+            {
+                steno.info("Aborted add of printer as we are shutting down");
+            }
+        }
+
         Printer printer = pendingPrinters.get(detectedPrinter);
         activePrinters.put(detectedPrinter, printer);
         printer.connectionEstablished();

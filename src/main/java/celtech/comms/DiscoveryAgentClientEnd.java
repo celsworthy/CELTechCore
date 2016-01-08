@@ -113,7 +113,7 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
             
             try
             {
-                Thread.sleep(500);
+                Thread.sleep(1500);
             } catch (InterruptedException ex)
             {
                 steno.warning("Interrupted within remote host discovery loop");

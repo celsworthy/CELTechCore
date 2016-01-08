@@ -2,6 +2,7 @@ package celtech.printerControl.comms.remote;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.comms.DeviceDetector;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -39,9 +40,14 @@ public class RemoteWebHelper
 
             if (content != null)
             {
-                
+                con.setDoOutput(true);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                mapper.writeValue(bos, content);
+                con.setRequestProperty("Content-Type", "application/json");
+                con.setRequestProperty("Content-Length", "" + bos.size());
+                con.getOutputStream().write(bos.toByteArray());
             }
-            
+
             con.setConnectTimeout(5000);
             int responseCode = con.getResponseCode();
 
@@ -53,13 +59,13 @@ public class RemoteWebHelper
                 }
             } else
             {
-                steno.warning("No response when trying " + urlString);
+                steno.warning("Got " + responseCode + " when trying " + urlString);
             }
         } catch (IOException ex)
         {
             steno.error("Error when attempting to connect to " + urlString + " : " + ex.getMessage());
         }
-        
+
         return returnvalue;
     }
 }
