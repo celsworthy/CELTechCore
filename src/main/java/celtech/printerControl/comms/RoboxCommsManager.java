@@ -2,8 +2,6 @@ package celtech.printerControl.comms;
 
 import celtech.Lookup;
 import celtech.comms.DiscoveryAgentClientEnd;
-import celtech.comms.RemoteHostListener;
-import celtech.comms.RemotePrinterHost;
 import celtech.configuration.UserPreferences;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.HardwarePrinter;
@@ -11,7 +9,6 @@ import celtech.printerControl.model.Printer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -19,7 +16,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, RemoteHostListener
+public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 {
 
     private static RoboxCommsManager instance = null;
@@ -45,18 +42,22 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     private final DiscoveryAgentClientEnd remoteHostDiscoveryClient = new DiscoveryAgentClientEnd(this);
 
     private boolean doNotCheckForPresenceOfHead = false;
+    private boolean searchForRemotePrinters = false;
 
     private RoboxCommsManager(String pathToBinaries,
             boolean suppressPrinterIDChecks,
-            boolean doNotCheckForPresenceOfHead)
+            boolean doNotCheckForPresenceOfHead,
+            boolean searchForRemotePrinters)
     {
         this.suppressPrinterIDChecks = suppressPrinterIDChecks;
         this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
+        this.searchForRemotePrinters = searchForRemotePrinters;
 
         usbSerialDeviceDetector = new SerialDeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
 
         this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
+        this.setDaemon(true);
     }
 
     /**
@@ -77,7 +78,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     {
         if (instance == null)
         {
-            instance = new RoboxCommsManager(pathToBinaries, false, false);
+            instance = new RoboxCommsManager(pathToBinaries, false, false, true);
         }
 
         return instance;
@@ -87,13 +88,19 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
      *
      * @param pathToBinaries
      * @param doNotCheckForHeadPresence
+     * @param searchForRemotePrinters
      * @return
      */
-    public static RoboxCommsManager getInstance(String pathToBinaries, boolean doNotCheckForHeadPresence)
+    public static RoboxCommsManager getInstance(String pathToBinaries,
+            boolean doNotCheckForHeadPresence,
+            boolean searchForRemotePrinters)
     {
         if (instance == null)
         {
-            instance = new RoboxCommsManager(pathToBinaries, false, doNotCheckForHeadPresence);
+            instance = new RoboxCommsManager(pathToBinaries,
+                    false,
+                    doNotCheckForHeadPresence,
+                    searchForRemotePrinters);
         }
 
         return instance;
@@ -105,16 +112,23 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     @Override
     public void run()
     {
-        remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
-        remoteHostDiscoveryThread.start();
+        if (searchForRemotePrinters)
+        {
+            remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
+            remoteHostDiscoveryThread.setDaemon(true);
+            remoteHostDiscoveryThread.start();
+        }
 
         while (keepRunning)
         {
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
             assessCandidatePrinters(serialPrinters);
 
-            List<DeviceDetector.DetectedPrinter> remotePrinters = remoteHostDiscoveryClient.searchForDevices();
-            assessCandidatePrinters(remotePrinters);
+            if (searchForRemotePrinters)
+            {
+                List<DeviceDetector.DetectedPrinter> remotePrinters = remoteHostDiscoveryClient.searchForDevices();
+                assessCandidatePrinters(remotePrinters);
+            }
 
             try
             {
@@ -285,7 +299,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
         }
         activePrinters.remove(printerHandle);
 
-        Platform.runLater(() ->
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Lookup.getConnectedPrinters().remove(printerToRemove);
         });
@@ -325,17 +339,5 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     public void setSleepBetweenStatusChecks(int milliseconds)
     {
         sleepBetweenStatusChecksMS = milliseconds;
-    }
-
-    @Override
-    public void hostAdded(RemotePrinterHost host)
-    {
-        steno.info("Remote host at " + host.getHostAddress() + " added");
-    }
-
-    @Override
-    public void hostRemoved(RemotePrinterHost host)
-    {
-        steno.info("Remote host at " + host.getHostAddress() + " removed");
     }
 }

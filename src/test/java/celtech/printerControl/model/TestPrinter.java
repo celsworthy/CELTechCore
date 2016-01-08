@@ -12,6 +12,7 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.comms.CommandInterface;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
@@ -1091,6 +1092,12 @@ public class TestPrinter implements Printer
 
     @Override
     public void changeDFeedRateMultiplier(double feedRate) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public CommandInterface getCommandInterface()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

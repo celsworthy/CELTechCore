@@ -9,8 +9,8 @@ import celtech.configuration.MaterialType;
 import celtech.configuration.PauseStatus;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
-import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrinterStatus;
+import celtech.printerControl.comms.CommandInterface;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
@@ -33,7 +33,6 @@ import celtech.utils.AxisSpecifier;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.TaskResponder;
 import java.util.List;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -535,4 +534,11 @@ public interface Printer extends RoboxResponseConsumer
     public ObservableMap<Integer, Filament> effectiveFilamentsProperty();
     
     public void setCommissioningTestMode(boolean inCommissioningMode);
+    
+    /**
+     * Special interface to enable remote printer controller to bypass normal printer logic
+     * NOT TO BE USED FOR ANY OTHER REASON
+     * @return 
+     */
+    public CommandInterface getCommandInterface();
 }

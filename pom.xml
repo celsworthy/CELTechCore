@@ -44,13 +44,13 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.13</version>
-        </dependency>        
-        <dependency>
+        </dependency>
+        <!--        <dependency>
             <groupId>LeapMotion</groupId>
             <artifactId>LeapJava</artifactId>
             <version>1.0.9.8391</version>
             <type>jar</type>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.controlsfx</groupId>
             <artifactId>openjfx-dialogs</artifactId>
@@ -71,11 +71,11 @@
             <artifactId>commons-math3</artifactId>
             <version>3.3</version>
         </dependency>
-        <dependency>
+        <!--        <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna-platform</artifactId>
             <version>4.0.0</version>
-        </dependency>        
+        </dependency>        -->
         <dependency>
             <groupId>libertysystems</groupId>
             <artifactId>Configuration</artifactId>
@@ -145,21 +145,22 @@
             <artifactId>parboiled-java</artifactId>
             <version>1.1.7</version>
         </dependency>
-        <dependency>
+        <!--        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.12</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.orbisgis</groupId>
             <artifactId>poly2tri</artifactId>
             <version>1</version>
-        </dependency>
+        </dependency> 
+        
         <dependency>
             <groupId>org.jcsg</groupId>
             <artifactId>core</artifactId>
             <version>0.0.3</version>
-        </dependency>
+        </dependency>        
         <dependency>
             <groupId>org.birdasaur</groupId>
             <artifactId>FXyzLib</artifactId>
@@ -187,9 +188,8 @@
         </dependency>
         <dependency>
             <groupId>celtech</groupId>
-            <artifactId>RoboxRemoteLibrary</artifactId>
+            <artifactId>RoboxCommsLibrary</artifactId>
             <version>1.0</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
     

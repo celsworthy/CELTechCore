@@ -1,6 +1,6 @@
 package celtech.printerControl.comms;
 
-import celtech.comms.LowLevelInterfaceException;
+import celtech.printerControl.comms.remote.LowLevelInterfaceException;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
 import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrinterException;
@@ -12,7 +12,6 @@ import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
 import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
-import jssc.SerialPortException;
 
 /**
  *

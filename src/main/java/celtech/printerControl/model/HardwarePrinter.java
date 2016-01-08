@@ -234,6 +234,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private boolean inCommissioningMode = false;
 
+    @Override
+    public CommandInterface getCommandInterface()
+    {
+        return commandInterface;
+    }
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
      * way to override the detection of whether a filament is loaded or not on a
@@ -2875,7 +2881,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             response = (FirmwareResponse) commandInterface.writeToPrinter(readFirmware);
         } catch (RoboxCommsException ex)
         {
-            throw new PrinterException("Error sending read printer ID command");
+            throw new PrinterException("Error sending read firmware command");
         }
         return response;
     }

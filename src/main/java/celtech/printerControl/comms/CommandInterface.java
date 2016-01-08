@@ -52,7 +52,7 @@ public abstract class CommandInterface extends Thread
     private boolean loadingFirmware = false;
 
     protected boolean suppressComms = false;
-
+    
     private String printerName = null;
 
     /**
@@ -390,5 +390,10 @@ public abstract class CommandInterface extends Thread
             }
 
         }
+    }
+    
+    private void operateRemotely(boolean enableRemoteOperation)
+    {
+        suppressComms = enableRemoteOperation;
     }
 }

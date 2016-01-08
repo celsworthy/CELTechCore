@@ -1,7 +1,9 @@
 package celtech.comms;
 
+import celtech.comms.remote.DiscoveryResponse;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.comms.DeviceDetector;
+import celtech.printerControl.comms.PrinterStatusConsumer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -27,16 +30,17 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer("DiscoveryAgentClientEnd");
+    private final PrinterStatusConsumer printerStatusConsumer;
     private boolean initialised = false;
     private InetAddress group = null;
     private DatagramSocket s = null;
-    private final RemoteHostListener remoteHostListener;
     private boolean keepRunning = true;
-    private Set<InetAddress> serverAddresses = new HashSet<>();
+    private List<DeviceDetector.DetectedPrinter> detectedPrinters = new ArrayList<>();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    public DiscoveryAgentClientEnd(RemoteHostListener listener)
+    public DiscoveryAgentClientEnd(PrinterStatusConsumer printerStatusConsumer)
     {
-        this.remoteHostListener = listener;
+        this.printerStatusConsumer = printerStatusConsumer;
     }
 
     @Override
@@ -59,6 +63,8 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
 
         while (keepRunning && initialised)
         {
+            Set<InetAddress> serverAddresses = new HashSet<>();
+
             try
             {
                 DatagramPacket hi = new DatagramPacket(RemoteDiscovery.discoverHostsMessage.getBytes("US-ASCII"),
@@ -77,6 +83,12 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
                     serverAddresses.add(recv.getAddress());
                     steno.info("Server added at:" + recv.getAddress());
                 }
+
+                List<DeviceDetector.DetectedPrinter> newlyDetectedPrinters = searchForDevices(serverAddresses);
+                
+                //Deal with disconnections
+//                detectedPrinters.forEach(printer -> {if (newlyDetectedPrintersprinter.getConnectionHandle())});
+                
 //                steno.info("Got response from " + recv.getAddress().getHostAddress() + ":" + recv.getSocketAddress() + " content was " + recv.getLength() + " bytes " + String.valueOf(recv.getData()));
             } catch (SocketTimeoutException ex)
             {
@@ -102,14 +114,13 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
         keepRunning = false;
     }
 
-    @Override
-    public List<DetectedPrinter> searchForDevices()
+    private List<DetectedPrinter> searchForDevices(Set<InetAddress> serverAddresses)
     {
         List<DetectedPrinter> detectedPrinters = new ArrayList<>();
 
         for (InetAddress address : serverAddresses)
         {
-            String url = "http://" + address.getHostAddress() + ":9000/printerControl";
+            String url = "http://" + address.getHostAddress() + ":9000/discovery";
 
             try
             {
@@ -127,18 +138,9 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
 
                 if (responseCode == 200)
                 {
-                    BufferedReader in = new BufferedReader(
-                            new InputStreamReader(con.getInputStream()));
-                    String inputLine;
-                    StringBuffer response = new StringBuffer();
+                    DiscoveryResponse discoveryResponse = mapper.readValue(con.getInputStream(), DiscoveryResponse.class);
 
-                    while ((inputLine = in.readLine()) != null)
-                    {
-                        response.append(inputLine);
-                    }
-                    in.close();
-
-                    steno.info("Got response from @ " + address.getHostAddress() + " : " + response.toString());
+                    steno.info("Got response from @ " + address.getHostAddress() + " : " + discoveryResponse.toString());
                 } else
                 {
                     steno.warning("No response from @ " + address.getHostAddress());
@@ -150,6 +152,12 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
 
         }
 
+        return detectedPrinters;
+    }
+
+    @Override
+    public List<DeviceDetector.DetectedPrinter> searchForDevices()
+    {
         return detectedPrinters;
     }
 

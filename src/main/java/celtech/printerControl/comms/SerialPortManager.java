@@ -1,7 +1,7 @@
 package celtech.printerControl.comms;
 
-import celtech.comms.LowLevelInterface;
-import celtech.comms.LowLevelInterfaceException;
+import celtech.printerControl.comms.remote.LowLevelInterface;
+import celtech.printerControl.comms.remote.LowLevelInterfaceException;
 import java.io.UnsupportedEncodingException;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -15,7 +15,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class SerialPortManager implements SerialPortEventListener, LowLevelInterface
+public class SerialPortManager implements SerialPortEventListener
 {
 
     private String serialPortToConnectTo = null;
@@ -31,7 +31,6 @@ public class SerialPortManager implements SerialPortEventListener, LowLevelInter
         this.serialPortToConnectTo = portToConnectTo;
     }
 
-    @Override
     public boolean connect(int baudrate)
     {
         boolean portSetupOK = false;
@@ -55,7 +54,6 @@ public class SerialPortManager implements SerialPortEventListener, LowLevelInter
         return portSetupOK;
     }
 
-    @Override
     public void disconnect() throws LowLevelInterfaceException
     {
         steno.info("Disconnecting port " + serialPortToConnectTo);
@@ -76,7 +74,6 @@ public class SerialPortManager implements SerialPortEventListener, LowLevelInter
         serialPort = null;
     }
 
-    @Override
     public boolean writeBytes(byte[] data) throws LowLevelInterfaceException
     {
         boolean wroteOK = false;
@@ -105,7 +102,6 @@ public class SerialPortManager implements SerialPortEventListener, LowLevelInter
         }
     }
 
-    @Override
     public void writeAndWaitForData(byte[] data) throws LowLevelInterfaceException
     {
         checkSerialPortOK();
@@ -141,7 +137,6 @@ public class SerialPortManager implements SerialPortEventListener, LowLevelInter
         }
     }
 
-    @Override
     public byte[] readSerialPort(int numBytes) throws LowLevelInterfaceException
     {
         checkSerialPortOK();
@@ -158,7 +153,6 @@ public class SerialPortManager implements SerialPortEventListener, LowLevelInter
         return returnData;
     }
 
-    @Override
     public byte[] readAllDataOnBuffer() throws LowLevelInterfaceException
     {
         checkSerialPortOK();
