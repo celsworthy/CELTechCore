@@ -31,6 +31,8 @@ public class GCodeDataResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
+        setMessagePayload(byteData);
+        
         boolean success = false;
 
         try

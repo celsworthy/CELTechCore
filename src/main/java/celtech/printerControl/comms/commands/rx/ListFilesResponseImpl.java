@@ -24,6 +24,8 @@ public class ListFilesResponseImpl extends ListFilesResponse
     @Override
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
+        setMessagePayload(byteData);
+        
         boolean success = false;
 
         try

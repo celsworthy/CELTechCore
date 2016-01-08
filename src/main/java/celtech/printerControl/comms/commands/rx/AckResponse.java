@@ -42,6 +42,7 @@ public class AckResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
+        setMessagePayload(byteData);
         int byteOffset = 1;
 
         for (; byteOffset < packetLength(requiredFirmwareVersion); byteOffset++)

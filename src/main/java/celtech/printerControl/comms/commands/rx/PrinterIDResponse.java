@@ -42,6 +42,7 @@ public class PrinterIDResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
+        setMessagePayload(byteData);
 
         boolean success = false;
 

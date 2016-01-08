@@ -59,6 +59,8 @@ public class ReelEEPROMDataResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
+        setMessagePayload(byteData);
+        
         boolean success = false;
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();

@@ -912,6 +912,8 @@ public class StatusResponse extends RoboxRxPacket
     @Override
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
+        setMessagePayload(byteData);
+        
         boolean success = false;
 
         FixedDecimalFloatFormat decimalFloatFormatter = new FixedDecimalFloatFormat();

@@ -5,6 +5,7 @@
 package celtech.printerControl.comms.commands.rx;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -66,6 +67,15 @@ public abstract class RoboxRxPacket
     public void setMessagePayload(String messagePayload)
     {
         this.messagePayload = messagePayload;
+    }
+    
+    /**
+     *
+     * @param messagePayload
+     */
+    public void setMessagePayload(byte[] messagePayload)
+    {
+        this.messagePayload = Arrays.toString(messagePayload);
     }
     
     /**
