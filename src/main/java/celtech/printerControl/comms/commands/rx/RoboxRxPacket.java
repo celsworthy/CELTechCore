@@ -68,16 +68,16 @@ public abstract class RoboxRxPacket
     {
         this.messagePayload = messagePayload;
     }
-    
+
     /**
      *
      * @param messagePayload
      */
     public void setMessagePayload(byte[] messagePayload)
     {
-        this.messagePayload = Arrays.toString(messagePayload);
+        this.messagePayload = new String(messagePayload, 1, messagePayload.length - 1);
     }
-    
+
     /**
      *
      * @param sequenceNumber
@@ -179,11 +179,11 @@ public abstract class RoboxRxPacket
      * @return
      */
     public abstract boolean populatePacket(byte[] byteData, float requiredFirmwareVersion);
-    
+
     /**
-     * 
+     *
      * @param requiredFirmwareVersion
-     * @return 
+     * @return
      */
     public abstract int packetLength(float requiredFirmwareVersion);
 }
