@@ -392,7 +392,7 @@ public abstract class CommandInterface extends Thread
         }
     }
     
-    private void operateRemotely(boolean enableRemoteOperation)
+    public void operateRemotely(boolean enableRemoteOperation)
     {
         suppressComms = enableRemoteOperation;
     }
