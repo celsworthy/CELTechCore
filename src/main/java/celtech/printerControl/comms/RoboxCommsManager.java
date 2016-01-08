@@ -226,7 +226,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 break;
             case ROBOX_REMOTE:
                 newPrinter = new HardwarePrinter(this, new RoboxRemoteCommandInterface(
-                        this, detectedPrinter, suppressPrinterIDChecks,
+                        this, (DeviceDetector.RemoteDetectedPrinter)detectedPrinter, suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS), filamentLoadedGetter,
                         doNotCheckForPresenceOfHead);
                 break;

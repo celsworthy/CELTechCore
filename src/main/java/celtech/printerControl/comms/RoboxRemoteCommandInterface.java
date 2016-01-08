@@ -17,12 +17,12 @@ public class RoboxRemoteCommandInterface extends CommandInterface
     private final RemoteClient remoteClient;
 
     public RoboxRemoteCommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.DetectedPrinter printerHandle,
+            DeviceDetector.RemoteDetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
         this.setName("RemoteCI:" + printerHandle + " " + this.toString());
-        remoteClient = new RemoteClient();
+        remoteClient = new RemoteClient(printerHandle);
     }
 
     @Override
