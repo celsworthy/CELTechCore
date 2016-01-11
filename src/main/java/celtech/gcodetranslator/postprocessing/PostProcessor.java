@@ -205,7 +205,7 @@ public class PostProcessor
                 dRequired = project.getUsedExtruders(printer).contains(1);
             } else
             {
-                nozzle0HeatRequired = true;
+                nozzle0HeatRequired = false;
                 nozzle1HeatRequired = false;
                 eRequired = true;
             }

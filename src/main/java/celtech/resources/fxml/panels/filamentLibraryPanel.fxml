@@ -33,7 +33,7 @@
         <Label styleClass="colon" text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <Label styleClass="colon" text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="5" />
                       
-        <RestrictedTextField fx:id="name" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" directorySafeName="true" restrict="a-zA-Z0-9_" maxLength="28"  />
+        <RestrictedTextField fx:id="name" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" directorySafeName="true" restrict="a-zA-Z0-9_" maxLength="26"  />
         <RestrictedNumberField fx:id="costGBPPerKG" allowedDecimalPlaces="2" maxLength="6" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
          <styleClass>
             <String fx:value="filamentLibUpper" />

@@ -77,7 +77,8 @@ public class OutputUtilities
         try
         {
             MCodeNode nozzleTemp = new MCodeNode(104);
-            if (useNozzle0Heater)
+            if (useNozzle0Heater
+                    || (!useNozzle0Heater && !useNozzle1Heater))
             {
                 nozzleTemp.setSOnly(true);
             }
@@ -91,7 +92,7 @@ public class OutputUtilities
             writer.newLine();
 
             MCodeNode bedTemp = new MCodeNode(140);
-            
+
             bedTemp.setCommentText("Go to bed temperature from loaded reel - don't wait");
             writer.writeOutput(bedTemp.renderForOutput());
             writer.newLine();

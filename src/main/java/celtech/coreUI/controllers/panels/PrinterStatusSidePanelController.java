@@ -95,6 +95,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Label headFeeds;
 
     @FXML
+    private VBox headDataBox;
+
+    @FXML
+    private VBox noheadDataBox;
+
+    @FXML
     private Group noHead;
 
     @FXML
@@ -271,16 +277,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void showNoHead()
     {
+        noheadDataBox.setVisible(true);
         noHead.setVisible(true);
+        headDataBox.setVisible(false);
         dualMaterialHead.setVisible(false);
         singleMaterialHead.setVisible(false);
         singleMaterialLiteHead.setVisible(false);
-
-        headTitleBold.setText("");
-        headTitleLight.setText(Lookup.i18n("headPanel.noHead.titleLight"));
-        headDescription.setText(Lookup.i18n("headPanel.noHead.description"));
-        headNozzles.setText("");
-        headFeeds.setText("");
     }
 
     private void unbindHeadProperties(Head head)
@@ -316,19 +318,25 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
+            noheadDataBox.setVisible(false);
             noHead.setVisible(false);
+            headDataBox.setVisible(true);
             dualMaterialHead.setVisible(true);
             singleMaterialHead.setVisible(false);
             singleMaterialLiteHead.setVisible(false);
         } else if (head.typeCodeProperty().get().equals("RBX01-SL"))
         {
+            noheadDataBox.setVisible(false);
             noHead.setVisible(false);
+            headDataBox.setVisible(true);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(false);
             singleMaterialLiteHead.setVisible(true);
         } else
         {
+            noheadDataBox.setVisible(false);
             noHead.setVisible(false);
+            headDataBox.setVisible(true);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(true);
             singleMaterialLiteHead.setVisible(false);
