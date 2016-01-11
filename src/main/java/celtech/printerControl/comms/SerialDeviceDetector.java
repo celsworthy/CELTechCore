@@ -120,30 +120,42 @@ public class SerialDeviceDetector extends DeviceDetector
             List<DetectedDevice> newlyDetectedPrinters = searchForDevices();
 
             //Deal with disconnections
+            List<DetectedDevice> printersToDisconnect = new ArrayList<>();
             currentPrinters.forEach(existingPrinter ->
             {
                 if (!newlyDetectedPrinters.contains(existingPrinter))
                 {
-                    steno.info("Disconnecting from " + existingPrinter + " as it doesn't seem to be present anymore");
-                    deviceDetectionListener.deviceNoLongerPresent(existingPrinter);
-                    currentPrinters.remove(existingPrinter);
+                    printersToDisconnect.add(existingPrinter);
                 }
             });
 
+            for (DetectedDevice printerToDisconnect : printersToDisconnect)
+            {
+                steno.info("Disconnecting from " + printerToDisconnect + " as it doesn't seem to be present anymore");
+                deviceDetectionListener.deviceNoLongerPresent(printerToDisconnect);
+                currentPrinters.remove(printerToDisconnect);
+            }
+
             //Now new connections
+            List<DetectedDevice> printersToConnect = new ArrayList<>();
             newlyDetectedPrinters.forEach(newPrinter ->
             {
                 if (!currentPrinters.contains(newPrinter))
                 {
-                    steno.info("We have found a new printer " + newPrinter);
-                    currentPrinters.add(newPrinter);
-                    deviceDetectionListener.deviceDetected(newPrinter);
+                    printersToConnect.add(newPrinter);
                 }
             });
 
+            for (DetectedDevice printerToConnect : printersToConnect)
+            {
+                steno.info("We have found a new printer " + printerToConnect);
+                currentPrinters.add(printerToConnect);
+                deviceDetectionListener.deviceDetected(printerToConnect);
+            }
+
             try
             {
-                Thread.sleep(1500);
+                Thread.sleep(500);
             } catch (InterruptedException ex)
             {
                 steno.warning("Interrupted within remote host discovery loop");
