@@ -168,7 +168,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                     }
                 }
 
-                if (!noNeedToAddPrinter)
+                if (!noNeedToAddPrinter && detectedPrinter.getConnectionType() != DeviceDetector.PrinterConnectionType.ROBOX_REMOTE)
                 {
                     // We need to connect!
                     if (keepRunning)
