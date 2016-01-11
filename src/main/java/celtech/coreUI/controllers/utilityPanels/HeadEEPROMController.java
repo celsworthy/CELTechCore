@@ -127,7 +127,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         try
         {
             String headTypeCodeText = headTypeCode.getText();
-            Float headMaxTemperatureVal = headMaxTemperature.getFloatValue();
+            float headMaxTemperatureVal = headMaxTemperature.getFloatValue();
             Float headThermistorBetaVal = headThermistorBeta.getFloatValue();
             Float headThermistorTCalVal = headThermistorTCal.getFloatValue();
             Float nozzle1XOffsetVal = nozzle1XOffset.getFloatValue();
@@ -136,8 +136,12 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             Float nozzle2XOffsetVal = nozzle2XOffset.getFloatValue();
             Float nozzle2YOffsetVal = nozzle2YOffset.getFloatValue();
             Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
-            Float lastFilamentTemperatureVal0 = lastFilamentTemperature0.getFloatValue();
-            Float lastFilamentTemperatureVal1 = lastFilamentTemperature1.getFloatValue();
+            float lastFilamentTemperatureVal0 = lastFilamentTemperature0.getFloatValue();
+            float lastFilamentTemperatureVal1 = 0;
+            if (lastFilamentTemperature1.isVisible())
+            {
+                lastFilamentTemperatureVal1 = lastFilamentTemperature1.getFloatValue();
+            }
             Float headHourCounterVal = headHourCounter.getFloatValue();
 
             float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
@@ -257,14 +261,18 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headUniqueID.setText(head.uniqueIDProperty().get().trim());
         lastFilamentTemperature0.setText(String.format("%.0f",
                 head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
+        headMaxTemperature.setText(String.format("%.0f",
+                head.getNozzleHeaters().get(0).maximumTemperatureProperty().get()));
         if (head.getNozzleHeaters().size() > 1)
         {
             lastFilamentTemperature1.setText(String.format("%.0f",
                     head.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get()));
+            lastFilamentTemperature1.setVisible(true);
+        } else
+        {
+            lastFilamentTemperature1.setVisible(false);
         }
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
-        headMaxTemperature.setText(String.format("%.0f",
-                head.getNozzleHeaters().get(0).maximumTemperatureProperty().get()));
         headThermistorBeta.setText(String.format("%.2f",
                 head.getNozzleHeaters().get(0).betaProperty().get()));
         headThermistorTCal.setText(String.format("%.2f",

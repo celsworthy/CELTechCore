@@ -58,14 +58,14 @@
                   <Image url="@../images/statusRender/Door%20Open.png" />
                </image>
             </ImageView>
-            <ImageView fx:id="singleMaterialHead" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
-               <image>
-                  <Image url="@../images/statusRender/Single%20Material%20Head.png" />
-               </image>
-            </ImageView>
             <ImageView fx:id="ambientLight" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
                <image>
                   <Image url="@../images/statusRender/Ambient%20Light%20(White).png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="singleMaterialHead" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">
+               <image>
+                  <Image url="@../images/statusRender/Single%20Material%20Head.png" />
                </image>
             </ImageView>
             <ImageView fx:id="dualMaterialHead" fitHeight="0.0" fitWidth="0.0" mouseTransparent="true" preserveRatio="true" visible="true">

@@ -19,11 +19,11 @@
         <VBox id="StatusPanel" VBox.vgrow="ALWAYS" alignment="TOP_CENTER" spacing="20" maxHeight="1.7976931348623157E308" maxWidth="260" prefHeight="-1.0" styleClass="sidePanel">
             <children> 
                 <PrinterGridComponent fx:id="printerGridComponent" styleClass="printerGrid" />
-                <VBox fx:id="headPanel" maxHeight="-1" maxWidth="-Infinity" prefHeight="80.0" prefWidth="260.0" styleClass="statusPanelChild">
+                <VBox fx:id="headPanel" minHeight="80" maxHeight="-1" prefHeight="80.0" maxWidth="-1" prefWidth="260.0" styleClass="statusPanelChild">
                     <children>
-                        <HBox spacing="20" alignment="CENTER" >
+                        <HBox spacing="18" alignment="CENTER_LEFT" minHeight="80" maxHeight="-1" prefHeight="80.0" >
                             <children>
-                                <StackPane>
+                                <StackPane minWidth="50" minHeight="52" maxWidth="50" maxHeight="52" prefWidth="50" prefHeight="52">
                                     <children>
                                         <Group fx:id="noHead">
                                             <Group>
@@ -75,22 +75,32 @@
                                         </Group>
                                     </children>
                                 </StackPane>
-                                <VBox>
+                                <StackPane alignment="CENTER" minHeight="0" prefHeight="60">
                                     <children>
-                                        <HBox alignment="BASELINE_LEFT">
+                                        <VBox fx:id="headDataBox" minHeight="0" prefHeight="60">
                                             <children>
-                                                <Label fx:id="headTitleBold" style="-fx-font-size: 18px;" styleClass="boldText" text="Label" />
-                                                <Label fx:id="headTitleLight" style="-fx-font-size: 18px;" styleClass="regularText" text="Label" />
+                                                <HBox alignment="BASELINE_LEFT" minHeight="0.0" prefHeight="24">
+                                                    <children>
+                                                        <Label fx:id="headTitleBold" style="-fx-font-size: 20px;" styleClass="regularText" text="Label" minHeight="0"/>
+                                                        <Label fx:id="headTitleLight" style="-fx-font-size: 20px;" styleClass="lightText" text="Label" minHeight="0"/>
+                                                    </children>
+                                                </HBox>
+                                                <Label fx:id="headDescription" style="-fx-font-size: 10px;" styleClass="regularText" text="Label" minHeight="0" maxHeight="13"/>
+                                                <Label fx:id="headNozzles" style="-fx-font-size: 10px;" styleClass="regularText" text="Label" minHeight="0" maxHeight="13"/>
+                                                <Label fx:id="headFeeds" style="-fx-font-size: 10px;" styleClass="regularText" text="Label" minHeight="0" maxHeight="13"/>
                                             </children>
-                                        </HBox>
-                                        <Label fx:id="headDescription" style="-fx-font-size: 12px;" styleClass="lightText" text="Label" />
-                                        <Label fx:id="headNozzles" layoutX="10.0" layoutY="10.0" style="-fx-font-size: 12;" styleClass="lightText" text="Label" />
-                                        <Label fx:id="headFeeds" layoutX="10.0" layoutY="27.0" style="-fx-font-size: 12;" styleClass="lightText" text="Label" />
+                                        </VBox>
+                                        <VBox fx:id="noheadDataBox" alignment="CENTER_LEFT" >
+                                            <children>
+                                                <Label style="-fx-font-size: 20px;" styleClass="regularText" text="%headPanel.noHead.titleLight" />
+                                                <Label style="-fx-font-size: 10px;" styleClass="regularText" text="%headPanel.noHead.description" />
+                                            </children>
+                                        </VBox>
                                     </children>
-                                </VBox>
+                                </StackPane>
                             </children>
                             <padding>
-                                <Insets left="10.0" bottom="20.0" right="10" top="10"/>
+                                <Insets left="17.0" top="5.0" bottom="5.0"/>
                             </padding>
                         </HBox>
                     </children>
