@@ -3,19 +3,14 @@
  */
 package celtech.services.printing;
 
-import celtech.gcodetranslator.PrintJobStatistics;
+import celtech.printerControl.comms.DetectedDevice;
 import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.TestCommandInterface;
 import celtech.printerControl.model.ETCCalculator;
 import celtech.printerControl.model.HardwarePrinter;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -23,7 +18,7 @@ import org.junit.Test;
  */
 public class ETCCalculatorTest
 {
-    private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
+    private DetectedDevice printerHandle = new DetectedDevice(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
 
     List<Double> layerNumberToDistanceTravelled;
     List<Double> layerNumberToPredictedDuration;

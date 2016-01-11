@@ -5,6 +5,7 @@ import celtech.comms.remote.RoboxRxPacketRemote;
 import celtech.comms.remote.RoboxTxPacketRemote;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.printerControl.comms.DeviceDetector;
+import celtech.printerControl.comms.RemoteDetectedPrinter;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
@@ -26,14 +27,14 @@ public class RemoteClient implements LowLevelInterface
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(RemoteClient.class.getName());
-    private final DeviceDetector.RemoteDetectedPrinter remotePrinterHandle;
+    private final RemoteDetectedPrinter remotePrinterHandle;
 
     private final String baseUrlString;
     private final String connectUrlString;
     private final String disconnectUrlString;
     private final String writeToPrinterUrlString;
 
-    public RemoteClient(DeviceDetector.RemoteDetectedPrinter remotePrinterHandle)
+    public RemoteClient(RemoteDetectedPrinter remotePrinterHandle)
     {
         this.remotePrinterHandle = remotePrinterHandle;
         baseUrlString = "http://" + remotePrinterHandle.getAddress().getHostAddress() + ":" + Configuration.remotePort;

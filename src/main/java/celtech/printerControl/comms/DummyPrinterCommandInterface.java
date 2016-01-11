@@ -97,7 +97,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     protected int bedTargetTemperature = 30;
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.DetectedPrinter printerHandle,
+            DetectedDevice printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks, String printerName)
     {
         super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
@@ -108,7 +108,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     }
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.DetectedPrinter printerHandle,
+            DetectedDevice printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         this(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks,

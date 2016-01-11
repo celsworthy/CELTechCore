@@ -10,17 +10,17 @@ public interface PrinterStatusConsumer
      *
      * @param printerHandle
      */
-    public void printerConnected(DeviceDetector.DetectedPrinter printerHandle);
+    public void printerConnected(DetectedDevice printerHandle);
 
     /**
      *
      * @param printerHandle
      */
-    public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle);
+    public void failedToConnect(DetectedDevice printerHandle);
 
     /**
      *
      * @param printerHandle
      */
-    public void disconnected(DeviceDetector.DetectedPrinter printerHandle);  
+    public void disconnected(DetectedDevice printerHandle);  
 }

@@ -1,6 +1,7 @@
 package celtech.printerControl.model;
 
 import celtech.JavaFXConfiguredTest;
+import celtech.printerControl.comms.DetectedDevice;
 import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.DummyPrinterCommandInterface;
 import celtech.printerControl.comms.PrinterStatusConsumer;
@@ -16,7 +17,7 @@ import static org.junit.Assert.*;
 public class HeadTest extends JavaFXConfiguredTest
 {
 
-    private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
+    private DetectedDevice printerHandle = new DetectedDevice(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
 
     @Test
     public void testWriteAndReadLastFilamentTempFor2Heaters() throws RoboxCommsException
@@ -25,17 +26,17 @@ public class HeadTest extends JavaFXConfiguredTest
         {
 
             @Override
-            public void printerConnected(DeviceDetector.DetectedPrinter printerHandle)
+            public void printerConnected(DetectedDevice printerHandle)
             {
             }
 
             @Override
-            public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
+            public void failedToConnect(DetectedDevice printerHandle)
             {
             }
 
             @Override
-            public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
+            public void disconnected(DetectedDevice printerHandle)
             {
             }
         };

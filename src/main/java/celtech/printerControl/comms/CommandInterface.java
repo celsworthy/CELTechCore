@@ -36,7 +36,7 @@ public abstract class CommandInterface extends Thread
     protected Stenographer steno = StenographerFactory.getStenographer(
             HardwareCommandInterface.class.getName());
     protected PrinterStatusConsumer controlInterface = null;
-    protected DeviceDetector.DetectedPrinter printerHandle = null;
+    protected DetectedDevice printerHandle = null;
     protected Printer printerToUse = null;
     protected String printerFriendlyName = "Robox";
     protected RoboxCommsState commsState = RoboxCommsState.FOUND;
@@ -63,7 +63,7 @@ public abstract class CommandInterface extends Thread
      * @param sleepBetweenStatusChecks
      */
     public CommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.DetectedPrinter printerHandle,
+            DetectedDevice printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         this.controlInterface = controlInterface;

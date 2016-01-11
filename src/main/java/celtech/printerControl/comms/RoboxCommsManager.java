@@ -1,7 +1,7 @@
 package celtech.printerControl.comms;
 
 import celtech.Lookup;
-import celtech.comms.DiscoveryAgentClientEnd;
+import celtech.comms.RemoteDeviceDetector;
 import celtech.configuration.UserPreferences;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.HardwarePrinter;
@@ -11,17 +11,15 @@ import java.util.HashMap;
 import java.util.List;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.analysis.integration.RombergIntegrator;
 
 /**
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
+public class RoboxCommsManager implements PrinterStatusConsumer, DeviceDetectionListener
 {
 
     private static RoboxCommsManager instance = null;
-    private boolean keepRunning = true;
 
     private final String printerToSearchFor = "Robox";
     private final String roboxVendorID = "16D0";
@@ -29,8 +27,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
 
     private Stenographer steno = null;
     private final List<Printer> dummyPrinters = new ArrayList<>();
-    private final HashMap<DeviceDetector.DetectedPrinter, Printer> pendingPrinters = new HashMap<>();
-    private final HashMap<DeviceDetector.DetectedPrinter, Printer> activePrinters = new HashMap<>();
+    private final HashMap<DetectedDevice, Printer> pendingPrinters = new HashMap<>();
+    private final HashMap<DetectedDevice, Printer> activePrinters = new HashMap<>();
     private boolean suppressPrinterIDChecks = false;
     private int sleepBetweenStatusChecksMS = 1000;
 
@@ -39,8 +37,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     private int dummyPrinterCounter = 0;
 
     private final SerialDeviceDetector usbSerialDeviceDetector;
-    private Thread remoteHostDiscoveryThread;
-    private final DiscoveryAgentClientEnd remoteHostDiscoveryClient = new DiscoveryAgentClientEnd(this);
+    private final RemoteDeviceDetector remoteDeviceDetector;
 
     private boolean doNotCheckForPresenceOfHead = false;
     private boolean searchForRemotePrinters = false;
@@ -54,11 +51,15 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
         this.searchForRemotePrinters = searchForRemotePrinters;
 
-        usbSerialDeviceDetector = new SerialDeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor);
+        usbSerialDeviceDetector = new SerialDeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor, this);
+        remoteDeviceDetector = new RemoteDeviceDetector(this);
 
-        this.setName("Robox Comms Manager");
         steno = StenographerFactory.getStenographer(this.getClass().getName());
-        this.setDaemon(true);
+
+        if (searchForRemotePrinters)
+        {
+            remoteDeviceDetector.start();
+        }
     }
 
     /**
@@ -107,87 +108,49 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         return instance;
     }
 
-    /**
-     *
-     */
-    @Override
-    public void run()
+    private void assessCandidatePrinter(DetectedDevice detectedPrinter)
     {
-        if (searchForRemotePrinters)
-        {
-            remoteHostDiscoveryThread = new Thread(remoteHostDiscoveryClient);
-            remoteHostDiscoveryThread.setDaemon(true);
-            remoteHostDiscoveryThread.start();
-        }
-
-        while (keepRunning)
-        {
-            List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
-            assessCandidatePrinters(serialPrinters);
-
-            try
-            {
-                this.sleep(500);
-            } catch (InterruptedException ex)
-            {
-                steno.error("Interrupted");
-            }
-        }
-    }
-
-    private void assessCandidatePrinters(List<DeviceDetector.DetectedPrinter> connnectionHandles)
-    {
-        if (connnectionHandles != null)
+        if (detectedPrinter != null)
         {
             boolean noNeedToAddPrinter = false;
 
-            for (DeviceDetector.DetectedPrinter detectedPrinter : connnectionHandles)
-            {
 //                steno.info("Found printer on " + detectedPrinter);
-
-                for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
+            for (DetectedDevice pendingPrinterToCheck : pendingPrinters.keySet())
+            {
+                if (detectedPrinter.equals(pendingPrinterToCheck))
                 {
-                    if (detectedPrinter.equals(pendingPrinterToCheck))
-                    {
 //                        steno.info("Found already pending printer " + detectedPrinter);
+                    noNeedToAddPrinter = true;
+                    break;
+                }
+            }
+
+            if (!noNeedToAddPrinter)
+            {
+                for (DetectedDevice activePrinterToCheck : activePrinters.keySet())
+                {
+                    if (detectedPrinter.equals(activePrinterToCheck))
+                    {
+//                            steno.info("Found already active printer " + detectedPrinter);
                         noNeedToAddPrinter = true;
                         break;
                     }
                 }
+            }
 
-                if (!noNeedToAddPrinter)
-                {
-                    for (DeviceDetector.DetectedPrinter activePrinterToCheck : activePrinters.keySet())
-                    {
-                        if (detectedPrinter.equals(activePrinterToCheck))
-                        {
-//                            steno.info("Found already active printer " + detectedPrinter);
-                            noNeedToAddPrinter = true;
-                            break;
-                        }
-                    }
-                }
+            if (!noNeedToAddPrinter)
+            {
+                // We need to connect!
+                steno.info("Adding new printer " + detectedPrinter);
 
-                if (!noNeedToAddPrinter && detectedPrinter.getConnectionType() != DeviceDetector.PrinterConnectionType.ROBOX_REMOTE)
-                {
-                    // We need to connect!
-                    if (keepRunning)
-                    {
-                        steno.info("Adding new printer " + detectedPrinter);
-
-                        Printer newPrinter = makePrinter(detectedPrinter);
-                        pendingPrinters.put(detectedPrinter, newPrinter);
-                        newPrinter.startComms();
-                    } else
-                    {
-                        steno.info("Aborted add of printer as we are shutting down");
-                    }
-                }
+                Printer newPrinter = makePrinter(detectedPrinter);
+                pendingPrinters.put(detectedPrinter, newPrinter);
+                newPrinter.startComms();
             }
         }
     }
 
-    private Printer makePrinter(DeviceDetector.DetectedPrinter detectedPrinter)
+    private Printer makePrinter(DetectedDevice detectedPrinter)
     {
         final UserPreferences userPreferences = Lookup.getUserPreferences();
         HardwarePrinter.FilamentLoadedGetter filamentLoadedGetter
@@ -221,7 +184,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
                 break;
             case ROBOX_REMOTE:
                 newPrinter = new HardwarePrinter(this, new RoboxRemoteCommandInterface(
-                        this, (DeviceDetector.RemoteDetectedPrinter) detectedPrinter, suppressPrinterIDChecks,
+                        this, (RemoteDetectedPrinter) detectedPrinter, suppressPrinterIDChecks,
                         sleepBetweenStatusChecksMS), filamentLoadedGetter,
                         doNotCheckForPresenceOfHead);
                 break;
@@ -232,13 +195,26 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         return newPrinter;
     }
 
+    public void start()
+    {
+        if (!usbSerialDeviceDetector.isAlive())
+        {
+            usbSerialDeviceDetector.start();
+        }
+
+        if (!remoteDeviceDetector.isAlive() && searchForRemotePrinters)
+        {
+            remoteDeviceDetector.start();
+        }
+    }
+
     /**
      *
      */
     public void shutdown()
     {
-        keepRunning = false;
-        remoteHostDiscoveryClient.shutdown();
+        usbSerialDeviceDetector.shutdownDetector();
+        remoteDeviceDetector.shutdownDetector();
 
         for (Printer printer : Lookup.getConnectedPrinters())
         {
@@ -258,24 +234,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      * @param detectedPrinter
      */
     @Override
-    public void printerConnected(DeviceDetector.DetectedPrinter detectedPrinter)
+    public void printerConnected(DetectedDevice detectedPrinter)
     {
-        if (detectedPrinter instanceof DeviceDetector.RemoteDetectedPrinter)
-        {
-            //Remote printers connect automatically
-            if (keepRunning)
-            {
-                steno.info("Adding new printer " + detectedPrinter);
-
-                Printer newPrinter = makePrinter(detectedPrinter);
-                pendingPrinters.put(detectedPrinter, newPrinter);
-                newPrinter.startComms();
-            } else
-            {
-                steno.info("Aborted add of printer as we are shutting down");
-            }
-        }
-
         Printer printer = pendingPrinters.get(detectedPrinter);
         activePrinters.put(detectedPrinter, printer);
         printer.connectionEstablished();
@@ -290,7 +250,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      *
      */
     @Override
-    public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
+    public void failedToConnect(DetectedDevice printerHandle)
     {
         pendingPrinters.remove(printerHandle);
     }
@@ -299,7 +259,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
      *
      */
     @Override
-    public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
+    public void disconnected(DetectedDevice printerHandle)
     {
         pendingPrinters.remove(printerHandle);
 
@@ -320,7 +280,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     {
         dummyPrinterCounter++;
         String actualPrinterPort = dummyPrinterPort + " " + dummyPrinterCounter;
-        DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, actualPrinterPort);
+        DetectedDevice printerHandle = new DetectedDevice(DeviceDetector.PrinterConnectionType.SERIAL, actualPrinterPort);
         Printer nullPrinter = new HardwarePrinter(this,
                 new DummyPrinterCommandInterface(this,
                         printerHandle,
@@ -333,7 +293,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
         nullPrinter.startComms();
     }
 
-    public void removeDummyPrinter(DeviceDetector.DetectedPrinter printerHandle)
+    public void removeDummyPrinter(DetectedDevice printerHandle)
     {
         disconnected(printerHandle);
     }
@@ -350,5 +310,17 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer
     public void setSleepBetweenStatusChecks(int milliseconds)
     {
         sleepBetweenStatusChecksMS = milliseconds;
+    }
+
+    @Override
+    public void deviceDetected(DetectedDevice detectedDevice)
+    {
+        assessCandidatePrinter(detectedDevice);
+    }
+
+    @Override
+    public void deviceNoLongerPresent(DetectedDevice detectedDevice)
+    {
+        steno.info("Robox Comms Manager has been told that a printer is no longer detected: " + detectedDevice);
     }
 }

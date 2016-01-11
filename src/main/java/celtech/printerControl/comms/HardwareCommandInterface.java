@@ -24,7 +24,7 @@ public class HardwareCommandInterface extends CommandInterface
     private final SerialPortManager serialPortManager;
 
     public HardwareCommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.DetectedPrinter printerHandle,
+            DetectedDevice printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);

@@ -17,7 +17,7 @@ public class RoboxRemoteCommandInterface extends CommandInterface
     private final RemoteClient remoteClient;
 
     public RoboxRemoteCommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.RemoteDetectedPrinter printerHandle,
+            RemoteDetectedPrinter printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);

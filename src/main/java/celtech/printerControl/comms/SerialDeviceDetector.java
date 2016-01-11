@@ -16,21 +16,26 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class SerialDeviceDetector implements DeviceDetector
+public class SerialDeviceDetector extends DeviceDetector
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(SerialDeviceDetector.class.getName());
-    private final String pathToBinaries;
+    private List<DetectedDevice> currentPrinters = new ArrayList<>();
     private final String deviceDetectorStringMac;
     private final String deviceDetectorStringWindows;
     private final String deviceDetectorStringLinux;
     private final String deviceDetectionCommand;
     private final String notConnectedString = "NOT_CONNECTED";
 
-    public SerialDeviceDetector(String pathToBinaries, String vendorID, String productID,
-            String deviceNameToSearchFor)
+    public SerialDeviceDetector(String pathToBinaries,
+            String vendorID,
+            String productID,
+            String deviceNameToSearchFor,
+            DeviceDetectionListener deviceDetectionListener)
     {
-        this.pathToBinaries = pathToBinaries;
+        super(deviceDetectionListener);
+
+        this.setName("SerialDeviceDetector");
 
         deviceDetectorStringMac = pathToBinaries + "RoboxDetector.mac.sh";
         deviceDetectorStringLinux = pathToBinaries + "RoboxDetector.linux.sh";
@@ -61,16 +66,10 @@ public class SerialDeviceDetector implements DeviceDetector
         steno.trace("Device detector command: " + deviceDetectionCommand);
     }
 
-    /**
-     * Detect any attached device and return an array of port names
-     *
-     * @return an array of com or dev (e.g. /dev/ttyACM0) names
-     */
-    @Override
-    public List<DetectedPrinter> searchForDevices()
+    private List<DetectedDevice> searchForDevices()
     {
         StringBuilder outputBuffer = new StringBuilder();
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         for (String subcommand : deviceDetectionCommand.split(" "))
         {
             command.add(subcommand);
@@ -100,13 +99,13 @@ public class SerialDeviceDetector implements DeviceDetector
             steno.error("Error " + ex);
         }
 
-        List<DetectedPrinter> detectedPrinters = new ArrayList<>();
+        List<DetectedDevice> detectedPrinters = new ArrayList<>();
 
         if (outputBuffer.length() > 0)
         {
             for (String handle : outputBuffer.toString().split(" "))
             {
-                detectedPrinters.add(new DetectedPrinter(PrinterConnectionType.SERIAL, handle));
+                detectedPrinters.add(new DetectedDevice(PrinterConnectionType.SERIAL, handle));
             }
         }
 
@@ -114,7 +113,41 @@ public class SerialDeviceDetector implements DeviceDetector
     }
 
     @Override
-    public void shutdownDetector()
+    public void run()
     {
+        while (keepRunning)
+        {
+            List<DetectedDevice> newlyDetectedPrinters = searchForDevices();
+
+            //Deal with disconnections
+            currentPrinters.forEach(existingPrinter ->
+            {
+                if (!newlyDetectedPrinters.contains(existingPrinter))
+                {
+                    steno.info("Disconnecting from " + existingPrinter + " as it doesn't seem to be present anymore");
+                    deviceDetectionListener.deviceNoLongerPresent(existingPrinter);
+                    currentPrinters.remove(existingPrinter);
+                }
+            });
+
+            //Now new connections
+            newlyDetectedPrinters.forEach(newPrinter ->
+            {
+                if (!currentPrinters.contains(newPrinter))
+                {
+                    steno.info("We have found a new printer " + newPrinter);
+                    currentPrinters.add(newPrinter);
+                    deviceDetectionListener.deviceDetected(newPrinter);
+                }
+            });
+
+            try
+            {
+                Thread.sleep(1500);
+            } catch (InterruptedException ex)
+            {
+                steno.warning("Interrupted within remote host discovery loop");
+            }
+        }
     }
 }

@@ -2,8 +2,10 @@ package celtech.comms;
 
 import celtech.comms.remote.DiscoveryResponse;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.printerControl.comms.DetectedDevice;
+import celtech.printerControl.comms.DeviceDetectionListener;
 import celtech.printerControl.comms.DeviceDetector;
-import celtech.printerControl.comms.PrinterStatusConsumer;
+import celtech.printerControl.comms.RemoteDetectedPrinter;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -24,22 +26,22 @@ import org.codehaus.jackson.map.ObjectMapper;
  *
  * @author Ian
  */
-public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
+public class RemoteDeviceDetector extends DeviceDetector
 {
-    
     private final Stenographer steno = StenographerFactory.getStenographer("DiscoveryAgentClientEnd");
-    private final PrinterStatusConsumer printerStatusConsumer;
     private boolean initialised = false;
     private InetAddress group = null;
     private DatagramSocket s = null;
     private boolean keepRunning = true;
-    private List<DeviceDetector.DetectedPrinter> currentPrinters = new ArrayList<>();
+    private List<DetectedDevice> currentPrinters = new ArrayList<>();
     private static final ObjectMapper mapper = new ObjectMapper();
-    
-    public DiscoveryAgentClientEnd(PrinterStatusConsumer printerStatusConsumer)
+
+    public RemoteDeviceDetector(DeviceDetectionListener listener)
     {
-        this.printerStatusConsumer = printerStatusConsumer;
-    }
+        super(listener);
+        
+        this.setName("RemoteDeviceDetector");
+    }    
     
     @Override
     public void run()
@@ -80,25 +82,27 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
                     serverAddresses.add(recv.getAddress());
                 }
                 
-                List<DeviceDetector.DetectedPrinter> newlyDetectedPrinters = searchForDevices(serverAddresses);
+                List<DetectedDevice> newlyDetectedPrinters = searchForDevices(serverAddresses);
 
                 //Deal with disconnections
                 currentPrinters.forEach(existingPrinter ->
                 {
                     if (!newlyDetectedPrinters.contains(existingPrinter))
                     {
-                        printerStatusConsumer.disconnected(existingPrinter);
+                        steno.info("Disconnecting from " + existingPrinter + " as it doesn't seem to be present anymore");
+                        deviceDetectionListener.deviceNoLongerPresent(existingPrinter);
                         currentPrinters.remove(existingPrinter);
                     }
                 });
 
-                //Now disconnections
+                //Now new connections
                 newlyDetectedPrinters.forEach(newPrinter ->
                 {
                     if (!currentPrinters.contains(newPrinter))
                     {
+                        steno.info("We have found a new printer " + newPrinter);
                         currentPrinters.add(newPrinter);
-                        printerStatusConsumer.printerConnected(newPrinter);
+                        deviceDetectionListener.deviceDetected(newPrinter);
                     }
                 });
 
@@ -122,14 +126,9 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
         
     }
     
-    public void shutdown()
+    private List<DetectedDevice> searchForDevices(Set<InetAddress> serverAddresses)
     {
-        keepRunning = false;
-    }
-    
-    private List<DetectedPrinter> searchForDevices(Set<InetAddress> serverAddresses)
-    {
-        List<DetectedPrinter> foundPrinters = new ArrayList<>();
+        List<DetectedDevice> foundPrinters = new ArrayList<>();
         
         for (InetAddress address : serverAddresses)
         {
@@ -154,7 +153,7 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
                     DiscoveryResponse discoveryResponse = mapper.readValue(con.getInputStream(), DiscoveryResponse.class);
                     discoveryResponse.getPrinterIDs().forEach(printerID ->
                     {
-                        DeviceDetector.RemoteDetectedPrinter remotePrinter = new RemoteDetectedPrinter(address, PrinterConnectionType.ROBOX_REMOTE, printerID);
+                        RemoteDetectedPrinter remotePrinter = new RemoteDetectedPrinter(address, PrinterConnectionType.ROBOX_REMOTE, printerID);
                         foundPrinters.add(remotePrinter);
                     });
                     
@@ -172,16 +171,4 @@ public class DiscoveryAgentClientEnd implements Runnable, DeviceDetector
         
         return foundPrinters;
     }
-    
-    @Override
-    public List<DeviceDetector.DetectedPrinter> searchForDevices()
-    {
-        return currentPrinters;
-    }
-    
-    @Override
-    public void shutdownDetector()
-    {
-    }
-    
 }

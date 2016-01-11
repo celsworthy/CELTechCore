@@ -18,7 +18,7 @@ import org.junit.rules.TemporaryFolder;
 public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
 {
 
-    private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
+    private DetectedDevice printerHandle = new DetectedDevice(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
 
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
@@ -76,17 +76,17 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
     {
 
         @Override
-        public void printerConnected(DeviceDetector.DetectedPrinter printerHandle)
+        public void printerConnected(DetectedDevice printerHandle)
         {
         }
 
         @Override
-        public void failedToConnect(DeviceDetector.DetectedPrinter printerHandle)
+        public void failedToConnect(DetectedDevice printerHandle)
         {
         }
 
         @Override
-        public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
+        public void disconnected(DetectedDevice printerHandle)
         {
         }
     }

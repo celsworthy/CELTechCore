@@ -50,7 +50,7 @@ public class TestCommandInterface extends CommandInterface
             RxPacketTypeEnum.HEAD_EEPROM_DATA);
 
     public TestCommandInterface(PrinterStatusConsumer controlInterface,
-            DeviceDetector.DetectedPrinter printerHandle,
+            DetectedDevice printerHandle,
             boolean suppressPrinterIDChecks, int sleepBetweenStatusChecks)
     {
         super(controlInterface, printerHandle, suppressPrinterIDChecks, sleepBetweenStatusChecks);
