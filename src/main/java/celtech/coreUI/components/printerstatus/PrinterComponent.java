@@ -347,6 +347,8 @@ public class PrinterComponent extends Pane
                 progressBarYOffset = 55;
                 break;
         }
+        
+        progressBar.setSize(currentSize);
 
         sizePixels = currentSize.getSize();
 

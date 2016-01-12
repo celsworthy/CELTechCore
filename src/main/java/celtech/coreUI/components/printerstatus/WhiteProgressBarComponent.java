@@ -37,7 +37,7 @@ public class WhiteProgressBarComponent extends Pane
     {
         super();
         URL fxml = getClass().getResource(
-            "/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
+                "/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -112,6 +112,20 @@ public class WhiteProgressBarComponent extends Pane
         } else
         {
             statusLabel.setText(status.getI18nString());
+        }
+    }
+
+    void setSize(PrinterComponent.Size currentSize)
+    {
+        switch (currentSize)
+        {
+            case SIZE_SMALL:
+            case SIZE_MEDIUM:
+                statusLabel.setVisible(false);
+                break;
+            case SIZE_LARGE:
+                statusLabel.setVisible(true);
+                break;
         }
     }
 }
