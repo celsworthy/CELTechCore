@@ -6,6 +6,7 @@ import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.OK_ABOR
 import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.ABORT;
 import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.CLEAR_CONTINUE;
 import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.OK;
+import static celtech.appManager.errorHandling.SystemErrorHandlerOptions.OK_CONTINUE;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,8 +68,8 @@ public enum FirmwareError
     FILE_READ_CLOBBERED("error.ERROR_FILE_READ_CLOBBERED", 11, OK_ABORT),
     MAX_GANTRY_ADJUSTMENT("error.ERROR_MAX_GANTRY_ADJUSTMENT", 12, OK_ABORT),
     REEL0_EEPROM("error.ERROR_REEL0_EEPROM", 13, CLEAR_CONTINUE, ABORT),
-    E_FILAMENT_SLIP("error.ERROR_E_FILAMENT_SLIP", 14, CLEAR_CONTINUE, ABORT),
-    D_FILAMENT_SLIP("error.ERROR_D_FILAMENT_SLIP", 15, CLEAR_CONTINUE, ABORT),
+    E_FILAMENT_SLIP("error.ERROR_E_FILAMENT_SLIP", 14, OK_CONTINUE, ABORT),
+    D_FILAMENT_SLIP("error.ERROR_D_FILAMENT_SLIP", 15, OK_CONTINUE, ABORT),
     NOZZLE_FLUSH_NEEDED("error.ERROR_NOZZLE_FLUSH_NEEDED", 16, CLEAR_CONTINUE, ABORT),
     Z_TOP_SWITCH("error.ERROR_Z_TOP_SWITCH", 17, CLEAR_CONTINUE, ABORT),
     B_STUCK("error.ERROR_B_STUCK", 18, OK_ABORT),

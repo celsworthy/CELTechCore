@@ -3030,7 +3030,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     /**
      *
      * * As of v741 firmware this functionality is now handled within Robox
-     * *
+     *
+     *
      * @param error
      * @return True if the filament slip routine has been called the max number
      * of times for this print
@@ -3123,7 +3124,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 //        sendRawGCode("M909 S10", false);
 //        PrinterUtils.waitOnBusy(this, (Cancellable) null);
 //    }
-
     @Override
     public void consumeError(FirmwareError error)
     {
@@ -3140,8 +3140,23 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     Lookup.getSystemNotificationHandler().showEjectFailedDialog(this, 0);
                     break;
 
-//                case E_FILAMENT_SLIP:
-//                case D_FILAMENT_SLIP:
+                case E_FILAMENT_SLIP:
+                case D_FILAMENT_SLIP:
+                    try
+                    {
+                        if (pauseStatus.get() != PauseStatus.PAUSED
+                                && pauseStatus.get() != PauseStatus.PAUSE_PENDING)
+                        {
+                            pause();
+                        }
+                        Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(
+                                error, this);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Failed to pause print after filament slip detected " + error.name());
+                    }
+                    break;
+
 //                    if (!filamentSlipActionInProgress)
 //                    {
 //                        filamentSlipActionInProgress = true;
@@ -3200,7 +3215,6 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 //                                start();
 //                    }
 //                    break;
-
                 default:
                     // Back stop
                     switch (printerStatus.get())
