@@ -117,7 +117,7 @@ public class ETCCalculator
             Integer lineNumberForLayer = layerNumberToLineNumber.get(layerNumber);
             if (lineNumberForLayer >= lineNumber)
             {
-                return layerNumber - 1;
+                return layerNumber;
             }
         }
         throw new RuntimeException(
@@ -156,9 +156,16 @@ public class ETCCalculator
      */
     public double getPercentCompleteAtLine(int lineNumber)
     {
-        return (totalPredictedDurationAllLayers
+        double percent = (totalPredictedDurationAllLayers
             - getPredictedRemainingPrintTime(lineNumber))
             / totalPredictedDurationAllLayers;
+        
+        if (percent < 0)
+        {
+            percent = 0;
+        }
+        
+        return percent;
     }
 
 }
