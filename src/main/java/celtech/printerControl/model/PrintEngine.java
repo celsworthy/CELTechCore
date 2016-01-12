@@ -154,6 +154,8 @@ public class PrintEngine implements ControllableService
 
     private CameraTriggerManager cameraTriggerManager;
 
+    private BooleanProperty highIntensityCommsInProgress = new SimpleBooleanProperty(false);
+
     public PrintEngine(Printer associatedPrinter)
     {
         this.associatedPrinter = associatedPrinter;
@@ -464,6 +466,11 @@ public class PrintEngine implements ControllableService
                 }
             }
         });
+
+        highIntensityCommsInProgress.bind(slicerService.runningProperty()
+                .or(postProcessorService.runningProperty())
+                .or(transferGCodeToPrinterService.runningProperty()));
+
         detectAlreadyPrinting();
     }
 
@@ -1232,5 +1239,10 @@ public class PrintEngine implements ControllableService
     public ReadOnlyObjectProperty<PrintJob> printJobProperty()
     {
         return printJob;
+    }
+    
+    public ReadOnlyBooleanProperty highIntensityCommsInProgressProperty()
+    {
+        return highIntensityCommsInProgress;
     }
 }
