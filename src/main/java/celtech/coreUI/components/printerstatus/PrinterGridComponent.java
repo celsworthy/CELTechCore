@@ -20,7 +20,7 @@ import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.FlowPane;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -30,7 +30,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class PrinterGridComponent extends GridPane implements PrinterListChangesListener
+public class PrinterGridComponent extends FlowPane implements PrinterListChangesListener
 {
 
     private ObservableList<Printer> connectedPrinters;
@@ -40,6 +40,14 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
 
     public PrinterGridComponent()
     {
+        final int width = 260;
+        this.setPrefWidth(width);
+        this.setMinWidth(width);
+        this.setMaxWidth(width);
+        this.setPrefHeight(120);
+        this.setMaxHeight(260);
+        this.setPrefWrapLength(261);
+        
         try
         {
             connectedPrinters = Lookup.getConnectedPrinters();
@@ -61,11 +69,10 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     /**
      * Add the given printer component to the given grid coordinates.
      */
-    private void addPrinterComponentToGrid(PrinterComponent printerComponent, int row,
-            int column)
+    private void addPrinterComponentToGrid(PrinterComponent printerComponent)
     {
         PrinterComponent.Size size;
-        if (connectedPrinters.size() > 6)
+        if (connectedPrinters.size() > 4)
         {
             size = PrinterComponent.Size.SIZE_SMALL;
         } else if (connectedPrinters.size() > 1)
@@ -75,27 +82,16 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
         {
             size = PrinterComponent.Size.SIZE_LARGE;
         }
+
         printerComponent.setSize(size);
-        add(printerComponent, column, row);
+        this.setHgap(size.getSpacing());
+        this.setVgap(size.getSpacing());
+        this.getChildren().add(printerComponent);
     }
 
     private void removeAllPrintersFromGrid()
     {
-        for (Printer printer : connectedPrinters)
-        {
-            PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
-            removePrinterComponentFromGrid(printerComponent);
-        }
-    }
-
-    /**
-     * Remove the given printer from the grid.
-     *
-     * @param printerComponent
-     */
-    private void removePrinterComponentFromGrid(PrinterComponent printerComponent)
-    {
-        getChildren().remove(printerComponent);
+        this.getChildren().clear();
     }
 
     /**
@@ -105,51 +101,25 @@ public class PrinterGridComponent extends GridPane implements PrinterListChanges
     public void removePrinter(Printer printer)
     {
         PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
-        removePrinterComponentFromGrid(printerComponent);
+        this.getChildren().remove(printerComponent);
+        printerComponentsByPrinter.remove(printer);
     }
 
     public final void clearAndAddAllPrintersToGrid()
     {
         removeAllPrintersFromGrid();
-        int row = 0;
-        int column = 0;
-        int columnsPerRow = 2;
-        if (connectedPrinters.size() > 4)
-        {
-            columnsPerRow = 3;
-        }
 
         if (connectedPrinters.size() > 0)
         {
             for (Printer printer : connectedPrinters)
             {
                 PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
-                addPrinterComponentToGrid(printerComponent, row, column);
-                column += 1;
-                if (column == columnsPerRow)
-                {
-                    column = 0;
-                    row += 1;
-                }
+                addPrinterComponentToGrid(printerComponent);
             }
         } else
         {
             PrinterComponent printerComponent = createPrinterComponentForPrinter(null);
-            addPrinterComponentToGrid(printerComponent, row, column);
-        }
-        // UGH shouldnt need this here but can't get PrinterComponent / Grid to negotiate size
-        if (connectedPrinters.size() > 1 && connectedPrinters.size() <= 2)
-        {
-            setPrefSize(260, 120);
-        } else if (connectedPrinters.size() > 2 && connectedPrinters.size() <= 4)
-        {
-            setPrefSize(260, 260);
-        } else if (connectedPrinters.size() > 4 && connectedPrinters.size() < 7)
-        {
-            setPrefSize(260, 180);
-        } else
-        {
-            setPrefSize(260, 260);
+            addPrinterComponentToGrid(printerComponent);
         }
     }
 

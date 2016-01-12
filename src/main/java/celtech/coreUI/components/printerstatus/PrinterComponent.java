@@ -40,8 +40,28 @@ public class PrinterComponent extends Pane
 
     public enum Size
     {
+        SIZE_SMALL(80, 10),
+        SIZE_MEDIUM(120, 20),
+        SIZE_LARGE(260, 0);
 
-        SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE;
+        private final int size;
+        private final int spacing;
+
+        private Size(int size, int spacing)
+        {
+            this.size = size;
+            this.spacing = spacing;
+        }
+
+        public int getSize()
+        {
+            return size;
+        }
+
+        public int getSpacing()
+        {
+            return spacing;
+        }
     }
 
     public enum Status
@@ -275,7 +295,6 @@ public class PrinterComponent extends Pane
         switch (currentSize)
         {
             case SIZE_SMALL:
-                sizePixels = 80;
                 fontSize = 9;
                 progressBarWidth = 65;
                 progressBarHeight = 6;
@@ -283,20 +302,20 @@ public class PrinterComponent extends Pane
 
                 break;
             case SIZE_MEDIUM:
-                sizePixels = 120;
                 fontSize = 14;
                 progressBarWidth = 100;
                 progressBarHeight = 9;
                 progressBarYOffset = 26;
                 break;
             default:
-                sizePixels = 260;
                 fontSize = 30;
                 progressBarWidth = 220;
                 progressBarHeight = 20;
                 progressBarYOffset = 55;
                 break;
         }
+
+        sizePixels = currentSize.getSize();
 
         setPrefWidth(sizePixels);
         setMinWidth(sizePixels);

@@ -127,14 +127,13 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
 
     private void assessCandidatePrinters(List<DeviceDetector.DetectedPrinter> connnectionHandles)
     {
-         if (connnectionHandles != null)
+        if (connnectionHandles != null)
         {
-            boolean noNeedToAddPrinter = false;
-
             for (DeviceDetector.DetectedPrinter detectedPrinter : connnectionHandles)
             {
-//                steno.info("Found printer on " + detectedPrinter);
+                boolean noNeedToAddPrinter = false;
 
+//                steno.info("Found printer on " + detectedPrinter);
                 for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
                 {
                     if (detectedPrinter.equals(pendingPrinterToCheck))
@@ -157,7 +156,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
                         }
                     }
                 }
-                
+
                 if (!noNeedToAddPrinter)
                 {
                     // We need to connect!

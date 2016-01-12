@@ -120,8 +120,11 @@ public class ProgressDisplay extends VBox
     {
         if (printerInUse != null)
         {
-            printerInUse.headProperty().get().dataChangedProperty().removeListener(headDataChangedListener);
-            printerInUse.headProperty().removeListener(headListener);
+            if (printerInUse.headProperty().get() != null)
+            {
+                printerInUse.headProperty().get().dataChangedProperty().removeListener(headDataChangedListener);
+                printerInUse.headProperty().removeListener(headListener);
+            }
 
             destroyNozzleHeaterBars();
             stateDisplayBar.unbindAll();
