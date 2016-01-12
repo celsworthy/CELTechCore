@@ -124,7 +124,7 @@ public abstract class CommandInterface extends Thread
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } else
                     {
-                        steno.debug("Failed to connect to Robox on " + printerHandle);
+                        steno.error("Failed to connect to Robox on " + printerHandle);
                         controlInterface.failedToConnect(printerHandle);
                         keepRunning = false;
                     }
