@@ -488,7 +488,7 @@ public class PrintEngine implements ControllableService
         etcCalculator = new ETCCalculator(associatedPrinter,
                 layerNumberToPredictedDuration, layerNumberToLineNumber);
 
-        progressNumLayers.set(layerNumberToLineNumber.size());
+        progressNumLayers.set(layerNumberToLineNumber.size() + 1);
         primaryProgressPercent.unbind();
         primaryProgressPercent.set(0);
         progressETC.set(etcCalculator.getETCPredicted(0));
