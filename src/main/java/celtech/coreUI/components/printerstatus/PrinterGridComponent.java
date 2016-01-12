@@ -47,7 +47,7 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         this.setPrefHeight(120);
         this.setMaxHeight(260);
         this.setPrefWrapLength(261);
-        
+
         try
         {
             connectedPrinters = Lookup.getConnectedPrinters();
@@ -162,7 +162,10 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         if (selectedPrinter.get() != null)
         {
             PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter.get());
-            printerComponent.setSelected(false);
+            if (printerComponent != null)
+            {
+                printerComponent.setSelected(false);
+            }
         }
         if (printer != null)
         {

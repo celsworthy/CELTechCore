@@ -245,6 +245,7 @@ public class PrinterComponent extends Pane
 
     private void updateStatus(PrinterStatus printerStatus, PauseStatus pauseStatus)
     {
+        System.out.println("Status is now " + printerStatus.name());
         Status status;
         switch (printerStatus)
         {
