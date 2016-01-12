@@ -266,18 +266,18 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (meshView != null)
         {
             meshView.getTransforms().addAll(transformScalePreferred);
-            HullComputer hullComputer = new HullComputer(meshView);
+//            HullComputer hullComputer = new HullComputer(meshView);
+//
+//            hullComputer.setOnSucceeded(workerStateEvent ->
+//            {
+//                collisionShape = hullComputer.getValue();
+//                for (CollisionShapeListener listener : collisionShapeListeners)
+//                {
+//                    listener.collisionShapeAvailable(this);
+//                }
+//            });
 
-            hullComputer.setOnSucceeded(workerStateEvent ->
-            {
-                collisionShape = hullComputer.getValue();
-                for (CollisionShapeListener listener : collisionShapeListeners)
-                {
-                    listener.collisionShapeAvailable(this);
-                }
-            });
-
-            Lookup.getTaskExecutor().runTaskAsDaemon(hullComputer);
+//            Lookup.getTaskExecutor().runTaskAsDaemon(hullComputer);
         }
 
         updateOriginalModelBounds();
