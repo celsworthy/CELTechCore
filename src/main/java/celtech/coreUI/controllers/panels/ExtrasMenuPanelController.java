@@ -42,6 +42,10 @@ public class ExtrasMenuPanelController extends MenuPanelController
                         Preferences.createInterfacePreferences(
                                 userPreferences)));
         loadInnerPanel(
+                ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
+                new PreferencesInnerPanelController("preferences.timelapse",
+                        Preferences.createTimelapsePreferences(userPreferences)));
+        loadInnerPanel(
                 ApplicationConfiguration.fxmlPanelResourcePath + "MaintenanceInsetPanel.fxml",
                 new MaintenanceInsetPanelController());
     }

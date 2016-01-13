@@ -72,14 +72,14 @@ public class ETCCalculatorTest
 //    @Test
 //    public void testGetLayerNumberForLineNumber100()
 //    {
-//        int layerNumber = etcCalculator.getCompletedLayerNumberForLineNumber(100);
+//        int layerNumber = etcCalculator.getCurrentLayerNumberForLineNumber(100);
 //        assertEquals(6, layerNumber);
 //    }
 //
 //    @Test
 //    public void testGetLayerNumberForLineNumber94()
 //    {
-//        int layerNumber = etcCalculator.getCompletedLayerNumberForLineNumber(94);
+//        int layerNumber = etcCalculator.getCurrentLayerNumberForLineNumber(94);
 //        assertEquals(6, layerNumber);
 //    }
 //
@@ -375,12 +375,12 @@ public class ETCCalculatorTest
 //                                          readIntoPrintJobStatistics.getLayerNumberToPredictedDuration(),
 //                                          readIntoPrintJobStatistics.getLayerNumberToLineNumber());
 //        
-//        assertEquals(0, etcCalculator.getCompletedLayerNumberForLineNumber(1));
-//        assertEquals(7, etcCalculator.getCompletedLayerNumberForLineNumber(3140));
-//        assertEquals(71, etcCalculator.getCompletedLayerNumberForLineNumber(20631));
-//        assertEquals(157, etcCalculator.getCompletedLayerNumberForLineNumber(26609));
-//        assertEquals(167, etcCalculator.getCompletedLayerNumberForLineNumber(27191));
-//        assertEquals(226, etcCalculator.getCompletedLayerNumberForLineNumber(30020));
+//        assertEquals(0, etcCalculator.getCurrentLayerNumberForLineNumber(1));
+//        assertEquals(7, etcCalculator.getCurrentLayerNumberForLineNumber(3140));
+//        assertEquals(71, etcCalculator.getCurrentLayerNumberForLineNumber(20631));
+//        assertEquals(157, etcCalculator.getCurrentLayerNumberForLineNumber(26609));
+//        assertEquals(167, etcCalculator.getCurrentLayerNumberForLineNumber(27191));
+//        assertEquals(226, etcCalculator.getCurrentLayerNumberForLineNumber(30020));
 //        
 //        assertEquals(437, etcCalculator.getETCPredicted(27191));
 //        assertEquals(8, etcCalculator.getETCPredicted(30205));

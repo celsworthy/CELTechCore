@@ -42,8 +42,8 @@ public class UserPreferences
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
     private final BooleanProperty goProTriggerEnabled = new SimpleBooleanProperty(false);
     private final StringProperty goProWifiPassword = new SimpleStringProperty("");
-    private final StringProperty goProXMove = new SimpleStringProperty("");
-    private final StringProperty goProYMove = new SimpleStringProperty("");
+    private final IntegerProperty goProXMove = new SimpleIntegerProperty(0);
+    private final IntegerProperty goProYMove = new SimpleIntegerProperty(0);
     private final IntegerProperty goProDelay = new SimpleIntegerProperty(0);
     private final IntegerProperty goProDelayBeforeCapture = new SimpleIntegerProperty(0);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
@@ -104,8 +104,8 @@ public class UserPreferences
         showMetricUnits.addListener(booleanChangeListener);
         goProTriggerEnabled.addListener(booleanChangeListener);
         goProWifiPassword.addListener(stringChangeListener);
-        goProXMove.addListener(stringChangeListener);
-        goProYMove.addListener(stringChangeListener);
+        goProXMove.addListener(numberChangeListener);
+        goProYMove.addListener(numberChangeListener);
         goProDelay.addListener(numberChangeListener);
         goProDelayBeforeCapture.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
@@ -367,32 +367,32 @@ public class UserPreferences
         return showMetricUnits;
     }
 
-    public String getGoProXMove()
+    public int getGoProXMove()
     {
         return goProXMove.get();
     }
 
-    public void setGoProXMove(String value)
+    public void setGoProXMove(int value)
     {
         goProXMove.set(value);
     }
 
-    public StringProperty getGoProXMoveProperty()
+    public IntegerProperty getGoProXMoveProperty()
     {
         return goProXMove;
     }
 
-    public String getGoProYMove()
+    public int getGoProYMove()
     {
         return goProYMove.get();
     }
 
-    public void setGoProYMove(String value)
+    public void setGoProYMove(int value)
     {
         goProYMove.set(value);
     }
 
-    public StringProperty getGoProYMoveProperty()
+    public IntegerProperty getGoProYMoveProperty()
     {
         return goProYMove;
     }

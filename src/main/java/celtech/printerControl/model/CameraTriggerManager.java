@@ -40,7 +40,7 @@ public class CameraTriggerManager
             @Override
             public void run()
             {
-                steno.info("Firing camera");
+                steno.debug("Firing camera");
                 String goProURLString = "http://10.5.5.9/camera/SH?t=" + Lookup.getUserPreferences().getGoProWifiPassword() + "&p=%01";
                 try
                 {
@@ -58,10 +58,10 @@ public class CameraTriggerManager
                     if (responseCode == 200
                             && con.getContentLength() > 0)
                     {
-                        steno.info("Took picture");
+                        steno.debug("Took picture");
                     } else
                     {
-                        steno.info("Failed to take picture - response was " + responseCode);
+                        steno.error("Failed to take picture - response was " + responseCode);
                     }
                 } catch (IOException ex)
                 {
@@ -73,7 +73,6 @@ public class CameraTriggerManager
 
     private final ChangeListener<Number> cameraTriggerListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-        steno.info("Layer change: " + newValue.intValue());
         if (newValue.intValue() > oldValue.intValue())
         {
             triggerCamera();
@@ -88,33 +87,13 @@ public class CameraTriggerManager
         TravelNode moveBedForward = new TravelNode();
 
         boolean outputMoveCommand = false;
-        String xMoveString = Lookup.getUserPreferences().getGoProXMove();
-        if (xMoveString != null)
-        {
-            try
-            {
-                float xMove = Float.valueOf(xMoveString);
-                moveBedForward.getMovement().setX(xMove);
-                outputMoveCommand = true;
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Failed to parse Go Pro X move preference");
-            }
-        }
+        int xMoveInt = Lookup.getUserPreferences().getGoProXMove();
+        moveBedForward.getMovement().setX(xMoveInt);
+        outputMoveCommand = true;
 
-        String yMoveString = Lookup.getUserPreferences().getGoProYMove();
-        if (yMoveString != null)
-        {
-            try
-            {
-                float yMove = Float.valueOf(yMoveString);
-                moveBedForward.getMovement().setY(yMove);
-                outputMoveCommand = true;
-            } catch (NumberFormatException ex)
-            {
-                steno.error("Failed to parse Go Pro Y move preference");
-            }
-        }
+        int yMoveInt = Lookup.getUserPreferences().getGoProYMove();
+        moveBedForward.getMovement().setY(yMoveInt);
+        outputMoveCommand = true;
 
         moveBedForward.getFeedrate().setFeedRate_mmPerMin(moveFeedrate_mm_per_min);
 
@@ -139,19 +118,19 @@ public class CameraTriggerManager
 
     public void listenForCameraTrigger()
     {
-        steno.info("Started listening for camera trigger");
+        steno.debug("Started listening for camera trigger");
         associatedPrinter.getPrintEngine().progressCurrentLayerProperty().addListener(cameraTriggerListener);
     }
 
     public void stopListeningForCameraTrigger()
     {
-        steno.info("Stopped listening for camera trigger");
+        steno.debug("Stopped listening for camera trigger");
         associatedPrinter.getPrintEngine().progressCurrentLayerProperty().removeListener(cameraTriggerListener);
     }
 
     private void triggerCamera()
     {
-        steno.info("Asked to trigger camera");
+        steno.debug("Asked to trigger camera");
         scheduledPhoto.schedule(photoRun, Lookup.getUserPreferences().getGoProDelayBeforeCapture(), TimeUnit.SECONDS);
     }
 }

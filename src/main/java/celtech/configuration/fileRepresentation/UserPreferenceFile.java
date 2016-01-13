@@ -31,8 +31,8 @@ public class UserPreferenceFile
     private boolean showMetricUnits = true;
     private boolean goProTriggerEnabled = false;
     private String goProWifiPassword = "";
-    private String goProXMove = "";
-    private String goProYMove = "";
+    private int goProXMove = 0;
+    private int goProYMove = 150;
     private int goProDelay = 2;
     private int goProDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
@@ -197,22 +197,22 @@ public class UserPreferenceFile
         this.goProWifiPassword = goProWifiPassword;
     }
 
-    public void setGoProXMove(String goProXMove)
+    public void setGoProXMove(int goProXMove)
     {
         this.goProXMove = goProXMove;
     }
 
-    public String getGoProXMove()
+    public int getGoProXMove()
     {
         return goProXMove;
     }
 
-    public void setGoProYMove(String goProYMove)
+    public void setGoProYMove(int goProYMove)
     {
         this.goProYMove = goProYMove;
     }
 
-    public String getGoProYMove()
+    public int getGoProYMove()
     {
         return goProYMove;
     }

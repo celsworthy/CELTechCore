@@ -451,7 +451,8 @@ public class PrintEngine implements ControllableService
             {
                 if (t1 == PrintQueueStatus.PRINTING)
                 {
-                    if (macroBeingRun.get() == null)
+                    if (macroBeingRun.get() == null
+                            && Lookup.getUserPreferences().isGoProTriggerEnabled())
                     {
                         cameraTriggerManager.listenForCameraTrigger();
                     }
@@ -488,7 +489,7 @@ public class PrintEngine implements ControllableService
         etcCalculator = new ETCCalculator(associatedPrinter,
                 layerNumberToPredictedDuration, layerNumberToLineNumber);
 
-        progressNumLayers.set(layerNumberToLineNumber.size() + 1);
+        progressNumLayers.set(layerNumberToLineNumber.size());
         primaryProgressPercent.unbind();
         primaryProgressPercent.set(0);
         progressETC.set(etcCalculator.getETCPredicted(0));
@@ -500,7 +501,7 @@ public class PrintEngine implements ControllableService
         int lineNumber = newValue.intValue();
         primaryProgressPercent.set(etcCalculator.getPercentCompleteAtLine(lineNumber));
         progressETC.set(etcCalculator.getETCPredicted(lineNumber));
-        progressCurrentLayer.set(etcCalculator.getCompletedLayerNumberForLineNumber(lineNumber));
+        progressCurrentLayer.set(etcCalculator.getCurrentLayerNumberForLineNumber(lineNumber));
     }
 
     private void updateETCUsingLineNumber(Number newValue)
@@ -1240,7 +1241,7 @@ public class PrintEngine implements ControllableService
     {
         return printJob;
     }
-    
+
     public ReadOnlyBooleanProperty highIntensityCommsInProgressProperty()
     {
         return highIntensityCommsInProgress;

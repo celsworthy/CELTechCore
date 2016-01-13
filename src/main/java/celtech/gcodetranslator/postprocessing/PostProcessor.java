@@ -692,24 +692,24 @@ public class PostProcessor
 
     private void outputPostProcessingTimerReport()
     {
-        steno.info("Post Processor Timer Report");
-        steno.info("============");
-        steno.info(unretractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unretractTimerName));
-        steno.info(orphanTimerName + " " + timeUtils.timeTimeSoFar_ms(this, orphanTimerName));
-        steno.info(nozzleControlTimerName + " " + timeUtils.timeTimeSoFar_ms(this, nozzleControlTimerName));
-        steno.info(perRetractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, perRetractTimerName));
-        steno.info(unnecessaryToolchangeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unnecessaryToolchangeTimerName));
-        steno.info(cameraEventTimerName + " " + timeUtils.timeTimeSoFar_ms(this, cameraEventTimerName));
+        steno.debug("Post Processor Timer Report");
+        steno.debug("============");
+        steno.debug(unretractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unretractTimerName));
+        steno.debug(orphanTimerName + " " + timeUtils.timeTimeSoFar_ms(this, orphanTimerName));
+        steno.debug(nozzleControlTimerName + " " + timeUtils.timeTimeSoFar_ms(this, nozzleControlTimerName));
+        steno.debug(perRetractTimerName + " " + timeUtils.timeTimeSoFar_ms(this, perRetractTimerName));
+        steno.debug(unnecessaryToolchangeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, unnecessaryToolchangeTimerName));
+        steno.debug(cameraEventTimerName + " " + timeUtils.timeTimeSoFar_ms(this, cameraEventTimerName));
         if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
         {
-            steno.info(closeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, closeTimerName));
-            steno.info(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
+            steno.debug(closeTimerName + " " + timeUtils.timeTimeSoFar_ms(this, closeTimerName));
+            steno.debug(openTimerName + " " + timeUtils.timeTimeSoFar_ms(this, openTimerName));
         }
-        steno.info(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
-        steno.info(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
-        steno.info(parseLayerTimerName + " " + timeUtils.timeTimeSoFar_ms(this, parseLayerTimerName));
+        steno.debug(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
+        steno.debug(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
+        steno.debug(parseLayerTimerName + " " + timeUtils.timeTimeSoFar_ms(this, parseLayerTimerName));
 //        steno.info(heaterSaverTimerName + " " + timeUtils.timeTimeSoFar_ms(this, heaterSaverTimerName));
-        steno.info(writeOutputTimerName + " " + timeUtils.timeTimeSoFar_ms(this, writeOutputTimerName));
-        steno.info("============");
+        steno.debug(writeOutputTimerName + " " + timeUtils.timeTimeSoFar_ms(this, writeOutputTimerName));
+        steno.debug("============");
     }
 }

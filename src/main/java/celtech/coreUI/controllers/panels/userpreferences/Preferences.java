@@ -30,33 +30,9 @@ public class Preferences
         Preference detectFilamentLoadedPref = new TickBoxPreference(userPreferences.
                 detectLoadedFilamentProperty(), "preferences.detectLoadedFilament");
 
-        Preference goProTriggerEnabledPref = new TickBoxPreference(userPreferences.getGoProTriggerEnabledProperty(),
-                "preferences.goProTriggerEnabled");
-
-        Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
-                "preferences.goProWifiPassword");
-
-        Preference goProXMovePref = new StringPreference(userPreferences.getGoProXMoveProperty(),
-                "preferences.goProXMove");
-
-        Preference goProYMovePref = new StringPreference(userPreferences.getGoProYMoveProperty(),
-                "preferences.goProYMove");
-
-        Preference goProDelayPref = new IntegerPreference(userPreferences.getGoProDelayProperty(),
-                "preferences.goProDelay");
-
-        Preference goProDelayBeforeCapturePref = new IntegerPreference(userPreferences.getGoProDelayBeforeCaptureProperty(),
-                "preferences.goProDelayBeforeCapture");
-
         preferences.add(slicerTypePref);
         preferences.add(safetyFeaturesOnPref);
         preferences.add(detectFilamentLoadedPref);
-        preferences.add(goProTriggerEnabledPref);
-        preferences.add(goProWifiPasswordPref);
-        preferences.add(goProXMovePref);
-        preferences.add(goProYMovePref);
-        preferences.add(goProDelayPref);
-        preferences.add(goProDelayBeforeCapturePref);
 
         return preferences;
     }
@@ -113,4 +89,36 @@ public class Preferences
         return preferences;
     }
 
+    public static List<PreferencesInnerPanelController.Preference> createTimelapsePreferences(
+            UserPreferences userPreferences)
+    {
+        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
+
+        Preference goProTriggerEnabledPref = new TickBoxPreference(userPreferences.getGoProTriggerEnabledProperty(),
+                "preferences.goProTriggerEnabled");
+
+        Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
+                "preferences.goProWifiPassword");
+
+        Preference goProXMovePref = new IntegerPreference(userPreferences.getGoProXMoveProperty(),
+                "preferences.goProXMove");
+
+        Preference goProYMovePref = new IntegerPreference(userPreferences.getGoProYMoveProperty(),
+                "preferences.goProYMove");
+
+        Preference goProDelayPref = new IntegerPreference(userPreferences.getGoProDelayProperty(),
+                "preferences.goProDelay");
+
+        Preference goProDelayBeforeCapturePref = new IntegerPreference(userPreferences.getGoProDelayBeforeCaptureProperty(),
+                "preferences.goProDelayBeforeCapture");
+
+        preferences.add(goProTriggerEnabledPref);
+        preferences.add(goProWifiPasswordPref);
+        preferences.add(goProXMovePref);
+        preferences.add(goProYMovePref);
+        preferences.add(goProDelayPref);
+        preferences.add(goProDelayBeforeCapturePref);
+
+        return preferences;
+    }
 }

@@ -38,8 +38,8 @@ public class ETCCalculator
     private final Printer printer;
 
     public ETCCalculator(Printer printer,
-        List<Double> layerNumberToPredictedDuration,
-        List<Integer> layerNumberToLineNumber)
+            List<Double> layerNumberToPredictedDuration,
+            List<Integer> layerNumberToLineNumber)
     {
         this.printer = printer;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
@@ -81,7 +81,7 @@ public class ETCCalculator
         if (bedTemperature < bedTargetTemperature)
         {
             return (bedTargetTemperature - bedTemperature)
-                * PREDICTED_BED_HEAT_RATE;
+                    * PREDICTED_BED_HEAT_RATE;
         } else
         {
             return 0;
@@ -95,34 +95,34 @@ public class ETCCalculator
      */
     private int getPredictedRemainingPrintTime(int lineNumber)
     {
-        int layerNumber = getCompletedLayerNumberForLineNumber(lineNumber);
-        double totalPredictedDurationForCompletedLayer = layerNumberToTotalPredictedDuration.get(
-            layerNumber);
+        int layerNumber = getCurrentLayerNumberForLineNumber(lineNumber);
+        double totalPredictedDurationForCurrentLayer = layerNumberToTotalPredictedDuration.get(
+                layerNumber - 1);
         double predictedDurationInNextLayer = getPartialDurationInLayer(
-            layerNumber + 1, lineNumber);
-        double totalDurationSoFar = totalPredictedDurationForCompletedLayer
-            + predictedDurationInNextLayer;
+                layerNumber, lineNumber);
+        double totalDurationSoFar = totalPredictedDurationForCurrentLayer
+                + predictedDurationInNextLayer;
         int remainingTimeSeconds = (int) ((totalPredictedDurationAllLayers
-            - totalDurationSoFar));
+                - totalDurationSoFar));
         return remainingTimeSeconds;
     }
 
     /**
      * Get the completed layer number for the given line number.
      */
-    public int getCompletedLayerNumberForLineNumber(int lineNumber)
+    public int getCurrentLayerNumberForLineNumber(int lineNumber)
     {
-        for (int layerNumber = 1; layerNumber < layerNumberToLineNumber.size(); layerNumber++)
+        for (int layerNumber = 0; layerNumber < layerNumberToLineNumber.size(); layerNumber++)
         {
             Integer lineNumberForLayer = layerNumberToLineNumber.get(layerNumber);
             if (lineNumberForLayer >= lineNumber)
             {
-                return layerNumber;
+                return layerNumber + 1;
             }
         }
         throw new RuntimeException(
-            "Did not calculate layer number - line number greater"
-            + " than total number of lines");
+                "Did not calculate layer number - line number greater"
+                + " than total number of lines");
     }
 
     /**
@@ -132,23 +132,23 @@ public class ETCCalculator
     protected double getPartialDurationInLayer(int layerNumber, int lineNumber)
     {
         double numLinesAtStartOfLayer = 0;
-        if (layerNumber > 0)
+        if (layerNumber > 1)
         {
-            numLinesAtStartOfLayer = layerNumberToLineNumber.get(layerNumber - 1);
+            numLinesAtStartOfLayer = layerNumberToLineNumber.get(layerNumber - 2);
         }
-        double extraLinesProgressInNextlayer = lineNumber
-                                                 - numLinesAtStartOfLayer;
-        if (extraLinesProgressInNextlayer == 0)
+        double progressInThisLayer = lineNumber
+                - numLinesAtStartOfLayer;
+        if (progressInThisLayer == 0)
         {
             return 0;
         }
 
-        double numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber);
-        double durationInNextLayer = layerNumberToPredictedDuration.get(layerNumber);
+        double numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber - 1);
+        double durationInLayer = layerNumberToPredictedDuration.get(layerNumber - 1);
         double totalLinesInNextLayer = numLinesAtEndOfLayer
-            - numLinesAtStartOfLayer;
-        return (extraLinesProgressInNextlayer / totalLinesInNextLayer)
-            * durationInNextLayer;
+                - numLinesAtStartOfLayer;
+        return (progressInThisLayer / totalLinesInNextLayer)
+                * durationInLayer;
     }
 
     /**
@@ -157,14 +157,14 @@ public class ETCCalculator
     public double getPercentCompleteAtLine(int lineNumber)
     {
         double percent = (totalPredictedDurationAllLayers
-            - getPredictedRemainingPrintTime(lineNumber))
-            / totalPredictedDurationAllLayers;
-        
+                - getPredictedRemainingPrintTime(lineNumber))
+                / totalPredictedDurationAllLayers;
+
         if (percent < 0)
         {
             percent = 0;
         }
-        
+
         return percent;
     }
 
