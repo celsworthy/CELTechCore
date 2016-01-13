@@ -581,7 +581,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     }
 
     private VBox loadInsetPanel(String innerPanelFXMLName, String title,
-            BooleanProperty visibleProperty)
+            BooleanProperty visibleProperty,
+            boolean advancedModeOnly)
     {
         URL insetPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
@@ -593,7 +594,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             if (title != null)
             {
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
-                wrappedPanel.visibleProperty().bind(visibleProperty.and(Lookup.getUserPreferences().advancedModeProperty()));
+                if (advancedModeOnly)
+                {
+                    wrappedPanel.visibleProperty().bind(visibleProperty.and(Lookup.getUserPreferences().advancedModeProperty()));
+                } else
+                {
+                    wrappedPanel.visibleProperty().bind(visibleProperty);
+                }
                 final VBox panelToChangeHeightOf = wrappedPanel;
                 panelVisibilityAction(visibleProperty.getValue(), panelToChangeHeightOf);
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
@@ -652,9 +659,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         vBoxLeft.setSpacing(30);
         diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
-                Lookup.getUserPreferences().showDiagnosticsProperty());
+                Lookup.getUserPreferences().showDiagnosticsProperty(), false);
         gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
-                Lookup.getUserPreferences().showGCodeProperty());
+                Lookup.getUserPreferences().showGCodeProperty(), true);
         gcodePanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
@@ -664,14 +671,14 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         vBoxLeft.getChildren().add(gcodePanel);
 
         vBoxRight.setSpacing(30);
-        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null, false);
         projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
         });
 
         Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
-                Lookup.getUserPreferences().showAdjustmentsProperty());
+                Lookup.getUserPreferences().showAdjustmentsProperty(), true);
         vBoxRight.getChildren().add(projectPanel);
         vBoxRight.getChildren().add(printAdjustmentsPanel);
 

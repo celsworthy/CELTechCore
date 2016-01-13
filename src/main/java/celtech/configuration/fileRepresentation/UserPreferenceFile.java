@@ -25,7 +25,7 @@ public class UserPreferenceFile
     private boolean detectLoadedFilament = true;
     private CurrencySymbol currencySymbol = CurrencySymbol.POUND;
     private float currencyGBPToLocalMultiplier = 1;
-    private boolean showDiagnostics = true;
+    private boolean showDiagnostics = false;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
     private boolean showMetricUnits = true;
