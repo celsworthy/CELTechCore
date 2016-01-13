@@ -94,30 +94,30 @@ public class Preferences
     {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
-        Preference goProTriggerEnabledPref = new TickBoxPreference(userPreferences.getGoProTriggerEnabledProperty(),
-                "preferences.goProTriggerEnabled");
+        Preference timelapseTriggerEnabledPref = new TickBoxPreference(userPreferences.getTimelapseTriggerEnabledProperty(),
+                "preferences.timelapseTriggerEnabled");
 
         Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
                 "preferences.goProWifiPassword");
 
-        Preference goProXMovePref = new IntegerPreference(userPreferences.getGoProXMoveProperty(),
-                "preferences.goProXMove");
+        Preference timelapseXMovePref = new IntegerPreference(userPreferences.getTimelapseXMoveProperty(),
+                "preferences.timelapseXMove");
 
-        Preference goProYMovePref = new IntegerPreference(userPreferences.getGoProYMoveProperty(),
-                "preferences.goProYMove");
+        Preference timelapseYMovePref = new IntegerPreference(userPreferences.getTimelapseYMoveProperty(),
+                "preferences.timelapseYMove");
 
-        Preference goProDelayPref = new IntegerPreference(userPreferences.getGoProDelayProperty(),
-                "preferences.goProDelay");
+        Preference timelapseDelayPref = new IntegerPreference(userPreferences.getTimelapseDelayProperty(),
+                "preferences.timelapseDelay");
 
-        Preference goProDelayBeforeCapturePref = new IntegerPreference(userPreferences.getGoProDelayBeforeCaptureProperty(),
-                "preferences.goProDelayBeforeCapture");
+        Preference timelapseDelayBeforeCapturePref = new IntegerPreference(userPreferences.getTimelapseDelayBeforeCaptureProperty(),
+                "preferences.timelapseDelayBeforeCapture");
 
-        preferences.add(goProTriggerEnabledPref);
+        preferences.add(timelapseTriggerEnabledPref);
         preferences.add(goProWifiPasswordPref);
-        preferences.add(goProXMovePref);
-        preferences.add(goProYMovePref);
-        preferences.add(goProDelayPref);
-        preferences.add(goProDelayBeforeCapturePref);
+        preferences.add(timelapseXMovePref);
+        preferences.add(timelapseYMovePref);
+        preferences.add(timelapseDelayPref);
+        preferences.add(timelapseDelayBeforeCapturePref);
 
         return preferences;
     }

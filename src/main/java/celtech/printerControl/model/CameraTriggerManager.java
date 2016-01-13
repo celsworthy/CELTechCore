@@ -87,11 +87,11 @@ public class CameraTriggerManager
         TravelNode moveBedForward = new TravelNode();
 
         boolean outputMoveCommand = false;
-        int xMoveInt = Lookup.getUserPreferences().getGoProXMove();
+        int xMoveInt = Lookup.getUserPreferences().getTimelapseXMove();
         moveBedForward.getMovement().setX(xMoveInt);
         outputMoveCommand = true;
 
-        int yMoveInt = Lookup.getUserPreferences().getGoProYMove();
+        int yMoveInt = Lookup.getUserPreferences().getTimelapseYMove();
         moveBedForward.getMovement().setY(yMoveInt);
         outputMoveCommand = true;
 
@@ -99,7 +99,7 @@ public class CameraTriggerManager
 
         GCodeDirectiveNode dwellWhilePictureTaken = new GCodeDirectiveNode();
         dwellWhilePictureTaken.setGValue(4);
-        dwellWhilePictureTaken.setSValue(Lookup.getUserPreferences().getGoProDelay());
+        dwellWhilePictureTaken.setSValue(Lookup.getUserPreferences().getTimelapseDelay());
 
         TravelNode returnToPreviousPosition = new TravelNode();
         returnToPreviousPosition.getMovement().setX(layerChangeNode.getMovement().getX());
@@ -131,6 +131,6 @@ public class CameraTriggerManager
     private void triggerCamera()
     {
         steno.debug("Asked to trigger camera");
-        scheduledPhoto.schedule(photoRun, Lookup.getUserPreferences().getGoProDelayBeforeCapture(), TimeUnit.SECONDS);
+        scheduledPhoto.schedule(photoRun, Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(), TimeUnit.SECONDS);
     }
 }

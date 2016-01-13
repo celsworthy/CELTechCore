@@ -452,7 +452,7 @@ public class PrintEngine implements ControllableService
                 if (t1 == PrintQueueStatus.PRINTING)
                 {
                     if (macroBeingRun.get() == null
-                            && Lookup.getUserPreferences().isGoProTriggerEnabled())
+                            && Lookup.getUserPreferences().isTimelapseTriggerEnabled())
                     {
                         cameraTriggerManager.listenForCameraTrigger();
                     }
