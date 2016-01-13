@@ -329,7 +329,7 @@ public class UserPreferences
 
     public boolean getShowGCode()
     {
-        return showDiagnostics.get();
+        return showGCode.get();
     }
 
     public void setShowGCode(boolean showGCode)

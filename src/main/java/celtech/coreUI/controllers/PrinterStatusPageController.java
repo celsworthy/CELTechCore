@@ -593,9 +593,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             if (title != null)
             {
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
-                wrappedPanel.visibleProperty().bind(visibleProperty);
+                wrappedPanel.visibleProperty().bind(visibleProperty.and(Lookup.getUserPreferences().advancedModeProperty()));
                 final VBox panelToChangeHeightOf = wrappedPanel;
-                panelVisibilityAction(visibleProperty.get(), panelToChangeHeightOf);
+                panelVisibilityAction(visibleProperty.getValue(), panelToChangeHeightOf);
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
                 {
                     @Override
