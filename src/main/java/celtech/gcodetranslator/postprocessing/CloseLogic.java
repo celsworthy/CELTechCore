@@ -1025,7 +1025,7 @@ public class CloseLogic
                 LayerNode lastLayer = lastLayerParseResult.getLayerData();
 
                 //Look for the last extrusion on the previous layer
-                if (lastLayer.getLayerNumber() < 0)
+                if (lastLayer == null)
                 {
                     // There wasn't a last layer - this is a lone retract at the start of the file
                     steno.warning("Discarding retract from layer " + thisLayer.getLayerNumber());
