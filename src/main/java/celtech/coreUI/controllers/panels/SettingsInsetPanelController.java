@@ -397,9 +397,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             populatingForProject = true;
 
             SupportType selectionBefore = supportComboBox.getSelectionModel().getSelectedItem();
-            SupportType selectionAfter;
 
-        // Support Type
+            // Support Type
             // Material 1 - the only option for single extruder machines - default
             // Material 2 - only available on dual extruder machines
             supportComboBox.getItems().clear();
@@ -418,12 +417,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     if (currentProject != null
                             && currentProject.getUsedExtruders(printer).size() == 1)
                     {
-                // Only one extruder used in this project
+                        // Only one extruder used in this project
                         // Auto select the same material that is being used
                         supportComboBox.getSelectionModel().select((currentProject.getUsedExtruders(printer).contains(0) == true) ? SupportType.MATERIAL_1 : SupportType.MATERIAL_2);
                     } else
                     {
-                // More than one extruder used in the project or the current project isn't set
+                        // More than one extruder used in the project or the current project isn't set
                         // Select the first option
                         supportComboBox.getSelectionModel().selectFirst();
                     }
