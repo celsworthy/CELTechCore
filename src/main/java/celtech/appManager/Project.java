@@ -1278,6 +1278,30 @@ public class Project
     public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
         modelContainer.setUseExtruder0(useExtruder0);
+
+        boolean usingDifferentExtruders = false;
+        int lastExtruder = -1;
+        for (ModelContainer model : getAllModels())
+        {
+            int thisExtruder = model.getAssociateWithExtruderNumberProperty().get();
+            if (lastExtruder >= 0
+                    && lastExtruder != thisExtruder)
+            {
+                usingDifferentExtruders = true;
+                break;
+            }
+            lastExtruder = thisExtruder;
+        }
+
+        if (!usingDifferentExtruders)
+        {
+            printerSettings.getPrintSupportTypeOverrideProperty().set(
+                    (modelContainer.getAssociateWithExtruderNumberProperty().get() == 0)
+                            ? SlicerParametersFile.SupportType.MATERIAL_1
+                            : SlicerParametersFile.SupportType.MATERIAL_2);
+            fireWhenPrinterSettingsChanged(printerSettings);
+        }
+
         projectModified();
     }
 

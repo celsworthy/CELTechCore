@@ -18,7 +18,7 @@ public class ProjectFile
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
-    private SupportType printSupportTypeOverride = SupportType.OBJECT_MATERIAL;
+    private SupportType printSupportTypeOverride = SupportType.MATERIAL_1;
     private boolean printRaft = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;

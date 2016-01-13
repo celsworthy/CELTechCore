@@ -126,9 +126,6 @@ public class PostProcessor
         {
             switch (project.getPrinterSettings().getPrintSupportTypeOverride())
             {
-                case OBJECT_MATERIAL:
-                    postProcessingMode = PostProcessingMode.USE_OBJECT_MATERIAL;
-                    break;
                 case MATERIAL_1:
                     postProcessingMode = PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
                     break;

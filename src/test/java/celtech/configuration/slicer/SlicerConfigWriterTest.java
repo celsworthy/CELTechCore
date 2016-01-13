@@ -55,7 +55,7 @@ public class SlicerConfigWriterTest extends JavaFXConfiguredTest
             SlicerType.Cura);
         PrinterSettings printerSettings = new PrinterSettings();
         printerSettings.setPrintQuality(PrintQualityEnumeration.DRAFT);
-        printerSettings.setPrintSupportTypeOverride(SlicerParametersFile.SupportType.OBJECT_MATERIAL);
+        printerSettings.setPrintSupportTypeOverride(SlicerParametersFile.SupportType.MATERIAL_1);
         
         String destinationFile = temporaryFolder.getRoot().getAbsolutePath() + File.separator
             + TEMPFILENAME;

@@ -36,7 +36,7 @@ public class PrinterSettings
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private final BooleanProperty printSupportOverride = new SimpleBooleanProperty(false);
-    private final ObjectProperty<SupportType> printSupportTypeOverride = new SimpleObjectProperty<>(SupportType.OBJECT_MATERIAL);
+    private final ObjectProperty<SupportType> printSupportTypeOverride = new SimpleObjectProperty<>(SupportType.MATERIAL_1);
     private boolean raftOverride = false;
 
     public PrinterSettings()
@@ -46,7 +46,7 @@ public class PrinterSettings
                 ApplicationConfiguration.draftSettingsProfileName, HeadContainer.defaultHeadID);
         brimOverride = draftParametersFile.getBrimWidth_mm();
         fillDensityOverride = draftParametersFile.getFillDensity_normalised();
-        printSupportTypeOverride.set(SupportType.OBJECT_MATERIAL);
+        printSupportTypeOverride.set(SupportType.MATERIAL_1);
 
         SlicerParametersContainer.addChangesListener(
                 new SlicerParametersContainer.SlicerParametersChangesListener()
