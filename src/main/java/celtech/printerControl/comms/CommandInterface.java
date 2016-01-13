@@ -383,7 +383,7 @@ public abstract class CommandInterface extends Thread
         {
             if (printerFriendlyName != null)
             {
-                steno.error(printerFriendlyName + " is printing");
+                steno.info(printerFriendlyName + " is printing");
             } else
             {
                 steno.error("Connected to an unknown printer that is printing");
