@@ -1,6 +1,5 @@
 package celtech.coreUI.components.Notifications;
 
-import java.util.stream.Collectors;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 
