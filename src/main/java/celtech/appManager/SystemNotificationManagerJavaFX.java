@@ -169,7 +169,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                             }
                                             break;
                                         case CLEAR_CONTINUE:
-                                        case OK_CONTINUE:
                                             try
                                             {
                                                 if (printer.canResumeProperty().get())
@@ -181,6 +180,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                 steno.error(
                                                         "Error whilst resuming print from error dialog");
                                             }
+                                            break;
+                                        default:
                                             break;
                                     }
                                     break;

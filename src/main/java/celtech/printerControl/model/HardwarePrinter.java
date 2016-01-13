@@ -234,6 +234,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
     private boolean inCommissioningMode = false;
 
+    private int initalStatusCount = 0;
+
     /**
      * A FilamentLoadedGetter can be provided to the HardwarePriner to provide a
      * way to override the detection of whether a filament is loaded or not on a
@@ -2823,7 +2825,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 
         try
         {
-            commandInterface.writeToPrinter(ledColour);
+            commandInterface.writeToPrinter(ledColour, true);
         } catch (RoboxCommsException ex)
         {
             throw new PrinterException("Error sending ambient LED command");
@@ -3469,6 +3471,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     break;
 
                 case STATUS_RESPONSE:
+                    if (initalStatusCount < 2)
+                    {
+                        initalStatusCount++;
+                    }
                     StatusResponse statusResponse = (StatusResponse) rxPacket;
                     steno.trace(statusResponse.toString());
 
