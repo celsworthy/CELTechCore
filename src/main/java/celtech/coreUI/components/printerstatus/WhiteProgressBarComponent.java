@@ -3,14 +3,10 @@
  */
 package celtech.coreUI.components.printerstatus;
 
-import celtech.coreUI.components.printerstatus.PrinterComponent.Status;
-import celtech.printerControl.PrinterStatus;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -31,7 +27,6 @@ public class WhiteProgressBarComponent extends Pane
     private double width;
     private double height;
     private double progress;
-    private Label statusLabel = new Label();
 
     public WhiteProgressBarComponent()
     {
@@ -53,9 +48,6 @@ public class WhiteProgressBarComponent extends Pane
         solidBar.setFill(Color.WHITE);
         clearBar.setFill(Color.WHITE);
         clearBar.setOpacity(0.5);
-
-        statusLabel.getStyleClass().add("printerstatus-label");
-        this.getChildren().add(statusLabel);
 
         width = 50;
         height = 10;
@@ -102,30 +94,5 @@ public class WhiteProgressBarComponent extends Pane
             width, 0.0,
             barWidth, 0.0,
         });
-    }
-
-    public void setStatus(Status status)
-    {
-        if (status == Status.READY)
-        {
-            statusLabel.setText("");
-        } else
-        {
-            statusLabel.setText(status.getI18nString());
-        }
-    }
-
-    void setSize(PrinterComponent.Size currentSize)
-    {
-        switch (currentSize)
-        {
-            case SIZE_SMALL:
-            case SIZE_MEDIUM:
-                statusLabel.setVisible(false);
-                break;
-            case SIZE_LARGE:
-                statusLabel.setVisible(true);
-                break;
-        }
     }
 }

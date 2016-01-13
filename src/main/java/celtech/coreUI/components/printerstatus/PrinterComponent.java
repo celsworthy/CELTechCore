@@ -301,7 +301,6 @@ public class PrinterComponent extends Pane
         }
 
         setStatus(status);
-        progressBar.setStatus(status);
 
         isolationInterface.interruptibilityUpdated(this);
     }
@@ -348,8 +347,6 @@ public class PrinterComponent extends Pane
                 break;
         }
         
-        progressBar.setSize(currentSize);
-
         sizePixels = currentSize.getSize();
 
         setPrefWidth(sizePixels);
