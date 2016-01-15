@@ -657,9 +657,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void loadInsetPanels()
     {
-        vBoxLeft.setSpacing(30);
+        vBoxLeft.setSpacing(20);
         diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
                 Lookup.getUserPreferences().showDiagnosticsProperty(), false);
+        VBox.setVgrow(diagnosticPanel, Priority.NEVER);
+
         gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
                 Lookup.getUserPreferences().showGCodeProperty(), true);
         gcodePanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -686,6 +688,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setLeftAnchor(vBoxLeft, 30.0);
         AnchorPane.setBottomAnchor(vBoxLeft, 90.0);
+        vBoxLeft.setMaxHeight(-1);
         container.getChildren().add(vBoxRight);
         AnchorPane.setTopAnchor(vBoxRight, 30.0);
         AnchorPane.setRightAnchor(vBoxRight, 30.0);
