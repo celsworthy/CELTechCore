@@ -3,14 +3,10 @@
  */
 package celtech.coreUI.components.printerstatus;
 
-import celtech.coreUI.components.printerstatus.PrinterComponent.Status;
-import celtech.printerControl.PrinterStatus;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -31,13 +27,12 @@ public class WhiteProgressBarComponent extends Pane
     private double width;
     private double height;
     private double progress;
-    private Label statusLabel = new Label();
 
     public WhiteProgressBarComponent()
     {
         super();
         URL fxml = getClass().getResource(
-            "/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
+                "/celtech/resources/fxml/printerstatus/whiteprogressbar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -53,9 +48,6 @@ public class WhiteProgressBarComponent extends Pane
         solidBar.setFill(Color.WHITE);
         clearBar.setFill(Color.WHITE);
         clearBar.setOpacity(0.5);
-
-        statusLabel.getStyleClass().add("printerstatus-label");
-        this.getChildren().add(statusLabel);
 
         width = 50;
         height = 10;
@@ -102,16 +94,5 @@ public class WhiteProgressBarComponent extends Pane
             width, 0.0,
             barWidth, 0.0,
         });
-    }
-
-    public void setStatus(Status status)
-    {
-        if (status == Status.READY)
-        {
-            statusLabel.setText("");
-        } else
-        {
-            statusLabel.setText(status.getI18nString());
-        }
     }
 }

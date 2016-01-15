@@ -8,6 +8,7 @@ import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.HeadContainer;
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
 import java.io.File;
 import javafx.beans.binding.BooleanBinding;
@@ -167,6 +168,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
             = new CanPrintConditionalTextBindings(project, printer);
+        project.getPrinterSettings().setPrintSupportTypeOverride(SlicerParametersFile.SupportType.MATERIAL_2);
 
         project.getTopLevelModels().get(0).setUseExtruder0(false);
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();

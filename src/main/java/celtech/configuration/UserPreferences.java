@@ -40,12 +40,12 @@ public class UserPreferences
     private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
-    private final BooleanProperty goProTriggerEnabled = new SimpleBooleanProperty(false);
+    private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
     private final StringProperty goProWifiPassword = new SimpleStringProperty("");
-    private final StringProperty goProXMove = new SimpleStringProperty("");
-    private final StringProperty goProYMove = new SimpleStringProperty("");
-    private final IntegerProperty goProDelay = new SimpleIntegerProperty(0);
-    private final IntegerProperty goProDelayBeforeCapture = new SimpleIntegerProperty(0);
+    private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
+    private final IntegerProperty timelapseYMove = new SimpleIntegerProperty(0);
+    private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);
+    private final IntegerProperty timelapseDelayBeforeCapture = new SimpleIntegerProperty(0);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
 
     private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
@@ -85,12 +85,12 @@ public class UserPreferences
         this.currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
-        this.goProTriggerEnabled.set(userPreferenceFile.isGoProTriggerEnabled());
+        this.timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
         this.goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
-        this.goProXMove.set(userPreferenceFile.getGoProXMove());
-        this.goProYMove.set(userPreferenceFile.getGoProYMove());
-        this.goProDelay.set(userPreferenceFile.getGoProDelay());
-        this.goProDelayBeforeCapture.set(userPreferenceFile.getGoProDelayBeforeCapture());
+        this.timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
+        this.timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
+        this.timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
+        this.timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
         this.loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
@@ -102,12 +102,12 @@ public class UserPreferences
         showAdjustments.addListener(booleanChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
-        goProTriggerEnabled.addListener(booleanChangeListener);
+        timelapseTriggerEnabled.addListener(booleanChangeListener);
         goProWifiPassword.addListener(stringChangeListener);
-        goProXMove.addListener(stringChangeListener);
-        goProYMove.addListener(stringChangeListener);
-        goProDelay.addListener(numberChangeListener);
-        goProDelayBeforeCapture.addListener(numberChangeListener);
+        timelapseXMove.addListener(numberChangeListener);
+        timelapseYMove.addListener(numberChangeListener);
+        timelapseDelay.addListener(numberChangeListener);
+        timelapseDelayBeforeCapture.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
     }
 
@@ -255,19 +255,19 @@ public class UserPreferences
         this.currencyGBPToLocalMultiplier.set(value);
     }
 
-    public BooleanProperty getGoProTriggerEnabledProperty()
+    public BooleanProperty getTimelapseTriggerEnabledProperty()
     {
-        return goProTriggerEnabled;
+        return timelapseTriggerEnabled;
     }
 
-    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
+    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled)
     {
-        this.goProTriggerEnabled.set(goProTriggerEnabled);
+        this.timelapseTriggerEnabled.set(timelapseTriggerEnabled);
     }
 
-    public boolean isGoProTriggerEnabled()
+    public boolean isTimelapseTriggerEnabled()
     {
-        return goProTriggerEnabled.get();
+        return timelapseTriggerEnabled.get();
     }
 
     public StringProperty getGoProWifiProperty()
@@ -329,7 +329,7 @@ public class UserPreferences
 
     public boolean getShowGCode()
     {
-        return showDiagnostics.get();
+        return showGCode.get();
     }
 
     public void setShowGCode(boolean showGCode)
@@ -367,64 +367,64 @@ public class UserPreferences
         return showMetricUnits;
     }
 
-    public String getGoProXMove()
+    public int getTimelapseXMove()
     {
-        return goProXMove.get();
+        return timelapseXMove.get();
     }
 
-    public void setGoProXMove(String value)
+    public void setTimelapseXMove(int value)
     {
-        goProXMove.set(value);
+        timelapseXMove.set(value);
     }
 
-    public StringProperty getGoProXMoveProperty()
+    public IntegerProperty getTimelapseXMoveProperty()
     {
-        return goProXMove;
+        return timelapseXMove;
     }
 
-    public String getGoProYMove()
+    public int getTimelapseYMove()
     {
-        return goProYMove.get();
+        return timelapseYMove.get();
     }
 
-    public void setGoProYMove(String value)
+    public void setTimelapseYMove(int value)
     {
-        goProYMove.set(value);
+        timelapseYMove.set(value);
     }
 
-    public StringProperty getGoProYMoveProperty()
+    public IntegerProperty getTimelapseYMoveProperty()
     {
-        return goProYMove;
+        return timelapseYMove;
     }
 
-    public int getGoProDelay()
+    public int getTimelapseDelay()
     {
-        return goProDelay.get();
+        return timelapseDelay.get();
     }
 
-    public void setGoProDelay(int value)
+    public void setTimelapseDelay(int value)
     {
-        goProDelay.set(value);
+        timelapseDelay.set(value);
     }
 
-    public IntegerProperty getGoProDelayProperty()
+    public IntegerProperty getTimelapseDelayProperty()
     {
-        return goProDelay;
+        return timelapseDelay;
     }
 
-    public int getGoProDelayBeforeCapture()
+    public int getTimelapseDelayBeforeCapture()
     {
-        return goProDelayBeforeCapture.get();
+        return timelapseDelayBeforeCapture.get();
     }
 
-    public void setGoProDelayBeforeCapture(int value)
+    public void setTimelapseDelayBeforeCapture(int value)
     {
-        goProDelayBeforeCapture.set(value);
+        timelapseDelayBeforeCapture.set(value);
     }
 
-    public IntegerProperty getGoProDelayBeforeCaptureProperty()
+    public IntegerProperty getTimelapseDelayBeforeCaptureProperty()
     {
-        return goProDelayBeforeCapture;
+        return timelapseDelayBeforeCapture;
     }
 
     public boolean isLoosePartSplitOnLoad()

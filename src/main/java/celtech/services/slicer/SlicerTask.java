@@ -76,7 +76,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             return null;
         }
 
-        steno.info("slice " + project + " " + settings.getProfileName());
+        steno.debug("slice " + project + " " + settings.getProfileName());
         updateTitle("Slicer");
         updateMessage("Preparing model for conversion");
         updateProgress(0.0, 100.0);
@@ -89,7 +89,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
             String printJobDirectory, Project project, PrintQualityEnumeration printQuality,
             Printer printerToUse, ProgressReceiver progressReceiver, Stenographer steno)
     {
-        steno.info("Starting slicing");
+        steno.debug("Starting slicing");
         timeUtils.timerStart(project, slicerTimerName);
         
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
@@ -128,10 +128,10 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
         boolean succeeded = sliceFile(printJobUUID, printJobDirectory, slicerType, createdMeshFiles, centreOfPrintedObject, progressReceiver, steno);
 
         timeUtils.timerStop(project, slicerTimerName);
-        steno.info("Slicer Timer Report");
-        steno.info("============");
-        steno.info(slicerTimerName + " " + timeUtils.timeTimeSoFar_ms(project, slicerTimerName) / 1000.0 + " seconds");
-        steno.info("============");
+        steno.debug("Slicer Timer Report");
+        steno.debug("============");
+        steno.debug(slicerTimerName + " " + timeUtils.timeTimeSoFar_ms(project, slicerTimerName) / 1000.0 + " seconds");
+        steno.debug("============");
 
         return new SliceResult(printJobUUID, project, printQuality, settings, printerToUse,
                 succeeded);
@@ -250,7 +250,7 @@ public class SlicerTask extends Task<SliceResult> implements ProgressReceiver
                     windowsPrintCommand += "\"";
                 }
                 windowsPrintCommand += " && popd\"";
-                steno.info(windowsPrintCommand);
+                steno.debug(windowsPrintCommand);
                 commands.add(windowsPrintCommand);
                 break;
             case MAC:

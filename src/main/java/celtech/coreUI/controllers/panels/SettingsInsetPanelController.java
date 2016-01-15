@@ -244,27 +244,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
     }
 
-    private void setupSupportCombo()
-    {
-        boolean populatingForProjectBefore = populatingForProject;
-        populatingForProject = true;
-        supportComboBox.getItems().clear();
-        supportComboBox.getItems().addAll(SupportType.values());
-
-        if (currentProject != null && currentPrinter != null)
-        {
-            if (currentProject.getUsedExtruders(currentPrinter).size() > 1)
-            {
-                supportComboBox.getItems().remove(SupportType.OBJECT_MATERIAL);
-            }
-        }
-        populatingForProject = populatingForProjectBefore;
-    }
-
     private void setupOverrides()
     {
-        setupSupportCombo();
-
         supportComboBox.valueProperty().addListener(
                 (ObservableValue<? extends SlicerParametersFile.SupportType> ov, SlicerParametersFile.SupportType lastSupportValue, SlicerParametersFile.SupportType newSupportValue) ->
                 {
@@ -289,22 +270,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     }
 
                     updateSupportCombo(currentPrinter);
-                    if (currentPrinter != null && selected && getNumExtruders(currentPrinter) == 2)
-                    {
-                        if (supportComboBox.getValue() == null)
-                        {
-                            // this happens for new projects
-                            supportComboBox.setValue(SupportType.OBJECT_MATERIAL);
-                        }
-                        printerSettings.setPrintSupportTypeOverride(supportComboBox.getValue());
-                    } else if (currentPrinter != null && selected
-                    && getNumExtruders(currentPrinter) == 1)
-                    {
-                        printerSettings.setPrintSupportTypeOverride(SupportType.OBJECT_MATERIAL);
-                    } else //selected but no printer connected
-                    {
-                        printerSettings.setPrintSupportTypeOverride(SupportType.OBJECT_MATERIAL);
-                    }
 
                     printerSettings.setPrintSupportOverride(selected);
                 });
@@ -426,35 +391,51 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void updateSupportCombo(Printer printer)
     {
-        SupportType selectionBefore = supportComboBox.getSelectionModel().getSelectedItem();
+        if (printer != null
+                && printer.headProperty().get() != null)
+        {
+            populatingForProject = true;
 
-        setupSupportCombo();
+            SupportType selectionBefore = supportComboBox.getSelectionModel().getSelectedItem();
 
-        if (supportComboBox.getItems().contains(selectionBefore))
-        {
-            supportComboBox.getSelectionModel().select(selectionBefore);
-        } else
-        {
-            supportComboBox.getSelectionModel().selectFirst();
-        }
-
-        if (getNumExtruders(printer) < 2
-                || (printer.headProperty().get() != null
-                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD))
-        {
-            supportComboBox.setDisable(true);
-            supportComboBox.getSelectionModel().select(SupportType.OBJECT_MATERIAL);
-        } else if (currentProject != null
-                && currentProject.getUsedExtruders(printer).size() > 1)
-        {
-            if (supportComboBox.getSelectionModel().selectedItemProperty().get() == SupportType.OBJECT_MATERIAL)
+            // Support Type
+            // Material 1 - the only option for single extruder machines - default
+            // Material 2 - only available on dual extruder machines
+            supportComboBox.getItems().clear();
+            supportComboBox.getItems().add(SupportType.MATERIAL_1);
+            if (getNumExtruders(printer) > 1
+                    && (printer.headProperty().get() != null
+                    && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD))
             {
-                supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+                supportComboBox.getItems().add(SupportType.MATERIAL_2);
+                if (supportComboBox.getItems().contains(selectionBefore))
+                {
+                    // The old selection is still available - select it again
+                    supportComboBox.getSelectionModel().select(selectionBefore);
+                } else
+                {
+                    if (currentProject != null
+                            && currentProject.getUsedExtruders(printer).size() == 1)
+                    {
+                        // Only one extruder used in this project
+                        // Auto select the same material that is being used
+                        supportComboBox.getSelectionModel().select((currentProject.getUsedExtruders(printer).contains(0) == true) ? SupportType.MATERIAL_1 : SupportType.MATERIAL_2);
+                    } else
+                    {
+                        // More than one extruder used in the project or the current project isn't set
+                        // Select the first option
+                        supportComboBox.getSelectionModel().selectFirst();
+                    }
+                }
+
+                supportComboBox.setDisable(false);
+            } else
+            {
+                supportComboBox.getSelectionModel().selectFirst();
+                supportComboBox.setDisable(true);
             }
-            supportComboBox.setDisable(false);
-        } else
-        {
-            supportComboBox.setDisable(false);
+
+            populatingForProject = false;
         }
     }
 
@@ -504,6 +485,16 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         raftSlider.setValue(savePrintRaft ? 1 : 0);
 
         supportComboBox.setValue(saveSupports);
+
+        printerSettings.getPrintSupportTypeOverrideProperty().addListener(new ChangeListener<SupportType>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue)
+            {
+                supportComboBox.getSelectionModel().select(newValue);
+                updateSupportCombo(currentPrinter);
+            }
+        });
 
         cbSupport.setSelected(autoSupport);
 

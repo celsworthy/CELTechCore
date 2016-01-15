@@ -25,16 +25,16 @@ public class UserPreferenceFile
     private boolean detectLoadedFilament = true;
     private CurrencySymbol currencySymbol = CurrencySymbol.POUND;
     private float currencyGBPToLocalMultiplier = 1;
-    private boolean showDiagnostics = true;
+    private boolean showDiagnostics = false;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
     private boolean showMetricUnits = true;
-    private boolean goProTriggerEnabled = false;
+    private boolean timelapseTriggerEnabled = false;
     private String goProWifiPassword = "";
-    private String goProXMove = "";
-    private String goProYMove = "";
-    private int goProDelay = 2;
-    private int goProDelayBeforeCapture = 2;
+    private int timelapseXMove = 0;
+    private int timelapseYMove = 150;
+    private int timelapseDelay = 2;
+    private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
 
     public String getLanguageTag()
@@ -177,14 +177,14 @@ public class UserPreferenceFile
         this.showMetricUnits = showMetricUnits;
     }
 
-    public boolean isGoProTriggerEnabled()
+    public boolean isTimelapseTriggerEnabled()
     {
-        return goProTriggerEnabled;
+        return timelapseTriggerEnabled;
     }
 
-    public void setGoProTriggerEnabled(boolean goProTriggerEnabled)
+    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled)
     {
-        this.goProTriggerEnabled = goProTriggerEnabled;
+        this.timelapseTriggerEnabled = timelapseTriggerEnabled;
     }
 
     public String getGoProWifiPassword()
@@ -197,44 +197,44 @@ public class UserPreferenceFile
         this.goProWifiPassword = goProWifiPassword;
     }
 
-    public void setGoProXMove(String goProXMove)
+    public void setTimelapseXMove(int timelapseXMove)
     {
-        this.goProXMove = goProXMove;
+        this.timelapseXMove = timelapseXMove;
     }
 
-    public String getGoProXMove()
+    public int getTimelapseXMove()
     {
-        return goProXMove;
+        return timelapseXMove;
     }
 
-    public void setGoProYMove(String goProYMove)
+    public void setTimelapseYMove(int timelapseYMove)
     {
-        this.goProYMove = goProYMove;
+        this.timelapseYMove = timelapseYMove;
     }
 
-    public String getGoProYMove()
+    public int getTimelapseYMove()
     {
-        return goProYMove;
+        return timelapseYMove;
     }
 
-    public void setGoProDelay(int goProDelay)
+    public void setTimelapseDelay(int timelapseDelay)
     {
-        this.goProDelay = goProDelay;
+        this.timelapseDelay = timelapseDelay;
     }
 
-    public int getGoProDelay()
+    public int getTimelapseDelay()
     {
-        return goProDelay;
+        return timelapseDelay;
     }
 
-    public void setGoProDelayBeforeCapture(int goProDelayBeforeCapture)
+    public void setTimelapseDelayBeforeCapture(int timelapseDelayBeforeCapture)
     {
-        this.goProDelayBeforeCapture = goProDelayBeforeCapture;
+        this.timelapseDelayBeforeCapture = timelapseDelayBeforeCapture;
     }
 
-    public int getGoProDelayBeforeCapture()
+    public int getTimelapseDelayBeforeCapture()
     {
-        return goProDelayBeforeCapture;
+        return timelapseDelayBeforeCapture;
     }
 
     public boolean isLoosePartSplitOnLoad()
@@ -263,12 +263,12 @@ public class UserPreferenceFile
         setShowGCode(userPreferences.getShowGCode());
         setShowAdjustments(userPreferences.getShowAdjustments());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
-        setGoProTriggerEnabled(userPreferences.isGoProTriggerEnabled());
+        setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
         setGoProWifiPassword(userPreferences.getGoProWifiPassword());
-        setGoProXMove(userPreferences.getGoProXMove());
-        setGoProYMove(userPreferences.getGoProYMove());
-        setGoProDelay(userPreferences.getGoProDelay());
-        setGoProDelayBeforeCapture(userPreferences.getGoProDelayBeforeCapture());
+        setTimelapseXMove(userPreferences.getTimelapseXMove());
+        setTimelapseYMove(userPreferences.getTimelapseYMove());
+        setTimelapseDelay(userPreferences.getTimelapseDelay());
+        setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
     }
 }

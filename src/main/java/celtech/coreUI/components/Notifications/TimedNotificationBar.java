@@ -3,6 +3,7 @@ package celtech.coreUI.components.Notifications;
 import celtech.Lookup;
 import java.util.Timer;
 import java.util.TimerTask;
+import javafx.application.Platform;
 
 /**
  *
@@ -10,13 +11,18 @@ import java.util.TimerTask;
  */
 public class TimedNotificationBar extends AppearingNotificationBar
 {
+
     private final int displayFor_ms = 4000;
-    
+    private final int selfDestructIn_ms = 6000;
+    private Timer selfDestructTimer = null;
+
     @Override
     public void show()
     {
         Lookup.getNotificationDisplay().addNotificationBar(this);
+        selfDestructTimer = new Timer("TimedNotificationSelfDestruct", true);
         startSlidingInToView();
+        selfDestructTimer.schedule(new SelfDestructTask(), selfDestructIn_ms);
     }
 
     @Override
@@ -30,15 +36,33 @@ public class TimedNotificationBar extends AppearingNotificationBar
     public void finishedSlidingOutOfView()
     {
         Lookup.getNotificationDisplay().removeNotificationBar(this);
+        if (selfDestructTimer != null)
+        {
+            selfDestructTimer.cancel();
+            selfDestructTimer = null;
+        }
     }
-    
-    
+
     private class SlideAwayTask extends TimerTask
     {
+
         @Override
         public void run()
         {
             startSlidingOutOfView();
+        }
+    }
+
+    private class SelfDestructTask extends TimerTask
+    {
+
+        @Override
+        public void run()
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                finishedSlidingOutOfView();
+            });
         }
     }
 }

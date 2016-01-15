@@ -26,11 +26,7 @@ public class SlicerParametersFile
         /**
          * Use material 2 as support. Implies all objects printed with material 1.
          */
-        MATERIAL_2("supportType.material2"),
-        /**
-         * Print the support in the same material as the object.
-         */
-        OBJECT_MATERIAL("supportType.objectMaterial");
+        MATERIAL_2("supportType.material2");
 
         String description;
 

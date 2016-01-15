@@ -154,6 +154,8 @@ public class PrintEngine implements ControllableService
 
     private CameraTriggerManager cameraTriggerManager;
 
+    private BooleanProperty highIntensityCommsInProgress = new SimpleBooleanProperty(false);
+
     public PrintEngine(Printer associatedPrinter)
     {
         this.associatedPrinter = associatedPrinter;
@@ -449,7 +451,8 @@ public class PrintEngine implements ControllableService
             {
                 if (t1 == PrintQueueStatus.PRINTING)
                 {
-                    if (macroBeingRun.get() == null)
+                    if (macroBeingRun.get() == null
+                            && Lookup.getUserPreferences().isTimelapseTriggerEnabled())
                     {
                         cameraTriggerManager.listenForCameraTrigger();
                     }
@@ -464,6 +467,11 @@ public class PrintEngine implements ControllableService
                 }
             }
         });
+
+        highIntensityCommsInProgress.bind(slicerService.runningProperty()
+                .or(postProcessorService.runningProperty())
+                .or(transferGCodeToPrinterService.runningProperty()));
+
         detectAlreadyPrinting();
     }
 
@@ -493,7 +501,7 @@ public class PrintEngine implements ControllableService
         int lineNumber = newValue.intValue();
         primaryProgressPercent.set(etcCalculator.getPercentCompleteAtLine(lineNumber));
         progressETC.set(etcCalculator.getETCPredicted(lineNumber));
-        progressCurrentLayer.set(etcCalculator.getCompletedLayerNumberForLineNumber(lineNumber));
+        progressCurrentLayer.set(etcCalculator.getCurrentLayerNumberForLineNumber(lineNumber));
     }
 
     private void updateETCUsingLineNumber(Number newValue)
@@ -1232,5 +1240,10 @@ public class PrintEngine implements ControllableService
     public ReadOnlyObjectProperty<PrintJob> printJobProperty()
     {
         return printJob;
+    }
+
+    public ReadOnlyBooleanProperty highIntensityCommsInProgressProperty()
+    {
+        return highIntensityCommsInProgress;
     }
 }

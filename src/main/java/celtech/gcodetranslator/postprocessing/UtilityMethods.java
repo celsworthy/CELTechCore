@@ -65,7 +65,7 @@ public class UtilityMethods
             LayerPostProcessResult lastLayerPostProcessResult,
             List<NozzleProxy> nozzleProxies)
     {
-        if (Lookup.getUserPreferences().isGoProTriggerEnabled())
+        if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
         {
             IteratorWithStartPoint<GCodeEventNode> layerForwards = layerNode.treeSpanningIterator(null);
             while (layerForwards.hasNext())

@@ -152,7 +152,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
                 singleMaterialHead,
                 ppFeatures,
                 testProject,
-                PostProcessingMode.USE_OBJECT_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
 
         assertEquals(3, testLayer.getChildren().size());
 
@@ -309,7 +309,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
                 dualMaterialHead,
                 ppFeatures,
                 testProject,
-                PostProcessingMode.USE_OBJECT_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
 
         assertEquals(2, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());

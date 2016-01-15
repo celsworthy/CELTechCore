@@ -124,7 +124,7 @@ public abstract class CommandInterface extends Thread
                         commsState = RoboxCommsState.CHECKING_FIRMWARE;
                     } else
                     {
-                        steno.debug("Failed to connect to Robox on " + printerHandle);
+                        steno.error("Failed to connect to Robox on " + printerHandle);
                         controlInterface.failedToConnect(printerHandle);
                         keepRunning = false;
                     }
@@ -383,7 +383,7 @@ public abstract class CommandInterface extends Thread
         {
             if (printerFriendlyName != null)
             {
-                steno.error(printerFriendlyName + " is printing");
+                steno.info(printerFriendlyName + " is printing");
             } else
             {
                 steno.error("Connected to an unknown printer that is printing");

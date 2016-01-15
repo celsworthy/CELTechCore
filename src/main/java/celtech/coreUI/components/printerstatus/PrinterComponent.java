@@ -37,11 +37,33 @@ public class PrinterComponent extends Pane
     private Size currentSize;
     private double sizePixels = 80;
     private int fontSize;
+    private boolean inInterruptibleState;
 
     public enum Size
     {
 
-        SIZE_SMALL, SIZE_MEDIUM, SIZE_LARGE;
+        SIZE_SMALL(80, 10),
+        SIZE_MEDIUM(120, 20),
+        SIZE_LARGE(260, 0);
+
+        private final int size;
+        private final int spacing;
+
+        private Size(int size, int spacing)
+        {
+            this.size = size;
+            this.spacing = spacing;
+        }
+
+        public int getSize()
+        {
+            return size;
+        }
+
+        public int getSpacing()
+        {
+            return spacing;
+        }
     }
 
     public enum Status
@@ -99,6 +121,8 @@ public class PrinterComponent extends Pane
     @FXML
     private PrinterSVGComponent printerSVG;
     private final Printer printer;
+    private final ComponentIsolationInterface isolationInterface;
+
     private ChangeListener<String> nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
         setName(newValue);
@@ -112,9 +136,11 @@ public class PrinterComponent extends Pane
         setProgress((double) newValue);
     };
 
-    public PrinterComponent(Printer printer)
+    public PrinterComponent(Printer printer, ComponentIsolationInterface isolationInterface)
     {
         this.printer = printer;
+        this.isolationInterface = isolationInterface;
+
         URL fxml = getClass().getResource("/celtech/resources/fxml/printerstatus/printer.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
@@ -176,6 +202,12 @@ public class PrinterComponent extends Pane
                     {
                         updateStatus(printer.printerStatusProperty().get(), newValue);
                     });
+            
+            printer.getPrintEngine().highIntensityCommsInProgressProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
+            });
+
             updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
         } else
         {
@@ -189,6 +221,17 @@ public class PrinterComponent extends Pane
         name.setText(nameText);
 
         setSize(Size.SIZE_LARGE);
+
+        this.disabledProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            if (newValue)
+            {
+                printerSVG.setOpacity(0.25);
+            } else
+            {
+                printerSVG.setOpacity(1);
+            }
+        });
     }
 
     public void setProgress(double progress)
@@ -226,31 +269,40 @@ public class PrinterComponent extends Pane
     private void updateStatus(PrinterStatus printerStatus, PauseStatus pauseStatus)
     {
         Status status;
+
         switch (printerStatus)
         {
-//            case ERROR:
-//                status = Status.ERROR;
-//                break;
+            case IDLE:
+            case RUNNING_MACRO_FILE:
+            case REMOVING_HEAD:
             case OPENING_DOOR:
-//            case POST_PROCESSING:
+                status = Status.READY;
+                inInterruptibleState = true;
+                break;
             case PRINTING_PROJECT:
-//            case SLICING:
                 status = Status.PRINTING;
+                inInterruptibleState = true;
                 break;
             default:
                 status = Status.READY;
+                inInterruptibleState = false;
                 break;
         }
 
         if (pauseStatus == PauseStatus.PAUSED
                 || pauseStatus == PauseStatus.PAUSE_PENDING)
-
         {
             status = Status.PAUSED;
         }
 
+        if (printer.getPrintEngine().highIntensityCommsInProgressProperty().get())
+        {
+            inInterruptibleState = false;
+        }
+
         setStatus(status);
-        progressBar.setStatus(status);
+
+        isolationInterface.interruptibilityUpdated(this);
     }
 
     /**
@@ -275,7 +327,6 @@ public class PrinterComponent extends Pane
         switch (currentSize)
         {
             case SIZE_SMALL:
-                sizePixels = 80;
                 fontSize = 9;
                 progressBarWidth = 65;
                 progressBarHeight = 6;
@@ -283,20 +334,20 @@ public class PrinterComponent extends Pane
 
                 break;
             case SIZE_MEDIUM:
-                sizePixels = 120;
                 fontSize = 14;
                 progressBarWidth = 100;
                 progressBarHeight = 9;
                 progressBarYOffset = 26;
                 break;
             default:
-                sizePixels = 260;
                 fontSize = 30;
                 progressBarWidth = 220;
                 progressBarHeight = 20;
                 progressBarYOffset = 55;
                 break;
         }
+        
+        sizePixels = currentSize.getSize();
 
         setPrefWidth(sizePixels);
         setMinWidth(sizePixels);
@@ -402,4 +453,8 @@ public class PrinterComponent extends Pane
         return name;
     }
 
+    public boolean isInterruptible()
+    {
+        return inInterruptibleState;
+    }
 }

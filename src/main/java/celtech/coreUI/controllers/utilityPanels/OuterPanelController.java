@@ -43,6 +43,8 @@ public class OuterPanelController implements Initializable
         this.visibilityProperty = visibilityProperty;
          crossButton.setOnMouseClicked((MouseEvent event) ->
         {
+            rootPane.setMinHeight(0);
+            rootPane.setPrefHeight(0);
             this.visibilityProperty.set(false);
         });
     }

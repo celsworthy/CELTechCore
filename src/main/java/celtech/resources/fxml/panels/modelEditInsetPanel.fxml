@@ -114,19 +114,19 @@
                                 <Group />
                                 <StackPane GridPane.columnIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="9" prefColumnCount="4" text="" />
                                         <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <StackPane fx:id="textHeightField" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" maxLength="9" prefColumnCount="4" text="" />
                                         <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <StackPane GridPane.columnIndex="2" GridPane.rowIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" maxLength="9" prefColumnCount="4" text="" />
                                         <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
