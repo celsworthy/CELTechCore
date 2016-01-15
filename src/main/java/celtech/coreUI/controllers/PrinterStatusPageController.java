@@ -21,7 +21,9 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
@@ -144,6 +146,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private VBox diagnosticPanel = null;
     private VBox projectPanel = null;
     private VBox parentPanel = null;
+
+    private BooleanProperty selectedPrinterIsPrinting = new SimpleBooleanProperty(false);
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
@@ -471,8 +475,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             {
                 case IDLE:
                     visible = true;
+                    selectedPrinterIsPrinting.set(false);
+                    break;
+                case PRINTING_PROJECT:
+                    selectedPrinterIsPrinting.set(true);
                     break;
                 default:
+                    selectedPrinterIsPrinting.set(false);
                     break;
             }
 
@@ -488,6 +497,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 default:
                     break;
             }
+        } else
+        {
+            selectedPrinterIsPrinting.set(false);
         }
 
         for (Node node : advancedControls)
@@ -582,7 +594,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private VBox loadInsetPanel(String innerPanelFXMLName, String title,
             BooleanProperty visibleProperty,
-            boolean advancedModeOnly)
+            ObservableValue<Boolean> appearanceConditions,
+            VBox parentPanel,
+            int position)
     {
         URL insetPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
@@ -594,21 +608,16 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             if (title != null)
             {
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
-                if (advancedModeOnly)
-                {
-                    wrappedPanel.visibleProperty().bind(visibleProperty.and(Lookup.getUserPreferences().advancedModeProperty()));
-                } else
-                {
-                    wrappedPanel.visibleProperty().bind(visibleProperty);
-                }
+                wrappedPanel.visibleProperty().bind(appearanceConditions);
+
                 final VBox panelToChangeHeightOf = wrappedPanel;
-                panelVisibilityAction(visibleProperty.getValue(), panelToChangeHeightOf);
+                panelVisibilityAction(visibleProperty.getValue(), panelToChangeHeightOf, parentPanel, position);
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
                 {
                     @Override
                     public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
                     {
-                        panelVisibilityAction(visible, panelToChangeHeightOf);
+                        panelVisibilityAction(visible, panelToChangeHeightOf, parentPanel, position);
                     }
                 });
             } else
@@ -622,15 +631,23 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         return wrappedPanel;
     }
 
-    private void panelVisibilityAction(boolean visible, VBox panel)
+    private void panelVisibilityAction(boolean visible, VBox panel, VBox parentPanel, int position)
     {
         if (visible)
         {
-            panel.setMaxHeight(1000);
+            if (!parentPanel.getChildren().contains(panel))
+            {
+                if (position <= parentPanel.getChildren().size())
+                {
+                    parentPanel.getChildren().add(position, panel);
+                } else
+                {
+                    parentPanel.getChildren().add(panel);
+                }
+            }
         } else
         {
-            panel.setMinHeight(0);
-            panel.setMaxHeight(0);
+            parentPanel.getChildren().remove(panel);
         }
     }
 
@@ -659,36 +676,32 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         vBoxLeft.setSpacing(20);
         diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
-                Lookup.getUserPreferences().showDiagnosticsProperty(), false);
-        VBox.setVgrow(diagnosticPanel, Priority.NEVER);
+                Lookup.getUserPreferences().showDiagnosticsProperty(),
+                Lookup.getUserPreferences().showDiagnosticsProperty(), vBoxLeft, 0);
 
         gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
-                Lookup.getUserPreferences().showGCodeProperty(), true);
+                Lookup.getUserPreferences().showGCodeProperty(),
+                Lookup.getUserPreferences().showGCodeProperty().and(Lookup.getUserPreferences().advancedModeProperty()), vBoxLeft, 1);
         gcodePanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
         });
-        VBox.setVgrow(gcodePanel, Priority.ALWAYS);
-        vBoxLeft.getChildren().add(diagnosticPanel);
-        vBoxLeft.getChildren().add(gcodePanel);
 
-        vBoxRight.setSpacing(30);
-        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null, false);
+        vBoxRight.setSpacing(20);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null, null, vBoxRight, 0);
         projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
         });
 
         Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
-                Lookup.getUserPreferences().showAdjustmentsProperty(), true);
-        vBoxRight.getChildren().add(projectPanel);
-        vBoxRight.getChildren().add(printAdjustmentsPanel);
+                Lookup.getUserPreferences().showAdjustmentsProperty(),
+                Lookup.getUserPreferences().showAdjustmentsProperty().and(selectedPrinterIsPrinting), vBoxRight, 1);
 
         container.getChildren().add(vBoxLeft);
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setLeftAnchor(vBoxLeft, 30.0);
         AnchorPane.setBottomAnchor(vBoxLeft, 90.0);
-        vBoxLeft.setMaxHeight(-1);
         container.getChildren().add(vBoxRight);
         AnchorPane.setTopAnchor(vBoxRight, 30.0);
         AnchorPane.setRightAnchor(vBoxRight, 30.0);
