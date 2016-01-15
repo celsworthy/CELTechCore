@@ -25,6 +25,7 @@ public class SetEFilamentInfo extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 

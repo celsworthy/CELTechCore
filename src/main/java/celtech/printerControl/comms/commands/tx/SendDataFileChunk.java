@@ -27,9 +27,8 @@ public class SendDataFileChunk extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 
-     
-    
 }

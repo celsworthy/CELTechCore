@@ -1,10 +1,5 @@
 package celtech.printerControl.comms.commands.tx;
 
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
-import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
-import celtech.printerControl.comms.commands.tx.TxPacketTypeEnum;
-
 /**
  *
  * @author ianhudson

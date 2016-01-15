@@ -70,6 +70,15 @@ public abstract class RoboxTxPacket
 
     /**
      *
+     * @param messagePayload
+     */
+    public void setMessagePayload(byte[] messagePayload)
+    {
+        this.messagePayload = new String(messagePayload, 1, messagePayload.length - 1);
+    }
+
+    /**
+     *
      * @param sequenceNumber
      */
     public void setSequenceNumber(int sequenceNumber)

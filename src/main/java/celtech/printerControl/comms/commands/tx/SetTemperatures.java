@@ -12,6 +12,7 @@ import celtech.utils.FixedDecimalFloatFormat;
  */
 public class SetTemperatures extends RoboxTxPacket
 {
+
     /**
      *
      */
@@ -28,6 +29,7 @@ public class SetTemperatures extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 
@@ -42,8 +44,8 @@ public class SetTemperatures extends RoboxTxPacket
      * @param ambientTarget
      */
     public void setTemperatures(double nozzle0FirstLayerTarget, double nozzle0Target,
-        double nozzle1FirstLayerTarget, double nozzle1Target,
-        double bedFirstLayerTarget, double bedTarget, double ambientTarget)
+            double nozzle1FirstLayerTarget, double nozzle1Target,
+            double bedFirstLayerTarget, double bedTarget, double ambientTarget)
     {
         StringBuilder payload = new StringBuilder();
 

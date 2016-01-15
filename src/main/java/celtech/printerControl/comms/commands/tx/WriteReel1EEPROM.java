@@ -22,8 +22,8 @@ public class WriteReel1EEPROM extends RoboxTxPacket
     public static final int FRIENDLY_NAME_LENGTH = 40;
     public static final int MATERIAL_TYPE_LENGTH = 1;
     public static final int DISPLAY_COLOUR_LENGTH = 6;
-    public static final int REEL_EEPROM_PADDING_LENGTH = 
-                                            80 - FRIENDLY_NAME_LENGTH - MATERIAL_TYPE_LENGTH;
+    public static final int REEL_EEPROM_PADDING_LENGTH
+            = 80 - FRIENDLY_NAME_LENGTH - MATERIAL_TYPE_LENGTH;
 
     public WriteReel1EEPROM()
     {
@@ -37,11 +37,11 @@ public class WriteReel1EEPROM extends RoboxTxPacket
     }
 
     public void populateEEPROM(String filamentID, float reelFirstLayerNozzleTemperature,
-        float reelNozzleTemperature,
-        float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
-        float reelFilamentDiameter,
-        float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
-        String friendlyName, MaterialType materialType, Color displayColour)
+            float reelNozzleTemperature,
+            float reelFirstLayerBedTemperature, float reelBedTemperature, float reelAmbientTemperature,
+            float reelFilamentDiameter,
+            float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
+            String friendlyName, MaterialType materialType, Color displayColour)
     {
         StringBuilder payload = new StringBuilder();
 
@@ -70,7 +70,8 @@ public class WriteReel1EEPROM extends RoboxTxPacket
         }
         payload.append(formatString(friendlyNameEncoded, FRIENDLY_NAME_LENGTH));
         String materialTypeInt = EnumStringConverter.intToString(0);
-        if (materialType != null) {
+        if (materialType != null)
+        {
             materialTypeInt = EnumStringConverter.intToString(materialType.ordinal());
         }
         payload.append(materialTypeInt);
@@ -83,7 +84,7 @@ public class WriteReel1EEPROM extends RoboxTxPacket
             String oldValue = remainingFilamentValue;
             remainingFilamentValue = remainingFilamentValue.substring(0, 8);
             steno.warning("Truncated remaining filament value from " + oldValue + " to "
-                + remainingFilamentValue);
+                    + remainingFilamentValue);
         }
         payload.append(remainingFilamentValue);
 
@@ -146,8 +147,8 @@ public class WriteReel1EEPROM extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 
-    
 }

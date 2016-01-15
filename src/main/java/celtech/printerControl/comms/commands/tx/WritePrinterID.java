@@ -41,6 +41,7 @@ public class WritePrinterID extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 
@@ -67,9 +68,9 @@ public class WritePrinterID extends RoboxTxPacket
      * @param colour
      */
     public void setIDAndColour(String model, String edition,
-        String weekOfManufacture, String yearOfManufacture, String poNumber,
-        String serialNumber, String checkByte, String printerFriendlyName,
-        Color colour)
+            String weekOfManufacture, String yearOfManufacture, String poNumber,
+            String serialNumber, String checkByte, String printerFriendlyName,
+            Color colour)
     {
         this.model = model;
         this.edition = edition;
@@ -80,11 +81,11 @@ public class WritePrinterID extends RoboxTxPacket
         this.checkByte = checkByte;
         this.printerFriendlyName = printerFriendlyName;
         this.colour = colour;
-        
+
         try
         {
             printerFriendlyName = StringToBase64Encoder.encode(printerFriendlyName,
-                                                               BYTES_FOR_NAME);
+                    BYTES_FOR_NAME);
         } catch (UnsupportedEncodingException ex)
         {
             steno.error("Couldn't encode printer name: " + printerFriendlyName);
@@ -104,7 +105,7 @@ public class WritePrinterID extends RoboxTxPacket
         payload.append(String.format("%1$1s", checkByte));
         payload.append(firstPad);
         payload.append(String.format("%1$" + BYTES_FOR_NAME + "s",
-                                     printerFriendlyName));
+                printerFriendlyName));
         payload.append(secondPad);
 
         payload.append(colourToString(colour));
@@ -116,14 +117,14 @@ public class WritePrinterID extends RoboxTxPacket
     public void populatePacket(PrinterIdentity printerIdentity)
     {
         setIDAndColour(printerIdentity.printermodelProperty().get(),
-                       printerIdentity.printereditionProperty().get(),
-                       printerIdentity.printerweekOfManufactureProperty().get(),
-                       printerIdentity.printeryearOfManufactureProperty().get(),
-                       printerIdentity.printerpoNumberProperty().get(),
-                       printerIdentity.printerserialNumberProperty().get(),
-                       printerIdentity.printercheckByteProperty().get(),
-                       printerIdentity.printerFriendlyNameProperty().get(),
-                       printerIdentity.printerColourProperty().get());
+                printerIdentity.printereditionProperty().get(),
+                printerIdentity.printerweekOfManufactureProperty().get(),
+                printerIdentity.printeryearOfManufactureProperty().get(),
+                printerIdentity.printerpoNumberProperty().get(),
+                printerIdentity.printerserialNumberProperty().get(),
+                printerIdentity.printercheckByteProperty().get(),
+                printerIdentity.printerFriendlyNameProperty().get(),
+                printerIdentity.printerColourProperty().get());
     }
 
     public String getModel()
@@ -170,6 +171,5 @@ public class WritePrinterID extends RoboxTxPacket
     {
         return colour;
     }
-    
-    
+
 }

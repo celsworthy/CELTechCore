@@ -127,8 +127,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
             maxTempB = heater1.maximumTemperatureProperty().get();
             lastFilamentTemperatureB = heater1.lastFilamentTemperatureProperty().get();
             filamentIDB = heater1.filamentIDProperty().get();
-        }
-        else
+        } else
         {
             maxTempB = maxTempA;
             lastFilamentTemperatureB = lastFilamentTemperatureA;
@@ -250,6 +249,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 
