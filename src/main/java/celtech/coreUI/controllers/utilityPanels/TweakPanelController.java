@@ -449,6 +449,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             printSpeed2Box.setMinHeight(0);
         }
 
+        bindNozzleTemperatureDisplay();
         updateNozzleTemperatureDisplay();
         container.setVisible(true);        
     }
