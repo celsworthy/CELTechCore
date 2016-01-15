@@ -20,6 +20,7 @@ import celtech.printerControl.comms.commands.rx.FirmwareResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
+import celtech.printerControl.comms.commands.rx.ReelEEPROM0DataResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.SendFile;
@@ -118,7 +119,7 @@ public class TestPrinter implements Printer
 
     public void changeReel(int i)
     {
-        ReelEEPROMDataResponse eepromData = new ReelEEPROMDataResponse();
+        ReelEEPROMDataResponse eepromData = new ReelEEPROM0DataResponse();
         eepromData.setReelFilamentID("ABC");
         eepromData.setReelAmbientTemperature(100);
         eepromData.setReelBedTemperature(120);

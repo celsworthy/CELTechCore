@@ -135,7 +135,7 @@ public class TestCommandInterface extends CommandInterface
         } else if (messageToWrite instanceof ReadReel0EEPROM)
         {
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.createPacket(
-                    RxPacketTypeEnum.REEL_EEPROM_DATA);
+                    RxPacketTypeEnum.REEL_0_EEPROM_DATA);
 
             reelResponse.updateContents(attachedReel);
             response = (RoboxRxPacket) reelResponse;

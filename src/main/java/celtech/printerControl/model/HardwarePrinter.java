@@ -3681,7 +3681,8 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     }
                     break;
 
-                case REEL_EEPROM_DATA:
+                case REEL_0_EEPROM_DATA:
+                case REEL_1_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
 
                     if (!filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))

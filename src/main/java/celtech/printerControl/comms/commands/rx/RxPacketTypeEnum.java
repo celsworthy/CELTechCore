@@ -30,11 +30,6 @@ public enum RxPacketTypeEnum
     /**
      *
      */
-    REEL_EEPROM_DATA((byte)0, false, 0),
-    
-    /**
-     *
-     */
     REEL_0_EEPROM_DATA((byte)0xE6, false, 0),
 
     /**
