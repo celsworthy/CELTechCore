@@ -637,11 +637,6 @@ public class CloseLogic
                 finalCloseNode.setElidedExtrusion(volumeToCloseOver);
             }
             closeResult = Optional.of(new CloseResult(1.0, nozzleInUse.getNozzleParameters().getEjectionVolume(), finalCloseNode));
-            
-            if (bValue > 0)
-            {
-                steno.warning("Possible that nozzle is not closed");
-            }
         } else
         {
             throw new NotEnoughAvailableExtrusionException("When closing towards end of extrusion");
