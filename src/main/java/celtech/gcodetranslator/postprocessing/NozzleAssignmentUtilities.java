@@ -207,7 +207,11 @@ public class NozzleAssignmentUtilities
                     && lastObjectReferenceNumber != objectReferenceNumber
                     && lastSectionNode != null)
             {
-                lastSectionNode.addChildAtEnd(new RetractNode());
+                if (lastSectionNode.getChildren().size() == 0
+                        || !(lastSectionNode.getChildren().get(lastSectionNode.getChildren().size() - 1) instanceof RetractNode))
+                {
+                    lastSectionNode.addChildAtEnd(new RetractNode());
+                }
             }
 
             lastObjectReferenceNumber = objectReferenceNumber;
