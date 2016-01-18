@@ -1021,15 +1021,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
-        if (nozzleNumber == 0)
-        {
-            executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE_0,
-                    blockUntilFinished, cancellable);
-        } else if (nozzleNumber == 1)
-        {
-            executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE_1,
-                    blockUntilFinished, cancellable);
-        }
+        boolean nozzle0Required = nozzleNumber == 0;
+        boolean nozzle1Required = nozzleNumber == 1;
+
+        executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE,
+                blockUntilFinished, cancellable, nozzle0Required, nozzle1Required);
     }
 
     @Override

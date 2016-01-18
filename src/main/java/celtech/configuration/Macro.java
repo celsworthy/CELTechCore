@@ -20,8 +20,7 @@ public enum Macro
     TEST_Y("y_test", "printerStatus.macro.testY", "M8"),
     TEST_Z("z_test", "printerStatus.macro.testZ", "M9"),
     LEVEL_Y("level_Y", "printerStatus.macro.levellingY", "M10"),
-    CLEAN_NOZZLE_0("T0_nozzle_clean", "printerStatus.macro.cleanNozzle0", "M11"),
-    CLEAN_NOZZLE_1("T1_nozzle_clean", "printerStatus.macro.cleanNozzle1", "M12"),
+    CLEAN_NOZZLE("nozzle_clean", "printerStatus.macro.cleanNozzle", "M11"),
     
     PURGE_MATERIAL("PurgeMaterial", "printerStatus.purging", "M13"),
     
