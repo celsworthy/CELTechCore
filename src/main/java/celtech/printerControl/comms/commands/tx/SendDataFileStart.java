@@ -27,6 +27,7 @@ public class SendDataFileStart extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 }
