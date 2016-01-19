@@ -27,6 +27,7 @@ public class SendGCodeRequest extends RoboxTxPacket
     @Override
     public boolean populatePacket(byte[] byteData)
     {
+        setMessagePayload(byteData);
         return false;
     }
 }
