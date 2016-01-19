@@ -523,6 +523,7 @@ public class CloseLogic
                 || inScopeEvents.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
         {
             double runningTotalOfExtrusion = 0;
+            double bValue = -1;
 
             for (int movementNodeCounter = 0;
                     movementNodeCounter < inScopeEvents.getInScopeEvents().size();
@@ -537,7 +538,7 @@ public class CloseLogic
                     if (comparisonResult == MathUtils.LESS_THAN)
                     {
                         //One step along the way
-                        double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
+                        bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         //No extrusion during a close
@@ -551,7 +552,7 @@ public class CloseLogic
                     } else if (comparisonResult == MathUtils.EQUAL)
                     {
                         //All done
-                        double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
+                        bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
                         runningTotalOfExtrusion += extrusionNodeBeingExamined.getExtrusion().getE();
                         //No extrusion during a close
@@ -609,7 +610,7 @@ public class CloseLogic
 
                         extrusionNodeBeingExamined.getExtrusion().setE((float) extrusionInSecondSection);
                         extrusionNodeBeingExamined.appendCommentText("Start of overwrite close towards end");
-                        double bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
+                        bValue = (runningTotalOfExtrusion / volumeToCloseOver) * nozzleStartingPosition;
                         if (closeStarted)
                         {
                             extrusionNodeBeingExamined.getNozzlePosition().setB(bValue);
