@@ -401,11 +401,20 @@ public class PostProcessor
             layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1,
                     writer.getNumberOfLinesOutput());
             int numLines = writer.getNumberOfLinesOutput();
+            
+            String statsProfileName = "";
+            float statsLayerHeight = 0;
+            
+            if (project.getPrinterSettings().getSettings(headFile.getTypeCode()) != null)
+            {
+                statsProfileName = project.getPrinterSettings().getSettings(headFile.getTypeCode()).getProfileName();
+                statsLayerHeight = project.getPrinterSettings().getSettings(headFile.getTypeCode()).getLayerHeight_mm();
+            }
 
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
                     project.getProjectName(),
-                    project.getPrinterSettings().getSettings(headFile.getTypeCode()).getProfileName(),
-                    project.getPrinterSettings().getSettings(headFile.getTypeCode()).getLayerHeight_mm(),
+                    statsProfileName,
+                    statsLayerHeight,
                     numLines,
                     finalEVolume,
                     finalDVolume,
