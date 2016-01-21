@@ -29,20 +29,38 @@
       <RowConstraints />
     </rowConstraints>
     <children>
-        <Label styleClass="colon" text="%sidePanel_settings.MaterialName" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <Label styleClass="colon" text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <Label styleClass="colon" text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label text="%sidePanel_settings.MaterialName" GridPane.columnIndex="0" GridPane.rowIndex="3">
+         <styleClass>
+            <String fx:value="colon" />
+            <String fx:value="preferenceControl" />
+         </styleClass></Label>
+        <Label text="%sidePanel_settings.MaterialType" GridPane.columnIndex="0" GridPane.rowIndex="4">
+         <styleClass>
+            <String fx:value="colon" />
+            <String fx:value="preferenceControl" />
+         </styleClass></Label>
+        <Label text="%genericFirstLetterCapitalised.Colour" GridPane.columnIndex="0" GridPane.rowIndex="5">
+         <styleClass>
+            <String fx:value="colon" />
+            <String fx:value="preferenceControl" />
+         </styleClass></Label>
                       
-        <RestrictedTextField fx:id="name" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3" directorySafeName="true" restrict="a-zA-Z0-9_" maxLength="26"  />
+        <RestrictedTextField fx:id="name" directorySafeName="true" maxLength="26" maxWidth="-Infinity" restrict="a-zA-Z0-9_" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+         <styleClass>
+            <String fx:value="filamentLibUpper" />
+            <String fx:value="preferenceControl" />
+         </styleClass></RestrictedTextField>
         <RestrictedNumberField fx:id="costGBPPerKG" allowedDecimalPlaces="2" maxLength="6" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
          <styleClass>
             <String fx:value="filamentLibUpper" />
             <String fx:value="materialNumbers" />
+            <String fx:value="preferenceControl" />
          </styleClass></RestrictedNumberField>
            <RestrictedNumberField fx:id="remainingOnReelM" allowedDecimalPlaces="2" maxLength="6" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
          <styleClass>
             <String fx:value="filamentLibUpper" />
             <String fx:value="materialNumbers" />
+            <String fx:value="preferenceControl" />
          </styleClass></RestrictedNumberField>
         <ComboBox fx:id="material" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
             <styleClass>
@@ -54,15 +72,40 @@
             <styleClass>
                 <String fx:value="cmbCleanCombo" />
                 <String fx:value="filamentLibUpper" />
+            <String fx:value="preferenceControl" />
             </styleClass>
         </ColorPicker>
-        <ComboBox id="cmbLibraryFilament" fx:id="cmbFilament" prefWidth="150.0" styleClass="cmbCleanCombo" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" />
-        <Label styleClass="colon" text="%reelPanel.filamentID" GridPane.rowIndex="2" />
-        <TextField fx:id="filamentID" maxWidth="-Infinity" styleClass="filamentLibUpper" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2" />
-        <Label alignment="CENTER" styleClass="filamentLibTitle" text="%filamentLibrary.identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+        <ComboBox id="cmbLibraryFilament" fx:id="cmbFilament" prefWidth="150.0" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER">
+         <styleClass>
+            <String fx:value="cmbCleanCombo" />
+            <String fx:value="preferenceControl" />
+         </styleClass></ComboBox>
+        <Label text="%reelPanel.filamentID" GridPane.rowIndex="2">
+         <styleClass>
+            <String fx:value="colon" />
+            <String fx:value="preferenceLabel" />
+         </styleClass></Label>
+        <TextField fx:id="filamentID" maxWidth="-Infinity" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+         <styleClass>
+            <String fx:value="filamentLibUpper" />
+            <String fx:value="preferenceControl" />
+         </styleClass></TextField>
+        <Label alignment="CENTER" text="%filamentLibrary.identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1">
+         <styleClass>
+            <String fx:value="filamentLibTitle" />
+            <String fx:value="preferenceControl" />
+         </styleClass></Label>
         <TextArea id="helpText" fx:id="helpText" editable="false" wrapText="true" GridPane.columnSpan="2147483647" GridPane.rowIndex="9" />
-        <Label styleClass="colon" text="%filamentLibrary.costGBPPerKG" GridPane.rowIndex="6" />
-      <Label styleClass="colon" text="%filamentLibrary.remainingOnReelM" GridPane.rowIndex="7" />
+        <Label text="%filamentLibrary.costGBPPerKG" GridPane.rowIndex="6">
+         <styleClass>
+            <String fx:value="colon" />
+            <String fx:value="preferenceControl" />
+         </styleClass></Label>
+      <Label text="%filamentLibrary.remainingOnReelM" GridPane.rowIndex="7">
+         <styleClass>
+            <String fx:value="colon" />
+            <String fx:value="preferenceControl" />
+         </styleClass></Label>
       <GridPane GridPane.columnSpan="2147483647" GridPane.rowIndex="8">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="140.0" />
@@ -80,13 +123,21 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-              <Label alignment="CENTER" styleClass="filamentLibTitle" text="%reelPanel.temperature" textAlignment="JUSTIFY" GridPane.columnSpan="2" GridPane.halignment="CENTER" />
+              <Label alignment="CENTER" text="%reelPanel.temperature" textAlignment="JUSTIFY" GridPane.columnSpan="2" GridPane.halignment="CENTER">
+               <styleClass>
+                  <String fx:value="filamentLibTitle" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
               <Label styleClass="colon" text="%sidePanel_settings.bedTemp" GridPane.rowIndex="1" />
               <Label styleClass="colon" text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="2" />
               <Label styleClass="colon" text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="3" />
               <Label styleClass="colon" text="%sidePanel_settings.nozzleTemp" GridPane.rowIndex="4" />
               <Label styleClass="colon" text="%sidePanel_settings.ambientTemp" GridPane.rowIndex="5" />
-              <Label alignment="CENTER" styleClass="filamentLibTitle" text="%genericFirstLetterCapitalised.Filament" textAlignment="JUSTIFY" GridPane.columnIndex="3" GridPane.columnSpan="2" GridPane.halignment="CENTER" />
+              <Label alignment="CENTER" text="%genericFirstLetterCapitalised.Filament" textAlignment="JUSTIFY" GridPane.columnIndex="3" GridPane.columnSpan="2" GridPane.halignment="CENTER">
+               <styleClass>
+                  <String fx:value="filamentLibTitle" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
             <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
                   <RestrictedNumberField fx:id="bedTemperature" maxLength="3" prefColumnCount="4">

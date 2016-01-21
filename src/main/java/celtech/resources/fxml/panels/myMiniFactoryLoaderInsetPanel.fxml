@@ -6,21 +6,20 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:id="container" style="-fx-background-color: black;" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    <children>
-        <TopMenuStrip />        
+<VBox fx:id="container" style="-fx-background-color: black;" styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+    <children>        
         <HBox styleClass="inset-panel" VBox.vgrow="ALWAYS">
             <children>
-                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="30.0" style="-fx-background-color: black;" />
                 <VBox fx:id="webContentContainer" minHeight="100.0" HBox.hgrow="ALWAYS" />
             </children>
         </HBox>
+      <VBox prefHeight="60.0" style="-fx-background-color: white;" VBox.vgrow="NEVER" />
         <BorderPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="90.0" styleClass="menubar">
             <right>
                 <HBox alignment="CENTER">
                     <children>
-                        <GraphicButtonWithLabel fx:id="backwardButton" fxmlFileName="backwardButton" onAction="#backwardPressed" labelText="%buttonText.back" />
-                        <GraphicButtonWithLabel fx:id="forwardButton" fxmlFileName="forwardButton" onAction="#forwardPressed" labelText="%buttonText.next" />
+                        <GraphicButtonWithLabel fx:id="backwardButton" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#backwardPressed" />
+                        <GraphicButtonWithLabel fx:id="forwardButton" fxmlFileName="forwardButton" labelText="%buttonText.next" onAction="#forwardPressed" />
                     </children>
                     <BorderPane.margin>
                         <Insets right="10.0" />
@@ -30,17 +29,17 @@
             <left>
                 <HBox alignment="CENTER" spacing="5">
                     <children>
-                        <GraphicButtonWithLabel fx:id="cancelButton" fxmlFileName="cancelButton" onAction="#cancelPressed" labelText="%buttonText.cancel"/>
+                        <GraphicButtonWithLabel fx:id="cancelButton" fxmlFileName="cancelButton" labelText="%buttonText.cancel" onAction="#cancelPressed" />
                     </children>
                     <BorderPane.margin>
-                        <Insets left="40.0" />
+                        <Insets left="10.0" />
                     </BorderPane.margin>
                 </HBox>
             </left>
             <center>
                 <HBox alignment="CENTER">
                     <children>
-                        <GraphicButtonWithLabel fx:id="addToProjectButton" fxmlFileName="addToProjectButton" onAction="#addToProjectPressed" labelText="%buttonText.addToProject"/>
+                        <GraphicButtonWithLabel fx:id="addToProjectButton" fxmlFileName="addToProjectButton" labelText="%buttonText.addToProject" onAction="#addToProjectPressed" />
                     </children>
                     <BorderPane.margin>
                         <Insets right="10.0" />

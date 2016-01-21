@@ -11,7 +11,7 @@
 <?import javafx.scene.text.*?>
 <?import org.controlsfx.control.textfield.*?>
 
-<VBox styleClass="blue-inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<VBox styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <VBox VBox.vgrow="ALWAYS">
             <children>
@@ -29,6 +29,9 @@
                             <padding>
                                 <Insets top="95.0" />
                             </padding>
+                     <HBox.margin>
+                        <Insets left="20.0" />
+                     </HBox.margin>
                         </VBox>
                     </children>
                <VBox.margin>
@@ -41,20 +44,23 @@
                             <children>
                                 <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
                             </children>
+                     <StackPane.margin>
+                        <Insets left="10.0" />
+                     </StackPane.margin>
                         </HBox>
                         <HBox fx:id="buttonBoxContainer" alignment="CENTER" pickOnBounds="false" prefHeight="90.0" BorderPane.alignment="CENTER">
                             <children>
                             </children>
+                     <StackPane.margin>
+                        <Insets />
+                     </StackPane.margin>
                         </HBox>
                     </children>
                 </StackPane>
             </children>
          <VBox.margin>
-            <Insets left="30.0" />
+            <Insets />
          </VBox.margin>
-         <padding>
-            <Insets top="60.0" />
-         </padding>
         </VBox>
     </children>
     <VBox.margin>
