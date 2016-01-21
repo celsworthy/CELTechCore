@@ -1,5 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;

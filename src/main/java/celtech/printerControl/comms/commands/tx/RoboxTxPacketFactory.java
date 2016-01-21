@@ -1,8 +1,7 @@
 package celtech.printerControl.comms.commands.tx;
 
-import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
-import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
-import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
+import celtech.comms.remote.TxPacketTypeEnum;
+import celtech.comms.remote.RoboxTxPacket;
 
 /**
  *
@@ -154,35 +153,37 @@ public class RoboxTxPacketFactory
         return returnVal;
     }
 
-    /**
-     *
-     * @param inputBytes
-     * @return
-     * @throws InvalidCommandByteException
-     * @throws UnableToGenerateRoboxPacketException
-     * @throws UnknownPacketTypeException
-     */
-    public static RoboxTxPacket createPacket(byte[] inputBytes) throws InvalidCommandByteException, UnableToGenerateRoboxPacketException, UnknownPacketTypeException
-    {
-        RoboxTxPacket returnVal = null;
-
-        if ((inputBytes[0] & commandByteMask) != commandByteMask)
-        {
-            throw new InvalidCommandByteException();
-        }
-
-        TxPacketTypeEnum packetType = TxPacketTypeEnum.getEnumForCommand(inputBytes[0]);
-
-        if (packetType != null)
-        {
-            returnVal = instantiatePacket(packetType);
-
-            if (returnVal != null)
-            {
-                returnVal.populatePacket(inputBytes);
-            }
-        }
-
-        return returnVal;
-    }
+//    /**
+//     *
+//     * @param remotePacket
+//     * @return
+//     * @throws InvalidCommandByteException
+//     * @throws UnableToGenerateRoboxPacketException
+//     * @throws UnknownPacketTypeException
+//     */
+//    public static RoboxTxPacket createPacket(RoboxTxPacketRemote remotePacket) throws InvalidCommandByteException, UnableToGenerateRoboxPacketException, UnknownPacketTypeException
+//    {
+//        RoboxTxPacket returnVal = null;
+//        
+//        byte[] messageData = remotePacket.getRawData();
+//
+//        if ((inputBytes[0] & commandByteMask) != commandByteMask)
+//        {
+//            throw new InvalidCommandByteException();
+//        }
+//
+//        TxPacketTypeEnum packetType = TxPacketTypeEnum.getEnumForCommand(inputBytes[0]);
+//
+//        if (packetType != null)
+//        {
+//            returnVal = instantiatePacket(packetType);
+//
+//            if (returnVal != null)
+//            {
+//                returnVal.populatePacket(inputBytes);
+//            }
+//        }
+//
+//        return returnVal;
+//    }
 }

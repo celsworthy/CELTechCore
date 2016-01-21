@@ -1,10 +1,12 @@
-package celtech.printerControl.comms;
+package celtech.printerControl.comms.remote;
 
+import celtech.printerControl.comms.CommandInterface;
+import celtech.printerControl.comms.PrinterStatusConsumer;
+import celtech.printerControl.comms.RemoteDetectedPrinter;
 import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
-import celtech.printerControl.comms.remote.RemoteClient;
+import celtech.comms.remote.RoboxRxPacket;
+import celtech.comms.remote.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
 
 /**

@@ -4,6 +4,8 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.comms.remote.TxPacketTypeEnum;
+import celtech.comms.remote.RoboxTxPacket;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Nozzle;
 import celtech.printerControl.model.NozzleHeater;
@@ -222,7 +224,7 @@ public class WriteHeadEEPROM extends RoboxTxPacket
 
         finalPayload.append(String.format("%02X", 192));
 
-        if (getMessageData() != null)
+        if (getMessagePayload() != null)
         {
             finalPayload.append(messagePayload);
         }

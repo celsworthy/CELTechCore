@@ -1,5 +1,6 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
 import java.nio.charset.Charset;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -59,13 +60,13 @@ public class FirmwareResponseTest
 
         assertEquals(inputString, instance.getFirmwareRevision());
         assertEquals(1234567f, instance.getFirmwareRevisionFloat(), 0.0);
-        assertEquals(inputString, instance.getMessageData());
+        assertEquals(inputString, instance.getMessagePayload());
         
         byte[] outputData = instance.toByteArray();
         
         assertArrayEquals(inputBytes, outputData);
         
-        System.out.println(instance.getMessageData());
+        System.out.println(instance.getMessagePayload());
     }
     
 }

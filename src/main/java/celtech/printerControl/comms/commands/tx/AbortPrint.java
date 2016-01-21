@@ -4,6 +4,9 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.comms.remote.TxPacketTypeEnum;
+import celtech.comms.remote.RoboxTxPacket;
+
 /**
  *
  * @author ianhudson

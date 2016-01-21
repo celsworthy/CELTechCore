@@ -15,9 +15,9 @@ import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
+import celtech.comms.remote.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.AbortPrint;
 import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
@@ -29,7 +29,7 @@ import celtech.printerControl.comms.commands.tx.ReadPrinterID;
 import celtech.printerControl.comms.commands.tx.ReadReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ReadReel1EEPROM;
 import celtech.printerControl.comms.commands.tx.ReportErrors;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.comms.remote.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.SendDataFileChunk;
 import celtech.printerControl.comms.commands.tx.SendDataFileEnd;
 import celtech.printerControl.comms.commands.tx.SendDataFileStart;
@@ -415,7 +415,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             GCodeDataResponse gcodeResponse = (GCodeDataResponse) RoboxRxPacketFactory.createPacket(
                     RxPacketTypeEnum.GCODE_RESPONSE);
 
-            String messageData = request.getMessageData().trim();
+            String messageData = request.getMessagePayload().trim();
             if (messageData.equalsIgnoreCase(defaultRoboxAttachCommand))
             {
                 gcodeResponse.setMessagePayload(
@@ -665,7 +665,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             response = (RoboxRxPacket) reelResponse;
         } else if (messageToWrite instanceof PausePrint)
         {
-            switch (messageToWrite.getMessageData())
+            switch (messageToWrite.getMessagePayload())
             {
                 case "0":
                     currentStatus.setPauseStatus(PauseStatus.NOT_PAUSED);
@@ -679,20 +679,20 @@ public class DummyPrinterCommandInterface extends CommandInterface
         } else if (messageToWrite instanceof SendPrintFileStart)
         {
             linesInCurrentPrintJob = 0;
-            printJobID = messageToWrite.getMessageData();
+            printJobID = messageToWrite.getMessagePayload();
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                     getExpectedResponse());
             steno.debug("Got start of print file - job " + printJobID);
         } else if (messageToWrite instanceof SendDataFileStart)
         {
             linesInCurrentPrintJob = 0;
-            printJobID = messageToWrite.getMessageData();
+            printJobID = messageToWrite.getMessagePayload();
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
                     getExpectedResponse());
             steno.debug("Got start of data file - job " + printJobID);
         } else if (messageToWrite instanceof SendDataFileChunk)
         {
-            String payload = messageToWrite.getMessageData();
+            String payload = messageToWrite.getMessagePayload();
             String onlyCommas = payload.replaceAll("[^\r]+", "");
             linesInCurrentPrintJob += onlyCommas.length();
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
@@ -700,7 +700,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             steno.debug("Got data file chunk");
         } else if (messageToWrite instanceof SendDataFileEnd)
         {
-            String payload = messageToWrite.getMessageData();
+            String payload = messageToWrite.getMessagePayload();
             String onlyCommas = payload.replaceAll("[^\r]+", "");
             linesInCurrentPrintJob += onlyCommas.length();
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().
@@ -708,7 +708,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
             steno.debug("Got end of data file");
         } else if (messageToWrite instanceof InitiatePrint)
         {
-            printJobID = messageToWrite.getMessageData();
+            printJobID = messageToWrite.getMessagePayload();
             steno.debug("Dummy printer asked to initiate print " + printJobID);
             currentStatus.setRunningPrintJobID(printJobID);
             response = RoboxRxPacketFactory.createPacket(messageToWrite.getPacketType().

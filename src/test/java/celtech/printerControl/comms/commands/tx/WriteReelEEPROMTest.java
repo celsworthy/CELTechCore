@@ -37,7 +37,7 @@ public class WriteReelEEPROMTest
                 reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
                 reelFeedRateMultiplier, reelRemainingFilament, friendlyName,
                 materialType, displayColour);
-        String bufferString = instance.messagePayload;
+        String bufferString = instance.getMessagePayload();
         assertEquals(192, bufferString.length());
         System.out.println(bufferString);
         assertEquals("ABCDEF          FF0000                        11      22      33      44      55      66      77      88TkFNRTE=                                A                                             99", bufferString);
@@ -65,7 +65,7 @@ public class WriteReelEEPROMTest
                 reelAmbientTemperature, reelFilamentDiameter, reelFilamentMultiplier,
                 reelFeedRateMultiplier, reelRemainingFilament, friendlyName,
                 materialType, displayColour);
-        String bufferString = instance.messagePayload;
+        String bufferString = instance.getMessagePayload();
         assertEquals(192, bufferString.length());
         System.out.println(bufferString);
         assertEquals("ABCABC          0000FF                        11      22      33      44      55      66      77      882LPZhNin2YU=                            C                                             99", bufferString);

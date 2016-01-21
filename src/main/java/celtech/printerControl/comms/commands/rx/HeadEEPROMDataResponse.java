@@ -1,5 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.NozzleHeater;

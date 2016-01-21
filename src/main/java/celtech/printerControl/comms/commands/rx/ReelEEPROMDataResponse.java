@@ -1,5 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.configuration.MaterialType;
 import celtech.printerControl.model.Reel;
 import javafx.scene.paint.Color;

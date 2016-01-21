@@ -1,5 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
+import celtech.comms.remote.RoboxRxPacket;
 import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;

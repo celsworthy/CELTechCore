@@ -7,10 +7,10 @@ import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrint
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.comms.remote.RxPacketTypeEnum;
+import celtech.comms.remote.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
 
 /**

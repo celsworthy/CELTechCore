@@ -1,5 +1,7 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
+import celtech.comms.remote.RoboxRxPacket;
 import java.util.ArrayList;
 import java.util.List;
 

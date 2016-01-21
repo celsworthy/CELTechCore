@@ -22,7 +22,7 @@ import celtech.printerControl.comms.commands.rx.ListFilesResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROM0DataResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.SendFile;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.events.ErrorConsumer;

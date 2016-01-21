@@ -1,6 +1,6 @@
 package celtech.printerControl.comms.events;
 
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.comms.remote.RoboxRxPacket;
 
 /**
  *

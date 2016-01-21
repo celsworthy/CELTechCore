@@ -1,5 +1,7 @@
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.comms.remote.TxPacketTypeEnum;
+import celtech.comms.remote.RoboxTxPacket;
 import celtech.configuration.MaterialType;
 import celtech.printerControl.comms.commands.ColourStringConverter;
 import celtech.printerControl.comms.commands.EnumStringConverter;
@@ -115,7 +117,7 @@ public class WriteReel1EEPROM extends RoboxTxPacket
 
         finalPayload.append(String.format("%02X", 192));
 
-        if (getMessageData() != null)
+        if (getMessagePayload() != null)
         {
             finalPayload.append(messagePayload);
         }

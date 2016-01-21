@@ -1,7 +1,7 @@
 package celtech.printerControl.comms.remote;
 
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.comms.remote.RoboxRxPacket;
+import celtech.comms.remote.RoboxTxPacket;
 
 /**
  *

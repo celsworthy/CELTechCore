@@ -3,21 +3,17 @@ package celtech.printerControl.comms.remote;
 import celtech.comms.remote.Configuration;
 import celtech.comms.remote.RoboxRxPacketRemote;
 import celtech.comms.remote.RoboxTxPacketRemote;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.RemoteDetectedPrinter;
 import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
 import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
 import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.comms.remote.RoboxTxPacket;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -33,6 +29,7 @@ public class RemoteClient implements LowLevelInterface
     private final String connectUrlString;
     private final String disconnectUrlString;
     private final String writeToPrinterUrlString;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public RemoteClient(RemoteDetectedPrinter remotePrinterHandle)
     {
@@ -61,14 +58,16 @@ public class RemoteClient implements LowLevelInterface
     public RoboxRxPacket writeToPrinter(String printerID, RoboxTxPacket messageToWrite)
     {
         RoboxRxPacket returnedPacket = null;
-        byte[] content = messageToWrite.toByteArray();
-        RoboxTxPacketRemote remoteTx = new RoboxTxPacketRemote(content);
-
-        RoboxRxPacketRemote returnedData = (RoboxRxPacketRemote) RemoteWebHelper.postData(writeToPrinterUrlString, remoteTx, RoboxRxPacketRemote.class);
 
         try
         {
+            String dataToOutput = mapper.writeValueAsString(messageToWrite);
+            RoboxRxPacketRemote returnedData = (RoboxRxPacketRemote) RemoteWebHelper.postData(writeToPrinterUrlString, dataToOutput, RoboxRxPacketRemote.class);
+
             returnedPacket = RoboxRxPacketFactory.createPacket(returnedData.getRawData());
+        } catch (IOException ex)
+        {
+
         } catch (InvalidCommandByteException | UnableToGenerateRoboxPacketException | UnknownPacketTypeException ex)
         {
             steno.error("Failed to process returned data from remote " + remotePrinterHandle);

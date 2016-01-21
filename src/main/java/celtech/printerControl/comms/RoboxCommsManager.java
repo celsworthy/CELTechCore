@@ -1,5 +1,6 @@
 package celtech.printerControl.comms;
 
+import celtech.printerControl.comms.remote.RoboxRemoteCommandInterface;
 import celtech.Lookup;
 import celtech.comms.RemoteDeviceDetector;
 import celtech.configuration.UserPreferences;

@@ -11,16 +11,16 @@ import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
 import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
 import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacket;
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
+import celtech.comms.remote.RxPacketTypeEnum;
 import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
 import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.ReadPrinterID;
 import celtech.printerControl.comms.commands.tx.ReadReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.ReportErrors;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
+import celtech.comms.remote.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
 import celtech.printerControl.comms.commands.tx.StatusRequest;
 import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
@@ -90,9 +90,9 @@ public class TestCommandInterface extends CommandInterface
             GCodeDataResponse gcodeResponse = (GCodeDataResponse) RoboxRxPacketFactory.createPacket(
                     RxPacketTypeEnum.GCODE_RESPONSE);
 
-            if (request.getMessageData().startsWith(attachHeadCommand))
+            if (request.getMessagePayload().startsWith(attachHeadCommand))
             {
-                String headName = request.getMessageData().replaceAll(attachHeadCommand, "");
+                String headName = request.getMessagePayload().replaceAll(attachHeadCommand, "");
                 HeadFile headData = HeadContainer.getHeadByID(headName);
                 if (headData != null)
                 {
@@ -104,12 +104,12 @@ public class TestCommandInterface extends CommandInterface
                 {
                     gcodeResponse.setMessagePayload("Didn't recognise head name - " + headName);
                 }
-            } else if (request.getMessageData().startsWith(detachHeadCommand))
+            } else if (request.getMessagePayload().startsWith(detachHeadCommand))
             {
                 currentStatus.setHeadEEPROMState(EEPROMState.NOT_PRESENT);
-            } else if (request.getMessageData().startsWith(attachReelCommand))
+            } else if (request.getMessagePayload().startsWith(attachReelCommand))
             {
-                String filamentName = request.getMessageData().replaceAll(attachReelCommand, "");
+                String filamentName = request.getMessagePayload().replaceAll(attachReelCommand, "");
                 Filament filament = Lookup.getFilamentContainer().getFilamentByID(filamentName);
                 if (filament != null)
                 {
@@ -123,7 +123,7 @@ public class TestCommandInterface extends CommandInterface
                     gcodeResponse.setMessagePayload("Didn't recognise filament name - "
                             + filamentName);
                 }
-            } else if (request.getMessageData().startsWith(detachReelCommand))
+            } else if (request.getMessagePayload().startsWith(detachReelCommand))
             {
                 currentStatus.setReel0EEPROMState(EEPROMState.NOT_PRESENT);
             }

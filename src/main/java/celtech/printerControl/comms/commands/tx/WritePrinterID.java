@@ -4,6 +4,8 @@
  */
 package celtech.printerControl.comms.commands.tx;
 
+import celtech.comms.remote.TxPacketTypeEnum;
+import celtech.comms.remote.RoboxTxPacket;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.comms.commands.PrinterIDDataStructure;
 import celtech.printerControl.comms.commands.StringToBase64Encoder;

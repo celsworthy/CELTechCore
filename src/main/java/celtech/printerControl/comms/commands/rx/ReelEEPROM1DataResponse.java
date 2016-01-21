@@ -1,5 +1,6 @@
 package celtech.printerControl.comms.commands.rx;
 
+import celtech.comms.remote.RxPacketTypeEnum;
 import celtech.configuration.MaterialType;
 import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
 import celtech.printerControl.comms.commands.EnumStringConverter;

@@ -1,7 +1,7 @@
 package celtech.printerControl.comms.remote;
 
+import celtech.comms.remote.RoboxRxPacket;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.comms.DeviceDetector;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -25,7 +25,7 @@ public class RemoteWebHelper
         postData(urlString, null, null);
     }
 
-    public static Object postData(String urlString, Object content, Class<?> expectedResponseClass)
+    public static Object postData(String urlString, String content, Class<?> expectedResponseClass)
     {
         Object returnvalue = null;
         try
@@ -66,6 +66,6 @@ public class RemoteWebHelper
             steno.error("Error when attempting to connect to " + urlString + " : " + ex.getMessage());
         }
 
-        return returnvalue;
+        return (RoboxRxPacket)returnvalue;
     }
 }
