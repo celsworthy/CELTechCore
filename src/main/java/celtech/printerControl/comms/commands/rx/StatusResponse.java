@@ -1283,30 +1283,30 @@ public class StatusResponse extends RoboxRxPacket
                 steno.error("Couldn't parse filament multiplier - " + DfilamentMultiplierString);
             }
 
-            String feedRateEMultiplierString = new String(byteData, byteOffset,
+            String feedRateDMultiplierString = new String(byteData, byteOffset,
                     decimalFloatFormatBytes, charsetToUse);
             byteOffset += decimalFloatFormatBytes;
             try
             {
-                this.feedRateEMultiplier = decimalFloatFormatter.parse(feedRateEMultiplierString).
+                this.feedRateDMultiplier = decimalFloatFormatter.parse(feedRateDMultiplierString).
                         floatValue();
             } catch (ParseException ex)
             {
-                steno.error("Couldn't parse feed rate multiplier - " + feedRateEMultiplierString);
+                steno.error("Couldn't parse D feed rate multiplier - " + feedRateDMultiplierString);
             }
 
             if (requiredFirmwareVersion >= 740)
             {
-                String feedRateDMultiplierString = new String(byteData, byteOffset,
+                String feedRateEMultiplierString = new String(byteData, byteOffset,
                         decimalFloatFormatBytes, charsetToUse);
                 byteOffset += decimalFloatFormatBytes;
                 try
                 {
-                    this.feedRateDMultiplier = decimalFloatFormatter.parse(feedRateDMultiplierString).
+                    this.feedRateEMultiplier = decimalFloatFormatter.parse(feedRateEMultiplierString).
                             floatValue();
                 } catch (ParseException ex)
                 {
-                    steno.error("Couldn't parse D feed rate multiplier - " + feedRateDMultiplierString);
+                    steno.error("Couldn't parse E feed rate multiplier - " + feedRateEMultiplierString);
                 }
             }
 

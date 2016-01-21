@@ -161,14 +161,14 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 if (!speedMultiplier2Slider.isValueChanging() && !inhibitFeedrate2)
                 {
-//                    try
-//                    {
-//                        steno.info("Writing feedrate D");
-//                        currentPrinter.changeDFeedRateMultiplier(now.doubleValue() / 100.0);
-//                    } catch (PrinterException ex)
-//                    {
-//                        steno.error("Error setting feed rate multiplier - " + ex.getMessage());
-//                    }
+                    try
+                    {
+                        steno.info("Writing feedrate D");
+                        currentPrinter.changeDFeedRateMultiplier(now.doubleValue() / 100.0);
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error setting feed rate multiplier - " + ex.getMessage());
+                    }
                 }
             };
 
