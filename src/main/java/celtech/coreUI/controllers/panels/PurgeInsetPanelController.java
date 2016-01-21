@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.Filament;
+import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -86,13 +87,20 @@ public class PurgeInsetPanelController implements Initializable
     private final ChangeListener<Number> purgeTempEntryListener0
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                transitionManager.setPurgeTemperature(0, newValue.intValue());
+                if (printer.headProperty().get() != null
+                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    transitionManager.setPurgeTemperature(1, newValue.intValue());
+                } else
+                {
+                    transitionManager.setPurgeTemperature(0, newValue.intValue());
+                }
             };
 
     private final ChangeListener<Number> purgeTempEntryListener1
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                transitionManager.setPurgeTemperature(1, newValue.intValue());
+                transitionManager.setPurgeTemperature(0, newValue.intValue());
             };
 
     @FXML
@@ -488,12 +496,20 @@ public class PurgeInsetPanelController implements Initializable
     {
         currentMaterial0 = printer.effectiveFilamentsProperty().get(0);
 
-        if (currentMaterial0 != null)
+        if (currentMaterial0 != null
+                && currentMaterial0 != FilamentContainer.UNKNOWN_FILAMENT)
         {
             selectMaterial0(currentMaterial0);
         } else
         {
-            transitionManager.setPurgeTemperature(0, 0);
+            if (printer.headProperty().get() != null
+                    && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                transitionManager.setPurgeTemperature(1, 0);
+            } else
+            {
+                transitionManager.setPurgeTemperature(0, 0);
+            }
             purgeTemperature0.textProperty().set("0");
         }
     }
@@ -512,12 +528,13 @@ public class PurgeInsetPanelController implements Initializable
 
         currentMaterial1 = printer.effectiveFilamentsProperty().get(1);
 
-        if (currentMaterial1 != null)
+        if (currentMaterial1 != null
+                && currentMaterial1 != FilamentContainer.UNKNOWN_FILAMENT)
         {
             selectMaterial1(currentMaterial1);
         } else
         {
-            transitionManager.setPurgeTemperature(1, 0);
+            transitionManager.setPurgeTemperature(0, 0);
             purgeTemperature1.textProperty().set("0");
         }
     }
@@ -549,7 +566,8 @@ public class PurgeInsetPanelController implements Initializable
                     .and(extruder0NotLoaded));
 
             cantPrintFilamentNotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-                    .and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull()));
+                    .and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull()
+                            .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT))));
 
             BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen).or(extruder0NotLoaded);
             button.disableProperty().bind(isDisabled);
@@ -588,20 +606,24 @@ public class PurgeInsetPanelController implements Initializable
             if (button == proceedButton)
             {
                 cantPrintNoFilament0NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-                        .and(purgingNozzleHeater0.and(extruder0NotLoaded)));
+                        .and(purgingNozzleHeater1.and(extruder0NotLoaded)));
 
                 cantPrintNoFilament1NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-                        .and(purgingNozzleHeater1.and(extruder1NotLoaded)));
+                        .and(purgingNozzleHeater0.and(extruder1NotLoaded)));
 
                 cantPrintFilament0NotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-                        .and(purgingNozzleHeater0.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())));
+                        .and(purgingNozzleHeater1.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull()
+                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT)))));
 
                 cantPrintFilament1NotSpecifiedNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
-                        .and(purgingNozzleHeater1.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())));
+                        .and(purgingNozzleHeater0.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull()
+                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT)))));
 
                 BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen)
-                        .or(purgingNozzleHeater0.and(extruder0NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())))
-                        .or(purgingNozzleHeater1.and(extruder1NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())))
+                        .or(purgingNozzleHeater1.and(extruder0NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())
+                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
+                        .or(purgingNozzleHeater0.and(extruder1NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())
+                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
                         .or(purgingNozzleHeater0.not().and(purgingNozzleHeater1.not()));
                 button.disableProperty().bind(isDisabled);
             }
@@ -671,11 +693,9 @@ public class PurgeInsetPanelController implements Initializable
 
             currentMaterialTemperature0.textProperty().unbind();
             lastMaterialTemperature0.textProperty().unbind();
-            currentMaterialTemperature0.textProperty().bind(
-                    transitionManager.getCurrentMaterialTemperature(0).asString());
 
-            lastMaterialTemperature0.textProperty().bind(
-                    transitionManager.getLastMaterialTemperature(0).asString());
+            currentMaterialTemperature1.textProperty().unbind();
+            lastMaterialTemperature1.textProperty().unbind();
 
             purgeMaterial0.onActionProperty().set(
                     (EventHandler<ActionEvent>) (ActionEvent event) ->
@@ -703,15 +723,26 @@ public class PurgeInsetPanelController implements Initializable
 
             if (purgeTwoNozzleHeaters.get())
             {
-
                 currentMaterialTemperature1.textProperty().unbind();
                 lastMaterialTemperature1.textProperty().unbind();
                 currentMaterialTemperature1.textProperty().bind(
-                        transitionManager.getCurrentMaterialTemperature(1).asString());
+                        transitionManager.getCurrentMaterialTemperature(0).asString());
 
                 lastMaterialTemperature1.textProperty().bind(
-                        transitionManager.getLastMaterialTemperature(1).asString());
+                        transitionManager.getLastMaterialTemperature(0).asString());
 
+                currentMaterialTemperature0.textProperty().bind(
+                        transitionManager.getCurrentMaterialTemperature(1).asString());
+
+                lastMaterialTemperature0.textProperty().bind(
+                        transitionManager.getLastMaterialTemperature(1).asString());
+            } else
+            {
+                currentMaterialTemperature0.textProperty().bind(
+                        transitionManager.getCurrentMaterialTemperature(0).asString());
+
+                lastMaterialTemperature0.textProperty().bind(
+                        transitionManager.getLastMaterialTemperature(0).asString());
             }
 
             transitionManager.stateGUITProperty().addListener(new ChangeListener()
@@ -752,14 +783,22 @@ public class PurgeInsetPanelController implements Initializable
         {
             try
             {
-                transitionManager.setPurgeFilament(0, filament);
+                if (printer.headProperty().get() != null
+                        && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    transitionManager.setPurgeFilament(1, filament);
+                    purgeTemperature0.setText(transitionManager.getPurgeTemperature(1).asString().get());
+                } else
+                {
+                    transitionManager.setPurgeFilament(0, filament);
+                    purgeTemperature0.setText(transitionManager.getPurgeTemperature(0).asString().get());
+                }
             } catch (PrintException ex)
             {
                 steno.exception("Error setting purge filament", ex);
             }
             textCurrentMaterial0.setText(currentMaterial0.getLongFriendlyName() + " "
                     + currentMaterial0.getMaterial().getFriendlyName());
-            purgeTemperature0.setText(transitionManager.getPurgeTemperature(0).asString().get());
         }
     }
 
@@ -774,7 +813,7 @@ public class PurgeInsetPanelController implements Initializable
         {
             try
             {
-                transitionManager.setPurgeFilament(1, filament);
+                transitionManager.setPurgeFilament(0, filament);
             } catch (PrintException ex)
             {
                 steno.exception("Error setting purge filament", ex);
@@ -787,7 +826,7 @@ public class PurgeInsetPanelController implements Initializable
             {
                 textCurrentMaterial1.setText(currentMaterial1.getLongFriendlyName());
             }
-            purgeTemperature1.setText(transitionManager.getPurgeTemperature(1).asString().get());
+            purgeTemperature1.setText(transitionManager.getPurgeTemperature(0).asString().get());
         }
     }
 

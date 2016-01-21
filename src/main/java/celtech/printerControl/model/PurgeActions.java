@@ -330,7 +330,7 @@ public class PurgeActions extends StateTransitionActions
     public void setPurgeFilament(int nozzleHeaterNumber, Filament filament) throws PrintException
     {
         purgeFilament.set(nozzleHeaterNumber, filament);
-        updatePurgeTemperature(nozzleHeaterNumber);
+        updatePurgeTemperature(nozzleHeaterNumber, filament);
     }
 
     void setPurgeNozzleHeater0(boolean selected)
@@ -353,14 +353,14 @@ public class PurgeActions extends StateTransitionActions
         return purgeNozzleHeater1;
     }
 
-    private void updatePurgeTemperature(int nozzleHeaterNumber) throws PrintException
+    private void updatePurgeTemperature(int nozzleHeaterNumber, Filament filament) throws PrintException
     {
         // The nozzle should be heated to a temperature halfway between the last
         // temperature stored on the head and the current required temperature stored
         // on the reel
         if (purgeFilament.get(nozzleHeaterNumber) != null)
         {
-            nozzleFilamentTemperature.set(nozzleHeaterNumber, (float) purgeFilament.get(nozzleHeaterNumber).getNozzleTemperature());
+            nozzleFilamentTemperature.set(nozzleHeaterNumber, (float)filament.getNozzleTemperature());
         } else
         {
             throw new PrintException("The purge filament must be set");

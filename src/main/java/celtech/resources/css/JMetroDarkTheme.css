@@ -1676,7 +1676,6 @@ modal-dialogue{
 
 .inset-panel{
     -fx-background-color: light_grey;
-    -fx-padding: 0 0 0 25;
 }
 
 .inset-panel-with-menu{
@@ -2472,7 +2471,7 @@ modal-dialogue{
 .inset-panel-background-redux
 {
     -fx-background-color: black;
-    -fx-padding: 60 0 0 30;
+    -fx-padding: 60 0 0 0;
     -fx-min-width: 10px;
     -fx-min-height: 10px;
 }

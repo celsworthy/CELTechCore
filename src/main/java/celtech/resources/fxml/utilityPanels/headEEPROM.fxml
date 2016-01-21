@@ -8,9 +8,9 @@
 
 <VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="30.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GridPane fx:id="headEEPROMControls" maxWidth="400.0" prefWidth="400.0">
+        <GridPane fx:id="headEEPROMControls" maxWidth="400.0" prefWidth="400.0" vgap="2.0">
             <columnConstraints>
-                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints />
@@ -27,36 +27,44 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <RestrictedTextField fx:id="headType" disable="true" GridPane.columnIndex="1" GridPane.columnSpan="2" />
-                <RestrictedTextField fx:id="headTypeCode" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RestrictedTextField id="uniqueID" fx:id="headUniqueID" disable="true" forceUpperCase="true" maxLength="23" prefHeight="25.0" restrict="A-Z0-9" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-                <RestrictedTextField fx:id="headHourCounter" disable="true" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <RestrictedTextField fx:id="headMaxTemperature" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                <RestrictedTextField fx:id="lastFilamentTemperature0" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="6">
+                <RestrictedTextField fx:id="headType" disable="true" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.columnSpan="2" />
+                <RestrictedTextField fx:id="headTypeCode" disable="true" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <RestrictedTextField id="uniqueID" fx:id="headUniqueID" disable="true" forceUpperCase="true" maxLength="23" prefHeight="25.0" restrict="A-Z0-9" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                <RestrictedTextField fx:id="headHourCounter" disable="true" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <RestrictedTextField fx:id="headMaxTemperature" disable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <RestrictedTextField fx:id="lastFilamentTemperature0" disable="true" editable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="6">
                     <GridPane.margin>
                         <Insets />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                   
-                <Label text="%headPanel.headType" GridPane.halignment="LEFT" />
-                <Label text="%headPanel.uniqueId" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
-                <Label text="%headPanel.hourCounter" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
-                <Label text="%headPanel.maxTemp" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
-                <Label text="%headPanel.lastFilamentTemperature" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
-                <Label text="%headPanel.thermBeta" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
-                <Label text="%headPanel.thermTCal" GridPane.halignment="LEFT" GridPane.rowIndex="8" />
-                <RestrictedTextField fx:id="lastFilamentTemperature1" disable="true" editable="true" maxLength="8" restrict="0-9." GridPane.columnIndex="2" GridPane.rowIndex="6">
+                <Label styleClass="preferenceControl" text="%headPanel.headType" GridPane.halignment="LEFT" />
+                <Label styleClass="preferenceControl" text="%headPanel.uniqueId" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
+                <Label styleClass="preferenceControl" text="%headPanel.hourCounter" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
+                <Label styleClass="preferenceControl" text="%headPanel.maxTemp" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
+                <Label styleClass="preferenceControl" text="%headPanel.lastFilamentTemperature" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
+                <Label styleClass="preferenceControl" text="%headPanel.thermBeta" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
+                <Label styleClass="preferenceControl" text="%headPanel.thermTCal" GridPane.halignment="LEFT" GridPane.rowIndex="8" />
+                <RestrictedTextField fx:id="lastFilamentTemperature1" disable="true" editable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="6">
                     <GridPane.margin>
                         <Insets left="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <Label styleClass="filamentLibTitle" text="Heater 1" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
-                <Label styleClass="filamentLibTitle" text="Heater 2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                <Label text="Heater 1" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4">
+               <styleClass>
+                  <String fx:value="filamentLibTitle" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
+                <Label text="Heater 2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="4">
+               <styleClass>
+                  <String fx:value="filamentLibTitle" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
             </children>
         </GridPane>
-        <GridPane fx:id="headEEPROMOffsets" styleClass="borderFrame">
+        <GridPane fx:id="headEEPROMOffsets" styleClass="borderFrame" vgap="2.0">
             <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -71,38 +79,57 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label alignment="CENTER" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" />
+                <Label alignment="CENTER" styleClass="preferenceControl" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" />
 
-                <Label text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" />
-                <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <Label styleClass="preferenceControl" text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" />
+                <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="nozzle1YOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <RestrictedTextField fx:id="nozzle1YOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="nozzle1ZOverrun" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <RestrictedTextField fx:id="nozzle2ZOverrun" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <RestrictedTextField fx:id="nozzle1ZOverrun" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <RestrictedTextField fx:id="nozzle2ZOverrun" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" restrict="0-9.\-" GridPane.columnIndex="2" GridPane.rowIndex="4">
+                <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="4">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <Label styleClass="colon" text=" X" GridPane.halignment="LEFT" GridPane.rowIndex="1" />
-                <Label styleClass="colon" text=" Y" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
-                <Label styleClass="colon" text=" Z" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
-                <Label styleClass="colon" text=" B" GridPane.halignment="LEFT" GridPane.rowIndex="4" />
+                <Label text=" X" GridPane.halignment="LEFT" GridPane.rowIndex="1">
+               <styleClass>
+                  <String fx:value="colon" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
+                <Label text=" Y" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+               <styleClass>
+                  <String fx:value="colon" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
+                <Label text=" Z" GridPane.halignment="LEFT" GridPane.rowIndex="3">
+               <styleClass>
+                  <String fx:value="colon" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
+                <Label text=" B" GridPane.halignment="LEFT" GridPane.rowIndex="4">
+               <styleClass>
+                  <String fx:value="colon" />
+                  <String fx:value="preferenceControl" />
+               </styleClass></Label>
             </children>
+         <padding>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </padding>
         </GridPane>
     </children>
     <styleClass>
