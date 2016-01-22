@@ -1,10 +1,10 @@
 package celtech.services.firmware;
 
 import celtech.Lookup;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.exceptions.SDCardErrorException;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.exceptions.SDCardErrorException;
 import celtech.printerControl.model.Printer;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;

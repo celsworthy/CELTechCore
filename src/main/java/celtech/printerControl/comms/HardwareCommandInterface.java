@@ -1,16 +1,16 @@
 package celtech.printerControl.comms;
 
 import celtech.printerControl.comms.remote.LowLevelInterfaceException;
-import celtech.printerControl.comms.commands.exceptions.ConnectionLostException;
-import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
-import celtech.printerControl.comms.commands.exceptions.InvalidResponseFromPrinterException;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
-import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
-import celtech.comms.remote.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.comms.remote.RxPacketTypeEnum;
-import celtech.comms.remote.RoboxTxPacket;
+import celtech.comms.remote.exceptions.ConnectionLostException;
+import celtech.comms.remote.exceptions.InvalidCommandByteException;
+import celtech.comms.remote.exceptions.InvalidResponseFromPrinterException;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.exceptions.UnableToGenerateRoboxPacketException;
+import celtech.comms.remote.exceptions.UnknownPacketTypeException;
+import celtech.comms.remote.rx.RoboxRxPacket;
+import celtech.comms.remote.rx.RoboxRxPacketFactory;
+import celtech.comms.remote.rx.RxPacketTypeEnum;
+import celtech.comms.remote.tx.RoboxTxPacket;
 import celtech.printerControl.model.Printer;
 
 /**

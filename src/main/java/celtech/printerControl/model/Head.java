@@ -1,13 +1,17 @@
 package celtech.printerControl.model;
 
+
 import celtech.Lookup;
+import celtech.comms.remote.model.RepairResult;
+import celtech.comms.remote.model.RepairableComponent;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.utils.Math.MathUtils;
-import celtech.utils.SystemUtils;
+import celtech.comms.remote.rx.HeadEEPROMDataResponse;
+import celtech.printerControl.model.Nozzle;
+import celtech.roboxbase.utils.Math.MathUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;

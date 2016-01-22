@@ -1,43 +1,43 @@
 package celtech.printerControl.comms;
 
 import celtech.Lookup;
-import celtech.configuration.EEPROMState;
+import celtech.comms.remote.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.HeaterMode;
-import celtech.configuration.PauseStatus;
+import celtech.comms.remote.HeaterMode;
+import celtech.comms.remote.PauseStatus;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
-import celtech.printerControl.comms.commands.rx.FirmwareResponse;
-import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
-import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.comms.remote.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.comms.remote.RxPacketTypeEnum;
-import celtech.printerControl.comms.commands.rx.StatusResponse;
-import celtech.printerControl.comms.commands.tx.AbortPrint;
-import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.InitiatePrint;
-import celtech.printerControl.comms.commands.tx.PausePrint;
-import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
-import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.ReadPrinterID;
-import celtech.printerControl.comms.commands.tx.ReadReel0EEPROM;
-import celtech.printerControl.comms.commands.tx.ReadReel1EEPROM;
-import celtech.printerControl.comms.commands.tx.ReportErrors;
-import celtech.comms.remote.RoboxTxPacket;
-import celtech.printerControl.comms.commands.tx.SendDataFileChunk;
-import celtech.printerControl.comms.commands.tx.SendDataFileEnd;
-import celtech.printerControl.comms.commands.tx.SendDataFileStart;
-import celtech.printerControl.comms.commands.tx.SendGCodeRequest;
-import celtech.printerControl.comms.commands.tx.SendPrintFileStart;
-import celtech.printerControl.comms.commands.tx.SendResetErrors;
-import celtech.printerControl.comms.commands.tx.StatusRequest;
-import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.rx.AckResponse;
+import celtech.comms.remote.rx.FirmwareError;
+import celtech.comms.remote.rx.FirmwareResponse;
+import celtech.comms.remote.rx.GCodeDataResponse;
+import celtech.comms.remote.rx.HeadEEPROMDataResponse;
+import celtech.comms.remote.rx.PrinterIDResponse;
+import celtech.comms.remote.rx.ReelEEPROMDataResponse;
+import celtech.comms.remote.rx.RoboxRxPacket;
+import celtech.comms.remote.rx.RoboxRxPacketFactory;
+import celtech.comms.remote.rx.RxPacketTypeEnum;
+import celtech.comms.remote.rx.StatusResponse;
+import celtech.comms.remote.tx.AbortPrint;
+import celtech.comms.remote.tx.FormatHeadEEPROM;
+import celtech.comms.remote.tx.InitiatePrint;
+import celtech.comms.remote.tx.PausePrint;
+import celtech.comms.remote.tx.QueryFirmwareVersion;
+import celtech.comms.remote.tx.ReadHeadEEPROM;
+import celtech.comms.remote.tx.ReadPrinterID;
+import celtech.comms.remote.tx.ReadReel0EEPROM;
+import celtech.comms.remote.tx.ReadReel1EEPROM;
+import celtech.comms.remote.tx.ReportErrors;
+import celtech.comms.remote.tx.RoboxTxPacket;
+import celtech.comms.remote.tx.SendDataFileChunk;
+import celtech.comms.remote.tx.SendDataFileEnd;
+import celtech.comms.remote.tx.SendDataFileStart;
+import celtech.comms.remote.tx.SendGCodeRequest;
+import celtech.comms.remote.tx.SendPrintFileStart;
+import celtech.comms.remote.tx.SendResetErrors;
+import celtech.comms.remote.tx.StatusRequest;
+import celtech.comms.remote.tx.WriteHeadEEPROM;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import javafx.scene.paint.Color;
@@ -431,7 +431,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 attachHead("RBX01-DM");
                 attachReel("RBX-ABS-RD537", 0);
 
-            }else if (messageData.equalsIgnoreCase(defaultRoboxAttachCommand3))
+            } else if (messageData.equalsIgnoreCase(defaultRoboxAttachCommand3))
             {
                 gcodeResponse.setMessagePayload(
                         "Adding dual material head, 2 extruders loaded with red and black ABS to dummy printer");
@@ -634,7 +634,48 @@ public class DummyPrinterCommandInterface extends CommandInterface
             HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) RoboxRxPacketFactory.
                     createPacket(RxPacketTypeEnum.HEAD_EEPROM_DATA);
 
-            headResponse.updateContents(attachedHead);
+            String filamentID1 = "";
+            float lastFilamentTemp1 = 0;
+
+            if (attachedHead.getNozzleHeaters().size() > 1)
+            {
+                filamentID1 = attachedHead.getNozzleHeaters().get(1).filamentIDProperty().get();
+                lastFilamentTemp1 = attachedHead.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get();
+            }
+
+            float nozzle1XOffset = 0;
+            float nozzle1YOffset = 0;
+            float nozzle1ZOffset = 0;
+            float nozzle1BOffset = 0;
+
+            if (attachedHead.getNozzles().size() > 1)
+            {
+                nozzle1XOffset = attachedHead.getNozzles().get(1).xOffsetProperty().get();
+                nozzle1YOffset = attachedHead.getNozzles().get(1).yOffsetProperty().get();
+                nozzle1ZOffset = attachedHead.getNozzles().get(1).zOffsetProperty().get();
+                nozzle1BOffset = attachedHead.getNozzles().get(1).bOffsetProperty().get();
+            }
+
+            headResponse.updateContents(attachedHead.typeCodeProperty().get(),
+                    attachedHead.uniqueIDProperty().get(),
+                    attachedHead.getNozzleHeaters().size(),
+                    attachedHead.getNozzleHeaters().get(0).maximumTemperatureProperty().get(),
+                    attachedHead.getNozzleHeaters().get(0).betaProperty().get(),
+                    attachedHead.getNozzleHeaters().get(0).tCalProperty().get(),
+                    attachedHead.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get(),
+                    attachedHead.getNozzleHeaters().get(0).filamentIDProperty().get(),
+                    lastFilamentTemp1,
+                    filamentID1,
+                    attachedHead.headHoursProperty().get(),
+                    attachedHead.getNozzles().size(),
+                    attachedHead.getNozzles().get(0).xOffsetProperty().get(),
+                    attachedHead.getNozzles().get(0).yOffsetProperty().get(),
+                    attachedHead.getNozzles().get(0).zOffsetProperty().get(),
+                    attachedHead.getNozzles().get(0).bOffsetProperty().get(),
+                    nozzle1XOffset,
+                    nozzle1YOffset,
+                    nozzle1ZOffset,
+                    nozzle1BOffset);
             response = (RoboxRxPacket) headResponse;
         } else if (messageToWrite instanceof WriteHeadEEPROM)
         {
@@ -653,14 +694,40 @@ public class DummyPrinterCommandInterface extends CommandInterface
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.
                     createPacket(RxPacketTypeEnum.REEL_0_EEPROM_DATA);
 
-            reelResponse.updateContents(attachedReels[0]);
+            reelResponse.updateContents(
+                    attachedReels[0].filamentIDProperty().get(),
+                    attachedReels[0].firstLayerNozzleTemperatureProperty().get(),
+                    attachedReels[0].nozzleTemperatureProperty().get(),
+                    attachedReels[0].firstLayerBedTemperatureProperty().get(),
+                    attachedReels[0].bedTemperatureProperty().get(),
+                    attachedReels[0].ambientTemperatureProperty().get(),
+                    attachedReels[0].diameterProperty().get(),
+                    attachedReels[0].filamentMultiplierProperty().get(),
+                    attachedReels[0].feedRateMultiplierProperty().get(),
+                    attachedReels[0].remainingFilamentProperty().get(),
+                    attachedReels[0].materialProperty().get(),
+                    attachedReels[0].displayColourProperty().get(),
+                    attachedReels[0].friendlyFilamentNameProperty().get());
             response = (RoboxRxPacket) reelResponse;
         } else if (messageToWrite instanceof ReadReel1EEPROM)
         {
             ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) RoboxRxPacketFactory.
                     createPacket(RxPacketTypeEnum.REEL_1_EEPROM_DATA);
 
-            reelResponse.updateContents(attachedReels[1]);
+            reelResponse.updateContents(
+                    attachedReels[1].filamentIDProperty().get(),
+                    attachedReels[1].firstLayerNozzleTemperatureProperty().get(),
+                    attachedReels[1].nozzleTemperatureProperty().get(),
+                    attachedReels[1].firstLayerBedTemperatureProperty().get(),
+                    attachedReels[1].bedTemperatureProperty().get(),
+                    attachedReels[1].ambientTemperatureProperty().get(),
+                    attachedReels[1].diameterProperty().get(),
+                    attachedReels[1].filamentMultiplierProperty().get(),
+                    attachedReels[1].feedRateMultiplierProperty().get(),
+                    attachedReels[1].remainingFilamentProperty().get(),
+                    attachedReels[1].materialProperty().get(),
+                    attachedReels[1].displayColourProperty().get(),
+                    attachedReels[1].friendlyFilamentNameProperty().get());
             reelResponse.setReelNumber(1);
             response = (RoboxRxPacket) reelResponse;
         } else if (messageToWrite instanceof PausePrint)

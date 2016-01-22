@@ -3,8 +3,8 @@
  */
 package celtech.utils.threed;
 
-import celtech.utils.Math.MathUtils;
-import static celtech.utils.Math.MathUtils.EQUAL;
+import celtech.roboxbase.utils.Math.MathUtils;
+import static celtech.roboxbase.utils.Math.MathUtils.EQUAL;
 import static celtech.utils.threed.MeshCutter2.makePoint3D;
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,6 +1,6 @@
 package celtech.services.firmware;
 
-import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.comms.remote.rx.FirmwareResponse;
 
 /**
  *

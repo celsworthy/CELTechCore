@@ -6,8 +6,8 @@
 package celtech.coreUI.visualisation;
 
 import celtech.configuration.PrintBed;
-import celtech.utils.Math.MathUtils;
-import celtech.utils.Math.PolarCoordinate;
+import celtech.roboxbase.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.PolarCoordinate;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleDoubleProperty;

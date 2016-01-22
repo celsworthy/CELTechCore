@@ -3,7 +3,7 @@ package celtech.appManager;
 import celtech.appManager.PurgeResponse;
 import celtech.appManager.SystemNotificationManager;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
+import celtech.comms.remote.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;

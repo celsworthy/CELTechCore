@@ -1,8 +1,8 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.HeaterMode;
-import celtech.configuration.WhyAreWeWaitingState;
+import celtech.comms.remote.HeaterMode;
+import celtech.comms.remote.WhyAreWeWaitingState;
 import java.util.ArrayList;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;

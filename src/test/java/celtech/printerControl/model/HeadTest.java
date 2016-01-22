@@ -5,8 +5,8 @@ import celtech.printerControl.comms.DetectedDevice;
 import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.DummyPrinterCommandInterface;
 import celtech.printerControl.comms.PrinterStatusConsumer;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.rx.HeadEEPROMDataResponse;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

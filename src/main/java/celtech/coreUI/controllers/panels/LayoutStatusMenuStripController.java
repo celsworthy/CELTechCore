@@ -12,7 +12,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.configuration.Filament;
-import celtech.configuration.PrinterColourMap;
+import celtech.roboxbase.PrinterColourMap;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.AmbientLEDState;

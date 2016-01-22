@@ -8,7 +8,7 @@ import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.comms.remote.rx.FirmwareResponse;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.printing.GCodePrintResult;

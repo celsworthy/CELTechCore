@@ -7,13 +7,15 @@ import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.model.Printer;
 import celtech.utils.PrinterUtils;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.utils.SystemUtils;
+import static celtech.roboxbase.utils.SystemUtils.countLinesInFile;
 import celtech.utils.tasks.Cancellable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -151,10 +153,10 @@ public class GCodeMacros
         {
             nozzleUse = NozzleUseIndicator.DONT_CARE;
             specifiedHeadType = HeadContainer.defaultHeadID;
-        }else
+        } else
         {
             specifiedHeadType = headTypeCode;
-            
+
             if (!requireNozzle0 && !requireNozzle1)
             {
                 nozzleUse = NozzleUseIndicator.DONT_CARE;
@@ -383,15 +385,13 @@ public class GCodeMacros
                     if (HeadContainer.getHeadByID(namePart) != null)
                     {
                         fileHeadFile = HeadContainer.getHeadByID(namePart);
-                    }
-                    else if (NozzleUseIndicator.getEnumForFilenameCode(namePart) != null)
+                    } else if (NozzleUseIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileNozzleUseIndicator = NozzleUseIndicator.getEnumForFilenameCode(namePart);
-                    }
-                    else if (SafetyIndicator.getEnumForFilenameCode(namePart) != null)
+                    } else if (SafetyIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileSafetyIndicator = SafetyIndicator.getEnumForFilenameCode(namePart);
-                    }                    
+                    }
                 }
                 namePartCounter++;
             }
@@ -541,6 +541,70 @@ public class GCodeMacros
                 if (PrinterUtils.waitOnBusy(printer, cancellable))
                 {
                     return;
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param aFile
+     * @param commentCharacter
+     * @return
+     */
+    public static int countLinesInMacroFile(File aFile, String commentCharacter)
+    {
+        return countLinesInMacroFile(aFile, commentCharacter, null, false, false);
+    }
+
+    /**
+     *
+     * @param aFile
+     * @param commentCharacter
+     * @param headType
+     * @param useNozzle0
+     * @param useNozzle1
+     * @return
+     */
+    public static int countLinesInMacroFile(File aFile,
+            String commentCharacter,
+            String headType,
+            boolean useNozzle0,
+            boolean useNozzle1)
+    {
+        LineNumberReader reader = null;
+        int numberOfLines = 0;
+        try
+        {
+            String lineRead;
+            reader = new LineNumberReader(new FileReader(aFile));
+
+            while ((lineRead = reader.readLine()) != null)
+            {
+                lineRead = lineRead.trim();
+                if (GCodeMacros.isMacroExecutionDirective(lineRead))
+                {
+                    numberOfLines += GCodeMacros.getNumberOfOperativeLinesInMacro(lineRead, headType, useNozzle0, useNozzle1);
+                } else if (lineRead.startsWith(commentCharacter) == false && lineRead.equals("")
+                        == false)
+                {
+                    numberOfLines++;
+                }
+            };
+            return numberOfLines;
+        } catch (Exception ex)
+        {
+            return -1;
+        } finally
+        {
+            if (reader != null)
+            {
+                try
+                {
+                    reader.close();
+                } catch (IOException ex)
+                {
+                    steno.error("Failed to close file during line number read: " + ex);
                 }
             }
         }

@@ -13,8 +13,9 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
+import celtech.roboxbase.utils.Math.packing.PackableItem;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.Math.Packing.PackingThing;
+import celtech.roboxbase.utils.Math.packing.PackingThing;
 import celtech.utils.threed.MeshUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -28,10 +29,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -47,6 +50,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -60,28 +64,28 @@ import org.codehaus.jackson.map.SerializationConfig;
  */
 public class Project
 {
-
+    
     public static class ProjectLoadException extends Exception
     {
-
+        
         public ProjectLoadException(String message)
         {
             super(message);
         }
     }
-
+    
     private int version = -1;
-
+    
     private Filament DEFAULT_FILAMENT;
-
+    
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(
             Project.class.getName());
     private static final ObjectMapper mapper = new ObjectMapper();
-
+    
     Set<ProjectChangesListener> projectChangesListeners;
-
+    
     private ObservableList<ModelContainer> topLevelModels;
     private String lastPrintJobID = "";
     private ObjectProperty<Filament> extruder0Filament;
@@ -90,19 +94,19 @@ public class Project
     private BooleanProperty canPrint;
     private BooleanProperty customSettingsNotChosen;
     private BooleanBinding hasInvalidMeshes;
-
+    
     private final PrinterSettings printerSettings;
-
+    
     private final StringProperty projectNameProperty;
     private ObjectProperty<Date> lastModifiedDate;
     private FilamentContainer filamentContainer;
-
+    
     private boolean suppressProjectChanged = false;
-
+    
     public Project()
     {
         initialise();
-
+        
         initialiseExtruderFilaments();
         printerSettings = new PrinterSettings();
         Date now = new Date();
@@ -111,28 +115,28 @@ public class Project
                 + formatter.format(now));
         lastModifiedDate.set(now);
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-
+        
         customSettingsNotChosen.bind(
                 printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
                 .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
         canPrint.bind(customSettingsNotChosen.not());
-
+        
         printerSettings.getDataChanged().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
                 {
                     projectModified();
                     fireWhenPrinterSettingsChanged(printerSettings);
                 });
-
+        
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(
                 (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
                 {
                     projectModified();
                 });
-
+        
     }
-
+    
     private void initialise()
     {
         topLevelModels = FXCollections.observableArrayList();
@@ -141,7 +145,7 @@ public class Project
             {
                 super.bind(topLevelModels);
             }
-
+            
             @Override
             protected boolean computeValue()
             {
@@ -164,29 +168,29 @@ public class Project
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
         projectChangesListeners = new HashSet<>();
     }
-
+    
     public final void setProjectName(String value)
     {
         projectNameProperty.set(value);
     }
-
+    
     public final String getProjectName()
     {
         return projectNameProperty.get();
     }
-
+    
     public final StringProperty projectNameProperty()
     {
         return projectNameProperty;
     }
-
+    
     public final String getAbsolutePath()
     {
         return ApplicationConfiguration.getProjectDirectory() + File.separator
                 + projectNameProperty.get()
                 + ApplicationConfiguration.projectFileExtension;
     }
-
+    
     public Set<ModelContainer> getModelContainersWithInvalidMesh()
     {
         Set<ModelContainer> invalidModelContainers = new HashSet<>();
@@ -197,12 +201,12 @@ public class Project
                 });
         return invalidModelContainers;
     }
-
+    
     public BooleanBinding hasInvalidMeshes()
     {
         return hasInvalidMeshes;
     }
-
+    
     static Project loadProject(String basePath)
     {
         try
@@ -243,7 +247,7 @@ public class Project
             }
             String[] fileNameElements = basePath.split(File.separator);
             project.setProjectName(fileNameElements[fileNameElements.length - 1]);
-
+            
         } catch (Exception ex)
         {
             steno.exception("Unable to load old project format file", ex);
@@ -271,23 +275,23 @@ public class Project
         }
         return ' ';
     }
-
+    
     private void load(String basePath) throws ProjectLoadException
     {
         suppressProjectChanged = true;
-
+        
         File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
-
+        
         try
         {
             ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
-
+            
             version = projectFile.getVersion();
-
+            
             projectNameProperty.set(projectFile.getProjectName());
             lastModifiedDate.set(projectFile.getLastModifiedDate());
             lastPrintJobID = projectFile.getLastPrintJobID();
-
+            
             String filamentID0 = projectFile.getExtruder0FilamentID();
             String filamentID1 = projectFile.getExtruder1FilamentID();
             if (!filamentID0.equals("NULL"))
@@ -306,7 +310,7 @@ public class Project
                     extruder1Filament.set(filament1);
                 }
             }
-
+            
             printerSettings.setSettingsName(projectFile.getSettingsName());
             printerSettings.setPrintQuality(projectFile.getPrintQuality());
             printerSettings.setBrimOverride(projectFile.getBrimOverride());
@@ -314,11 +318,11 @@ public class Project
             printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
             printerSettings.setPrintSupportTypeOverride(projectFile.getPrintSupportTypeOverride());
             printerSettings.setRaftOverride(projectFile.getPrintRaft());
-
+            
             loadModels(basePath);
-
+            
             recreateGroups(projectFile.getGroupStructure(), projectFile.getGroupState());
-
+            
         } catch (IOException ex)
         {
             steno.exception("Failed to load project " + basePath, ex);
@@ -328,7 +332,7 @@ public class Project
         }
         suppressProjectChanged = false;
     }
-
+    
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
         FileInputStream fileInputStream = new FileInputStream(basePath
@@ -336,7 +340,7 @@ public class Project
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
         ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
-
+        
         for (int i = 0; i < numModels; i++)
         {
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
@@ -349,27 +353,27 @@ public class Project
             addModel(modelContainer);
         }
     }
-
+    
     public static void saveProject(Project project)
     {
         String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
                 + project.getProjectName();
         project.save(basePath);
     }
-
+    
     private void saveModels(String path) throws IOException
     {
         ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
-
+        
         Set<ModelContainer> modelsHoldingMeshViews = getModelsHoldingMeshViews();
-
+        
         modelsOutput.writeInt(modelsHoldingMeshViews.size());
         for (ModelContainer modelsHoldingMeshView : modelsHoldingMeshViews)
         {
             modelsOutput.writeObject(modelsHoldingMeshView);
         }
     }
-
+    
     private void save(String basePath)
     {
         if (topLevelModels.size() > 0)
@@ -400,7 +404,7 @@ public class Project
     {
         return getUsedExtruders(printer).size() < 2;
     }
-
+    
     private void getUsedExtruders(ModelContainer modelContainer, Set<Integer> usedExtruders, Printer printer)
     {
         if (modelContainer instanceof ModelGroup)
@@ -442,7 +446,7 @@ public class Project
         {
             getUsedExtruders(loadedModel, usedExtruders, printer);
         }
-
+        
         if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
         {
             if (!usedExtruders.contains(0))
@@ -480,18 +484,18 @@ public class Project
         }
         return allModelContainers;
     }
-
+    
     @Override
     public String toString()
     {
         return projectNameProperty.get();
     }
-
+    
     public void setLastPrintJobID(String printJobID)
     {
         lastPrintJobID = printJobID;
     }
-
+    
     private void projectModified()
     {
         if (!suppressProjectChanged)
@@ -500,22 +504,22 @@ public class Project
             lastModifiedDate.set(new Date());
         }
     }
-
+    
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
     }
-
+    
     public ReadOnlyBooleanProperty getModelColourChanged()
     {
         return modelColourChanged;
     }
-
+    
     public PrintQualityEnumeration getPrintQuality()
     {
         return printerSettings.getPrintQuality();
     }
-
+    
     public void setPrintQuality(PrintQualityEnumeration printQuality)
     {
         if (printerSettings.getPrintQuality() != printQuality)
@@ -524,22 +528,22 @@ public class Project
             printerSettings.setPrintQuality(printQuality);
         }
     }
-
+    
     public void setExtruder0Filament(Filament filament)
     {
         extruder0Filament.set(filament);
     }
-
+    
     public void setExtruder1Filament(Filament filament)
     {
         extruder1Filament.set(filament);
     }
-
+    
     public ObjectProperty<Filament> getExtruder0FilamentProperty()
     {
         return extruder0Filament;
     }
-
+    
     public ObjectProperty<Filament> getExtruder1FilamentProperty()
     {
         return extruder1Filament;
@@ -554,7 +558,7 @@ public class Project
         // set defaults in case of no printer or reel
         extruder0Filament.set(DEFAULT_FILAMENT);
         extruder1Filament.set(DEFAULT_FILAMENT);
-
+        
         Printer printer = Lookup.getSelectedPrinterProperty().get();
         if (printer != null)
         {
@@ -570,12 +574,12 @@ public class Project
             }
         }
     }
-
+    
     public PrinterSettings getPrinterSettings()
     {
         return printerSettings;
     }
-
+    
     public void addModel(ModelContainer modelContainer)
     {
         topLevelModels.add(modelContainer);
@@ -587,7 +591,7 @@ public class Project
             addModelListeners(childModelContainer);
         }
     }
-
+    
     private void fireWhenModelAdded(ModelContainer modelContainer)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -595,7 +599,7 @@ public class Project
             projectChangesListener.whenModelAdded(modelContainer);
         }
     }
-
+    
     private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -603,17 +607,17 @@ public class Project
             projectChangesListener.whenPrinterSettingsChanged(printerSettings);
         }
     }
-
+    
     public void removeModels(Set<ModelContainer> modelContainers)
     {
-
+        
         for (ModelContainer modelContainer : modelContainers)
         {
             assert modelContainer != null;
         }
-
+        
         topLevelModels.removeAll(modelContainers);
-
+        
         for (ModelContainer modelContainer : modelContainers)
         {
             removeModelListeners(modelContainer);
@@ -625,7 +629,7 @@ public class Project
         projectModified();
         fireWhenModelsRemoved(modelContainers);
     }
-
+    
     private void fireWhenModelsRemoved(Set<ModelContainer> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -633,24 +637,24 @@ public class Project
             projectChangesListener.whenModelsRemoved(modelContainers);
         }
     }
-
+    
     public void addProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
         projectChangesListeners.add(projectChangesListener);
     }
-
+    
     public void removeProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
         projectChangesListeners.remove(projectChangesListener);
     }
-
+    
     public ObjectProperty<Date> getLastModifiedDate()
     {
         return lastModifiedDate;
     }
-
+    
     private ChangeListener<Number> modelExtruderNumberListener;
-
+    
     private void addModelListeners(ModelContainer modelContainer)
     {
         // XXX this is a bug, modelExtruderNumberListener is being overridden for each model
@@ -663,18 +667,18 @@ public class Project
         modelContainer.getAssociateWithExtruderNumberProperty().addListener(
                 modelExtruderNumberListener);
     }
-
+    
     private void removeModelListeners(ModelContainer modelContainer)
     {
         modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
                 modelExtruderNumberListener);
     }
-
+    
     public BooleanProperty canPrintProperty()
     {
         return canPrint;
     }
-
+    
     public BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
@@ -686,13 +690,13 @@ public class Project
     public ModelGroup createNewGroup(Set<ModelContainer> modelContainers)
     {
         checkNotAlreadyInGroup(modelContainers);
-
+        
         ModelGroup modelGroup = new ModelGroup(modelContainers);
         modelGroup.checkOffBed();
         modelGroup.notifyScreenExtentsChange();
         return modelGroup;
     }
-
+    
     private void checkNotAlreadyInGroup(Set<ModelContainer> modelContainers)
     {
         Set<ModelContainer> modelsAlreadyInGroups = getDescendentModelsInAllGroups();
@@ -732,7 +736,7 @@ public class Project
         modelGroup.checkOffBed();
         return modelGroup;
     }
-
+    
     public ModelGroup group(Set<ModelContainer> modelContainers)
     {
         removeModels(modelContainers);
@@ -740,7 +744,7 @@ public class Project
         addModel(modelGroup);
         return modelGroup;
     }
-
+    
     public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
     {
         removeModels(modelContainers);
@@ -748,7 +752,7 @@ public class Project
         addModel(modelGroup);
         return modelGroup;
     }
-
+    
     public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
         for (ModelContainer modelContainer : modelContainers)
@@ -769,7 +773,7 @@ public class Project
             }
         }
     }
-
+    
     private Set<ModelContainer> getModelsHoldingMeshViews()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
@@ -779,7 +783,7 @@ public class Project
         }
         return modelsHoldingMeshViews;
     }
-
+    
     private Set<ModelContainer> getModelsHoldingModels()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
@@ -912,7 +916,7 @@ public class Project
                     modelFound = true;
                     break;
                 }
-
+                
             }
             if (!modelFound)
             {
@@ -941,7 +945,7 @@ public class Project
         }
         return modelContainers;
     }
-
+    
     private Optional<ModelContainer> getModelContainerOfModelId(int modelId)
     {
         for (ModelContainer modelContainer : topLevelModels)
@@ -952,7 +956,7 @@ public class Project
             }
         }
         return Optional.empty();
-
+        
     }
 
     /**
@@ -962,7 +966,7 @@ public class Project
     {
         group.setState(groupStates.get(group.getModelId()));
         group.checkOffBed();
-
+        
     }
 
     /**
@@ -1008,21 +1012,29 @@ public class Project
          */
         void whenPrinterSettingsChanged(PrinterSettings printerSettings);
     }
-
+    
     public void autoLayout()
     {
-        Collections.sort(topLevelModels);
+        List<PackableItem> sortedPackables = new ArrayList<>();
+        
+        SortedList<ModelContainer> sortedContainers = topLevelModels.sorted();
+        
+        sortedContainers.stream().forEach(model ->
+        {
+            sortedPackables.add((PackableItem) model);
+        });
+
         PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
                 (int) PrintBed.maxPrintableZSize);
-
-        thing.reference(topLevelModels, 10);
+        
+        thing.reference(sortedPackables, 10);
         thing.pack();
         thing.relocateBlocks();
-
+        
         projectModified();
         fireWhenAutoLaidOut();
     }
-
+    
     private void fireWhenAutoLaidOut()
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -1047,7 +1059,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
@@ -1070,7 +1082,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
@@ -1093,7 +1105,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
@@ -1116,7 +1128,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)
@@ -1128,7 +1140,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)
@@ -1140,7 +1152,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
     {
         for (ModelContainer model : modelContainers)
@@ -1152,7 +1164,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void dropToBed(Set<ModelContainer> modelContainers)
     {
         for (ModelContainer model : modelContainers)
@@ -1165,7 +1177,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
         modelContainer.snapToGround(pickedMesh, faceNumber);
@@ -1174,7 +1186,7 @@ public class Project
         modelContainers.add(modelContainer);
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
     {
         for (ModelContainer model : modelContainers)
@@ -1186,7 +1198,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
     {
         for (ModelContainer model : modelContainers)
@@ -1198,7 +1210,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
     {
         for (ModelContainer model : modelContainers)
@@ -1210,7 +1222,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z)
     {
         for (ModelContainer model : modelContainers)
@@ -1222,7 +1234,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void translateModelsTo(Set<ModelContainer> modelContainers, double x, double z)
     {
         for (ModelContainer model : modelContainers)
@@ -1234,7 +1246,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -1242,7 +1254,7 @@ public class Project
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
     }
-
+    
     private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -1250,7 +1262,7 @@ public class Project
             projectChangesListener.whenModelChanged(modelContainer, propertyName);
         }
     }
-
+    
     public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
     {
         for (ModelContainer model : modelContainers)
@@ -1262,7 +1274,7 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
     {
         for (ModelContainer model : modelContainers)
@@ -1274,11 +1286,11 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
-
+    
     public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
     {
         modelContainer.setUseExtruder0(useExtruder0);
-
+        
         boolean usingDifferentExtruders = false;
         int lastExtruder = -1;
         for (ModelContainer model : getAllModels())
@@ -1292,7 +1304,7 @@ public class Project
             }
             lastExtruder = thisExtruder;
         }
-
+        
         if (!usingDifferentExtruders)
         {
             printerSettings.getPrintSupportTypeOverrideProperty().set(
@@ -1301,10 +1313,10 @@ public class Project
                             : SlicerParametersFile.SupportType.MATERIAL_2);
             fireWhenPrinterSettingsChanged(printerSettings);
         }
-
+        
         projectModified();
     }
-
+    
     public Set<ModelContainer.State> getModelStates()
     {
         Set<ModelContainer.State> modelStates = new HashSet<>();
@@ -1314,7 +1326,7 @@ public class Project
         }
         return modelStates;
     }
-
+    
     public void setModelStates(Set<ModelContainer.State> modelStates)
     {
         Set<ModelContainer> modelContainers = new HashSet<>();

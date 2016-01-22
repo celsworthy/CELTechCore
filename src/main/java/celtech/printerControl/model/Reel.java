@@ -1,13 +1,14 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
+import celtech.comms.remote.model.RepairResult;
+import celtech.comms.remote.model.RepairableComponent;
+import celtech.comms.remote.rx.ReelEEPROMDataResponse;
 import celtech.configuration.Filament;
-import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
-import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.utils.Math.MathUtils;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.MaterialType;
+import celtech.roboxbase.utils.Math.MathUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -28,6 +29,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import static celtech.comms.remote.ColourStringConverter.colourToString;
 
 /**
  *

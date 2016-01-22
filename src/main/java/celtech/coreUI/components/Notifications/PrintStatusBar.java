@@ -5,9 +5,9 @@ package celtech.coreUI.components.Notifications;
 
 import celtech.coreUI.components.Notifications.AppearingProgressBar;
 import celtech.Lookup;
-import celtech.configuration.BusyStatus;
+import celtech.comms.remote.BusyStatus;
 import celtech.configuration.Macro;
-import celtech.configuration.PauseStatus;
+import celtech.comms.remote.PauseStatus;
 import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.model.Printer;
@@ -130,7 +130,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             case UNLOADING_FILAMENT_D:
                 statusProcessed = true;
                 barShouldBeDisplayed = true;
-                largeProgressDescription.setText(printer.busyStatusProperty().get().getI18nString());
+                largeProgressDescription.setText(Lookup.i18n(printer.busyStatusProperty().get().getI18nString()));
                 progressRequired(false);
                 targetLegendRequired(false);
                 targetValueRequired(false);
@@ -154,7 +154,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 case RESUME_PENDING:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
-                    largeProgressDescription.setText(printer.pauseStatusProperty().get().getI18nString());
+                    largeProgressDescription.setText(Lookup.i18n(printer.pauseStatusProperty().get().getI18nString()));
                     progressRequired(false);
                     targetLegendRequired(false);
                     targetValueRequired(false);

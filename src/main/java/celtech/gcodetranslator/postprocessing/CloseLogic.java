@@ -28,7 +28,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
-import celtech.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

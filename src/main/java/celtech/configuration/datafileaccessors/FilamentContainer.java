@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Filament;
 import celtech.configuration.FilamentFileFilter;
-import celtech.configuration.MaterialType;
+import celtech.roboxbase.MaterialType;
 import celtech.utils.DeDuplicator;
 import java.io.File;
 import java.io.FileInputStream;

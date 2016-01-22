@@ -6,7 +6,7 @@ package celtech;
 import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
 import celtech.appManager.SystemNotificationManagerJavaFX;
-import celtech.configuration.ApplicationEnvironment;
+import celtech.roboxbase.ApplicationEnvironment;
 import celtech.configuration.Languages;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.FilamentContainer;

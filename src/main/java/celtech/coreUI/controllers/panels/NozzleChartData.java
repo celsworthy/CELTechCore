@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyIntegerProperty;

@@ -1,7 +1,7 @@
 package celtech.appManager;
 
 import celtech.Lookup;
-import celtech.appManager.errorHandling.SystemErrorHandlerOptions;
+import celtech.roboxbase.SystemErrorHandlerOptions;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
@@ -11,7 +11,7 @@ import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedExceptio
 import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
+import celtech.comms.remote.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
@@ -128,8 +128,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         setupErrorOptions();
 
                         errorChoiceBox = new ChoiceLinkDialogBox(true);
-                        errorChoiceBox.setTitle(error.getLocalisedErrorTitle());
-                        errorChoiceBox.setMessage(error.getLocalisedErrorMessage());
+                        errorChoiceBox.setTitle(Lookup.i18n(error.getErrorTitleKey()));
+                        errorChoiceBox.setMessage(Lookup.i18n(error.getErrorMessageKey()));
                         error.getOptions()
                                 .stream()
                                 .forEach(option -> errorChoiceBox.
@@ -204,8 +204,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             for (SystemErrorHandlerOptions option : SystemErrorHandlerOptions.values())
             {
                 ChoiceLinkButton buttonToAdd = new ChoiceLinkButton();
-                buttonToAdd.setTitle(option.getLocalisedErrorTitle());
-                buttonToAdd.setMessage(option.getLocalisedErrorMessage());
+                buttonToAdd.setTitle(Lookup.i18n(option.getErrorTitleKey()));
+                buttonToAdd.setMessage(Lookup.i18n(option.getErrorMessageKey()));
                 errorToButtonMap.put(option, buttonToAdd);
             }
         }

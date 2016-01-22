@@ -1,10 +1,10 @@
 package celtech.services.printing;
 
 import celtech.printerControl.comms.commands.GCodeMacros;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.comms.remote.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -80,7 +80,7 @@ public class TransferGCodeToPrinterTask extends Task<GCodePrintResult>
         File gcodeFile = new File(gcodeFileToPrint);
         FileReader gcodeReader = null;
         Scanner scanner = null;
-        numberOfLines = SystemUtils.countLinesInFile(gcodeFile, ";");
+        numberOfLines = GCodeMacros.countLinesInMacroFile(gcodeFile, ";");
         linesInFile.setValue(numberOfLines);
 
         steno.info("Beginning transfer of file " + gcodeFileToPrint + " to printer from line "

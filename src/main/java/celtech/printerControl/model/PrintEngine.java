@@ -4,15 +4,15 @@ import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Macro;
-import celtech.configuration.MaterialType;
+import celtech.roboxbase.MaterialType;
 import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.ListFilesResponse;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.rx.ListFilesResponse;
 import celtech.services.ControllableService;
 import celtech.services.postProcessor.GCodePostProcessingResult;
 import celtech.services.postProcessor.PostProcessorService;
@@ -27,11 +27,11 @@ import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroPrintException;
-import celtech.printerControl.comms.commands.rx.SendFile;
+import celtech.comms.remote.rx.SendFile;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.services.slicer.SlicerService;
-import celtech.utils.Math.MathUtils;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import celtech.utils.threed.ThreeDUtils;
 import java.io.File;
 import java.io.IOException;
@@ -877,7 +877,7 @@ public class PrintEngine implements ControllableService
             FileUtils.copyFile(src, dest);
             Lookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                int numberOfLines = SystemUtils.countLinesInFile(dest, ";");
+                int numberOfLines = GCodeMacros.countLinesInMacroFile(dest, ";");
                 raiseProgressNotifications = true;
                 linesInPrintingFile.set(numberOfLines);
                 transferGCodeToPrinterService.reset();
@@ -999,7 +999,7 @@ public class PrintEngine implements ControllableService
 
         Lookup.getTaskExecutor().runOnGUIThread(() ->
         {
-            int numberOfLines = SystemUtils.countLinesInFile(printjobFile, ";");
+            int numberOfLines = GCodeMacros.countLinesInMacroFile(printjobFile, ";");
             raiseProgressNotifications = false;
             linesInPrintingFile.set(numberOfLines);
             steno.

@@ -5,7 +5,7 @@ package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
 import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
-import celtech.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;

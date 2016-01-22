@@ -4,7 +4,7 @@
 package celtech.printerControl.comms;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import celtech.printerControl.model.HardwarePrinter;
 import org.junit.Test;
 import static org.junit.Assert.*;

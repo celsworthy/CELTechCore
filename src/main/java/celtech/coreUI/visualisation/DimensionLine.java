@@ -4,7 +4,7 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.modelcontrol.ModelContainer;
-import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
+import static celtech.roboxbase.utils.Math.MathUtils.RAD_TO_DEG;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.value.ChangeListener;

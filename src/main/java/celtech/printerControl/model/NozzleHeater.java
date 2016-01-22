@@ -1,7 +1,7 @@
 package celtech.printerControl.model;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import java.util.ArrayList;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;

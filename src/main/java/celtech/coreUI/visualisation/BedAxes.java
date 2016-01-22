@@ -1,7 +1,7 @@
 package celtech.coreUI.visualisation;
 
 import celtech.coreUI.StandardColours;
-import celtech.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Camera;

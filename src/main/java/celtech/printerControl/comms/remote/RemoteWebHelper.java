@@ -1,6 +1,6 @@
 package celtech.printerControl.comms.remote;
 
-import celtech.comms.remote.RoboxRxPacket;
+import celtech.comms.remote.rx.RoboxRxPacket;
 import celtech.configuration.ApplicationConfiguration;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

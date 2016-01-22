@@ -1,6 +1,6 @@
 package celtech.printerControl.comms.events;
 
-import celtech.printerControl.comms.commands.rx.FirmwareError;
+import celtech.comms.remote.rx.FirmwareError;
 
 /**
  *

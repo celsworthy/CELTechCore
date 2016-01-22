@@ -7,7 +7,7 @@ import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
-import celtech.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;

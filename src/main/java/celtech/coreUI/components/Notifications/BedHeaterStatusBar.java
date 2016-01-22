@@ -5,7 +5,7 @@ package celtech.coreUI.components.Notifications;
 
 import celtech.coreUI.components.Notifications.AppearingProgressBar;
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import celtech.printerControl.model.PrinterAncillarySystems;
 import java.net.URL;
 import java.util.ResourceBundle;

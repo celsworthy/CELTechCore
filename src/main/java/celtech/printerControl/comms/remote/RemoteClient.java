@@ -1,15 +1,9 @@
 package celtech.printerControl.comms.remote;
 
 import celtech.comms.remote.Configuration;
-import celtech.comms.remote.RoboxRxPacketRemote;
-import celtech.comms.remote.RoboxTxPacketRemote;
 import celtech.printerControl.comms.RemoteDetectedPrinter;
-import celtech.printerControl.comms.commands.exceptions.InvalidCommandByteException;
-import celtech.printerControl.comms.commands.exceptions.UnableToGenerateRoboxPacketException;
-import celtech.printerControl.comms.commands.exceptions.UnknownPacketTypeException;
-import celtech.comms.remote.RoboxRxPacket;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.comms.remote.RoboxTxPacket;
+import celtech.comms.remote.rx.RoboxRxPacket;
+import celtech.comms.remote.tx.RoboxTxPacket;
 import java.io.IOException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -62,7 +56,7 @@ public class RemoteClient implements LowLevelInterface
         try
         {
             String dataToOutput = mapper.writeValueAsString(messageToWrite);
-            returnedPacket = RemoteWebHelper.postData(writeToPrinterUrlString, dataToOutput, RoboxRxPacketRemote.class);
+            returnedPacket = RemoteWebHelper.postData(writeToPrinterUrlString, dataToOutput, RoboxRxPacket.class);
         } catch (IOException ex)
         {
             steno.error("Failed to write to remote printer (" + messageToWrite.getPacketType().name() + ") " + remotePrinterHandle);

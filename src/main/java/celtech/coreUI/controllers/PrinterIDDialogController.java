@@ -1,6 +1,6 @@
 package celtech.coreUI.controllers;
 
-import celtech.configuration.PrinterColourMap;
+import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.components.ColourChooserButton;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.printerControl.model.Printer;

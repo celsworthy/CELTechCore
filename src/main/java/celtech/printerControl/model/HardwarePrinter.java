@@ -1,15 +1,16 @@
 package celtech.printerControl.model;
 
+import celtech.comms.remote.model.RepairResult;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManager;
-import celtech.configuration.BusyStatus;
-import celtech.configuration.EEPROMState;
+import celtech.comms.remote.BusyStatus;
+import celtech.comms.remote.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import celtech.configuration.Macro;
-import celtech.configuration.MaterialType;
-import celtech.configuration.PauseStatus;
+import celtech.roboxbase.MaterialType;
+import celtech.comms.remote.PauseStatus;
 import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.datafileaccessors.FilamentContainer;
@@ -24,48 +25,48 @@ import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.MacroPrintException;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.comms.commands.rx.DebugDataResponse;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
-import celtech.printerControl.comms.commands.rx.FirmwareResponse;
-import celtech.printerControl.comms.commands.rx.GCodeDataResponse;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.HoursCounterResponse;
-import celtech.printerControl.comms.commands.rx.ListFilesResponse;
-import celtech.printerControl.comms.commands.rx.PrinterIDResponse;
-import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
-import celtech.comms.remote.RoboxRxPacket;
-import static celtech.comms.remote.RxPacketTypeEnum.ACK_WITH_ERRORS;
-import static celtech.comms.remote.RxPacketTypeEnum.FIRMWARE_RESPONSE;
-import static celtech.comms.remote.RxPacketTypeEnum.HEAD_EEPROM_DATA;
-import static celtech.comms.remote.RxPacketTypeEnum.PRINTER_ID_RESPONSE;
-import static celtech.comms.remote.RxPacketTypeEnum.STATUS_RESPONSE;
-import celtech.printerControl.comms.commands.rx.SendFile;
-import celtech.printerControl.comms.commands.rx.StatusResponse;
-import celtech.printerControl.comms.commands.tx.FormatHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.ListFiles;
-import celtech.printerControl.comms.commands.tx.PausePrint;
-import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
-import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.ReadPrinterID;
-import celtech.printerControl.comms.commands.tx.ReadSendFileReport;
-import celtech.printerControl.comms.commands.tx.ReportErrors;
-import celtech.comms.remote.RoboxTxPacket;
-import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
-import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
-import celtech.printerControl.comms.commands.tx.SetDFeedRateMultiplier;
-import celtech.printerControl.comms.commands.tx.SetDFilamentInfo;
-import celtech.printerControl.comms.commands.tx.SetEFilamentInfo;
-import celtech.printerControl.comms.commands.tx.SetEFeedRateMultiplier;
-import celtech.printerControl.comms.commands.tx.SetReelLEDColour;
-import celtech.printerControl.comms.commands.tx.SetTemperatures;
-import celtech.printerControl.comms.commands.tx.StatusRequest;
-import celtech.comms.remote.TxPacketTypeEnum;
-import celtech.printerControl.comms.commands.tx.WriteHeadEEPROM;
-import celtech.printerControl.comms.commands.tx.WritePrinterID;
-import celtech.printerControl.comms.commands.tx.WriteReel0EEPROM;
-import celtech.printerControl.comms.commands.tx.WriteReel1EEPROM;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.rx.AckResponse;
+import celtech.comms.remote.rx.DebugDataResponse;
+import celtech.comms.remote.rx.FirmwareError;
+import celtech.comms.remote.rx.FirmwareResponse;
+import celtech.comms.remote.rx.GCodeDataResponse;
+import celtech.comms.remote.rx.HeadEEPROMDataResponse;
+import celtech.comms.remote.rx.HoursCounterResponse;
+import celtech.comms.remote.rx.ListFilesResponse;
+import celtech.comms.remote.rx.PrinterIDResponse;
+import celtech.comms.remote.rx.ReelEEPROMDataResponse;
+import celtech.comms.remote.rx.RoboxRxPacket;
+import static celtech.comms.remote.rx.RxPacketTypeEnum.ACK_WITH_ERRORS;
+import static celtech.comms.remote.rx.RxPacketTypeEnum.FIRMWARE_RESPONSE;
+import static celtech.comms.remote.rx.RxPacketTypeEnum.HEAD_EEPROM_DATA;
+import static celtech.comms.remote.rx.RxPacketTypeEnum.PRINTER_ID_RESPONSE;
+import static celtech.comms.remote.rx.RxPacketTypeEnum.STATUS_RESPONSE;
+import celtech.comms.remote.rx.SendFile;
+import celtech.comms.remote.rx.StatusResponse;
+import celtech.comms.remote.tx.FormatHeadEEPROM;
+import celtech.comms.remote.tx.ListFiles;
+import celtech.comms.remote.tx.PausePrint;
+import celtech.comms.remote.tx.QueryFirmwareVersion;
+import celtech.comms.remote.tx.ReadHeadEEPROM;
+import celtech.comms.remote.tx.ReadPrinterID;
+import celtech.comms.remote.tx.ReadSendFileReport;
+import celtech.comms.remote.tx.ReportErrors;
+import celtech.comms.remote.tx.RoboxTxPacket;
+import celtech.comms.remote.tx.RoboxTxPacketFactory;
+import celtech.comms.remote.tx.SetAmbientLEDColour;
+import celtech.comms.remote.tx.SetDFeedRateMultiplier;
+import celtech.comms.remote.tx.SetDFilamentInfo;
+import celtech.comms.remote.tx.SetEFilamentInfo;
+import celtech.comms.remote.tx.SetEFeedRateMultiplier;
+import celtech.comms.remote.tx.SetReelLEDColour;
+import celtech.comms.remote.tx.SetTemperatures;
+import celtech.comms.remote.tx.StatusRequest;
+import celtech.comms.remote.tx.TxPacketTypeEnum;
+import celtech.comms.remote.tx.WriteHeadEEPROM;
+import celtech.comms.remote.tx.WritePrinterID;
+import celtech.comms.remote.tx.WriteReel0EEPROM;
+import celtech.comms.remote.tx.WriteReel1EEPROM;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
@@ -77,7 +78,7 @@ import celtech.services.printing.DatafileSendAlreadyInProgress;
 import celtech.services.printing.DatafileSendNotInitialised;
 import celtech.utils.AxisSpecifier;
 import celtech.utils.PrinterUtils;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import celtech.utils.tasks.Cancellable;
 import celtech.utils.tasks.SimpleCancellable;
 import celtech.utils.tasks.TaskResponder;
@@ -120,24 +121,24 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public final class HardwarePrinter implements Printer, ErrorConsumer
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(
             HardwarePrinter.class.getName());
     private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
-
+    
     protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
             PrinterStatus.IDLE);
     protected BooleanProperty macroIsInterruptible = new SimpleBooleanProperty(false);
-
+    
     protected PrinterStatusConsumer printerStatusConsumer;
     protected CommandInterface commandInterface;
-
+    
     private SystemNotificationManager systemNotificationManager;
-
+    
     private NumberFormat threeDPformatter;
-
+    
     private final float safeBedTemperatureForOpeningDoor = 60f;
-
+    
     private int filamentSlipEActionFired = 0;
     private int filamentSlipDActionFired = 0;
     private boolean filamentSlipActionInProgress = false;
@@ -160,7 +161,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final BooleanProperty canCalibrateNozzleHeight = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateXYAlignment = new SimpleBooleanProperty(false);
     private final BooleanProperty canCalibrateNozzleOpening = new SimpleBooleanProperty(false);
-
+    
     private boolean headIntegrityChecksInhibited = false;
 
     /*
@@ -178,7 +179,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private final ObservableMap<Integer, Reel> reels = FXCollections.observableHashMap();
     private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
     private final ObservableList<Extruder> extruders = FXCollections.observableArrayList();
-
+    
     private ObjectProperty<EEPROMState> lastHeadEEPROMState = new SimpleObjectProperty<>(EEPROMState.NOT_PRESENT);
     private final int maxNumberOfReels = 2;
     private ObservableList<EEPROMState> lastReelEEPROMState = FXCollections.observableArrayList(EEPROMState.NOT_PRESENT, EEPROMState.NOT_PRESENT);
@@ -187,7 +188,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      * Temperature-related data
      */
     private long lastTimestamp = System.currentTimeMillis();
-
+    
     private final ObservableList<String> gcodeTranscript = FXCollections.observableArrayList();
 
     /*
@@ -198,16 +199,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private static final int bufferSize = 512;
     private static final StringBuffer outputBuffer = new StringBuffer(bufferSize);
     private boolean printInitiated = false;
-
+    
     protected final ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty<>(
             PauseStatus.NOT_PAUSED);
     protected final ObjectProperty<BusyStatus> busyStatus = new SimpleObjectProperty<>(
             BusyStatus.NOT_BUSY);
     protected final IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
     protected final StringProperty printJobID = new SimpleStringProperty("");
-
+    
     private PrintEngine printEngine;
-
+    
     private final String firstExtruderLetter = "E";
     private final int firstExtruderNumber = 0;
     private final String secondExtruderLetter = "D";
@@ -229,11 +230,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     private NozzleHeightStateTransitionManager calibrationHeightManager;
     private NozzleOpeningStateTransitionManager calibrationOpeningManager;
     private XAndYStateTransitionManager calibrationAlignmentManager;
-
+    
     private BooleanProperty headPowerOnFlag = new SimpleBooleanProperty(false);
-
+    
     private boolean inCommissioningMode = false;
-
+    
     @Override
     public CommandInterface getCommandInterface()
     {
@@ -248,10 +249,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
      */
     public interface FilamentLoadedGetter
     {
-
+        
         public boolean getFilamentLoaded(StatusResponse statusResponse, int extruderNumber);
     }
-
+    
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
             CommandInterface commandInterface)
     {
@@ -269,7 +270,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 },
                 false);
     }
-
+    
     public HardwarePrinter(PrinterStatusConsumer printerStatusConsumer,
             CommandInterface commandInterface, FilamentLoadedGetter filamentLoadedGetter,
             boolean doNotCheckForPresenceOfHead)
@@ -278,28 +279,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         this.commandInterface = commandInterface;
         this.filamentLoadedGetter = filamentLoadedGetter;
         this.doNotCheckForPresenceOfHead = doNotCheckForPresenceOfHead;
-
+        
         printEngine = new PrintEngine(this);
-
+        
         extruders.add(firstExtruderNumber, new Extruder(firstExtruderLetter));
         extruders.add(secondExtruderNumber, new Extruder(secondExtruderLetter));
         effectiveFilaments.put(0, FilamentContainer.UNKNOWN_FILAMENT);
         effectiveFilaments.put(1, FilamentContainer.UNKNOWN_FILAMENT);
-
+        
         setupBindings();
         setupFilamentDatabaseChangeListeners();
-
+        
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
         threeDPformatter.setGroupingUsed(false);
-
+        
         systemNotificationManager = Lookup.getSystemNotificationHandler();
-
+        
         commandInterface.setPrinter(this);
-
+        
         registerErrorConsumerAllErrors(this);
     }
-
+    
     private void setupBindings()
     {
         extruders.stream().forEach(extruder -> extruder.canEject
@@ -322,9 +323,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
         canCalibrateXYAlignment.bind(head.isNotNull()
                 .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
-
+        
         canInitiateNewState.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
-
+        
         canCancel.bind(
                 (pauseStatus.isEqualTo(PauseStatus.PAUSED)
                 .or(printEngine.postProcessorService.runningProperty())
@@ -335,7 +336,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING)))
                 .and((printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
                         .and(printEngine.macroBeingRun.isEqualTo(Macro.CANCEL_PRINT))).not()));
-
+        
         canRunMacro.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .or(pauseStatus.isEqualTo(PauseStatus.PAUSED))
                 .or(printerStatus.isEqualTo(PrinterStatus.RUNNING_MACRO_FILE)
@@ -345,21 +346,21 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(printerStatus.isEqualTo(PrinterStatus.CALIBRATING_NOZZLE_OPENING))
                 .or(printerStatus.isEqualTo(PrinterStatus.PURGING_HEAD))
         );
-
+        
         canPause.bind(pauseStatus.isNotEqualTo(PauseStatus.PAUSED)
                 .and(pauseStatus.isNotEqualTo(PauseStatus.PAUSE_PENDING))
                 .and(printerStatus.isEqualTo(PrinterStatus.PRINTING_PROJECT)
                         .or(pauseStatus.isEqualTo(PauseStatus.RESUME_PENDING))));
-
+        
         canCalibrateHead.bind(head.isNotNull()
                 .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
-
+        
         canRemoveHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
-
+        
         canPurgeHead.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
                 .and(extruders.get(firstExtruderNumber).filamentLoaded.or(extruders.get(
                                         secondExtruderNumber).filamentLoaded)));
-
+        
         canOpenDoor.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
         //TODO make this work with multiple extruders
@@ -367,7 +368,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 .or(pauseStatus.isEqualTo(PauseStatus.PAUSE_PENDING)))
                 .and(extruders.get(0).filamentLoaded));
     }
-
+    
     FilamentContainer.FilamentDatabaseChangesListener filamentDatabaseChangesListener
             = (String filamentId) ->
             {
@@ -401,7 +402,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         filamentContainer.addFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
     }
-
+    
     @Override
     public void setPrinterStatus(PrinterStatus printerStatus)
     {
@@ -419,7 +420,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     filamentSlipDActionFired = 0;
                                     break;
                             }
-
+                            
                             if (okToChangeState)
                             {
                                 this.printerStatus.set(printerStatus);
@@ -427,85 +428,85 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             steno.debug("Setting printer status to " + printerStatus);
                 });
     }
-
+    
     @Override
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty()
     {
         return printerStatus;
     }
-
+    
     @Override
     public PrinterIdentity getPrinterIdentity()
     {
         return printerIdentity;
     }
-
+    
     @Override
     public PrinterAncillarySystems getPrinterAncillarySystems()
     {
         return printerAncillarySystems;
     }
-
+    
     @Override
     public ReadOnlyObjectProperty<Head> headProperty()
     {
         return head;
     }
-
+    
     @Override
     public ObservableMap<Integer, Reel> reelsProperty()
     {
         return reels;
     }
-
+    
     @Override
     public ObservableMap<Integer, Filament> effectiveFilamentsProperty()
     {
         return effectiveFilaments;
     }
-
+    
     @Override
     public void overrideFilament(int reelNumber, Filament filament)
     {
         effectiveFilaments.put(reelNumber, filament);
     }
-
+    
     @Override
     public ObservableList<Extruder> extrudersProperty()
     {
         return extruders;
     }
-
+    
     @Override
     public ReadOnlyIntegerProperty printJobLineNumberProperty()
     {
         return printJobLineNumber;
     }
-
+    
     @Override
     public ReadOnlyStringProperty printJobIDProperty()
     {
         return printJobID;
     }
-
+    
     @Override
     public ReadOnlyObjectProperty pauseStatusProperty()
     {
         return pauseStatus;
     }
-
+    
     @Override
     public ReadOnlyObjectProperty busyStatusProperty()
     {
         return busyStatus;
     }
-
+    
     @Override
     public ReadOnlyBooleanProperty headPowerOnFlagProperty()
     {
         return headPowerOnFlag;
     }
-
+    
     @Override
     public PrintEngine getPrintEngine()
     {
@@ -520,7 +521,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canRemoveHead;
     }
-
+    
     @Override
     public void removeHead(TaskResponder responder) throws PrinterException
     {
@@ -528,24 +529,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Head remove not permitted");
         }
-
+        
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = doRemoveHeadActivity(cancellable);
-
+            
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Ready to remove head");
-
+            
             setPrinterStatus(PrinterStatus.IDLE);
-
+            
         }, "Removing head").start();
     }
-
+    
     protected boolean doRemoveHeadActivity(Cancellable cancellable)
     {
         boolean success = false;
-
+        
         try
         {
             printEngine.runMacroPrintJob(Macro.REMOVE_HEAD);
@@ -555,19 +556,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Failed to run remove head macro: " + ex.getMessage());
         }
-
+        
         return success;
     }
     /*
      * Purge head
      */
-
+    
     @Override
     public final ReadOnlyBooleanProperty canPurgeHeadProperty()
     {
         return canPurgeHead;
     }
-
+    
     protected final FloatProperty purgeTemperatureProperty = new SimpleFloatProperty(0);
 
     /**
@@ -579,7 +580,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         Filament settingsFilament = null;
         Head headToOutput = headToWrite.clone();
-
+        
         if (headToOutput.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
             if (nozzleHeaterNumber == 0)
@@ -601,14 +602,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 settingsFilament = effectiveFilamentsProperty().get(0);
             }
         }
-
+        
         if (settingsFilament != null)
         {
             float reelNozzleTemperature = settingsFilament.getNozzleTemperature();
-
+            
             headToOutput.nozzleHeaters.get(nozzleHeaterNumber).lastFilamentTemperature.set(
                     reelNozzleTemperature);
-
+            
             try
             {
                 writeHeadEEPROM(headToOutput);
@@ -628,25 +629,25 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canPrint;
     }
-
+    
     @Override
     public ReadOnlyBooleanProperty canOpenCloseNozzleProperty()
     {
         return canOpenCloseNozzle;
     }
-
+    
     @Override
     public ReadOnlyBooleanProperty canCalibrateNozzleHeightProperty()
     {
         return canCalibrateNozzleHeight;
     }
-
+    
     @Override
     public ReadOnlyBooleanProperty canCalibrateXYAlignmentProperty()
     {
         return canCalibrateXYAlignment;
     }
-
+    
     @Override
     public ReadOnlyBooleanProperty canCalibrateNozzleOpeningProperty()
     {
@@ -669,7 +670,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canCancel;
     }
-
+    
     @Override
     public void cancel(TaskResponder responder) throws PrinterException
     {
@@ -677,32 +678,32 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Cancel not permitted: printer status is " + printerStatus);
         }
-
+        
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = doAbortActivity(cancellable);
-
+            
             if (responder != null)
             {
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Abort complete");
             }
-
+            
             setPrinterStatus(PrinterStatus.IDLE);
-
+            
         }, "Aborting").start();
     }
-
+    
     private boolean doAbortActivity(Cancellable cancellable)
     {
         boolean success = false;
-
+        
         printEngine.stopAllServices();
-
+        
         switchBedHeaterOff();
         switchAllNozzleHeatersOff();
-
+        
         RoboxTxPacket abortPacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.ABORT_PRINT);
         try
         {
@@ -712,7 +713,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Couldn't send abort command to printer");
         }
         PrinterUtils.waitOnBusy(this, cancellable);
-
+        
         try
         {
             printEngine.runMacroPrintJob(Macro.CANCEL_PRINT);
@@ -722,7 +723,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Failed to run abort macro: " + ex.getMessage());
         }
-
+        
         return success;
     }
 
@@ -735,7 +736,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canPause;
     }
-
+    
     @Override
     public void pause() throws PrinterException
     {
@@ -744,15 +745,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrintActionUnavailableException(
                     "Cannot pause at this time - printer status is " + printerStatus.get().name());
         }
-
+        
         steno.debug("Printer model asked to pause");
-
+        
         try
         {
             PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
                     TxPacketTypeEnum.PAUSE_RESUME_PRINT);
             gcodePacket.setPause();
-
+            
             commandInterface.writeToPrinter(gcodePacket);
         } catch (RoboxCommsException ex)
         {
@@ -783,13 +784,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrintActionUnavailableException("Cannot resume at this time");
         }
-
+        
         try
         {
             PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
                     TxPacketTypeEnum.PAUSE_RESUME_PRINT);
             gcodePacket.setResume();
-
+            
             commandInterface.writeToPrinter(gcodePacket);
         } catch (RoboxCommsException ex)
         {
@@ -798,7 +799,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     + ex);
         }
     }
-
+    
     private void forcedResume() throws PrinterException
     {
         try
@@ -806,7 +807,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             PausePrint gcodePacket = (PausePrint) RoboxTxPacketFactory.createPacket(
                     TxPacketTypeEnum.PAUSE_RESUME_PRINT);
             gcodePacket.setResume();
-
+            
             commandInterface.writeToPrinter(gcodePacket);
         } catch (RoboxCommsException ex)
         {
@@ -835,17 +836,17 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return printInitiated;
     }
-
+    
     @Override
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String fileName,
             TaskResponder taskResponder)
     {
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = false;
-
+            
             try
             {
                 printEngine.printGCodeFile(fileName, true, true, true);
@@ -855,12 +856,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 steno.error("Error transferring " + fileName + " to printer");
             }
-
+            
             Lookup.getTaskExecutor().respondOnGUIThread(taskResponder, success, "Complete");
-
+            
         }, "Transfer to printer").start();
     }
-
+    
     @Override
     public void executeGCodeFile(String fileName, boolean canDisconnectDuringPrint) throws PrinterException
     {
@@ -870,14 +871,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     error("Printer state is " + printerStatus.getName() + " when execute GCode called");
             throw new PrintActionUnavailableException("Execute GCode not available");
         }
-
+        
         if (mustPurgeHead.get())
         {
             throw new PurgeRequiredException("Cannot execute GCode - purge required");
         }
-
+        
         boolean jobAccepted = false;
-
+        
         try
         {
             jobAccepted = printEngine.printGCodeFile(fileName, true, canDisconnectDuringPrint);
@@ -885,21 +886,21 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Failed to print GCode file " + fileName + " : " + ex.getMessage());
         }
-
+        
         if (!jobAccepted)
         {
             throw new PrintJobRejectedException("Could not run GCode " + fileName + " in mode "
                     + printerStatus.get().name());
         }
     }
-
+    
     private void executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro macro,
             boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro, blockUntilFinished, cancellable, false, false);
     }
-
+    
     private void executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro macro,
             boolean blockUntilFinished,
             Cancellable cancellable,
@@ -932,24 +933,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrintActionUnavailableException("Macro " + macro.name() + " not available");
         }
     }
-
+    
     @Override
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.HOME_ALL,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
         Macro macro = Macro.PURGE_MATERIAL;
-
+        
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable, requireNozzle0, requireNozzle1);
     }
-
+    
     @Override
     public void miniPurge(boolean blockUntilFinished,
             Cancellable cancellable,
@@ -958,60 +959,60 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         Macro macro = Macro.MINI_PURGE;
         boolean requireNozzle0 = nozzleNumber == 0;
         boolean requireNozzle1 = nozzleNumber == 1;
-
+        
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 blockUntilFinished, cancellable,
                 requireNozzle0, requireNozzle1);
     }
-
+    
     @Override
     public void testX(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.TEST_X,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void testY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.TEST_Y,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void testZ(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.TEST_Z,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void levelGantry(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.LEVEL_GANTRY,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void levelGantryTwoPoints(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.LEVEL_GANTRY_TWO_POINTS,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void levelY(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.LEVEL_Y,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void ejectStuckMaterial(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         boolean nozzle0Required = false;
         boolean nozzle1Required = false;
-
+        
         if (nozzleNumber == 0)
         {
             nozzle0Required = true;
@@ -1022,46 +1023,46 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.EJECT_STUCK_MATERIAL,
                 blockUntilFinished, cancellable, nozzle0Required, nozzle1Required);
     }
-
+    
     @Override
     public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         boolean nozzle0Required = nozzleNumber == 0;
         boolean nozzle1Required = nozzleNumber == 1;
-
+        
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.CLEAN_NOZZLE,
                 blockUntilFinished, cancellable, nozzle0Required, nozzle1Required);
     }
-
+    
     @Override
     public void speedTest(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(Macro.SPEED_TEST,
                 blockUntilFinished, cancellable);
     }
-
+    
     @Override
     public void runCommissioningTest(Macro macro, Cancellable cancellable) throws PrinterException
     {
         runCommissioningTest(macro, cancellable, false, false);
     }
-
+    
     public void runCommissioningTest(Macro macro, Cancellable cancellable, boolean requireNozzle0, boolean requireNozzle1) throws PrinterException
     {
         executeMacroWithoutPurgeCheckAndWaitIfRequired(macro,
                 true, cancellable, requireNozzle0, requireNozzle1);
     }
-
+    
     private void executeMacroWithoutPurgeCheck(Macro macro) throws PrinterException
     {
         executeMacroWithoutPurgeCheck(macro, false, false);
     }
-
+    
     private void executeMacroWithoutPurgeCheck(Macro macro,
             boolean requireNozzle0, boolean requireNozzle1) throws PrinterException
     {
         boolean jobAccepted = false;
-
+        
         try
         {
             jobAccepted = printEngine.runMacroPrintJob(macro, requireNozzle0, requireNozzle1);
@@ -1069,13 +1070,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Failed to macro: " + macro.name() + " reason:" + ex.getMessage());
         }
-
+        
         if (!jobAccepted)
         {
             throw new PrintJobRejectedException("Macro " + macro.name() + " could not be run");
         }
     }
-
+    
     private void forceExecuteMacroAsStream(String macroName, boolean blockUntilFinished,
             Cancellable cancellable) throws PrinterException
     {
@@ -1096,7 +1097,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             }, "Executing Macro " + macroName).start();
         }
     }
-
+    
     private void sendMacroFileBitByBit(String macroName, Cancellable cancellable) throws PrinterException
     {
         if (headProperty().get() != null)
@@ -1122,22 +1123,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to open macro file for streaming " + macroName);
         }
     }
-
+    
     @Override
     public void callbackWhenNotBusy(TaskResponder responder
     )
     {
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = false;
-
+            
             PrinterUtils.waitOnBusy(this, cancellable);
             success = true;
-
+            
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Complete");
-
+            
         }, "Waiting until not busy").start();
     }
     /*
@@ -1155,19 +1156,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.
                 createPacket(TxPacketTypeEnum.EXECUTE_GCODE);
-
+        
         String gcodeToSendWithLF = SystemUtils.cleanGCodeForTransmission(gcodeToSend) + "\n";
-
+        
         gcodePacket.setMessagePayload(gcodeToSendWithLF);
-
+        
         GCodeDataResponse response = (GCodeDataResponse) commandInterface.
                 writeToPrinter(gcodePacket);
-
+        
         if (addToTranscript)
         {
             Lookup.getTaskExecutor().runOnGUIThread(new Runnable()
             {
-
+                
                 public void run()
                 {
                     addToGCodeTranscript(gcodeToSendWithLF);
@@ -1181,14 +1182,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 }
             });
         }
-
+        
         return response.getGCodeResponse();
     }
-
+    
     private boolean transmitDataFileStart(final String fileID, boolean jobCanBeReprinted) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = null;
-
+        
         if (jobCanBeReprinted)
         {
             gcodePacket = RoboxTxPacketFactory.createPacket(
@@ -1198,37 +1199,37 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             gcodePacket = RoboxTxPacketFactory.createPacket(
                     TxPacketTypeEnum.START_OF_DATA_FILE);
         }
-
+        
         gcodePacket.setMessagePayload(fileID);
-
+        
         AckResponse response = (AckResponse) commandInterface.writeToPrinter(gcodePacket);
         boolean success = false;
         // Only check for SD card errors here...
         success = !response.getFirmwareErrors().contains(FirmwareError.SD_CARD);
-
+        
         return success;
     }
-
+    
     private AckResponse transmitDataFileChunk(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.DATA_FILE_CHUNK);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
-
+        
         AckResponse response = (AckResponse) commandInterface.writeToPrinter(gcodePacket);
         dataFileSequenceNumber++;
-
+        
         return response;
     }
-
+    
     private AckResponse transmitDataFileEnd(final String payloadData, final int sequenceNumber) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.END_OF_DATA_FILE);
         gcodePacket.setMessagePayload(payloadData);
         gcodePacket.setSequenceNumber(sequenceNumber);
-
+        
         return (AckResponse) commandInterface.writeToPrinter(gcodePacket);
     }
 
@@ -1241,7 +1242,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.
                 createPacket(TxPacketTypeEnum.REPORT_ERRORS);
-
+        
         return (AckResponse) commandInterface.writeToPrinter(gcodePacket);
     }
 
@@ -1253,7 +1254,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public void transmitResetErrors() throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.RESET_ERRORS);
-
+        
         commandInterface.writeToPrinter(gcodePacket);
     }
 
@@ -1269,9 +1270,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.UPDATE_FIRMWARE);
         gcodePacket.setMessagePayload(firmwareID);
-
+        
         AckResponse response = null;
-
+        
         try
         {
             response = (AckResponse) commandInterface.writeToPrinter(gcodePacket);
@@ -1280,16 +1281,16 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             //We expect to see an exception here as the printer disconnects after an update...
             steno.info("Post firmware update disconnect");
         }
-
+        
         return (response.isError());
     }
-
+    
     private void transmitInitiatePrint(final String printJobUUID) throws RoboxCommsException
     {
         RoboxTxPacket gcodePacket = RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.INITIATE_PRINT);
         gcodePacket.setMessagePayload(printJobUUID);
-
+        
         commandInterface.writeToPrinter(gcodePacket);
     }
 
@@ -1302,7 +1303,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return formatHeadEEPROM(false);
     }
-
+    
     @Override
     public AckResponse formatHeadEEPROM(boolean dontPublishResult) throws PrinterException
     {
@@ -1310,7 +1311,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             head.set(null);
         }
-
+        
         FormatHeadEEPROM formatHead = (FormatHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.FORMAT_HEAD_EEPROM);
         AckResponse response = null;
@@ -1323,7 +1324,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error sending format head");
             throw new PrinterException("Error formatting head");
         }
-
+        
         return response;
     }
 
@@ -1348,7 +1349,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         TxPacketTypeEnum.FORMAT_REEL_1_EEPROM);
                 break;
         }
-
+        
         AckResponse response = null;
         try
         {
@@ -1358,7 +1359,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error sending format reel");
             throw new PrinterException("Error formatting reel");
         }
-
+        
         return response;
     }
 
@@ -1372,9 +1373,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     public ReelEEPROMDataResponse readReelEEPROM(int reelNumber, boolean dontPublishResponseEvent) throws RoboxCommsException
     {
         steno.debug("Reading reel " + reelNumber + " EEPROM");
-
+        
         RoboxTxPacket packet = null;
-
+        
         switch (reelNumber)
         {
             case 0:
@@ -1388,7 +1389,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 packet = RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.READ_REEL_0_EEPROM);
                 break;
         }
-
+        
         return (ReelEEPROMDataResponse) commandInterface.writeToPrinter(packet, dontPublishResponseEvent);
     }
 
@@ -1401,7 +1402,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         RoboxTxPacket readPacket = null;
         RoboxTxPacket writePacket = null;
-
+        
         switch (reelNumber)
         {
             case 0:
@@ -1441,9 +1442,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         reelToWrite.displayColour.get());
                 break;
         }
-
+        
         AckResponse response = null;
-
+        
         if (readPacket != null
                 && writePacket != null)
         {
@@ -1463,7 +1464,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         RoboxTxPacket readPacket = null;
         RoboxTxPacket writePacket = null;
-
+        
         switch (reelNumber)
         {
             case 0:
@@ -1510,19 +1511,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 steno.warning("Using default reel - was asked to read reel number " + reelNumber);
                 break;
         }
-
+        
         AckResponse response = null;
-
+        
         if (readPacket != null
                 && writePacket != null)
         {
             response = (AckResponse) commandInterface.writeToPrinter(writePacket);
             commandInterface.writeToPrinter(readPacket);
         }
-
+        
         return response;
     }
-
+    
     @Override
     public void transmitWriteReelEEPROM(int reelNumber,
             String filamentID,
@@ -1532,10 +1533,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             float reelFilamentMultiplier, float reelFeedRateMultiplier, float reelRemainingFilament,
             String friendlyName, MaterialType materialType, Color displayColour) throws RoboxCommsException
     {
-
+        
         RoboxTxPacket readPacket = null;
         RoboxTxPacket writePacket = null;
-
+        
         switch (reelNumber)
         {
             case 0:
@@ -1578,9 +1579,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 steno.warning("Using default reel - was asked to read reel number " + reelNumber);
                 break;
         }
-
+        
         AckResponse response = null;
-
+        
         if (readPacket != null
                 && writePacket != null)
         {
@@ -1588,7 +1589,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             commandInterface.writeToPrinter(readPacket);
         }
     }
-
+    
     @Override
     public AckResponse transmitWriteHeadEEPROM(
             String headTypeCode, String headUniqueID,
@@ -1641,7 +1642,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 ambientTarget);
         commandInterface.writeToPrinter(setTemperatures);
     }
-
+    
     @Override
     public ListFilesResponse transmitListFiles() throws RoboxCommsException
     {
@@ -1649,7 +1650,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 TxPacketTypeEnum.LIST_FILES);
         return (ListFilesResponse) commandInterface.writeToPrinter(listFiles);
     }
-
+    
     @Override
     public StatusResponse transmitStatusRequest() throws RoboxCommsException
     {
@@ -1657,7 +1658,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 TxPacketTypeEnum.STATUS_REQUEST);
         return (StatusResponse) commandInterface.writeToPrinter(statusRequest);
     }
-
+    
     @Override
     public boolean initialiseDataFileSend(String fileID, boolean jobCanBeReprinted) throws DatafileSendAlreadyInProgress, RoboxCommsException
     {
@@ -1666,19 +1667,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         outputBuffer.delete(0, outputBuffer.length());
         dataFileSequenceNumber = 0;
         printInitiated = false;
-
+        
         return success;
     }
-
+    
     @Override
     public SendFile requestSendFileReport() throws RoboxCommsException
     {
         ReadSendFileReport sendFileReport = (ReadSendFileReport) RoboxTxPacketFactory.
                 createPacket(
                         TxPacketTypeEnum.READ_SEND_FILE_REPORT);
-
+        
         SendFile sendFileData = (SendFile) commandInterface.writeToPrinter(sendFileReport, true);
-
+        
         return sendFileData;
     }
 
@@ -1693,7 +1694,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         transmitInitiatePrint(jobUUID);
         printInitiated = true;
     }
-
+    
     @Override
     public void sendDataFileChunk(String hexDigits, boolean lastPacket, boolean appendCRLF) throws DatafileSendNotInitialised, RoboxCommsException
     {
@@ -1702,14 +1703,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
 //            steno.info("Got last packet");
 //        }
         boolean dataIngested = false;
-
+        
         if (appendCRLF)
         {
             hexDigits += "\r";
         }
-
+        
         int remainingCharacters = hexDigits.length();
-
+        
         while (remainingCharacters > 0)
         {
             /*
@@ -1753,11 +1754,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 /*
                  * Send when full
                  */
-
+                
                 if (dataFileSequenceNumber >= dataFileSequenceNumberStartPoint)
                 {
                     steno.trace("Sending chunk seq:" + dataFileSequenceNumber);
-
+                    
                     AckResponse response = transmitDataFileChunk(outputBuffer.toString(),
                             dataFileSequenceNumber);
                     if (response.isError())
@@ -1782,7 +1783,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         Filament filament0 = effectiveFilamentsProperty().get(0);
         Filament filament1 = effectiveFilamentsProperty().get(1);
-
+        
         double nozzle0FirstLayerTarget = 0;
         double nozzle1FirstLayerTarget = 0;
         double nozzle0Target = 0;
@@ -1790,9 +1791,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         double bedFirstLayerTarget = 0;
         double bedTarget = 0;
         double ambientTarget = 0;
-
+        
         Set<Integer> usedExtruders = project.getUsedExtruders(this);
-
+        
         boolean needToOverrideTempsForReel0 = false;
         if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
         {
@@ -1803,7 +1804,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 needToOverrideTempsForReel0 = true;
             }
         }
-
+        
         boolean needToOverrideTempsForReel1 = false;
         if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
         {
@@ -1842,12 +1843,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             nozzle1Target = filament0.getNozzleTemperature();
             nozzle0FirstLayerTarget = filament1.getFirstLayerNozzleTemperature();
             nozzle0Target = filament1.getNozzleTemperature();
-
+            
             changeFilamentInfo("E", filament0.getDiameter(),
                     filament0.getFilamentMultiplier());
             changeEFeedRateMultiplier(filament0.getFeedRateMultiplier());
             extruders.get(0).lastFeedrateMultiplierInUse.set((float) filament0.getFeedRateMultiplier());
-
+            
             changeFilamentInfo("D", filament1.getDiameter(),
                     filament1.getFilamentMultiplier());
             changeDFeedRateMultiplier(filament1.getFeedRateMultiplier());
@@ -1856,13 +1857,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             nozzle0FirstLayerTarget = filament0.getFirstLayerNozzleTemperature();
             nozzle0Target = filament0.getNozzleTemperature();
-
+            
             changeFilamentInfo("E", filament0.getDiameter(),
                     filament0.getFilamentMultiplier());
             changeEFeedRateMultiplier(filament0.getFeedRateMultiplier());
             extruders.get(0).lastFeedrateMultiplierInUse.set((float) filament0.getFeedRateMultiplier());
         }
-
+        
         if (needToOverrideTempsForReel0 || needToOverrideTempsForReel1)
         {
             try
@@ -1879,7 +1880,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 steno.error("Failure to set temperatures prior to print");
             }
         }
-
+        
         try
         {
             transmitDirectGCode(GCodeConstants.goToTargetFirstLayerBedTemperature, false);
@@ -1887,22 +1888,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Error whilst sending preheat commands");
         }
-
+        
         printEngine.printProject(project);
     }
-
+    
     @Override
     public void addToGCodeTranscript(String gcodeToSend)
     {
         gcodeTranscript.add(gcodeToSend);
     }
-
+    
     @Override
     public ObservableList<String> gcodeTranscriptProperty()
     {
         return gcodeTranscript;
     }
-
+    
     @Override
     public void processRoboxResponse(RoboxRxPacket rxPacket)
     {
@@ -1918,7 +1919,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return canOpenDoor;
     }
-
+    
     @Override
     public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException
     {
@@ -1926,30 +1927,30 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrintActionUnavailableException("Door open not available");
         }
-
+        
         setPrinterStatus(PrinterStatus.OPENING_DOOR);
-
+        
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = doOpenDoorActivity(cancellable);
-
+            
             if (responder != null)
             {
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Door open");
             }
-
+            
             setPrinterStatus(PrinterStatus.IDLE);
-
+            
         }, "Opening door").start();
     }
-
+    
     private boolean doOpenDoorActivity(Cancellable cancellable)
     {
         boolean openTheDoorWithCooling = false;
         boolean success = false;
-
+        
         if (printerAncillarySystems
                 .bedTemperatureProperty().get() > 60)
         {
@@ -1972,7 +1973,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             openTheDoorWithCooling = true;
         }
-
+        
         if (openTheDoorWithCooling)
         {
             try
@@ -1985,10 +1986,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 steno.error("Error when moving sending open door command");
             }
         }
-
+        
         return success;
     }
-
+    
     @Override
     public void goToOpenDoorPositionDontWait(TaskResponder responder) throws PrinterException
     {
@@ -1996,26 +1997,26 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrintActionUnavailableException("Door open not available");
         }
-
+        
         setPrinterStatus(PrinterStatus.OPENING_DOOR);
-
+        
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = doOpenDoorActivityDontWait(cancellable);
-
+            
             if (responder != null)
             {
                 Lookup.getTaskExecutor().respondOnGUIThread(responder, success,
                         "Door open don't wait");
             }
-
+            
             setPrinterStatus(PrinterStatus.IDLE);
-
+            
         }, "Opening door don't wait").start();
     }
-
+    
     private boolean doOpenDoorActivityDontWait(Cancellable cancellable)
     {
         boolean success = false;
@@ -2028,19 +2029,30 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Error when moving sending open door command");
         }
-
+        
         return success;
     }
-
+    
     @Override
     public void updatePrinterName(String chosenPrinterName) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printerFriendlyName.set(chosenPrinterName);
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2052,17 +2064,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write name to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterDisplayColour(Color displayColour) throws PrinterException
     {
         WritePrinterID writeIDCmd = (WritePrinterID) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printerColour.set(displayColour);
-        writeIDCmd.populatePacket(newIdentity);
-
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2074,17 +2097,29 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write colour to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterModelAndEdition(PrinterModel model, PrinterEdition edition) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printermodel.set(model.getCodeName());
         newIdentity.printeredition.set(edition.getCodeName());
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2097,16 +2132,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write model and edition to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterWeek(String weekIdentifier) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printerweekOfManufacture.set(weekIdentifier);
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2119,16 +2166,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write week to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterYear(String yearIdentifier) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printeryearOfManufacture.set(yearIdentifier);
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2141,16 +2200,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write year to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterPONumber(String poIdentifier) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printerpoNumber.set(poIdentifier);
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2163,16 +2234,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write PO number to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterSerialNumber(String serialIdentifier) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printerserialNumber.set(serialIdentifier);
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2185,16 +2268,28 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write serial number to printer");
         }
     }
-
+    
     @Override
     public void updatePrinterIDChecksum(String checksum) throws PrinterException
     {
         WritePrinterID writeIDCmd
                 = (WritePrinterID) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.WRITE_PRINTER_ID);
-
+        
         PrinterIdentity newIdentity = printerIdentity.clone();
         newIdentity.printercheckByte.set(checksum);
-        writeIDCmd.populatePacket(newIdentity);
+        writeIDCmd.populatePacket(
+                newIdentity.printerUniqueID.get(),
+                newIdentity.printermodel.get(),
+                newIdentity.printeredition.get(),
+                newIdentity.printerweekOfManufacture.get(),
+                newIdentity.printeryearOfManufacture.get(),
+                newIdentity.printerpoNumber.get(),
+                newIdentity.printerserialNumber.get(),
+                newIdentity.printercheckByte.get(),
+                newIdentity.printerFriendlyName.get(),
+                newIdentity.printerColour.get(),
+                newIdentity.firmwareVersion.get());
+        
         try
         {
             AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeIDCmd);
@@ -2207,7 +2302,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Failed to write checksum to printer");
         }
     }
-
+    
     @Override
     public void goToTargetBedTemperature()
     {
@@ -2219,7 +2314,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending go to target bed temperature command");
         }
     }
-
+    
     @Override
     public void switchBedHeaterOff()
     {
@@ -2231,7 +2326,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending switch bed heater off command");
         }
     }
-
+    
     @Override
     public void goToTargetNozzleHeaterTemperature(int nozzleHeaterNumber)
     {
@@ -2250,7 +2345,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending go to target nozzle temperature command");
         }
     }
-
+    
     @Override
     public void setNozzleHeaterTargetTemperature(int nozzleHeaterNumber, int targetTemperature)
     {
@@ -2268,7 +2363,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 {
                     tempCommand.append("M104");
                 }
-
+                
                 if (nozzleHeaterNumber == 0)
                 {
                     tempCommand.append(" S");
@@ -2284,7 +2379,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending set nozzle temperature command");
         }
     }
-
+    
     @Override
     public void setAmbientTemperature(int targetTemperature)
     {
@@ -2296,7 +2391,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending set ambient temperature command");
         }
     }
-
+    
     @Override
     public void setBedFirstLayerTargetTemperature(int targetTemperature)
     {
@@ -2309,7 +2404,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending set bed first layer target temperature command");
         }
     }
-
+    
     @Override
     public void setBedTargetTemperature(int targetTemperature)
     {
@@ -2321,7 +2416,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending set bed target temperature command");
         }
     }
-
+    
     @Override
     public void sendRawGCode(String gCode, boolean addToTranscript)
     {
@@ -2333,7 +2428,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending raw gcode : " + gCode);
         }
     }
-
+    
     @Override
     public void gotoNozzlePosition(float position)
     {
@@ -2345,7 +2440,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending close nozzle command");
         }
     }
-
+    
     @Override
     public void switchOnHeadLEDs() throws PrinterException
     {
@@ -2358,7 +2453,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error sending LED on command");
         }
     }
-
+    
     @Override
     public void switchOffHeadLEDs() throws PrinterException
     {
@@ -2371,14 +2466,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error sending LED off command");
         }
     }
-
+    
     @Override
     public void switchAllNozzleHeatersOff()
     {
         switchNozzleHeaterOff(0);
         switchNozzleHeaterOff(1);
     }
-
+    
     @Override
     public void switchNozzleHeaterOff(int heaterNumber)
     {
@@ -2398,7 +2493,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending switch nozzle heater off command");
         }
     }
-
+    
     @Override
     public void homeX()
     {
@@ -2410,7 +2505,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending x home command");
         }
     }
-
+    
     @Override
     public void homeY()
     {
@@ -2422,7 +2517,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending y home command");
         }
     }
-
+    
     @Override
     public void homeZ()
     {
@@ -2434,7 +2529,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending z home command");
         }
     }
-
+    
     @Override
     public void probeX()
     {
@@ -2446,13 +2541,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error sending probe X command");
         }
     }
-
+    
     @Override
     public float getXDelta() throws PrinterException
     {
         float deltaValue = 0;
         String measurementString = null;
-
+        
         try
         {
             String response = transmitDirectGCode("M111", false);
@@ -2460,7 +2555,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             measurementString = response.replaceFirst("Xdelta:", "").replaceFirst(
                     "\nok", "").trim();
             deltaValue = Float.valueOf(measurementString.trim());
-
+            
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending get X delta");
@@ -2471,10 +2566,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Measurement string for X delta: " + measurementString
                     + " : could not be parsed");
         }
-
+        
         return deltaValue;
     }
-
+    
     @Override
     public void probeY()
     {
@@ -2487,13 +2582,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error sending probe Y command");
         }
     }
-
+    
     @Override
     public float getYDelta() throws PrinterException
     {
         float deltaValue = 0;
         String measurementString = null;
-
+        
         try
         {
             String response = transmitDirectGCode("M112", false);
@@ -2501,7 +2596,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             measurementString = response.replaceFirst("Ydelta:", "").replaceFirst(
                     "\nok", "").trim();
             deltaValue = Float.valueOf(measurementString.trim());
-
+            
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending get Y delta");
@@ -2512,10 +2607,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Measurement string for Y delta: " + measurementString
                     + " : could not be parsed");
         }
-
+        
         return deltaValue;
     }
-
+    
     @Override
     public void probeZ()
     {
@@ -2528,13 +2623,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error sending probe Z command");
         }
     }
-
+    
     @Override
     public float getZDelta() throws PrinterException
     {
         float deltaValue = 0;
         String measurementString = null;
-
+        
         try
         {
             String response = transmitDirectGCode("M113", false);
@@ -2542,7 +2637,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             measurementString = response.replaceFirst("Zdelta:", "").replaceFirst(
                     "\nok", "").trim();
             deltaValue = Float.valueOf(measurementString.trim());
-
+            
         } catch (RoboxCommsException ex)
         {
             steno.error("Error sending get Z delta");
@@ -2553,10 +2648,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Measurement string for Z delta: " + measurementString
                     + " : could not be parsed");
         }
-
+        
         return deltaValue;
     }
-
+    
     @Override
     public void levelGantryRaw()
     {
@@ -2568,7 +2663,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending level gantry command");
         }
     }
-
+    
     @Override
     public void goToZPosition(double position, int feedrate_mmPerMin)
     {
@@ -2580,7 +2675,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending z position command");
         }
     }
-
+    
     @Override
     public void goToZPosition(double position)
     {
@@ -2592,7 +2687,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending z position command");
         }
     }
-
+    
     @Override
     public void goToXYPosition(double xPosition, double yPosition)
     {
@@ -2605,7 +2700,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending x y position command");
         }
     }
-
+    
     @Override
     public void goToXYZPosition(double xPosition, double yPosition, double zPosition)
     {
@@ -2619,7 +2714,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending x y z position command");
         }
     }
-
+    
     @Override
     public void switchToAbsoluteMoveMode()
     {
@@ -2631,7 +2726,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending change to absolute move command");
         }
     }
-
+    
     @Override
     public void switchToRelativeMoveMode()
     {
@@ -2643,27 +2738,70 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when sending change to relative move command");
         }
     }
-
+    
     @Override
     public void writeHeadEEPROM(Head headToWrite, boolean readback) throws RoboxCommsException
     {
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.WRITE_HEAD_EEPROM);
-        writeHeadEEPROM.populateEEPROM(headToWrite);
+        
+        String filamentID1 = "";
+        float lastFilamentTemp1 = 0;
+        
+        if (headToWrite.getNozzleHeaters().size() > 1)
+        {
+            filamentID1 = headToWrite.getNozzleHeaters().get(1).filamentIDProperty().get();
+            lastFilamentTemp1 = headToWrite.getNozzleHeaters().get(1).lastFilamentTemperatureProperty().get();
+        }
+        
+        float nozzle1XOffset = 0;
+        float nozzle1YOffset = 0;
+        float nozzle1ZOffset = 0;
+        float nozzle1BOffset = 0;
+        
+        if (headToWrite.getNozzles().size() > 1)
+        {
+            nozzle1XOffset = headToWrite.getNozzles().get(1).xOffsetProperty().get();
+            nozzle1YOffset = headToWrite.getNozzles().get(1).yOffsetProperty().get();
+            nozzle1ZOffset = headToWrite.getNozzles().get(1).zOffsetProperty().get();
+            nozzle1BOffset = headToWrite.getNozzles().get(1).bOffsetProperty().get();
+        }
+        
+        writeHeadEEPROM.populateEEPROM(headToWrite.typeCodeProperty().get(),
+                headToWrite.uniqueIDProperty().get(),
+                headToWrite.getNozzleHeaters().size(),
+                headToWrite.getNozzleHeaters().get(0).maximumTemperatureProperty().get(),
+                headToWrite.getNozzleHeaters().get(0).betaProperty().get(),
+                headToWrite.getNozzleHeaters().get(0).tCalProperty().get(),
+                headToWrite.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get(),
+                headToWrite.getNozzleHeaters().get(0).filamentIDProperty().get(),
+                lastFilamentTemp1,
+                filamentID1,
+                headToWrite.headHoursProperty().get(),
+                headToWrite.getNozzles().size(),
+                headToWrite.getNozzles().get(0).xOffsetProperty().get(),
+                headToWrite.getNozzles().get(0).yOffsetProperty().get(),
+                headToWrite.getNozzles().get(0).zOffsetProperty().get(),
+                headToWrite.getNozzles().get(0).bOffsetProperty().get(),
+                nozzle1XOffset,
+                nozzle1YOffset,
+                nozzle1ZOffset,
+                nozzle1BOffset);
+        
         commandInterface.writeToPrinter(writeHeadEEPROM);
-
+        
         if (readback)
         {
             readHeadEEPROM(false);
         }
     }
-
+    
     @Override
     public void writeHeadEEPROM(Head headToWrite) throws RoboxCommsException
     {
         writeHeadEEPROM(headToWrite, true);
     }
-
+    
     @Override
     public HeadEEPROMDataResponse readHeadEEPROM(boolean dontPublishResponseEvent) throws RoboxCommsException
     {
@@ -2671,7 +2809,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 TxPacketTypeEnum.READ_HEAD_EEPROM);
         return (HeadEEPROMDataResponse) commandInterface.writeToPrinter(readHead, dontPublishResponseEvent);
     }
-
+    
     @Override
     public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException
     {
@@ -2680,25 +2818,25 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrintActionUnavailableException("Extruder " + extruderNumber
                     + " is not present");
         }
-
+        
         if (!extruders.get(extruderNumber).canEject.get())
         {
             throw new PrintActionUnavailableException("Eject is not available for extruder "
                     + extruderNumber);
         }
-
+        
         final Cancellable cancellable = new SimpleCancellable();
-
+        
         new Thread(() ->
         {
             boolean success = doEjectFilamentActivity(extruderNumber, cancellable);
-
+            
             Lookup.getTaskExecutor().respondOnGUIThread(responder, success, "Filament ejected");
-
+            
         }, "Ejecting filament").start();
-
+        
     }
-
+    
     private boolean doEjectFilamentActivity(int extruderNumber, Cancellable cancellable)
     {
         boolean success = false;
@@ -2712,10 +2850,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Error whilst ejecting filament");
         }
-
+        
         return success;
     }
-
+    
     @Override
     public void jogAxis(AxisSpecifier axis, float distance, float feedrate, boolean use_G1) throws PrinterException
     {
@@ -2748,9 +2886,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error jogging axis");
             throw new PrinterException("Comms error whilst jogging axis");
         }
-
+        
     }
-
+    
     @Override
     public void switchOffHeadFan() throws PrinterException
     {
@@ -2763,7 +2901,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error whilst sending head fan off");
         }
     }
-
+    
     @Override
     public void switchOnHeadFan() throws PrinterException
     {
@@ -2776,7 +2914,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error whilst sending head fan on");
         }
     }
-
+    
     @Override
     public void openNozzleFully() throws PrinterException
     {
@@ -2789,7 +2927,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error whilst sending nozzle open command");
         }
     }
-
+    
     @Override
     public void openNozzleFullyExtra() throws PrinterException
     {
@@ -2802,7 +2940,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error whilst sending nozzle open command");
         }
     }
-
+    
     @Override
     public void closeNozzleFully() throws PrinterException
     {
@@ -2815,15 +2953,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error whilst sending nozzle close command");
         }
     }
-
+    
     @Override
     public void setAmbientLEDColour(Color colour) throws PrinterException
     {
         SetAmbientLEDColour ledColour = (SetAmbientLEDColour) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.SET_AMBIENT_LED_COLOUR);
-
+        
         ledColour.setLEDColour(colour);
-
+        
         try
         {
             commandInterface.writeToPrinter(ledColour, true);
@@ -2832,7 +2970,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error sending ambient LED command");
         }
     }
-
+    
     @Override
     public void setReelLEDColour(Color colour) throws PrinterException
     {
@@ -2847,12 +2985,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error sending reel LED command");
         }
     }
-
+    
     @Override
     public PrinterIDResponse readPrinterID() throws PrinterException
     {
         PrinterIDResponse idResponse = null;
-
+        
         ReadPrinterID readId = (ReadPrinterID) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.READ_PRINTER_ID);
         try
@@ -2862,15 +3000,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Error sending read printer ID command");
         }
-
+        
         return idResponse;
     }
-
+    
     @Override
     public FirmwareResponse readFirmwareVersion() throws PrinterException
     {
         FirmwareResponse response = null;
-
+        
         QueryFirmwareVersion readFirmware = (QueryFirmwareVersion) RoboxTxPacketFactory
                 .createPacket(TxPacketTypeEnum.QUERY_FIRMWARE_VERSION);
         try
@@ -2882,7 +3020,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         }
         return response;
     }
-
+    
     @Override
     public void selectNozzle(int nozzleNumber) throws PrinterException
     {
@@ -2890,7 +3028,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Nozzle number " + nozzleNumber + " does not exist");
         }
-
+        
         try
         {
             transmitDirectGCode(GCodeConstants.selectNozzle + nozzleNumber, true);
@@ -2900,21 +3038,21 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Error whilst sending nozzle select command");
         }
     }
-
+    
     @Override
     public void shutdown(boolean shutdownCommandInterface)
     {
         filamentContainer.removeFilamentDatabaseChangesListener(filamentDatabaseChangesListener);
         steno.debug("Shutdown print engine...");
         printEngine.shutdown();
-
+        
         if (shutdownCommandInterface)
         {
             steno.debug("Shutdown command interface...");
             commandInterface.shutdown();
         }
     }
-
+    
     @Override
     public XAndYStateTransitionManager startCalibrateXAndY() throws PrinterException
     {
@@ -2922,20 +3060,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-
+        
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
                 Cancellable errorCancellable)
                 -> new CalibrationXAndYActions(HardwarePrinter.this, userCancellable,
                         errorCancellable);
-
+        
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationXAndYTransitions((CalibrationXAndYActions) actions);
-
+        
         calibrationAlignmentManager = new XAndYStateTransitionManager(actionsFactory,
                 transitionsFactory);
         return calibrationAlignmentManager;
     }
-
+    
     @Override
     public NozzleHeightStateTransitionManager startCalibrateNozzleHeight() throws PrinterException
     {
@@ -2943,20 +3081,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             throw new PrinterException("Calibrate not permitted");
         }
-
+        
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
                 Cancellable errorCancellable)
                 -> new CalibrationNozzleHeightActions(HardwarePrinter.this, userCancellable,
                         errorCancellable);
-
+        
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationNozzleHeightTransitions((CalibrationNozzleHeightActions) actions);
-
+        
         calibrationHeightManager = new NozzleHeightStateTransitionManager(actionsFactory,
                 transitionsFactory);
         return calibrationHeightManager;
     }
-
+    
     @Override
     public PurgeStateTransitionManager startPurge() throws PrinterException
     {
@@ -2977,32 +3115,32 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
                 Cancellable errorCancellable)
                 -> new PurgeActions(HardwarePrinter.this, userCancellable, errorCancellable);
-
+        
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new PurgeTransitions((PurgeActions) actions);
-
+        
         PurgeStateTransitionManager purgeManager
                 = new PurgeStateTransitionManager(actionsFactory, transitionsFactory);
         return purgeManager;
     }
-
+    
     @Override
     public NozzleOpeningStateTransitionManager startCalibrateNozzleOpening() throws PrinterException
     {
-
+        
         StateTransitionManager.StateTransitionActionsFactory actionsFactory = (Cancellable userCancellable,
                 Cancellable errorCancellable)
                 -> new CalibrationNozzleOpeningActions(HardwarePrinter.this, userCancellable,
                         errorCancellable);
-
+        
         StateTransitionManager.TransitionsFactory transitionsFactory = (StateTransitionActions actions)
                 -> new CalibrationNozzleOpeningTransitions((CalibrationNozzleOpeningActions) actions);
-
+        
         calibrationOpeningManager = new NozzleOpeningStateTransitionManager(actionsFactory,
                 transitionsFactory);
         return calibrationOpeningManager;
     }
-
+    
     @Override
     public void registerErrorConsumer(ErrorConsumer errorConsumer,
             List<FirmwareError> errorsOfInterest)
@@ -3011,7 +3149,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 + " on printer " + printerIdentity.printerFriendlyName);
         errorConsumers.put(errorConsumer, errorsOfInterest);
     }
-
+    
     @Override
     public void registerErrorConsumerAllErrors(ErrorConsumer errorConsumer)
     {
@@ -3021,7 +3159,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         errorsOfInterest.add(FirmwareError.ALL_ERRORS);
         errorConsumers.put(errorConsumer, errorsOfInterest);
     }
-
+    
     @Override
     public void deregisterErrorConsumer(ErrorConsumer errorConsumer)
     {
@@ -3130,7 +3268,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     @Override
     public void consumeError(FirmwareError error)
     {
-
+        
         if (!inCommissioningMode)
         {
             switch (error)
@@ -3138,11 +3276,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case E_UNLOAD_ERROR:
                     Lookup.getSystemNotificationHandler().showEjectFailedDialog(this, 1);
                     break;
-
+                
                 case D_UNLOAD_ERROR:
                     Lookup.getSystemNotificationHandler().showEjectFailedDialog(this, 0);
                     break;
-
+                
                 case E_FILAMENT_SLIP:
                 case D_FILAMENT_SLIP:
                     try
@@ -3241,37 +3379,37 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             }
         }
     }
-
+    
     @Override
     public void connectionEstablished()
     {
         processErrors = true;
     }
-
+    
     @Override
     public List<Integer> requestDebugData(boolean addToGCodeTranscript
     )
     {
         List<Integer> debugData = null;
-
+        
         RoboxTxPacket debugRequest = RoboxTxPacketFactory.
                 createPacket(TxPacketTypeEnum.READ_DEBUG_DATA);
-
+        
         try
         {
             DebugDataResponse response = (DebugDataResponse) commandInterface.
                     writeToPrinter(debugRequest);
-
+            
             if (response != null)
             {
                 debugData = response.getDebugData();
             }
-
+            
             if (addToGCodeTranscript)
             {
                 Lookup.getTaskExecutor().runOnGUIThread(new Runnable()
                 {
-
+                    
                     public void run()
                     {
                         if (response == null)
@@ -3288,24 +3426,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         {
             steno.error("Error whilst requesting debug data: " + ex.getMessage());
         }
-
+        
         return debugData;
-
+        
     }
-
+    
     @Override
     public void setDataFileSequenceNumberStartPoint(int startingSequenceNumber
     )
     {
         dataFileSequenceNumberStartPoint = startingSequenceNumber;
     }
-
+    
     @Override
     public void resetDataFileSequenceNumber()
     {
         dataFileSequenceNumber = 0;
     }
-
+    
     @Override
     public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException
     {
@@ -3333,7 +3471,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     + ex.getMessage());
         }
     }
-
+    
     @Override
     public void suppressFirmwareErrors(FirmwareError... firmwareErrors
     )
@@ -3343,20 +3481,20 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             suppressedFirmwareErrors.add(firmwareError);
         }
     }
-
+    
     @Override
     public void cancelFirmwareErrorSuppression()
     {
         suppressedFirmwareErrors.clear();
     }
-
+    
     @Override
     public void suppressEEPROMErrorCorrection(boolean suppress
     )
     {
         repairCorruptEEPROMData = !suppress;
     }
-
+    
     @Override
     public TemperatureAndPWMData getTemperatureAndPWMData() throws PrinterException
     {
@@ -3371,24 +3509,24 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             steno.error("Error when requesting temperature and PWM data");
             throw new PrinterException("Error when requesting temperature and PWM data");
         }
-
+        
         return data;
-
+        
     }
-
+    
     class RoboxEventProcessor implements Runnable
     {
-
+        
         private Printer printer;
         private RoboxRxPacket rxPacket;
         private boolean errorWasConsumed;
-
+        
         public RoboxEventProcessor(Printer printer, RoboxRxPacket rxPacket)
         {
             this.printer = printer;
             this.rxPacket = rxPacket;
         }
-
+        
         @Override
         public void run()
         {
@@ -3396,9 +3534,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             {
                 case ACK_WITH_ERRORS:
                     AckResponse ackResponse = (AckResponse) rxPacket;
-
+                    
                     steno.trace(ackResponse.toString());
-
+                    
                     if (ackResponse.isError())
                     {
                         List<FirmwareError> errorsFound = new ArrayList<>(ackResponse.
@@ -3407,7 +3545,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         // Copy the error consumer list to stop concurrent modification exceptions if the consumer deregisters itself
                         Map<ErrorConsumer, List<FirmwareError>> errorsToIterateThrough = new WeakHashMap<>(
                                 errorConsumers);
-
+                        
                         try
                         {
                             steno.debug("Clearing errors");
@@ -3416,15 +3554,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         {
                             steno.warning("Couldn't clear firmware error list");
                         }
-
+                        
                         if (processErrors)
                         {
-                            steno.debug(ackResponse.getErrorsAsString());
+                            StringBuilder errorOutput = new StringBuilder();
+                            ackResponse.getFirmwareErrors().forEach(error ->
+                            {
+                                errorOutput.append(Lookup.i18n(error.getErrorTitleKey()));
+                                errorOutput.append('\n');
+                            });
+                            steno.debug(errorOutput.toString());
+                            
                             errorsFound.stream()
                                     .forEach(foundError ->
                                             {
                                                 errorWasConsumed = false;
-
+                                                
                                                 if (suppressedFirmwareErrors.contains(foundError)
                                                 || (foundError == FirmwareError.HEAD_POWER_EEPROM
                                                 && doNotCheckForPresenceOfHead)
@@ -3470,7 +3615,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         }
                     }
                     break;
-
+                
                 case STATUS_RESPONSE:
                     if (initalStatusCount < 2)
                     {
@@ -3513,7 +3658,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerAncillarySystems.updateGraphData();
                     printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
                     printerAncillarySystems.dualReelAdaptorPresent.set(statusResponse.isDualReelAdaptorPresent());
-
+                    
                     if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(
                             FirmwareError.SD_CARD))
                     {
@@ -3527,7 +3672,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             1);
                     boolean filament2Loaded = filamentLoadedGetter.getFilamentLoaded(statusResponse,
                             2);
-
+                    
                     extruders.get(firstExtruderNumber).filamentLoaded.set(filament1Loaded);
                     extruders.get(firstExtruderNumber).indexWheelState.set(statusResponse.
                             isEIndexStatus());
@@ -3537,7 +3682,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             getEFilamentDiameter());
                     extruders.get(firstExtruderNumber).extrusionMultiplier.set(statusResponse.
                             getEFilamentMultiplier());
-
+                    
                     extruders.get(secondExtruderNumber).filamentLoaded.set(filament2Loaded);
                     extruders.get(secondExtruderNumber).indexWheelState.set(statusResponse.
                             isDIndexStatus());
@@ -3547,29 +3692,29 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             getDFilamentDiameter());
                     extruders.get(secondExtruderNumber).extrusionMultiplier.set(statusResponse.
                             getDFilamentMultiplier());
-
+                    
                     pauseStatus.set(statusResponse.getPauseStatus());
-
+                    
                     busyStatus.set(statusResponse.getBusyStatus());
-
+                    
                     if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT_E
                             && !filament1Loaded)
                     {
                         Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
-
+                        
                     } else if (statusResponse.getBusyStatus() == BusyStatus.LOADING_FILAMENT_D
                             && !filament2Loaded)
                     {
                         Lookup.getSystemNotificationHandler().showKeepPushingFilamentNotification();
-
+                        
                     } else
                     {
                         Lookup.getSystemNotificationHandler().hideKeepPushingFilamentNotification();
                     }
-
+                    
                     printJobLineNumber.set(statusResponse.getPrintJobLineNumber());
                     printJobID.set(statusResponse.getRunningPrintJobID());
-
+                    
                     if (head.isNotNull().get())
                     {
                         /*
@@ -3586,7 +3731,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     statusResponse.getNozzle0TargetTemperature());
                             nozzleHeater0.heaterMode.set(
                                     statusResponse.getNozzle0HeaterMode());
-
+                            
                             if (head.get().getNozzleHeaters().size() > 1)
                             {
                                 NozzleHeater nozzleHeater1 = head.get().nozzleHeaters.get(1);
@@ -3615,18 +3760,18 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                     .forEach(nozzle -> nozzle.BPosition.set(
                                                     statusResponse.getBPosition()));
                         }
-
+                        
                         head.get().BPosition.set(statusResponse.getBPosition());
                         head.get().headXPosition.set(statusResponse.getHeadXPosition());
                         head.get().headYPosition.set(statusResponse.getHeadYPosition());
                         head.get().headZPosition.set(statusResponse.getHeadZPosition());
                         head.get().nozzleInUse.set(statusResponse.getNozzleInUse());
                     }
-
+                    
                     checkHeadEEPROM(statusResponse);
-
+                    
                     checkReelEEPROMs(statusResponse);
-
+                    
                     if (!filament1Loaded
                             && !reels.containsKey(0)
                             && effectiveFilaments.containsKey(0)
@@ -3634,7 +3779,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         effectiveFilaments.put(0, FilamentContainer.UNKNOWN_FILAMENT);
                     }
-
+                    
                     if (!filament2Loaded
                             && !reels.containsKey(1)
                             && effectiveFilaments.containsKey(1)
@@ -3642,14 +3787,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     {
                         effectiveFilaments.put(1, FilamentContainer.UNKNOWN_FILAMENT);
                     }
-
+                    
                     break;
-
+                
                 case FIRMWARE_RESPONSE:
                     FirmwareResponse fwResponse = (FirmwareResponse) rxPacket;
                     printerIdentity.firmwareVersion.set(fwResponse.getFirmwareRevision());
                     break;
-
+                
                 case PRINTER_ID_RESPONSE:
                     PrinterIDResponse idResponse = (PrinterIDResponse) rxPacket;
                     printerIdentity.printermodel.set(idResponse.getModel());
@@ -3663,30 +3808,30 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerIdentity.printercheckByte.set(idResponse.getCheckByte());
                     printerIdentity.printerFriendlyName.set(idResponse.getPrinterFriendlyName());
                     printerIdentity.printerColour.set(idResponse.getPrinterColour());
-
+                    
                     if (idResponse.getPrinterColour() != null)
                     {
                         try
                         {
                             setAmbientLEDColour(idResponse.getPrinterColour());
-
+                            
                         } catch (PrinterException ex)
                         {
                             steno.warning("Couldn't set printer LED colour");
                         }
                     }
                     break;
-
+                
                 case REEL_0_EEPROM_DATA:
                 case REEL_1_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
-
+                    
                     if (!filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
                         // unrecognised reel
                         saveUnknownFilamentToDatabase(reelResponse);
                     }
-
+                    
                     Reel reel;
                     if (!reels.containsKey(reelResponse.getReelNumber()))
                     {
@@ -3698,15 +3843,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         reel = reels.get(reelResponse.getReelNumber());
                         reel.updateFromEEPROMData(reelResponse);
                     }
-
+                    
                     extruders.get(reelResponse.getReelNumber()).lastFeedrateMultiplierInUse.set(reelResponse.getFeedRateMultiplier());
-
+                    
                     if (filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
                     {
                         // Check to see if the data is in bounds
                         RepairResult result = reels.get(reelResponse.getReelNumber()).
                                 bringDataInBounds();
-
+                        
                         switch (result)
                         {
                             case REPAIRED_WRITE_ONLY:
@@ -3733,12 +3878,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         }
                     }
                     break;
-
+                
                 case HEAD_EEPROM_DATA:
 //                    steno.info("Head EEPROM data received");
 
                     HeadEEPROMDataResponse headResponse = (HeadEEPROMDataResponse) rxPacket;
-
+                    
                     if (repairCorruptEEPROMData)
                     {
                         if (Head.isTypeCodeValid(headResponse.getTypeCode()))
@@ -3763,7 +3908,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 if (!headIntegrityChecksInhibited)
                                 {
                                     RepairResult result = head.get().bringDataInBounds();
-
+                                    
                                     switch (result)
                                     {
                                         case REPAIRED_WRITE_ONLY:
@@ -3815,7 +3960,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                         (TaskResponse<HeadFile> taskResponse) ->
                                         {
                                             HeadFile chosenHeadFile = taskResponse.getReturnedObject();
-
+                                            
                                             if (chosenHeadFile != null)
                                             {
                                                 Head chosenHead = new Head(chosenHeadFile);
@@ -3860,22 +4005,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                         }
                     }
                     break;
-
+                
                 case GCODE_RESPONSE:
                     break;
-
+                
                 case HOURS_COUNTER:
                     HoursCounterResponse hoursResponse = (HoursCounterResponse) rxPacket;
                     printerAncillarySystems.hoursCounter.set(hoursResponse.getHoursCounter());
                     break;
-
+                
                 default:
                     steno.warning("Unknown packet type delivered to Printer Status: "
                             + rxPacket.getPacketType().name());
                     break;
             }
         }
-
+        
         private void checkHeadEEPROM(StatusResponse statusResponse)
         {
             if (lastHeadEEPROMState.get() != statusResponse.getHeadEEPROMState())
@@ -3910,7 +4055,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 }
             }
         }
-
+        
         private void checkReelEEPROMs(StatusResponse statusResponse)
         {
             for (int reelNumber = 0; reelNumber < maxNumberOfReels; reelNumber++)
@@ -3972,7 +4117,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             }
         }
     };
-
+    
     @Override
     public void resetHeadToDefaults() throws PrinterException
     {
@@ -3993,19 +4138,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     "Asked to reset head to defaults when no head was attached");
         }
     }
-
+    
     @Override
     public void inhibitHeadIntegrityChecks(boolean inhibit
     )
     {
         headIntegrityChecksInhibited = inhibit;
     }
-
+    
     @Override
     public void changeEFeedRateMultiplier(double feedRate) throws PrinterException
     {
         steno.debug("Firing change feed rate multiplier for E: " + feedRate);
-
+        
         try
         {
             SetEFeedRateMultiplier setFeedRateMultiplier = (SetEFeedRateMultiplier) RoboxTxPacketFactory.
@@ -4018,12 +4163,12 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Comms exception when settings feed rate");
         }
     }
-
+    
     @Override
     public void changeDFeedRateMultiplier(double feedRate) throws PrinterException
     {
         steno.debug("Firing change feed rate multiplier for D: " + feedRate);
-
+        
         try
         {
             SetDFeedRateMultiplier setFeedRateMultiplier = (SetDFeedRateMultiplier) RoboxTxPacketFactory.
@@ -4036,14 +4181,14 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             throw new PrinterException("Comms exception when settings feed rate");
         }
     }
-
+    
     @Override
     public void changeFilamentInfo(String extruderLetter,
             double filamentDiameter,
             double extrusionMultiplier) throws PrinterException
     {
         Extruder selectedExtruder = null;
-
+        
         for (Extruder extruder : extruders)
         {
             if (extruder.getExtruderAxisLetter().equalsIgnoreCase(extruderLetter) && extruder.
@@ -4053,19 +4198,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 break;
             }
         }
-
+        
         if (selectedExtruder == null)
         {
             throw new PrinterException(
                     "Attempt to change filament info for non-existent extruder: "
                     + extruderLetter);
         }
-
+        
         steno.debug("Firing change filament info:"
                 + "Extruder " + extruderLetter
                 + " Diameter " + filamentDiameter
                 + " Multiplier " + extrusionMultiplier);
-
+        
         try
         {
             switch (extruderLetter)
@@ -4094,22 +4239,22 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     + extruderLetter);
         }
     }
-
+    
     public NozzleHeightStateTransitionManager getNozzleHeightCalibrationStateManager()
     {
         return calibrationHeightManager;
     }
-
+    
     public NozzleOpeningStateTransitionManager getNozzleOpeningCalibrationStateManager()
     {
         return calibrationOpeningManager;
     }
-
+    
     public XAndYStateTransitionManager getNozzleAlignmentCalibrationStateManager()
     {
         return calibrationAlignmentManager;
     }
-
+    
     @Override
     public void loadFirmware(String firmwareFilePath)
     {
@@ -4125,31 +4270,31 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
     {
         return lastReelEEPROMState;
     }
-
+    
     @Override
     public ReadOnlyObjectProperty<EEPROMState> getHeadEEPROMStateProperty()
     {
         return lastHeadEEPROMState;
     }
-
+    
     @Override
     public void startComms()
     {
         commandInterface.start();
     }
-
+    
     @Override
     public void stopComms()
     {
         commandInterface.shutdown();
     }
-
+    
     @Override
     public String toString()
     {
         return printerIdentity.printerFriendlyName.get();
     }
-
+    
     @Override
     public void setCommissioningTestMode(boolean inCommissioningMode)
     {

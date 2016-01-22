@@ -1,7 +1,7 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import celtech.coreUI.controllers.StatusInsetController;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.printerControl.PrintJob;

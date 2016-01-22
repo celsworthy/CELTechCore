@@ -1,15 +1,15 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.configuration.EEPROMState;
+import celtech.comms.remote.EEPROMState;
 import celtech.configuration.Filament;
-import celtech.configuration.MaterialType;
+import celtech.roboxbase.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
-import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import static celtech.comms.remote.ColourStringConverter.colourToString;
+import static celtech.comms.remote.ColourStringConverter.stringToColor;
+import celtech.comms.remote.exceptions.RoboxCommsException;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;

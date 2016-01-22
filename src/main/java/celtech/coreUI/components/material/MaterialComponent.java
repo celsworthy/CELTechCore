@@ -5,11 +5,11 @@ package celtech.coreUI.components.material;
 
 import celtech.Lookup;
 import celtech.configuration.Filament;
-import celtech.configuration.MaterialType;
+import celtech.roboxbase.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
-import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
+import static celtech.comms.remote.ColourStringConverter.colourToString;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.Reel;

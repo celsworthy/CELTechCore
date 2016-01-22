@@ -1,7 +1,7 @@
 package celtech.coreUI.components;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationEnvironment;
+import celtech.roboxbase.ApplicationEnvironment;
 import celtech.configuration.units.UnitType;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;

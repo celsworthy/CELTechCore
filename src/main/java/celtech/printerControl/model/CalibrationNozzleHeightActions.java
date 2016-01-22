@@ -4,14 +4,14 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.rx.HeadEEPROMDataResponse;
 import celtech.utils.PrinterUtils;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;

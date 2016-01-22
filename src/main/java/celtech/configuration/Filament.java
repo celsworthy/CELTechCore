@@ -1,8 +1,9 @@
 package celtech.configuration;
 
-import celtech.printerControl.comms.commands.rx.ReelEEPROMDataResponse;
+import celtech.roboxbase.MaterialType;
+import celtech.comms.remote.rx.ReelEEPROMDataResponse;
 import celtech.printerControl.model.Reel;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import java.io.Serializable;
 import java.util.Comparator;
 import javafx.beans.property.BooleanProperty;

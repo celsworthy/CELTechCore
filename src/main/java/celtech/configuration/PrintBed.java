@@ -5,7 +5,7 @@
 package celtech.configuration;
 
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
-import celtech.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point3D;
 import libertysystems.stenographer.Stenographer;

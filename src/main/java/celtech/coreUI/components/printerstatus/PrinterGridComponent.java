@@ -4,7 +4,7 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.Lookup;
-import celtech.configuration.PrinterColourMap;
+import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;

@@ -3,7 +3,7 @@
  */
 package celtech.services.printing;
 
-import celtech.printerControl.comms.commands.rx.ListFilesResponse;
+import celtech.comms.remote.rx.ListFilesResponse;
 import java.util.ArrayList;
 
 /**

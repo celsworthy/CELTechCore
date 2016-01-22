@@ -5,7 +5,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.HeaterMode;
+import celtech.comms.remote.HeaterMode;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterAncillarySystems;
 import java.util.ArrayList;

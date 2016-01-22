@@ -5,7 +5,7 @@ package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.appManager.SystemNotificationManager.PrinterErrorChoice;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
+import celtech.comms.remote.rx.FirmwareError;
 import celtech.printerControl.comms.events.ErrorConsumer;
 import celtech.utils.tasks.Cancellable;
 import java.util.ArrayList;
@@ -69,8 +69,8 @@ public class CalibrationPrinterErrorHandler
                 dialogOnDisplay = true;
                 Optional<PrinterErrorChoice> response = Lookup.getSystemNotificationHandler().
                         showPrinterErrorDialog(
-                                error.getLocalisedErrorTitle(),
-                                error.getLocalisedErrorMessage(),
+                                Lookup.i18n(error.getErrorTitleKey()),
+                                Lookup.i18n(error.getErrorMessageKey()),
                                 true,
                                 true,
                                 false,
@@ -104,7 +104,7 @@ public class CalibrationPrinterErrorHandler
                 cancelCalibration();
                 Lookup.getSystemNotificationHandler().
                         showPrinterErrorDialog(
-                                error.getLocalisedErrorTitle(),
+                                Lookup.i18n(error.getErrorTitleKey()),
                                 Lookup.i18n("calibrationPanel.errorInPrinter"),
                                 false,
                                 false,

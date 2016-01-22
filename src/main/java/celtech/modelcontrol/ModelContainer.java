@@ -1,6 +1,5 @@
 package celtech.modelcontrol;
 
-import celtech.Lookup;
 import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.CameraViewChangeListener;
@@ -9,15 +8,14 @@ import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.collision.CollisionShapeListener;
-import celtech.coreUI.visualisation.collision.HullComputer;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
-import celtech.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.MathUtils;
+import celtech.roboxbase.utils.Math.packing.PackableItem;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
-import com.bulletphysics.collision.shapes.CollisionShape;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -77,7 +75,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  * @author Ian Hudson @ Liberty Systems Limited
  */
 public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
-        ScreenExtentsProvider, CameraViewChangeListener
+        ScreenExtentsProvider, CameraViewChangeListener, PackableItem
 {
 
     private static final long serialVersionUID = 1L;
