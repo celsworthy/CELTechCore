@@ -62,15 +62,10 @@ public class RemoteClient implements LowLevelInterface
         try
         {
             String dataToOutput = mapper.writeValueAsString(messageToWrite);
-            RoboxRxPacketRemote returnedData = (RoboxRxPacketRemote) RemoteWebHelper.postData(writeToPrinterUrlString, dataToOutput, RoboxRxPacketRemote.class);
-
-            returnedPacket = RoboxRxPacketFactory.createPacket(returnedData.getRawData());
+            returnedPacket = RemoteWebHelper.postData(writeToPrinterUrlString, dataToOutput, RoboxRxPacketRemote.class);
         } catch (IOException ex)
         {
-
-        } catch (InvalidCommandByteException | UnableToGenerateRoboxPacketException | UnknownPacketTypeException ex)
-        {
-            steno.error("Failed to process returned data from remote " + remotePrinterHandle);
+            steno.error("Failed to write to remote printer (" + messageToWrite.getPacketType().name() + ") " + remotePrinterHandle);
         }
 
         return returnedPacket;

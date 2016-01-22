@@ -25,7 +25,7 @@ public class RemoteWebHelper
         postData(urlString, null, null);
     }
 
-    public static Object postData(String urlString, String content, Class<?> expectedResponseClass)
+    public static RoboxRxPacket postData(String urlString, String content, Class<?> expectedResponseClass)
     {
         Object returnvalue = null;
         try
@@ -41,11 +41,9 @@ public class RemoteWebHelper
             if (content != null)
             {
                 con.setDoOutput(true);
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                mapper.writeValue(bos, content);
                 con.setRequestProperty("Content-Type", "application/json");
-                con.setRequestProperty("Content-Length", "" + bos.size());
-                con.getOutputStream().write(bos.toByteArray());
+                con.setRequestProperty("Content-Length", "" + content.length());
+                con.getOutputStream().write(content.getBytes());
             }
 
             con.setConnectTimeout(5000);
