@@ -11,6 +11,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Properties;
@@ -415,11 +419,15 @@ public class ApplicationConfiguration
             if (getMachineType() == MachineType.WINDOWS)
             {
                 String registryValue = WindowsRegistry.currentUser("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal");
-
+                
                 if (registryValue != null)
-                {
-                    userStorageDirectory = registryValue + "\\"
-                            + commonFileDirectoryPath;
+                {                    
+                    Path regPath = Paths.get(registryValue);
+                    if (Files.exists(regPath, LinkOption.NOFOLLOW_LINKS))
+                    {
+                        userStorageDirectory = registryValue + "\\"
+                                + commonFileDirectoryPath;
+                    }
                 }
             }
 
