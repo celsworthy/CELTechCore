@@ -4,12 +4,12 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.IOException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 
 /**
  *
@@ -26,7 +26,7 @@ public class UserPreferenceContainer
 
     private UserPreferenceContainer()
     {
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
         File userPreferenceInputFile = new File(ApplicationConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
         if (!userPreferenceInputFile.exists())

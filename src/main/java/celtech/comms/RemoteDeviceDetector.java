@@ -6,6 +6,7 @@ import celtech.printerControl.comms.DetectedDevice;
 import celtech.printerControl.comms.DeviceDetectionListener;
 import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.RemoteDetectedPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *

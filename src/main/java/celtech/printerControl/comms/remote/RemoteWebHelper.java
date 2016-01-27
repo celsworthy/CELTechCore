@@ -2,13 +2,12 @@ package celtech.printerControl.comms.remote;
 
 import celtech.comms.remote.rx.RoboxRxPacket;
 import celtech.configuration.ApplicationConfiguration;
-import java.io.ByteArrayOutputStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *

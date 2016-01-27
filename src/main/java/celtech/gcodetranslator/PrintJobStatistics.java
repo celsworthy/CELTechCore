@@ -3,11 +3,11 @@
  */
 package celtech.gcodetranslator;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 
 /**
  *
@@ -68,7 +68,7 @@ public class PrintJobStatistics
     public void writeToFile(String statisticsFileLocation) throws IOException
     {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.writeValue(new File(statisticsFileLocation), this);
     }
 

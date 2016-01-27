@@ -4,10 +4,10 @@ import celtech.comms.remote.Configuration;
 import celtech.printerControl.comms.RemoteDetectedPrinter;
 import celtech.comms.remote.rx.RoboxRxPacket;
 import celtech.comms.remote.tx.RoboxTxPacket;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *

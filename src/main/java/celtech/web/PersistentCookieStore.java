@@ -2,6 +2,7 @@ package celtech.web;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.crypto.CryptoFileStore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookieStore;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *

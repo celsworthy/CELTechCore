@@ -4,6 +4,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeadFileFilter;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.model.Head.HeadType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,8 +14,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 
 /**
  *
@@ -36,7 +36,7 @@ public class HeadContainer
         File[] applicationheads = applicationHeadDirHandle.listFiles(new HeadFileFilter());
         ArrayList<HeadFile> heads = ingestHeads(applicationheads);
         completeHeadList.addAll(heads);
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
     }
 
     private ArrayList<HeadFile> ingestHeads(File[] userheads)

@@ -4,6 +4,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.PrintProfileFileFilter;
 import celtech.configuration.SlicerType;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,8 +18,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 
 /**
  *
@@ -51,7 +51,7 @@ public class SlicerParametersContainer
     
     private SlicerParametersContainer()
     {
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
         loadProfileData();
     }
     
@@ -251,7 +251,7 @@ public class SlicerParametersContainer
     {
         try
         {
-            mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+            mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
             mapper.writeValue(new File(constructFilePath(profile.getProfileName(), profile.getHeadType())), profile);
         } catch (IOException ex)
         {
