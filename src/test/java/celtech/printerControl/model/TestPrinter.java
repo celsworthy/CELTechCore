@@ -120,19 +120,19 @@ public class TestPrinter implements Printer
     public void changeReel(int i)
     {
         ReelEEPROMDataResponse eepromData = new ReelEEPROM0DataResponse();
-        eepromData.setReelFilamentID("ABC");
-        eepromData.setReelAmbientTemperature(100);
-        eepromData.setReelBedTemperature(120);
-        eepromData.setReelDisplayColour(Color.DARKCYAN);
-        eepromData.setReelFeedRateMultiplier(2);
-        eepromData.setReelFilamentDiameter(3);
-        eepromData.setReelFilamentMultiplier(2);
-        eepromData.setReelFirstLayerBedTemperature(110);
-        eepromData.setReelFirstLayerNozzleTemperature(180);
-        eepromData.setReelFriendlyName("F1");
-        eepromData.setReelMaterialType(MaterialType.NYL);
-        eepromData.setReelNozzleTemperature(205);
-        eepromData.setReelRemainingFilament(85);
+        eepromData.setFilamentID("ABC");
+        eepromData.setAmbientTemperature(100);
+        eepromData.setBedTemperature(120);
+        eepromData.setDisplayColourString(Color.DARKCYAN.toString());
+        eepromData.setFeedRateMultiplier(2);
+        eepromData.setFilamentDiameter(3);
+        eepromData.setFilamentMultiplier(2);
+        eepromData.setFirstLayerBedTemperature(110);
+        eepromData.setFirstLayerNozzleTemperature(180);
+        eepromData.setFriendlyName("F1");
+        eepromData.setMaterialType(MaterialType.NYL);
+        eepromData.setNozzleTemperature(205);
+        eepromData.setRemainingFilament(85);
         reelsProperty().get(i).updateFromEEPROMData(eepromData);
     }
 

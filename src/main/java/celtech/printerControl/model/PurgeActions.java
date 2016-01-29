@@ -225,11 +225,11 @@ public class PurgeActions extends StateTransitionActions
         }
 
         printer.transmitWriteHeadEEPROM(
-                savedHeadData.getTypeCode(),
+                savedHeadData.getHeadTypeCode(),
                 savedHeadData.getUniqueID(),
                 savedHeadData.getMaximumTemperature(),
-                savedHeadData.getBeta(),
-                savedHeadData.getTCal(),
+                savedHeadData.getThermistorBeta(),
+                savedHeadData.getThermistorTCal(),
                 savedHeadData.getNozzle1XOffset(),
                 savedHeadData.getNozzle1YOffset(),
                 savedHeadData.getNozzle1ZOffset(),

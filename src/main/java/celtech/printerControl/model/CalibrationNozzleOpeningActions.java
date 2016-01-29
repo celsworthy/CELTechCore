@@ -82,7 +82,7 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
 
         savedHeadData = printer.readHeadEEPROM(true);
 
-        HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
+        HeadFile headReferenceData = HeadContainer.getHeadByID(savedHeadData.getHeadTypeCode());
 
         printer.switchAllNozzleHeatersOff();
 
@@ -103,11 +103,11 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                     + " - "
                     + headReferenceData.getNozzles().get(1).getMinBOffset()
                     + ")");
-            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+            printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                     savedHeadData.getUniqueID(),
                     savedHeadData.getMaximumTemperature(),
-                    savedHeadData.getBeta(),
-                    savedHeadData.getTCal(),
+                    savedHeadData.getThermistorBeta(),
+                    savedHeadData.getThermistorTCal(),
                     0,
                     0,
                     0,
@@ -131,11 +131,11 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                     + " - "
                     + headReferenceData.getNozzles().get(1).getDefaultBOffset()
                     + ")");
-            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+            printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                     savedHeadData.getUniqueID(),
                     savedHeadData.getMaximumTemperature(),
-                    savedHeadData.getBeta(),
-                    savedHeadData.getTCal(),
+                    savedHeadData.getThermistorBeta(),
+                    savedHeadData.getThermistorTCal(),
                     0,
                     0,
                     0,
@@ -254,11 +254,11 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
                 + -bOffsetStartingValue
                 + ")");
 
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+        printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                 savedHeadData.getUniqueID(),
                 savedHeadData.getMaximumTemperature(),
-                savedHeadData.getBeta(),
-                savedHeadData.getTCal(),
+                savedHeadData.getThermistorBeta(),
+                savedHeadData.getThermistorTCal(),
                 0,
                 0,
                 0,
@@ -382,11 +382,11 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
     private void saveSettings() throws RoboxCommsException
     {
         steno.debug("save new head data");
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+        printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                 savedHeadData.getUniqueID(),
                 savedHeadData.getMaximumTemperature(),
-                savedHeadData.getBeta(),
-                savedHeadData.getTCal(),
+                savedHeadData.getThermistorBeta(),
+                savedHeadData.getThermistorTCal(),
                 savedHeadData.getNozzle1XOffset(),
                 savedHeadData.getNozzle1YOffset(),
                 savedHeadData.getNozzle1ZOffset(),
@@ -410,11 +410,11 @@ public class CalibrationNozzleOpeningActions extends StateTransitionActions
             try
             {
                 steno.debug("Restore head data");
-                printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                         savedHeadData.getUniqueID(),
                         savedHeadData.getMaximumTemperature(),
-                        savedHeadData.getBeta(),
-                        savedHeadData.getTCal(),
+                        savedHeadData.getThermistorBeta(),
+                        savedHeadData.getThermistorTCal(),
                         savedHeadData.getNozzle1XOffset(),
                         savedHeadData.getNozzle1YOffset(),
                         savedHeadData.getNozzle1ZOffset(),

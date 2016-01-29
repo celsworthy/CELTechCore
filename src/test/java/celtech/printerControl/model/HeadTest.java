@@ -58,11 +58,11 @@ public class HeadTest extends JavaFXConfiguredTest
         float NOZZLE_TEMP_1 = 102f;
 
         printer.transmitWriteHeadEEPROM(
-                headData.getTypeCode(),
+                headData.getHeadTypeCode(),
                 headData.getUniqueID(),
                 headData.getMaximumTemperature(),
-                headData.getBeta(),
-                headData.getTCal(),
+                headData.getThermistorBeta(),
+                headData.getThermistorTCal(),
                 headData.getNozzle1XOffset(),
                 headData.getNozzle1YOffset(),
                 headData.getNozzle1ZOffset(),

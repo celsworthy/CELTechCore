@@ -89,10 +89,10 @@ public class Filament implements Serializable, Cloneable
 
     public Filament(ReelEEPROMDataResponse response)
     {
-        this.filamentID.set(response.getReelFilamentID());
-        this.friendlyFilamentName.set(response.getReelFriendlyName());
-        this.material.set(response.getReelMaterialType());
-        this.displayColour.set(response.getReelDisplayColour());
+        this.filamentID.set(response.getFilamentID());
+        this.friendlyFilamentName.set(response.getFriendlyName());
+        this.material.set(response.getMaterialType());
+        this.displayColour.set(Color.web(response.getDisplayColourString()));
         this.diameter.set(response.getFilamentDiameter());
         this.filamentMultiplier.set(response.getFilamentMultiplier());
         this.feedRateMultiplier.set(response.getFeedRateMultiplier());

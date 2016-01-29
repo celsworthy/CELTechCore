@@ -104,11 +104,11 @@ public class CalibrationXAndYActions extends StateTransitionActions
             try
             {
                 steno.debug("Restore head data");
-                printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                         savedHeadData.getUniqueID(),
                         savedHeadData.getMaximumTemperature(),
-                        savedHeadData.getBeta(),
-                        savedHeadData.getTCal(),
+                        savedHeadData.getThermistorBeta(),
+                        savedHeadData.getThermistorTCal(),
                         savedHeadData.getNozzle1XOffset(),
                         savedHeadData.getNozzle1YOffset(),
                         savedHeadData.getNozzle1ZOffset(),
@@ -146,11 +146,11 @@ public class CalibrationXAndYActions extends StateTransitionActions
 
         try
         {
-            printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+            printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                     savedHeadData.getUniqueID(),
                     savedHeadData.getMaximumTemperature(),
-                    savedHeadData.getBeta(),
-                    savedHeadData.getTCal(),
+                    savedHeadData.getThermistorBeta(),
+                    savedHeadData.getThermistorTCal(),
                     savedHeadData.getNozzle1XOffset()
                     + nozzle1XCorrection,
                     savedHeadData.getNozzle1YOffset()

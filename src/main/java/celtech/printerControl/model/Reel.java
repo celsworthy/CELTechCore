@@ -194,11 +194,11 @@ public class Reel implements RepairableComponent
         firstLayerBedTemperature.set(eepromData.getFirstLayerBedTemperature());
         firstLayerNozzleTemperature.set(eepromData.getFirstLayerNozzleTemperature());
         nozzleTemperature.set(eepromData.getNozzleTemperature());
-        displayColour.set(eepromData.getReelDisplayColour());
-        filamentID.set(eepromData.getReelFilamentID());
-        friendlyFilamentName.set(eepromData.getReelFriendlyName());
-        material.set(eepromData.getReelMaterialType());
-        remainingFilament.set(eepromData.getReelRemainingFilament());
+        displayColour.set(Color.web(eepromData.getDisplayColourString()));
+        filamentID.set(eepromData.getFilamentID());
+        friendlyFilamentName.set(eepromData.getFriendlyName());
+        material.set(eepromData.getMaterialType());
+        remainingFilament.set(eepromData.getRemainingFilament());
     }
 
     /**

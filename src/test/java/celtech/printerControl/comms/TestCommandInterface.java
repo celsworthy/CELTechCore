@@ -190,7 +190,7 @@ public class TestCommandInterface extends CommandInterface
                     attachedReel.feedRateMultiplierProperty().get(),
                     attachedReel.remainingFilamentProperty().get(),
                     attachedReel.materialProperty().get(),
-                    attachedReel.displayColourProperty().get(),
+                    attachedReel.displayColourProperty().get().toString(),
                     attachedReel.friendlyFilamentNameProperty().get());
             response = (RoboxRxPacket) reelResponse;
         } else if (messageToWrite instanceof WriteHeadEEPROM)
@@ -207,7 +207,7 @@ public class TestCommandInterface extends CommandInterface
             printerID.setEdition(writeID.getEdition());
             printerID.setModel(writeID.getModel());
             printerID.setPoNumber(writeID.getPoNumber());
-            printerID.setPrinterColour(writeID.getColour());
+            printerID.setPrinterColour(writeID.getColour().toString());
             printerID.setPrinterFriendlyName(writeID.getPrinterFriendlyName());
             printerID.setSerialNumber(writeID.getSerialNumber());
             printerID.setWeekOfManufacture(writeID.getWeekOfManufacture());
@@ -269,7 +269,7 @@ public class TestCommandInterface extends CommandInterface
                 RxPacketTypeEnum.PRINTER_ID_RESPONSE);
         printerID.setEdition("KS");
         printerID.setPrinterFriendlyName("Dummy");
-        printerID.setPrinterColour(defaultPrinterColour);
+        printerID.setPrinterColour(defaultPrinterColour.toString());
     }
 
     private void copyWriteHeadEEPROMToDataResponse(WriteHeadEEPROM message,
@@ -292,7 +292,7 @@ public class TestCommandInterface extends CommandInterface
         headResponse.setNozzle2BOffset(message.getNozzle2BOffset());
         headResponse.setLastFilamentTemperature0(message.getLastFilamentTemperature0());
         headResponse.setLastFilamentTemperature1(message.getLastFilamentTemperature1());
-        headResponse.setHoursUsed(message.getHourCounter());
+        headResponse.setHeadHours(message.getHourCounter());
 
     }
 }

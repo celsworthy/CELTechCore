@@ -165,7 +165,7 @@ public abstract class CommandInterface extends Thread
                                 StatusRequest request = (StatusRequest) RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.STATUS_REQUEST);
                                 firmwareVersionInUse = firmwareResponse.getFirmwareRevisionFloat();
                                 StatusResponse response = (StatusResponse) writeToPrinter(request, true);
-                                if (!response.isSDCardPresent())
+                                if (!response.issdCardPresent())
                                 {
                                     steno.warning("SD Card not present");
                                     Lookup.getSystemNotificationHandler().processErrorPacketFromPrinter(FirmwareError.SD_CARD, printerToUse);

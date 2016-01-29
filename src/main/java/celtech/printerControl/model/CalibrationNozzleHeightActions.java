@@ -83,15 +83,15 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
 
     private void clearZOffsetsOnHead() throws RoboxCommsException
     {
-        HeadFile headDataFile = HeadContainer.getHeadByID(savedHeadData.getTypeCode());
+        HeadFile headDataFile = HeadContainer.getHeadByID(savedHeadData.getHeadTypeCode());
         NozzleData nozzle1Data = headDataFile.getNozzles().get(0);
         NozzleData nozzle2Data = headDataFile.getNozzles().get(1);
 
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+        printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                 savedHeadData.getUniqueID(),
                 savedHeadData.getMaximumTemperature(),
-                savedHeadData.getBeta(),
-                savedHeadData.getTCal(),
+                savedHeadData.getThermistorBeta(),
+                savedHeadData.getThermistorTCal(),
                 nozzle1Data.getDefaultXOffset(),
                 nozzle1Data.getDefaultYOffset(),
                 0,
@@ -356,11 +356,11 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
             try
             {
                 steno.debug("Restore head data");
-                printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+                printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                         savedHeadData.getUniqueID(),
                         savedHeadData.getMaximumTemperature(),
-                        savedHeadData.getBeta(),
-                        savedHeadData.getTCal(),
+                        savedHeadData.getThermistorBeta(),
+                        savedHeadData.getThermistorTCal(),
                         savedHeadData.getNozzle1XOffset(),
                         savedHeadData.getNozzle1YOffset(),
                         savedHeadData.getNozzle1ZOffset(),
@@ -385,11 +385,11 @@ public class CalibrationNozzleHeightActions extends StateTransitionActions
     {
         steno.debug("zDifference is " + zDifference);
         steno.debug("zco is " + zDifference);
-        printer.transmitWriteHeadEEPROM(savedHeadData.getTypeCode(),
+        printer.transmitWriteHeadEEPROM(savedHeadData.getHeadTypeCode(),
                 savedHeadData.getUniqueID(),
                 savedHeadData.getMaximumTemperature(),
-                savedHeadData.getBeta(),
-                savedHeadData.getTCal(),
+                savedHeadData.getThermistorBeta(),
+                savedHeadData.getThermistorTCal(),
                 savedHeadData.getNozzle1XOffset(),
                 savedHeadData.getNozzle1YOffset(),
                 (float) (-zco.get() - (0.5 * zDifference)),

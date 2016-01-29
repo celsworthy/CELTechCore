@@ -101,7 +101,7 @@ public class Head implements Cloneable, RepairableComponent
     {
         Head createdHead = null;
 
-        HeadFile headData = HeadContainer.getHeadByID(headResponse.getTypeCode());
+        HeadFile headData = HeadContainer.getHeadByID(headResponse.getHeadTypeCode());
         if (headData != null)
         {
             createdHead = new Head(headData);
@@ -315,9 +315,9 @@ public class Head implements Cloneable, RepairableComponent
 
     public final void updateFromEEPROMData(HeadEEPROMDataResponse eepromData)
     {
-        if (!eepromData.getTypeCode().equals(typeCode.get()))
+        if (!eepromData.getHeadTypeCode().equals(typeCode.get()))
         {
-            updateFromHeadFileData(HeadContainer.getHeadByID(eepromData.getTypeCode()), false);
+            updateFromHeadFileData(HeadContainer.getHeadByID(eepromData.getHeadTypeCode()), false);
         }
         uniqueID.set(eepromData.getUniqueID());
         weekNumber.set(eepromData.getWeekNumber());
@@ -329,8 +329,8 @@ public class Head implements Cloneable, RepairableComponent
 
         for (int i = 0; i < nozzleHeaters.size(); i++)
         {
-            nozzleHeaters.get(i).beta.set(eepromData.getBeta());
-            nozzleHeaters.get(i).tcal.set(eepromData.getTCal());
+            nozzleHeaters.get(i).beta.set(eepromData.getThermistorBeta());
+            nozzleHeaters.get(i).tcal.set(eepromData.getThermistorTCal());
             nozzleHeaters.get(i).lastFilamentTemperature.
                     set(eepromData.getLastFilamentTemperature(i));
             nozzleHeaters.get(i).maximumTemperature.set(eepromData.getMaximumTemperature());
@@ -360,7 +360,7 @@ public class Head implements Cloneable, RepairableComponent
     {
         boolean matches = false;
 
-        if (response.getTypeCode().equals(typeCodeProperty().get()))
+        if (response.getHeadTypeCode().equals(typeCodeProperty().get()))
         {
             matches = response.getHeadHours() == headHoursProperty().get()
                     && response.getUniqueID().equals(uniqueIDProperty().get());
@@ -368,8 +368,8 @@ public class Head implements Cloneable, RepairableComponent
             if (getNozzleHeaters().size() > 0)
             {
                 matches &= response.getMaximumTemperature() == getNozzleHeaters().get(0).maximumTemperatureProperty().get()
-                        && response.getBeta() == getNozzleHeaters().get(0).betaProperty().get()
-                        && response.getTCal() == getNozzleHeaters().get(0).tCalProperty().get();
+                        && response.getThermistorBeta() == getNozzleHeaters().get(0).betaProperty().get()
+                        && response.getThermistorTCal() == getNozzleHeaters().get(0).tCalProperty().get();
             }
 
             if (getNozzles().size() > 0)

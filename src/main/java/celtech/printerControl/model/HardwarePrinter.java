@@ -15,7 +15,6 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
 import celtech.printerControl.PrinterStatus;
@@ -51,7 +50,6 @@ import celtech.comms.remote.tx.QueryFirmwareVersion;
 import celtech.comms.remote.tx.ReadHeadEEPROM;
 import celtech.comms.remote.tx.ReadPrinterID;
 import celtech.comms.remote.tx.ReadSendFileReport;
-import celtech.comms.remote.tx.ReportErrors;
 import celtech.comms.remote.tx.RoboxTxPacket;
 import celtech.comms.remote.tx.RoboxTxPacketFactory;
 import celtech.comms.remote.tx.SetAmbientLEDColour;
@@ -3656,10 +3654,10 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerAncillarySystems.whyAreWeWaitingProperty.set(
                             statusResponse.getWhyAreWeWaitingState());
                     printerAncillarySystems.updateGraphData();
-                    printerAncillarySystems.sdCardInserted.set(statusResponse.isSDCardPresent());
+                    printerAncillarySystems.sdCardInserted.set(statusResponse.issdCardPresent());
                     printerAncillarySystems.dualReelAdaptorPresent.set(statusResponse.isDualReelAdaptorPresent());
                     
-                    if (!statusResponse.isSDCardPresent() && !suppressedFirmwareErrors.contains(
+                    if (!statusResponse.issdCardPresent()&& !suppressedFirmwareErrors.contains(
                             FirmwareError.SD_CARD))
                     {
                         Lookup.getSystemNotificationHandler().showNoSDCardDialog();
@@ -3807,13 +3805,13 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     printerIdentity.printerserialNumber.set(idResponse.getSerialNumber());
                     printerIdentity.printercheckByte.set(idResponse.getCheckByte());
                     printerIdentity.printerFriendlyName.set(idResponse.getPrinterFriendlyName());
-                    printerIdentity.printerColour.set(idResponse.getPrinterColour());
+                    printerIdentity.printerColour.set(Color.web(idResponse.getPrinterColourWebString()));
                     
-                    if (idResponse.getPrinterColour() != null)
+                    if (idResponse.getPrinterColourWebString() != null)
                     {
                         try
                         {
-                            setAmbientLEDColour(idResponse.getPrinterColour());
+                            setAmbientLEDColour(Color.web(idResponse.getPrinterColourWebString()));
                             
                         } catch (PrinterException ex)
                         {
@@ -3826,7 +3824,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                 case REEL_1_EEPROM_DATA:
                     ReelEEPROMDataResponse reelResponse = (ReelEEPROMDataResponse) rxPacket;
                     
-                    if (!filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    if (!filamentContainer.isFilamentIDInDatabase(reelResponse.getFilamentID()))
                     {
                         // unrecognised reel
                         saveUnknownFilamentToDatabase(reelResponse);
@@ -3846,7 +3844,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     
                     extruders.get(reelResponse.getReelNumber()).lastFeedrateMultiplierInUse.set(reelResponse.getFeedRateMultiplier());
                     
-                    if (filamentContainer.isFilamentIDInDatabase(reelResponse.getReelFilamentID()))
+                    if (filamentContainer.isFilamentIDInDatabase(reelResponse.getFilamentID()))
                     {
                         // Check to see if the data is in bounds
                         RepairResult result = reels.get(reelResponse.getReelNumber()).
@@ -3872,7 +3870,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                             default:
                                 //Update the effective filament if *and only if* we have this filament in our database
                                 // Should happen on the second time through after an auto-update
-                                Filament filament = filamentContainer.getFilamentByID(reelResponse.getReelFilamentID());
+                                Filament filament = filamentContainer.getFilamentByID(reelResponse.getFilamentID());
                                 effectiveFilaments.put(reelResponse.getReelNumber(), filament);
                                 break;
                         }
@@ -3886,11 +3884,11 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                     
                     if (repairCorruptEEPROMData)
                     {
-                        if (Head.isTypeCodeValid(headResponse.getTypeCode()))
+                        if (Head.isTypeCodeValid(headResponse.getHeadTypeCode()))
                         {
                             // Might be unrecognised but correct format for a Robox head type code
 
-                            if (Head.isTypeCodeInDatabase(headResponse.getTypeCode()))
+                            if (Head.isTypeCodeInDatabase(headResponse.getHeadTypeCode()))
                             {
                                 if (head.get() == null)
                                 {
@@ -3948,7 +3946,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                 // We don't recognise the head but it seems to be valid
                                 Lookup.getSystemNotificationHandler().showHeadNotRecognisedDialog(
                                         printerIdentity.printerFriendlyName.get());
-                                steno.error("Head with type code: " + headResponse.getTypeCode()
+                                steno.error("Head with type code: " + headResponse.getHeadTypeCode()
                                         + " attached. Not in database so ignoring...");
                             }
                         } else

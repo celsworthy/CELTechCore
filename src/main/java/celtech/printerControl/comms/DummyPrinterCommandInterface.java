@@ -38,6 +38,7 @@ import celtech.comms.remote.tx.SendPrintFileStart;
 import celtech.comms.remote.tx.SendResetErrors;
 import celtech.comms.remote.tx.StatusRequest;
 import celtech.comms.remote.tx.WriteHeadEEPROM;
+import celtech.comms.remote.types.SerializableColour;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Reel;
 import javafx.scene.paint.Color;
@@ -104,7 +105,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         this.setName(printerName);
         this.printerName = printerName;
 
-        currentStatus.setSdCardPresent(true);
+        currentStatus.setsdCardPresent(true);
     }
 
     public DummyPrinterCommandInterface(PrinterStatusConsumer controlInterface,
@@ -354,7 +355,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
         {
             FirmwareResponse firmwareResponse = (FirmwareResponse) RoboxRxPacketFactory.
                     createPacket(RxPacketTypeEnum.FIRMWARE_RESPONSE);
-            firmwareResponse.setFirmwareRevision("123");
+            firmwareResponse.setFirmwareRevision("r741");
             response = (RoboxRxPacket) firmwareResponse;
         } else if (messageToWrite instanceof ReadPrinterID)
         {
@@ -362,7 +363,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                     RxPacketTypeEnum.PRINTER_ID_RESPONSE);
             idResponse.setEdition("KS");
             idResponse.setPrinterFriendlyName(printerName);
-            idResponse.setPrinterColour(Color.web("#FF0082"));
+            idResponse.setPrinterColour(Color.web("#FF0082").toString());
             response = (RoboxRxPacket) idResponse;
         } else if (messageToWrite instanceof StatusRequest)
         {
@@ -544,10 +545,10 @@ public class DummyPrinterCommandInterface extends CommandInterface
                 }
             } else if (messageData.equalsIgnoreCase(insertSDCardCommand))
             {
-                currentStatus.setSdCardPresent(true);
+                currentStatus.setsdCardPresent(true);
             } else if (messageData.equalsIgnoreCase(removeSDCardCommand))
             {
-                currentStatus.setSdCardPresent(false);
+                currentStatus.setsdCardPresent(false);
             } else if (messageData.startsWith("M104 S"))
             {
                 nozzleTargetTemperatureS = Integer.parseInt(messageData.substring(6));
@@ -706,7 +707,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                     attachedReels[0].feedRateMultiplierProperty().get(),
                     attachedReels[0].remainingFilamentProperty().get(),
                     attachedReels[0].materialProperty().get(),
-                    attachedReels[0].displayColourProperty().get(),
+                    attachedReels[0].displayColourProperty().get().toString(),
                     attachedReels[0].friendlyFilamentNameProperty().get());
             response = (RoboxRxPacket) reelResponse;
         } else if (messageToWrite instanceof ReadReel1EEPROM)
@@ -726,7 +727,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
                     attachedReels[1].feedRateMultiplierProperty().get(),
                     attachedReels[1].remainingFilamentProperty().get(),
                     attachedReels[1].materialProperty().get(),
-                    attachedReels[1].displayColourProperty().get(),
+                    attachedReels[1].displayColourProperty().get().toString(),
                     attachedReels[1].friendlyFilamentNameProperty().get());
             reelResponse.setReelNumber(1);
             response = (RoboxRxPacket) reelResponse;
