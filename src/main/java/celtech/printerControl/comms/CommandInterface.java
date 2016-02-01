@@ -3,6 +3,7 @@ package celtech.printerControl.comms;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.comms.remote.exceptions.RoboxCommsException;
+import celtech.comms.remote.rx.AckResponse;
 import celtech.comms.remote.rx.FirmwareError;
 import celtech.comms.remote.rx.FirmwareResponse;
 import celtech.comms.remote.rx.PrinterIDResponse;
@@ -54,6 +55,9 @@ public abstract class CommandInterface extends Thread
     protected boolean suppressComms = false;
     
     private String printerName = null;
+    
+    private StatusResponse latestStatusResponse = null;
+    private AckResponse latestErrorResponse = null;
 
     /**
      *
@@ -275,10 +279,10 @@ public abstract class CommandInterface extends Thread
                             try
                             {
 //                        steno.debug("STATUS REQUEST: " + portName);
-                                writeToPrinter(RoboxTxPacketFactory.createPacket(
+                                latestStatusResponse = (StatusResponse) writeToPrinter(RoboxTxPacketFactory.createPacket(
                                         TxPacketTypeEnum.STATUS_REQUEST));
 
-                                writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
+                                latestErrorResponse = (AckResponse)writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
                             } catch (RoboxCommsException ex)
                             {
                                 steno.error("Failure during printer status request. " + ex.toString());
@@ -395,5 +399,15 @@ public abstract class CommandInterface extends Thread
     public void operateRemotely(boolean enableRemoteOperation)
     {
         suppressComms = enableRemoteOperation;
+    }
+    
+    public AckResponse getLastErrorResponse()
+    {
+        return latestErrorResponse;
+    }
+
+    public StatusResponse getLastStatusResponse()
+    {
+        return latestStatusResponse;
     }
 }
