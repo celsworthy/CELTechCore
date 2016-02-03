@@ -26,10 +26,11 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class RemoteDeviceDetector extends DeviceDetector
+public class RemotePrinterDetector extends DeviceDetector
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer("DiscoveryAgentClientEnd");
+    private final Stenographer steno = StenographerFactory.getStenographer("RemotePrinterDetector");
+
     private boolean initialised = false;
     private InetAddress group = null;
     private DatagramSocket s = null;
@@ -37,11 +38,10 @@ public class RemoteDeviceDetector extends DeviceDetector
     private List<DetectedDevice> currentPrinters = new ArrayList<>();
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public RemoteDeviceDetector(DeviceDetectionListener listener)
+    public RemotePrinterDetector(DeviceDetectionListener listener)
     {
         super(listener);
-
-        this.setName("RemoteDeviceDetector");
+        this.setName("RemotePrinterDetector");
     }
 
     @Override
@@ -73,25 +73,57 @@ public class RemoteDeviceDetector extends DeviceDetector
 
                 s.send(hi);
 
-                byte[] buf = new byte[100];
-                DatagramPacket recv = new DatagramPacket(buf, buf.length);
-                s.receive(recv);
+                int remainingWaitTime_ms = 1000;
 
-                if (Arrays.equals(Arrays.copyOf(buf, RemoteDiscovery.iAmHereMessage.getBytes("US-ASCII").length),
-                        RemoteDiscovery.iAmHereMessage.getBytes("US-ASCII")))
+                while (remainingWaitTime_ms > 0)
                 {
-                    serverAddresses.add(recv.getAddress());
+                    try
+                    {
+                        s.setSoTimeout(remainingWaitTime_ms);
+
+                        byte[] buf = new byte[100];
+                        DatagramPacket recv = new DatagramPacket(buf, buf.length);
+
+                        long startTime = System.currentTimeMillis();
+
+                        s.receive(recv);
+
+                        long endTime = System.currentTimeMillis();
+
+                        remainingWaitTime_ms = remainingWaitTime_ms - (int) (endTime - startTime);
+
+                        if (Arrays.equals(Arrays.copyOf(buf, RemoteDiscovery.iAmHereMessage.getBytes("US-ASCII").length),
+                                RemoteDiscovery.iAmHereMessage.getBytes("US-ASCII")))
+                        {
+                            serverAddresses.add(recv.getAddress());
+                        }
+
+                    } catch (SocketTimeoutException ex)
+                    {
+                        remainingWaitTime_ms = 0;
+                    }
                 }
 
                 List<DetectedDevice> newlyDetectedPrinters = searchForDevices(serverAddresses);
 
-                //Deal with disconnections
                 List<DetectedDevice> printersToDisconnect = new ArrayList<>();
+                List<DetectedDevice> printersToConnect = new ArrayList<>();
+
+                //Deal with disconnections
                 currentPrinters.forEach(existingPrinter ->
                 {
                     if (!newlyDetectedPrinters.contains(existingPrinter))
                     {
                         printersToDisconnect.add(existingPrinter);
+                    }
+                });
+
+                //Now new connections
+                newlyDetectedPrinters.forEach(newPrinter ->
+                {
+                    if (!currentPrinters.contains(newPrinter))
+                    {
+                        printersToConnect.add(newPrinter);
                     }
                 });
 
@@ -102,27 +134,12 @@ public class RemoteDeviceDetector extends DeviceDetector
                     currentPrinters.remove(printerToDisconnect);
                 }
 
-                //Now new connections
-                List<DetectedDevice> printersToConnect = new ArrayList<>();
-                newlyDetectedPrinters.forEach(newPrinter ->
-                {
-                    if (!currentPrinters.contains(newPrinter))
-                    {
-                        printersToConnect.add(newPrinter);
-                    }
-                });
-
                 for (DetectedDevice printerToConnect : printersToConnect)
                 {
                     steno.info("We have found a new printer " + printerToConnect);
                     currentPrinters.add(printerToConnect);
                     deviceDetectionListener.deviceDetected(printerToConnect);
                 }
-
-//                steno.info("Got response from " + recv.getAddress().getHostAddress() + ":" + recv.getSocketAddress() + " content was " + recv.getLength() + " bytes " + String.valueOf(recv.getData()));
-            } catch (SocketTimeoutException ex)
-            {
-                //Nothing heard
             } catch (IOException ex)
             {
                 steno.error("Unable to query for remote hosts");
@@ -136,7 +153,6 @@ public class RemoteDeviceDetector extends DeviceDetector
                 steno.warning("Interrupted within remote host discovery loop");
             }
         }
-
     }
 
     private List<DetectedDevice> searchForDevices(Set<InetAddress> serverAddresses)
@@ -145,7 +161,7 @@ public class RemoteDeviceDetector extends DeviceDetector
 
         for (InetAddress address : serverAddresses)
         {
-            String url = "http://" + address.getHostAddress() + ":9000/discovery";
+            String url = "http://" + address.getHostAddress() + ":9000/api/discovery";
 
             try
             {

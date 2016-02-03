@@ -2,7 +2,7 @@ package celtech.printerControl.comms;
 
 import celtech.printerControl.comms.remote.RoboxRemoteCommandInterface;
 import celtech.Lookup;
-import celtech.comms.RemoteDeviceDetector;
+import celtech.comms.RemotePrinterDetector;
 import celtech.configuration.UserPreferences;
 import celtech.comms.remote.rx.StatusResponse;
 import celtech.printerControl.model.HardwarePrinter;
@@ -38,7 +38,7 @@ public class RoboxCommsManager implements PrinterStatusConsumer, DeviceDetection
     private int dummyPrinterCounter = 0;
     
     private final SerialDeviceDetector usbSerialDeviceDetector;
-    private final RemoteDeviceDetector remoteDeviceDetector;
+    private final RemotePrinterDetector remoteServerDetector;
     
     private boolean doNotCheckForPresenceOfHead = false;
     private boolean searchForRemotePrinters = false;
@@ -53,13 +53,13 @@ public class RoboxCommsManager implements PrinterStatusConsumer, DeviceDetection
         this.searchForRemotePrinters = searchForRemotePrinters;
         
         usbSerialDeviceDetector = new SerialDeviceDetector(pathToBinaries, roboxVendorID, roboxProductID, printerToSearchFor, this);
-        remoteDeviceDetector = new RemoteDeviceDetector(this);
+        remoteServerDetector = new RemotePrinterDetector(this);
         
         steno = StenographerFactory.getStenographer(this.getClass().getName());
         
         if (searchForRemotePrinters)
         {
-            remoteDeviceDetector.start();
+            remoteServerDetector.start();
         }
     }
 
@@ -203,9 +203,9 @@ public class RoboxCommsManager implements PrinterStatusConsumer, DeviceDetection
             usbSerialDeviceDetector.start();
         }
         
-        if (!remoteDeviceDetector.isAlive() && searchForRemotePrinters)
+        if (!remoteServerDetector.isAlive() && searchForRemotePrinters)
         {
-            remoteDeviceDetector.start();
+            remoteServerDetector.start();
         }
     }
 
@@ -215,7 +215,7 @@ public class RoboxCommsManager implements PrinterStatusConsumer, DeviceDetection
     public void shutdown()
     {
         usbSerialDeviceDetector.shutdownDetector();
-        remoteDeviceDetector.shutdownDetector();
+        remoteServerDetector.shutdownDetector();
         
         List<Printer> printersToShutdown = new ArrayList<>();
         Lookup.getConnectedPrinters().forEach(printer ->
@@ -329,5 +329,6 @@ public class RoboxCommsManager implements PrinterStatusConsumer, DeviceDetection
     public void deviceNoLongerPresent(DetectedDevice detectedDevice)
     {
         steno.info("Robox Comms Manager has been told that a printer is no longer detected: " + detectedDevice);
+        activePrinters.get(detectedDevice).getCommandInterface().disconnectPrinter();
     }
 }
