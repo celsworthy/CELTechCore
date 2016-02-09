@@ -6,15 +6,14 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
-import celtech.appManager.PurgeResponse;
+import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
-import celtech.configuration.Filament;
+import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.PrinterColourMap;
-import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.AmbientLEDState;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.LayoutSubmode;
@@ -24,24 +23,33 @@ import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
-import celtech.utils.PrinterUtils;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.PrintableMeshes;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.services.CameraTriggerData;
+import celtech.roboxbase.services.CameraTriggerManager;
+import celtech.roboxbase.utils.PrinterUtils;
 import static celtech.utils.StringMetrics.getWidthOfString;
-import celtech.utils.tasks.TaskResponse;
+import celtech.roboxbase.utils.tasks.TaskResponse;
+import celtech.roboxbase.utils.threed.CentreCalculations;
+import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import java.io.File;
 import static java.lang.Double.max;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
@@ -58,14 +66,17 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.MeshView;
 import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -76,7 +87,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             LayoutStatusMenuStripController.class.getName());
-    private PrinterSettings printerSettings = null;
+    private PrinterSettingsOverrides printerSettings = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private final FileChooser modelFileChooser = new FileChooser();
@@ -265,6 +276,60 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject.getUsedExtruders(printer));
 
+        Map<MeshToWorldTransformer, List<MeshView>> meshMap = new HashMap<>();
+        List<Integer> extruderForModel = new ArrayList<>();
+
+        for (ModelContainer modelContainer : currentProject.getTopLevelModels())
+        {
+            List<MeshView> meshViewsToOutput = new ArrayList<>();
+
+            for (MeshView meshView : modelContainer.descendentMeshViews())
+            {
+                meshViewsToOutput.add(meshView);
+                extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+            }
+
+            meshMap.put(modelContainer, meshViewsToOutput);
+        }
+
+        //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+        CentreCalculations centreCalc = new CentreCalculations();
+
+        currentProject.getTopLevelModels().forEach(model ->
+        {
+            Bounds modelBounds = model.getBoundsInParent();
+            centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
+            centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
+        });
+
+        Vector3D centreOfPrintedObject = centreCalc.getResult();
+        
+        CameraTriggerData cameraTriggerData = null;
+        
+        if (Lookup.getUserPreferences().isSafetyFeaturesOn())
+        {
+            cameraTriggerData = new CameraTriggerData(
+                    Lookup.getUserPreferences().getGoProWifiPassword(),
+                    Lookup.getUserPreferences().getTimelapseXMove(),
+                    Lookup.getUserPreferences().getTimelapseYMove(),
+                    Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
+                    Lookup.getUserPreferences().getTimelapseDelay());
+        }
+
+        PrintableMeshes printableMeshes = new PrintableMeshes(
+                meshMap,
+                currentProject.getUsedExtruders(printer),
+                extruderForModel,
+                currentProject.getLastPrintJobID(),
+                currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get()),
+                currentProject.getPrinterSettings(),
+                currentProject.getPrintQuality(),
+                Lookup.getUserPreferences().getSlicerType(),
+                centreOfPrintedObject,
+                Lookup.getUserPreferences().isSafetyFeaturesOn(),
+                Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
+                cameraTriggerData);
+
         try
         {
             if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
@@ -290,11 +355,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                     }
                 }
-                printer.printProject(currentProject);
+                printer.printMeshes(printableMeshes);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
             {
-                printer.printProject(currentProject);
+                printer.printMeshes(printableMeshes);
                 applicationStatus.setMode(ApplicationMode.STATUS);
             }
         } catch (PrinterException ex)
@@ -450,7 +515,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
-            currentPrinter.goToOpenDoorPosition(null);
+            currentPrinter.goToOpenDoorPosition(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
             steno.error("Error opening door " + ex.getMessage());
@@ -679,12 +744,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         if (taskResponse.succeeded())
         {
-            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n(
+            BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n(
                     "removeHead.title"), Lookup.i18n("removeHead.finished"));
             steno.debug("Head remove completed");
         } else
         {
-            Lookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n(
+            BaseLookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n(
                     "removeHead.title"), Lookup.i18n("removeHead.failed"));
         }
     }
@@ -752,7 +817,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 });
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
     }
 
     private void setupButtonVisibility()
@@ -829,7 +894,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     /**
      * Create the bindings for when tied to the SettingsScreen.
      */
-    private void createPrinterSettingsListener(PrinterSettings printerSettings)
+    private void createPrinterSettingsListener(PrinterSettingsOverrides printerSettings)
     {
         if (printerSettings != null)
         {
@@ -1023,7 +1088,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
 
         @Override
-        public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+        public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
         {
             whenProjectOrSettingsPrinterChange();
         }

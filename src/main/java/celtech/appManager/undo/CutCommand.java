@@ -7,6 +7,7 @@ import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.roboxbase.BaseLookup;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshDebug;
 import java.util.ArrayList;
@@ -218,7 +219,7 @@ public class CutCommand extends Command
         {
             cutWorked = false;
             steno.exception("an error occurred during cutting ", ex);
-            Lookup.getSystemNotificationHandler().showErrorNotification(
+            BaseLookup.getSystemNotificationHandler().showErrorNotification(
                 Lookup.i18n("cutOperation.title"), Lookup.i18n("cutOperation.message"));
             return;
         }

@@ -2,10 +2,10 @@ package celtech.coreUI.components.tips;
 
 import celtech.Lookup;
 import celtech.coreUI.DisplayManager;
+import celtech.roboxbase.BaseLookup;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

@@ -3,9 +3,10 @@
  */
 package celtech.printerControl.model;
 
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
 import libertysystems.stenographer.Stenographer;

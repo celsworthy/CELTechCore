@@ -1,18 +1,17 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.printerControl.PrinterStatus;
-import celtech.comms.remote.rx.FirmwareResponse;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.services.printing.GCodePrintResult;
-import celtech.services.printing.TransferGCodeToPrinterService;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.comms.rx.FirmwareResponse;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.services.printing.GCodePrintResult;
+import celtech.roboxbase.services.printing.TransferGCodeToPrinterService;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -111,7 +110,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(0, false, null);
+                connectedPrinter.ejectStuckMaterial(0, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material E");
@@ -126,7 +125,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(1, false, null);
+                connectedPrinter.ejectStuckMaterial(1, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material D");
@@ -187,7 +186,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         try
         {
-            connectedPrinter.cleanNozzle(0, false, null);
+            connectedPrinter.cleanNozzle(0, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
             steno.error("Couldn't clean nozzle 0");
@@ -199,7 +198,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         try
         {
-            connectedPrinter.cleanNozzle(1, false, null);
+            connectedPrinter.cleanNozzle(1, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
             steno.error("Couldn't clean nozzle 1");
@@ -345,13 +344,13 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                     GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
                     if (result.isSuccess())
                     {
-                        Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n(
+                        BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n(
                                 "maintenancePanel.gcodePrintSuccessTitle"),
                                 Lookup.i18n(
                                         "maintenancePanel.gcodePrintSuccessMessage"));
                     } else
                     {
-                        Lookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n(
+                        BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n(
                                 "maintenancePanel.gcodePrintFailedTitle"),
                                 Lookup.i18n(
                                         "maintenancePanel.gcodePrintFailedMessage"));
@@ -366,7 +365,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                 @Override
                 public void handle(WorkerStateEvent t)
                 {
-                    Lookup.getSystemNotificationHandler().
+                    BaseLookup.getSystemNotificationHandler().
                             showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
                                     Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
                 }

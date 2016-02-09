@@ -4,14 +4,13 @@
 package celtech.modelcontrol;
 
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.utils.threed.ThreeDUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.PhongMaterial;
@@ -19,8 +18,6 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.transform.Rotate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  * ModelGroup is a ModelContainer that is a group of child ModelContainers or
@@ -164,7 +161,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
      * original model dimensions before any transforms).
      */
     @Override
-    ModelBounds calculateBoundsInLocal()
+    RectangularBounds calculateBoundsInLocal()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -175,7 +172,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
 
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child is this model
+            RectangularBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child is this model
             minX = Math.min(bounds.getMinX(), minX);
             minY = Math.min(bounds.getMinY(), minY);
             minZ = Math.min(bounds.getMinZ(), minZ);
@@ -193,7 +190,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
                 newheight, newdepth, newcentreX, newcentreY,
                 newcentreZ);
     }

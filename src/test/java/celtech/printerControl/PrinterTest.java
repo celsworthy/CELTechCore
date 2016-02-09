@@ -1,11 +1,10 @@
 package celtech.printerControl;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.printerControl.comms.DetectedDevice;
-import celtech.printerControl.comms.DeviceDetector;
-import celtech.printerControl.comms.PrinterStatusConsumer;
-import celtech.printerControl.comms.TestCommandInterface;
-import celtech.printerControl.model.HardwarePrinter;
+import celtech.roboxbase.comms.DetectedDevice;
+import celtech.roboxbase.comms.DeviceDetector;
+import celtech.roboxbase.comms.PrinterStatusConsumer;
+import celtech.roboxbase.printerControl.model.HardwarePrinter;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.ClassRule;
@@ -22,7 +21,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
     @ClassRule
     public static TemporaryFolder temporaryUserStorageFolder = new TemporaryFolder();
 
-    private TestCommandInterface testCommandInterface = null;
+//    private TestCommandInterface testCommandInterface = null;
     private HardwarePrinter printer = null;
     private final int statusTimer = 500;
 //    private StatusConsumer statusConsumer = null;
@@ -72,7 +71,7 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
     @After
     public void tearDown()
     {
-        testCommandInterface.shutdown();
+//        testCommandInterface.shutdown();
     }
 
 //    @Test

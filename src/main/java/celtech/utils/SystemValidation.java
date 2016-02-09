@@ -4,7 +4,8 @@
 package celtech.utils;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.util.ResourceBundle;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -29,7 +30,7 @@ public class SystemValidation
      */
     public static void checkMachineTypeRecognised(ResourceBundle i18nBundle)
     {
-        MachineType machineType = ApplicationConfiguration.getMachineType();
+        MachineType machineType = BaseConfiguration.getMachineType();
         if (machineType.equals(MachineType.UNKNOWN))
         {
             Dialogs.create()

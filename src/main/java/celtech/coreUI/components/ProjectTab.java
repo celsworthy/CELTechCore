@@ -15,7 +15,8 @@ import celtech.coreUI.visualisation.DragMode;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
-import static celtech.utils.DeDuplicator.suggestNonDuplicateName;
+import celtech.roboxbase.BaseLookup;
+import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -184,7 +185,7 @@ public class ProjectTab extends Tab
     {
         URL settingsInsetPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlPanelResourcePath + innerPanelFXMLName);
-        FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, Lookup.getLanguageBundle());
+        FXMLLoader loader = new FXMLLoader(settingsInsetPanelURL, BaseLookup.getLanguageBundle());
         Node insetPanel = null;
         try
         {

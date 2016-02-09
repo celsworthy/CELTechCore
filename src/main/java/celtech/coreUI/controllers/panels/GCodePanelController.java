@@ -4,9 +4,9 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusInsetController;
-import celtech.printerControl.comms.commands.GCodeMacros;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -75,8 +75,8 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
         if (text.startsWith("!"))
         {
             String macroFilename = text.substring(1);
-            String gcodeFileWithPathApp = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroFilename + ".gcode";
-            String gcodeFileWithPathUser = ApplicationConfiguration.getUserStorageDirectory() + ApplicationConfiguration.macroFileSubpath + macroFilename + ".gcode";
+            String gcodeFileWithPathApp = BaseConfiguration.getCommonApplicationDirectory() + BaseConfiguration.macroFileSubpath + macroFilename + ".gcode";
+            String gcodeFileWithPathUser = BaseConfiguration.getUserStorageDirectory() + BaseConfiguration.macroFileSubpath + macroFilename + ".gcode";
             String gcodeFileToUse = null;
 
             if (FileUtils.fileExists(gcodeFileWithPathUser))

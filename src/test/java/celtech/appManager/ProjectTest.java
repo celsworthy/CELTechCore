@@ -7,11 +7,12 @@ import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.TestUtils;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
+import celtech.roboxbase.configuration.Filament;
 import celtech.configuration.fileRepresentation.ProjectFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.roboxbase.BaseLookup;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +51,8 @@ public class ProjectTest extends JavaFXConfiguredTest
         SlicerParametersFile.SupportType PRINT_SUPPORT = SlicerParametersFile.SupportType.MATERIAL_2;
         String PRINT_JOB_ID = "PJ1";
 
-        Filament FILAMENT_0 = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
-        Filament FILAMENT_1 = Lookup.getFilamentContainer().getFilamentByID("RBX-PLA-PP157");
+        Filament FILAMENT_0 = BaseLookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
+        Filament FILAMENT_1 = BaseLookup.getFilamentContainer().getFilamentByID("RBX-PLA-PP157");
 
         Project project = new Project();
         project.setProjectName(PROJECT_NAME);

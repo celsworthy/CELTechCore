@@ -1,12 +1,12 @@
 package celtech.services.diagnostics;
 
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.services.ControllableService;
-import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.services.ControllableService;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;

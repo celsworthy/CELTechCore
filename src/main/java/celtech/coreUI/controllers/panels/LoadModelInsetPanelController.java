@@ -15,6 +15,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.InsetPanelMenu;
 import celtech.coreUI.components.InsetPanelMenuItem;
 import celtech.coreUI.visualisation.ModelLoader;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.utils.SystemUtils;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -185,7 +186,7 @@ public class LoadModelInsetPanelController implements Initializable
                 URL downloadURL = new URL(fileURL);
 
                 String extension = FilenameUtils.getExtension(fileURL);
-                final String tempFilename = ApplicationConfiguration.getApplicationStorageDirectory()
+                final String tempFilename = BaseConfiguration.getApplicationStorageDirectory()
                     + File.separator + tempID + "." + extension;
 
                 URLConnection urlConn = downloadURL.openConnection();
@@ -195,7 +196,7 @@ public class LoadModelInsetPanelController implements Initializable
                 if (extension.equalsIgnoreCase("stl"))
                 {
                     steno.debug("Got stl file from My Mini Factory");
-                    final String targetname = ApplicationConfiguration.getUserStorageDirectory()
+                    final String targetname = BaseConfiguration.getUserStorageDirectory()
                         + File.separator + FileUtils.basename(fileURL);
                     writeStreamToFile(webInputStream, targetname);
                 } else if (extension.equalsIgnoreCase("zip"))
@@ -210,7 +211,7 @@ public class LoadModelInsetPanelController implements Initializable
                         while (entries.hasMoreElements())
                         {
                             final ZipEntry entry = entries.nextElement();
-                            final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory()
+                            final String tempTargetname = BaseConfiguration.getUserStorageDirectory()
                                 + File.separator + entry.getName();
                             writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
                             filesToLoad.add(new File(tempTargetname));

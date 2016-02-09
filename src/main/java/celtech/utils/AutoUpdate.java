@@ -2,7 +2,9 @@ package celtech.utils;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -81,7 +83,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
+                            BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
                         }
                     });
                     keepRunning = false;
@@ -93,7 +95,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
+                            BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
                                     + applicationName);
                         }
                     });
@@ -102,7 +104,7 @@ public class AutoUpdate extends Thread
                     break;
                 case UPGRADE_REQUIRED:
 
-                    boolean upgradeApplication = Lookup.getSystemNotificationHandler().showApplicationUpgradeDialog(applicationName);
+                    boolean upgradeApplication = BaseLookup.getSystemNotificationHandler().showApplicationUpgradeDialog(applicationName);
                     if (upgradeApplication)
                     {
                         //Run the autoupdater in the background in download mode
@@ -120,7 +122,7 @@ public class AutoUpdate extends Thread
                         @Override
                         public void run()
                         {
-                            Lookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
+                            BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateFailedToContact"));
                         }
                     });
                     try
@@ -159,7 +161,7 @@ public class AutoUpdate extends Thread
             con.setRequestMethod("GET");
 
             //add request header
-            con.setRequestProperty("User-Agent", ApplicationConfiguration.getApplicationName());
+            con.setRequestProperty("User-Agent", BaseConfiguration.getApplicationName());
 
             con.setConnectTimeout(5000);
             int responseCode = con.getResponseCode();
@@ -182,7 +184,7 @@ public class AutoUpdate extends Thread
                 if (versionMatcher.find())
                 {
                     String concatenatedServerVersionField = versionMatcher.group(1).replaceAll("\\.", "");
-                    String concatenatedAppVersionField = ApplicationConfiguration.getApplicationVersion().replaceAll("\\.", "");
+                    String concatenatedAppVersionField = BaseConfiguration.getApplicationVersion().replaceAll("\\.", "");
 
                     int serverVersionNumber = Integer.valueOf(concatenatedServerVersionField);
                     try
@@ -214,7 +216,7 @@ public class AutoUpdate extends Thread
     {
         String osName = System.getProperty("os.name");
 
-        MachineType machineType = ApplicationConfiguration.getMachineType();
+        MachineType machineType = BaseConfiguration.getMachineType();
 
         ArrayList<String> commands = new ArrayList<>();
 
@@ -224,22 +226,22 @@ public class AutoUpdate extends Thread
                 commands.add("command.com");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
                 break;
             case WINDOWS:
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
                 break;
             case MAC:
-                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
+                commands.add(BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
                 break;
             case LINUX_X86:
-                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux.run");
+                commands.add(BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux.run");
                 break;
             case LINUX_X64:
-                commands.add(ApplicationConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux-x64.run");
+                commands.add(BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-linux-x64.run");
                 break;
         }
         /*

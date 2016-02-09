@@ -4,10 +4,12 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.StateTransitionManager.GUIName;
-import celtech.printerControl.model.StateTransition;
-import celtech.printerControl.model.calibration.NozzleOpeningCalibrationState;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager.GUIName;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransition;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningCalibrationState;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -24,14 +26,14 @@ public class CalibrationNozzleOpeningGUI
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleOpeningGUI.class.getName());
+            CalibrationNozzleOpeningGUI.class.getName());
 
     private final CalibrationInsetPanelController controller;
     StateTransitionManager<NozzleOpeningCalibrationState> stateManager;
     Map<GUIName, Region> namesToButtons = new HashMap<>();
 
     public CalibrationNozzleOpeningGUI(CalibrationInsetPanelController controller,
-        StateTransitionManager<NozzleOpeningCalibrationState> stateManager)
+            StateTransitionManager<NozzleOpeningCalibrationState> stateManager)
     {
         this.controller = controller;
         this.stateManager = stateManager;
@@ -67,11 +69,15 @@ public class CalibrationNozzleOpeningGUI
     public void setState(NozzleOpeningCalibrationState state)
     {
         steno.debug("GUI going to state " + state);
-        controller.calibrationStatus.setText(state.getStepTitle());
+        controller.calibrationStatus.setText(Lookup.i18n(state.getStepTitle()));
         showAppropriateButtons(state);
-        if (state.getDiagramFXMLFileName().isPresent())
+        if (state.getDiagramName().isPresent())
         {
-            controller.showDiagram(state.getDiagramFXMLFileName().get());
+            URL fxmlURL = getClass().getResource(
+                    ApplicationConfiguration.fxmlDiagramsResourcePath
+                    + "nozzleopening" + "/" + state.getDiagramName().get());
+
+            controller.showDiagram(fxmlURL);
         }
         int stepNo = 0;
         switch (state)
@@ -125,7 +131,7 @@ public class CalibrationNozzleOpeningGUI
             case FINISHED:
                 controller.calibrationMenu.reset();
                 break;
-            case CANCELLED:    
+            case CANCELLED:
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FAILED:

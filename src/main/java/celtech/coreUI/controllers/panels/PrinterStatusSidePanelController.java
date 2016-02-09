@@ -4,12 +4,13 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
-import celtech.printerControl.model.Extruder;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.NozzleHeater;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Extruder;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.NozzleHeater;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
@@ -164,7 +165,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         headPanel.setVisible(false);
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
     }
 
     private void initialiseTemperatureChart()

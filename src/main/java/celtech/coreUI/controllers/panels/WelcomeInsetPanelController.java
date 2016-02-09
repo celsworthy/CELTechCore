@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -47,7 +47,7 @@ public class WelcomeInsetPanelController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        String readmeURL = "file:///" + ApplicationConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
+        String readmeURL = "file:///" + BaseConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
 
         textContainer.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>()
         {

@@ -2,10 +2,8 @@ package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;

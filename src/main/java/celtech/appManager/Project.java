@@ -2,19 +2,20 @@ package celtech.appManager;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.PrintBed;
-import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.PrintBed;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.printerControl.model.Head.HeadType;
-import celtech.printerControl.model.Printer;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Head.HeadType;
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.packing.PackableItem;
-import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.Math.packing.PackingThing;
 import celtech.utils.threed.MeshUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,7 +94,7 @@ public class Project
     private BooleanProperty customSettingsNotChosen;
     private BooleanBinding hasInvalidMeshes;
     
-    private final PrinterSettings printerSettings;
+    private final PrinterSettingsOverrides printerSettings;
     
     private final StringProperty projectNameProperty;
     private ObjectProperty<Date> lastModifiedDate;
@@ -106,7 +107,7 @@ public class Project
         initialise();
         
         initialiseExtruderFilaments();
-        printerSettings = new PrinterSettings();
+        printerSettings = new PrinterSettingsOverrides();
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
@@ -162,7 +163,7 @@ public class Project
         canPrint = new SimpleBooleanProperty(true);
         customSettingsNotChosen = new SimpleBooleanProperty(true);
         lastModifiedDate = new SimpleObjectProperty<>();
-        filamentContainer = Lookup.getFilamentContainer();
+        filamentContainer = BaseLookup.getFilamentContainer();
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
         projectChangesListeners = new HashSet<>();
     }
@@ -573,7 +574,7 @@ public class Project
         }
     }
     
-    public PrinterSettings getPrinterSettings()
+    public PrinterSettingsOverrides getPrinterSettings()
     {
         return printerSettings;
     }
@@ -598,7 +599,7 @@ public class Project
         }
     }
     
-    private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
+    private void fireWhenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
@@ -1008,7 +1009,7 @@ public class Project
          *
          * @param printerSettings
          */
-        void whenPrinterSettingsChanged(PrinterSettings printerSettings);
+        void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings);
     }
     
     public void autoLayout()

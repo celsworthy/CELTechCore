@@ -2,9 +2,10 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.modelcontrol.ModelContainer.State;
-import celtech.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class ProjectFile
     private String extruder0FilamentID;
     private String extruder1FilamentID;
     private String lastPrintJobID = "";
-    private String settingsName = ApplicationConfiguration.draftSettingsProfileName;
+    private String settingsName = BaseConfiguration.draftSettingsProfileName;
     private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
     
     private Map<Integer, Set<Integer>> groupStructure = new HashMap<>();

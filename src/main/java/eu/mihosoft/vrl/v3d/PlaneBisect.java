@@ -1,6 +1,6 @@
 package eu.mihosoft.vrl.v3d;
 
-import celtech.utils.Time.TimeUtils;
+import celtech.roboxbase.utils.TimeUtils;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 

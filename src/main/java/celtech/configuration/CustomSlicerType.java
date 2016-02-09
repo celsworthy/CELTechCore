@@ -1,5 +1,7 @@
 package celtech.configuration;
 
+import celtech.roboxbase.configuration.SlicerType;
+
 /**
  *
  * @author Ian

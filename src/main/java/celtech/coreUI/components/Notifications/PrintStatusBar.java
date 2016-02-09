@@ -3,15 +3,15 @@
  */
 package celtech.coreUI.components.Notifications;
 
-import celtech.coreUI.components.Notifications.AppearingProgressBar;
 import celtech.Lookup;
-import celtech.comms.remote.BusyStatus;
-import celtech.configuration.Macro;
-import celtech.comms.remote.PauseStatus;
-import celtech.printerControl.PrintQueueStatus;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.remote.BusyStatus;
+import celtech.roboxbase.configuration.Macro;
+import celtech.roboxbase.comms.remote.PauseStatus;
+import celtech.roboxbase.printerControl.PrintQueueStatus;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;

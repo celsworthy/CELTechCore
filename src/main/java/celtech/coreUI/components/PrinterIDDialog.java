@@ -4,7 +4,9 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.PrinterIDDialogController;
-import celtech.printerControl.model.Printer;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
 import javafx.fxml.FXMLLoader;
@@ -35,7 +37,7 @@ public class PrinterIDDialog
     {
         dialogStage = new Stage(StageStyle.TRANSPARENT);
         URL dialogFXMLURL = PrinterIDDialog.class.getResource(ApplicationConfiguration.fxmlResourcePath + "PrinterIDDialog.fxml");
-        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL, Lookup.getLanguageBundle());
+        FXMLLoader dialogLoader = new FXMLLoader(dialogFXMLURL, BaseLookup.getLanguageBundle());
         try
         {
             Parent dialogBoxScreen = (Parent) dialogLoader.load();

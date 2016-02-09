@@ -4,7 +4,7 @@
  */
 package celtech.services.modelLoader;
 
-import celtech.services.ControllableService;
+import celtech.roboxbase.services.ControllableService;
 import java.io.File;
 import java.util.List;
 import javafx.concurrent.Service;

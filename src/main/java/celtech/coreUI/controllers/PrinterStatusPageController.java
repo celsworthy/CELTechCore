@@ -2,26 +2,26 @@ package celtech.coreUI.controllers;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.comms.remote.PauseStatus;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.JogButton;
 import celtech.coreUI.controllers.utilityPanels.OuterPanelController;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -183,7 +183,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         Lookup.getUserPreferences().advancedModeProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -199,10 +199,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         fiveDPformatter.setMaximumFractionDigits(5);
         fiveDPformatter.setGroupingUsed(false);
 
-        ResourceBundle i18nBundle = Lookup.getLanguageBundle();
-
-        transferringDataString = i18nBundle.getString(
-                "PrintQueue.SendingToPrinter");
+        transferringDataString = Lookup.i18n("PrintQueue.SendingToPrinter");
 
         printerColourChangeListener = (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
         {
@@ -600,7 +597,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         URL insetPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + innerPanelFXMLName);
-        FXMLLoader loader = new FXMLLoader(insetPanelURL, Lookup.getLanguageBundle());
+        FXMLLoader loader = new FXMLLoader(insetPanelURL, BaseLookup.getLanguageBundle());
         VBox wrappedPanel = null;
         try
         {
@@ -656,7 +653,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         URL outerPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "outerStatusPanel.fxml");
-        FXMLLoader loader = new FXMLLoader(outerPanelURL, Lookup.getLanguageBundle());
+        FXMLLoader loader = new FXMLLoader(outerPanelURL, BaseLookup.getLanguageBundle());
         VBox outerPanel = null;
         try
         {

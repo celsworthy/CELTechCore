@@ -4,32 +4,32 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import celtech.coreUI.controllers.PrinterSettings;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.PurgeState;
-import static celtech.printerControl.model.PurgeState.CONFIRM_TEMPERATURE;
-import static celtech.printerControl.model.PurgeState.FAILED;
-import static celtech.printerControl.model.PurgeState.FINISHED;
-import static celtech.printerControl.model.PurgeState.HEATING;
-import static celtech.printerControl.model.PurgeState.IDLE;
-import static celtech.printerControl.model.PurgeState.INITIALISING;
-import static celtech.printerControl.model.PurgeState.RUNNING_PURGE;
-import celtech.printerControl.model.PurgeStateTransitionManager;
-import celtech.printerControl.model.Reel;
-import celtech.printerControl.model.StateTransition;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.StateTransitionManager.GUIName;
-import celtech.utils.PrinterListChangesAdapter;
-import celtech.utils.PrinterUtils;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.CONFIRM_TEMPERATURE;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.FAILED;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.FINISHED;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.HEATING;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.IDLE;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.INITIALISING;
+import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.RUNNING_PURGE;
+import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransition;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager.GUIName;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.utils.PrinterUtils;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -218,7 +218,7 @@ public class PurgeInsetPanelController implements Initializable
 
         if (project != null)
         {
-            Lookup.getSystemNotificationHandler().askUserToClearBed();
+            BaseLookup.getSystemNotificationHandler().askUserToClearBed();
 
             // Need to go to settings page for this project
             ApplicationStatus.getInstance().setMode(ApplicationMode.SETTINGS);
@@ -243,7 +243,7 @@ public class PurgeInsetPanelController implements Initializable
 
         FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
 
-        Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
+        BaseLookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
         {
 
             @Override
@@ -397,7 +397,7 @@ public class PurgeInsetPanelController implements Initializable
         showAppropriateButtons(state);
         resettingPrinter.setVisible(false);
         purgeStatus.setVisible(true);
-        purgeStatus.setText(state.getStepTitle());
+        purgeStatus.setText(Lookup.i18n(state.getStepTitle()));
         purgeTemperature0.intValueProperty().removeListener(purgeTempEntryListener0);
         if (purgeTwoNozzleHeaters.get())
         {
@@ -689,7 +689,7 @@ public class PurgeInsetPanelController implements Initializable
 
         try
         {
-            transitionManager = printer.startPurge();
+            transitionManager = printer.startPurge(Lookup.getUserPreferences().isSafetyFeaturesOn());
 
             currentMaterialTemperature0.textProperty().unbind();
             lastMaterialTemperature0.textProperty().unbind();

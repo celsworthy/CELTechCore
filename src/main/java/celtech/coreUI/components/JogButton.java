@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.components;
 
-import celtech.utils.AxisSpecifier;
+import celtech.roboxbase.utils.AxisSpecifier;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;

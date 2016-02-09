@@ -4,8 +4,8 @@
 
 package celtech.printerControl;
 
-import celtech.comms.remote.EEPROMState;
-import celtech.comms.remote.rx.StatusResponse;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.comms.rx.StatusResponse;
 
 /**
  *

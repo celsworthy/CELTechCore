@@ -4,7 +4,7 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.configuration.PrintBed;
+import celtech.roboxbase.configuration.PrintBed;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import java.util.HashMap;

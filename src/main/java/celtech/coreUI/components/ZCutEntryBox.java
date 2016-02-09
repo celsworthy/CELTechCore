@@ -12,7 +12,8 @@ import celtech.coreUI.visualisation.ScreenExtentsProvider.ScreenExtentsListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.utils.Time.TimeUtils;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.utils.TimeUtils;
 import celtech.utils.threed.MeshSeparator;
 import java.io.IOException;
 import java.util.HashSet;
@@ -164,7 +165,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
 
     private void loadContent()
     {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/celtech/resources/fxml/components/ZCutEntryBox.fxml"), Lookup.getLanguageBundle());
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/celtech/resources/fxml/components/ZCutEntryBox.fxml"), BaseLookup.getLanguageBundle());
         fxmlLoader.setController(this);
         fxmlLoader.setRoot(this);
         fxmlLoader.setClassLoader(this.getClass().getClassLoader());

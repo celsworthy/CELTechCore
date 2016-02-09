@@ -1,7 +1,7 @@
 package celtech.coreUI.components;
 
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -16,8 +16,6 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -67,9 +65,9 @@ public class HyperlinkedLabel extends TextFlow
                         {
                             URI linkToVisit = hyperlinkMap.get(clickedLinkText);
                             if (Desktop.isDesktopSupported()
-                                    && ApplicationConfiguration.getMachineType()
+                                    && BaseConfiguration.getMachineType()
                                     != MachineType.LINUX_X86
-                                    && ApplicationConfiguration.getMachineType()
+                                    && BaseConfiguration.getMachineType()
                                     != MachineType.LINUX_X64)
                             {
                                 try

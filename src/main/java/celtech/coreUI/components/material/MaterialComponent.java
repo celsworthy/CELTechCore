@@ -4,16 +4,17 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
-import celtech.configuration.Filament;
+import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.MaterialType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
-import static celtech.comms.remote.ColourStringConverter.colourToString;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
     private Printer printer;
     private int extruderNumber;
-    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    private final FilamentContainer filamentContainer = BaseLookup.getFilamentContainer();
 
     public enum ReelType
     {
@@ -127,7 +128,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         this.extruderNumber = extruderNumber;
         setupComboBox();
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         Lookup.getUserPreferences().advancedModeProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->

@@ -9,15 +9,16 @@ import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.calibration.CalibrationXAndYState;
-import celtech.printerControl.model.calibration.NozzleHeightCalibrationState;
-import celtech.printerControl.model.calibration.NozzleOpeningCalibrationState;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.CalibrationXAndYState;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightCalibrationState;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningCalibrationState;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -267,7 +268,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 

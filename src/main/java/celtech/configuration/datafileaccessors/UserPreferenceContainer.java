@@ -1,9 +1,10 @@
 package celtech.configuration.datafileaccessors;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.SlicerType;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
@@ -28,7 +29,7 @@ public class UserPreferenceContainer
     {
         mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
-        File userPreferenceInputFile = new File(ApplicationConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
+        File userPreferenceInputFile = new File(BaseConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
         if (!userPreferenceInputFile.exists())
         {
             userPreferenceFile = new UserPreferenceFile();
@@ -83,7 +84,7 @@ public class UserPreferenceContainer
 
     public static void savePreferences(UserPreferences userPreferences)
     {
-        File userPreferenceInputFile = new File(ApplicationConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
+        File userPreferenceInputFile = new File(BaseConfiguration.getUserStorageDirectory() + defaultUserPreferenceFilename);
 
         userPreferenceFile.populateFromSettings(userPreferences);
 

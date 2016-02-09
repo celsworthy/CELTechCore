@@ -1,22 +1,25 @@
 package celtech.appManager;
 
+import celtech.roboxbase.appManager.PurgeResponse;
+import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.Lookup;
 import celtech.roboxbase.SystemErrorHandlerOptions;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.comms.remote.rx.FirmwareError;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.services.firmware.FirmwareLoadResult;
-import celtech.services.firmware.FirmwareLoadService;
-import celtech.utils.tasks.TaskResponder;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.rx.FirmwareError;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.services.firmware.FirmwareLoadResult;
+import celtech.roboxbase.services.firmware.FirmwareLoadService;
+import celtech.roboxbase.utils.tasks.TaskResponder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -86,7 +89,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showErrorNotification(String title, String message)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Lookup.getNotificationDisplay().displayTimedNotification(title, message, NotificationType.CAUTION);
         });
@@ -95,7 +98,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showWarningNotification(String title, String message)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Lookup.getNotificationDisplay().displayTimedNotification(title, message, NotificationType.WARNING);
         });
@@ -104,7 +107,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showInformationNotification(String title, String message)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Lookup.getNotificationDisplay().displayTimedNotification(title, message, NotificationType.NOTE);
         });
@@ -113,7 +116,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void processErrorPacketFromPrinter(FirmwareError error, Printer printer)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
 
             switch (error)
@@ -214,7 +217,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showCalibrationDialogue()
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
             choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"));
@@ -247,7 +250,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showHeadUpdatedNotification()
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             showInformationNotification(
                     Lookup.i18n("notification.headSettingsUpdatedTitle"),
@@ -260,7 +263,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (!sdDialogOnDisplay)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 sdDialogOnDisplay = true;
                 showErrorNotification(Lookup.i18n("dialogs.noSDCardTitle"),
@@ -331,7 +334,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (failedTransferDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 if (failedTransferDialogBox == null)
                 {
@@ -362,7 +365,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (failedTransferDialogBox != null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 failedTransferDialogBox.close();
                 failedTransferDialogBox = null;
@@ -454,7 +457,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             }
         };
         FutureTask<Boolean> askUserToUpgradeTask = new FutureTask<>(askUserToUpgradeDialog);
-        Lookup.getTaskExecutor().runOnGUIThread(askUserToUpgradeTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askUserToUpgradeTask);
         try
         {
             return askUserToUpgradeTask.get();
@@ -468,7 +471,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             firmwareUpdateProgress = new ProgressDialog(firmwareLoadService);
         });
@@ -480,7 +483,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         if (!sdDialogOnDisplay)
         {
             sdDialogOnDisplay = true;
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.noSDCardTitle"));
@@ -509,7 +512,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             printerIDDialog.setPrinterToUse(printer);
 
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 if (printerIDDialog == null)
                 {
@@ -555,7 +558,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
         FutureTask<Boolean> askUserWhetherToOpenDoorTask = new FutureTask<>(
                 askUserWhetherToOpenDoorDialog);
-        Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToOpenDoorTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askUserWhetherToOpenDoorTask);
         try
         {
             return askUserWhetherToOpenDoorTask.get();
@@ -604,7 +607,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
         FutureTask<Boolean> askUserWhetherToLoadModelTask = new FutureTask<>(
                 askUserWhetherToLoadModel);
-        Lookup.getTaskExecutor().runOnGUIThread(askUserWhetherToLoadModelTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askUserWhetherToLoadModelTask);
         try
         {
             return askUserWhetherToLoadModelTask.get();
@@ -655,7 +658,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         };
 
         FutureTask<Boolean> askWhetherToUpgradeTask = new FutureTask<>(askUserWhetherToUpgrade);
-        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToUpgradeTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askWhetherToUpgradeTask);
         try
         {
             return askWhetherToUpgradeTask.get();
@@ -723,7 +726,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         };
 
         FutureTask<PurgeResponse> askWhetherToPurgeTask = new FutureTask<>(askUserWhetherToPurge);
-        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToPurgeTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askWhetherToPurgeTask);
         try
         {
             return askWhetherToPurgeTask.get();
@@ -765,7 +768,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         };
 
         FutureTask<Boolean> askWhetherToShutdownTask = new FutureTask<>(askUserWhetherToShutdown);
-        Lookup.getTaskExecutor().runOnGUIThread(askWhetherToShutdownTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askWhetherToShutdownTask);
         try
         {
             return askWhetherToShutdownTask.get();
@@ -781,7 +784,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (!programInvalidHeadDialogOnDisplay)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 programInvalidHeadDialogOnDisplay = true;
                 ArrayList<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
@@ -799,7 +802,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     chosenFile = chosenFileOption.get();
                 }
 
-                Lookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null,
+                BaseLookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null,
                         "Head profile chosen", chosenFile);
                 programInvalidHeadDialogOnDisplay = false;
             });
@@ -812,7 +815,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         if (!headNotRecognisedDialogOnDisplay)
         {
             headNotRecognisedDialogOnDisplay = true;
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
                 choiceLinkDialogBox.setTitle(Lookup.i18n(
@@ -823,7 +826,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         + " "
                         + Lookup.i18n("dialogs.headNotRecognisedMessage2")
                         + " "
-                        + ApplicationConfiguration.getApplicationName());
+                        + BaseConfiguration.getApplicationName());
 
                 ChoiceLinkButton openTheLidChoice = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("misc.OK"));
@@ -921,7 +924,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
         FutureTask<Optional<PrinterErrorChoice>> askContinueAbortTask = new FutureTask<>(
                 askUserToRespondToPrinterError);
-        Lookup.getTaskExecutor().runOnGUIThread(askContinueAbortTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askContinueAbortTask);
         try
         {
             return askContinueAbortTask.get();
@@ -936,7 +939,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showReelUpdatedNotification()
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             showInformationNotification(Lookup.i18n("notification.reelDataUpdatedTitle"),
                     Lookup.i18n("notification.noActionRequired"));
@@ -949,7 +952,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         if (!reelNotRecognisedDialogOnDisplay)
         {
             reelNotRecognisedDialogOnDisplay = true;
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.reelNotRecognisedTitle"));
@@ -959,7 +962,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         + " "
                         + Lookup.i18n("dialogs.reelNotRecognisedMessage2")
                         + " "
-                        + ApplicationConfiguration.getApplicationName());
+                        + BaseConfiguration.getApplicationName());
 
                 choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
 
@@ -982,7 +985,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         if (!clearBedDialogOnDisplay)
         {
             clearBedDialogOnDisplay = true;
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.clearBedTitle"));
@@ -1042,7 +1045,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         };
 
         FutureTask<Boolean> confirmAdvancedModeTask = new FutureTask<>(confirmAdvancedModeDialog);
-        Lookup.getTaskExecutor().runOnGUIThread(confirmAdvancedModeTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(confirmAdvancedModeTask);
         try
         {
             return confirmAdvancedModeTask.get();
@@ -1108,7 +1111,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (failedEjectDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 failedEjectDialogBox = new ChoiceLinkDialogBox(true);
                 failedEjectDialogBox.setTitle(Lookup.i18n("error.ERROR_UNLOAD"));
@@ -1144,7 +1147,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.error("Eject failed - user chose to eject stuck material");
                     try
                     {
-                        printer.ejectStuckMaterial(nozzleNumber, false, null);
+                        printer.ejectStuckMaterial(nozzleNumber, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
                     } catch (PrinterException ex)
                     {
                         steno.error("Error when automatically invoking eject stuck material");
@@ -1162,7 +1165,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (filamentStuckDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 filamentStuckDialogBox = new ChoiceLinkDialogBox(true);
                 filamentStuckDialogBox.
@@ -1192,7 +1195,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (loadFilamentNowDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 loadFilamentNowDialogBox = new ChoiceLinkDialogBox(true);
                 loadFilamentNowDialogBox.
@@ -1222,7 +1225,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (filamentMotionCheckDialogBox == null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 filamentMotionCheckDialogBox = new ChoiceLinkDialogBox(true);
                 filamentMotionCheckDialogBox.
@@ -1246,7 +1249,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (filamentMotionCheckDialogBox != null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 if (filamentMotionCheckDialogBox != null)
                 {
@@ -1294,7 +1297,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         };
 
         FutureTask<Boolean> askInvalidModelTask = new FutureTask<>(askUserWhetherToLoadModel);
-        Lookup.getTaskExecutor().runOnGUIThread(askInvalidModelTask);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askInvalidModelTask);
         try
         {
             return askInvalidModelTask.get();
@@ -1310,7 +1313,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         if (errorChoiceBox != null)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 errorChoiceBox.closeDueToPrinterDisconnect();
             });

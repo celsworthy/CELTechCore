@@ -4,7 +4,7 @@
  */
 package celtech.coreUI.visualisation;
 
-import celtech.configuration.PrintBed;
+import celtech.roboxbase.configuration.PrintBed;
 import javafx.geometry.Point3D;
 
 /**

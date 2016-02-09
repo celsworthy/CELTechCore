@@ -6,12 +6,13 @@ package celtech.coreUI.components.printerstatus;
 import celtech.Lookup;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.PrinterIdentity;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterIdentity;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +21,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import libertysystems.stenographer.Stenographer;
@@ -52,8 +52,8 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
 
         try
         {
-            connectedPrinters = Lookup.getConnectedPrinters();
-            Lookup.getPrinterListChangesNotifier().addListener(this);
+            connectedPrinters = BaseLookup.getConnectedPrinters();
+            BaseLookup.getPrinterListChangesNotifier().addListener(this);
         } catch (NoClassDefFoundError error)
         {
             // this should only happen in SceneBuilder

@@ -3,12 +3,13 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterIdentity;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterIdentity;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -71,8 +72,8 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        Lookup.getPrinterListChangesNotifier().addListener(this);
-        version.setText(ApplicationConfiguration.getApplicationVersion());
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
+        version.setText(BaseConfiguration.getApplicationVersion());
     }
 
     @Override

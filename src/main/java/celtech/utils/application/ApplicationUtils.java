@@ -1,6 +1,7 @@
 package celtech.utils.application;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.util.Date;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -18,12 +19,12 @@ public class ApplicationUtils
     public static void outputApplicationStartupBanner(Class parentClass)
     {
         steno.info("**********************************************************************");
-        steno.info("Starting " + ApplicationConfiguration.getApplicationName());
+        steno.info("Starting " + BaseConfiguration.getApplicationName());
         steno.info("Date " + new Date());
-        steno.info("Version: " + ApplicationConfiguration.getApplicationVersion());
-        steno.info("Installation directory: " + ApplicationConfiguration.
+        steno.info("Version: " + BaseConfiguration.getApplicationVersion());
+        steno.info("Installation directory: " + BaseConfiguration.
             getApplicationInstallDirectory(parentClass));
-        steno.info("Machine type: " + ApplicationConfiguration.getMachineType());
+        steno.info("Machine type: " + BaseConfiguration.getMachineType());
         steno.info("Locale: " + ApplicationConfiguration.getUserPreferredLocale());
         steno.info("**********************************************************************");
     }
@@ -31,7 +32,7 @@ public class ApplicationUtils
     public static void outputApplicationShutdownBanner()
     {
         steno.info("**********************************************************************");
-        steno.info("Shutting down " + ApplicationConfiguration.getApplicationName());
+        steno.info("Shutting down " + BaseConfiguration.getApplicationName());
         steno.info("Date " + new Date());
         steno.info("**********************************************************************");
     }

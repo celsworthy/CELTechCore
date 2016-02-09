@@ -2,6 +2,7 @@ package celtech.utils;
 
 import celtech.roboxbase.utils.SystemUtils;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
@@ -53,7 +54,7 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
             URL downloadURL = new URL(fileURL);
 
             String extension = FilenameUtils.getExtension(fileURL);
-            final String tempFilename = ApplicationConfiguration.getApplicationStorageDirectory() + File.separator + tempID + "." + extension;
+            final String tempFilename = BaseConfiguration.getApplicationStorageDirectory() + File.separator + tempID + "." + extension;
 
             URLConnection urlConn = downloadURL.openConnection();
 

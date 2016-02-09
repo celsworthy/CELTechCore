@@ -6,12 +6,13 @@ package celtech.coreUI.visualisation;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
-import celtech.configuration.PrintBed;
+import celtech.roboxbase.configuration.PrintBed;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.printerControl.model.Printer;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import celtech.utils.threed.MeshUtils;
@@ -89,7 +90,7 @@ public class ModelLoader
             if (!invalidModelNames.isEmpty())
             {
                 boolean load
-                        = Lookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
+                        = BaseLookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
                 if (!load)
                 {
                     return;
@@ -179,11 +180,11 @@ public class ModelLoader
     private void shrinkIfRequested(ModelContainer modelContainer)
     {
         boolean shrinkModel = false;
-        ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
+        RectangularBounds originalBounds = modelContainer.getOriginalModelBounds();
         boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
         if (modelIsTooLarge)
         {
-            shrinkModel = Lookup.getSystemNotificationHandler().
+            shrinkModel = BaseLookup.getSystemNotificationHandler().
                     showModelTooBigDialog(modelContainer.getModelName());
         }
         if (shrinkModel)

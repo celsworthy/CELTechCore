@@ -8,7 +8,7 @@ import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.Notifications.NotificationArea;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectTab;
@@ -23,7 +23,9 @@ import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -153,7 +155,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 //                System.setProperty("prism.lcdtext", "true");
 //                break;
 //        }
-        steno.debug("Starting AutoMaker - machine type is " + ApplicationConfiguration.
+        steno.debug("Starting AutoMaker - machine type is " + BaseConfiguration.
                 getMachineType());
     }
 
@@ -175,7 +177,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         if (Lookup.getUserPreferences().isFirstUse())
         {
             steno.debug("get first use stl file");
-            File firstUsePrintFile = new File(ApplicationConfiguration.
+            File firstUsePrintFile = new File(BaseConfiguration.
                     getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
 
             Project newProject = new Project();
@@ -316,10 +318,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         steno.debug("start configure display manager");
         this.mainStage = mainStage;
         mainStage.setTitle(applicationName + " - "
-                + ApplicationConfiguration.getApplicationVersion());
-        ApplicationConfiguration.setTitleAndVersion(Lookup.i18n(
+                + BaseConfiguration.getApplicationVersion());
+        BaseConfiguration.setTitleAndVersion(Lookup.i18n(
                 "application.title")
-                + " - " + ApplicationConfiguration.getApplicationVersion());
+                + " - " + BaseConfiguration.getApplicationVersion());
 
         rootAnchorPane = new AnchorPane();
 
@@ -364,7 +366,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "printerStatusSidePanel.fxml");
             steno.debug("About to load side panel fxml: " + fxmlFileName);
-            FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
+            FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
             sidePanel = (VBox) sidePanelLoader.load();
         } catch (Exception ex)
         {
@@ -401,7 +403,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(
                     ApplicationConfiguration.fxmlResourcePath
-                    + "PrinterStatusPage.fxml"), Lookup.getLanguageBundle());
+                    + "PrinterStatusPage.fxml"), BaseLookup.getLanguageBundle());
             AnchorPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.
                     getController();
@@ -411,7 +413,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             printerStatusTab = new Tab();
             FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(
                     ApplicationConfiguration.fxmlResourcePath
-                    + "infoScreenIndicator.fxml"), Lookup.getLanguageBundle());
+                    + "infoScreenIndicator.fxml"), BaseLookup.getLanguageBundle());
             VBox printerStatusLabelGroup = printerStatusPageLabelLoader.load();
             infoScreenIndicatorController = printerStatusPageLabelLoader.getController();
             printerStatusTab.setGraphic(printerStatusLabelGroup);
@@ -475,7 +477,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
                     + "LayoutStatusMenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, Lookup.getLanguageBundle());
+            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, BaseLookup.getLanguageBundle());
             VBox menuStripControls = (VBox) menuStripLoader.load();
             menuStripControls.prefWidthProperty().bind(projectTabPaneHolder.widthProperty());
             projectTabPaneHolder.getChildren().add(menuStripControls);
@@ -577,7 +579,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             {
                 steno.debug("About to load inset panel fxml: " + fxmlFileName);
                 FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName,
-                        Lookup.getLanguageBundle());
+                        BaseLookup.getLanguageBundle());
                 insetPanelLoader.setController(mode.getControllerClass().newInstance());
                 Pane insetPanel = (Pane) insetPanelLoader.load();
                 Initializable insetPanelController = insetPanelLoader.getController();

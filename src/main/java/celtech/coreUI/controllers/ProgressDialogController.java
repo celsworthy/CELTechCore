@@ -4,7 +4,7 @@
  */
 package celtech.coreUI.controllers;
 
-import celtech.services.ControllableService;
+import celtech.roboxbase.services.ControllableService;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;

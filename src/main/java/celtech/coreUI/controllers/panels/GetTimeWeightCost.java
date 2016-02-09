@@ -6,26 +6,36 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.slicer.SlicerConfigWriter;
-import celtech.configuration.slicer.SlicerConfigWriterFactory;
-import celtech.gcodetranslator.PrintJobStatistics;
-import celtech.printerControl.model.Printer;
-import celtech.services.postProcessor.GCodePostProcessingResult;
-import celtech.services.postProcessor.PostProcessorTask;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.services.slicer.SliceResult;
-import celtech.services.slicer.SlicerTask;
-import celtech.utils.tasks.Cancellable;
-import celtech.utils.threed.ThreeDUtils;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.modelcontrol.ModelContainer;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.slicer.SlicerConfigWriter;
+import celtech.roboxbase.configuration.slicer.SlicerConfigWriterFactory;
+import celtech.roboxbase.postprocessor.PrintJobStatistics;
+import celtech.roboxbase.printerControl.PrintableMeshes;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
+import celtech.roboxbase.services.postProcessor.PostProcessorTask;
+import celtech.roboxbase.services.slicer.SliceResult;
+import celtech.roboxbase.services.slicer.SlicerTask;
+import celtech.roboxbase.utils.tasks.Cancellable;
+import celtech.roboxbase.utils.threed.CentreCalculations;
+import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
+import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -63,7 +73,7 @@ public class GetTimeWeightCost
         this.settings = settings;
         this.cancellable = cancellable;
 
-        temporaryDirectory = ApplicationConfiguration.getApplicationStorageDirectory()
+        temporaryDirectory = BaseConfiguration.getApplicationStorageDirectory()
                 + ApplicationConfiguration.timeAndCostFileSubpath
                 + random.nextInt(10000)
                 + File.separator;
@@ -80,7 +90,7 @@ public class GetTimeWeightCost
     private void showCancelled()
     {
         String cancelled = Lookup.i18n("timeCost.cancelled");
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             lblTime.setText(cancelled);
             lblWeight.setText(cancelled);
@@ -103,7 +113,51 @@ public class GetTimeWeightCost
             return false;
         }
 
-        boolean succeeded = doSlicing(project, settings);
+        Map<MeshToWorldTransformer, List<MeshView>> meshMap = new HashMap<>();
+        List<Integer> extruderForModel = new ArrayList<>();
+
+        for (ModelContainer modelContainer : project.getTopLevelModels())
+        {
+            List<MeshView> meshViewsToOutput = new ArrayList<>();
+
+            for (MeshView meshView : modelContainer.descendentMeshViews())
+            {
+                meshViewsToOutput.add(meshView);
+                extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+            }
+
+            meshMap.put(modelContainer, meshViewsToOutput);
+        }
+
+        Printer printer = Lookup.getSelectedPrinterProperty().get();
+
+        //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+        CentreCalculations centreCalc = new CentreCalculations();
+
+        project.getTopLevelModels().forEach(model ->
+        {
+            Bounds modelBounds = model.getBoundsInParent();
+            centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
+            centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
+        });
+        
+        Vector3D centreOfPrintedObject = centreCalc.getResult();
+
+        PrintableMeshes printableMeshes = new PrintableMeshes(
+                meshMap,
+                project.getUsedExtruders(printer),
+                extruderForModel,
+                "bart",
+                settings,
+                project.getPrinterSettings(),
+                project.getPrintQuality(),
+                Lookup.getUserPreferences().getSlicerType(),
+                centreOfPrintedObject,
+                Lookup.getUserPreferences().isSafetyFeaturesOn(),
+                false,
+                null);
+
+        boolean succeeded = doSlicing(printableMeshes, settings);
         if (!succeeded)
         {
             return false;
@@ -114,17 +168,17 @@ public class GetTimeWeightCost
             return false;
         }
 
-        Printer printer = Lookup.getSelectedPrinterProperty().get();
-
         steno.debug("start post processing");
 
-        GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
+        GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(settings.getProfileName(),
                 settings.getProfileName(),
+                printableMeshes,
                 temporaryDirectory,
                 printer,
-                project,
-                settings,
+                null,
+                false,
                 null);
+
         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
                 getPrintJobStatistics();
 
@@ -135,7 +189,7 @@ public class GetTimeWeightCost
 
         if (result.getRoboxiserResult().isSuccess())
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 updateFieldsForStatistics(printJobStatistics, printer);
             });
@@ -199,7 +253,7 @@ public class GetTimeWeightCost
     /**
      * Set up a print job directory etc run the slicer.
      */
-    private boolean doSlicing(Project project, SlicerParametersFile settings)
+    private boolean doSlicing(PrintableMeshes printableMeshes, SlicerParametersFile settings)
     {
         settings = project.getPrinterSettings().applyOverrides(settings);
 
@@ -220,14 +274,12 @@ public class GetTimeWeightCost
         SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
                 slicerTypeToUse);
 
-        //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-        Vector3D centreOfPrintedObject = ThreeDUtils.calculateCentre(project.getTopLevelModels());
-        configWriter.setPrintCentre((float) (centreOfPrintedObject.getX()),
-                (float) (centreOfPrintedObject.getZ()));
+        configWriter.setPrintCentre((float) (printableMeshes.getCentreOfPrintedObject().getX()),
+                (float) (printableMeshes.getCentreOfPrintedObject().getZ()));
         configWriter.generateConfigForSlicer(settings,
                 temporaryDirectory
                 + settings.getProfileName()
-                + ApplicationConfiguration.printProfileFileExtension);
+                + BaseConfiguration.printProfileFileExtension);
 
         Printer printerToUse = null;
 
@@ -236,11 +288,13 @@ public class GetTimeWeightCost
             printerToUse = Lookup.getSelectedPrinterProperty().get();
         }
 
-        SliceResult sliceResult = SlicerTask.doSlicing(settings.getProfileName(), settings,
+        SliceResult sliceResult = SlicerTask.doSlicing(
+                settings.getProfileName(),
+                printableMeshes,
                 temporaryDirectory,
-                project,
-                PrintQualityEnumeration.DRAFT,
-                printerToUse, null, steno);
+                printerToUse,
+                null,
+                steno);
         return sliceResult.isSuccess();
     }
 

@@ -1,9 +1,11 @@
 package celtech.configuration;
 
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.Lookup;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.configuration.units.CurrencySymbol;
+import celtech.roboxbase.BaseLookup;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -297,7 +299,7 @@ public class UserPreferences
         if (advancedMode)
         {
             // Ask the user whether they really want to do this..
-            boolean goToAdvancedMode = Lookup.getSystemNotificationHandler().confirmAdvancedMode();
+            boolean goToAdvancedMode = BaseLookup.getSystemNotificationHandler().confirmAdvancedMode();
             this.advancedMode.set(goToAdvancedMode);
         } else
         {

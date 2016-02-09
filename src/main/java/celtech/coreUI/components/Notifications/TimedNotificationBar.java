@@ -1,9 +1,9 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.roboxbase.BaseLookup;
 import java.util.Timer;
 import java.util.TimerTask;
-import javafx.application.Platform;
 
 /**
  *
@@ -59,7 +59,7 @@ public class TimedNotificationBar extends AppearingNotificationBar
         @Override
         public void run()
         {
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 finishedSlidingOutOfView();
             });

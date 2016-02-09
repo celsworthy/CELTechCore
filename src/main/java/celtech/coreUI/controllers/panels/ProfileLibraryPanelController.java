@@ -1,25 +1,23 @@
 package celtech.coreUI.controllers.panels;
 
-import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.Lookup;
 import celtech.configuration.CustomSlicerType;
-import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerMappings;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.slicer.FillPattern;
-import celtech.configuration.slicer.NozzleParameters;
-import celtech.configuration.slicer.SupportPattern;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerMappings;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.slicer.FillPattern;
+import celtech.roboxbase.configuration.slicer.NozzleParameters;
+import celtech.roboxbase.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.utils.DeDuplicator;
+import celtech.roboxbase.BaseLookup;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -394,7 +392,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        slicerMappings = Lookup.getSlicerMappings();
+        slicerMappings = BaseLookup.getSlicerMappings();
 
         canSave.bind(isNameValid.and(isDirty.and(
                 state.isEqualTo(State.NEW).

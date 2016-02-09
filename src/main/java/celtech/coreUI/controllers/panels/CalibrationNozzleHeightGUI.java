@@ -4,10 +4,12 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.StateTransitionManager.GUIName;
-import celtech.printerControl.model.StateTransition;
-import celtech.printerControl.model.calibration.NozzleHeightCalibrationState;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager.GUIName;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransition;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightCalibrationState;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -24,14 +26,14 @@ public class CalibrationNozzleHeightGUI
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleHeightGUI.class.getName());
+            CalibrationNozzleHeightGUI.class.getName());
 
     private CalibrationInsetPanelController controller;
     StateTransitionManager<NozzleHeightCalibrationState> stateManager;
     Map<GUIName, Region> namesToButtons = new HashMap<>();
 
     public CalibrationNozzleHeightGUI(CalibrationInsetPanelController controller,
-        StateTransitionManager<NozzleHeightCalibrationState> stateManager)
+            StateTransitionManager<NozzleHeightCalibrationState> stateManager)
     {
         this.controller = controller;
         this.stateManager = stateManager;
@@ -66,11 +68,15 @@ public class CalibrationNozzleHeightGUI
     public void setState(NozzleHeightCalibrationState state)
     {
         steno.debug("GUI going to state " + state);
-        controller.calibrationStatus.setText(state.getStepTitle());
+        controller.calibrationStatus.setText(Lookup.i18n(state.getStepTitle()));
         showAppropriateButtons(state);
-        if (state.getDiagramFXMLFileName().isPresent())
+        if (state.getDiagramName().isPresent())
         {
-            controller.showDiagram(state.getDiagramFXMLFileName().get());
+            URL fxmlURL = getClass().getResource(
+                    ApplicationConfiguration.fxmlDiagramsResourcePath
+                    + "nozzleheight" + "/" + state.getDiagramName().get());
+
+            controller.showDiagram(fxmlURL);
         }
         int stepNo = 0;
         switch (state)

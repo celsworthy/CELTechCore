@@ -3,13 +3,15 @@
  */
 package celtech.printerControl.model;
 
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
+import celtech.roboxbase.BaseLookup;
 import java.io.File;
 import javafx.beans.binding.BooleanBinding;
 import javafx.scene.shape.MeshView;
@@ -29,9 +31,9 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     @Before
     public void setupFilaments()
     {
-        PURPLE = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
-        WHITE = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-WH169");
-        GREEN = Lookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
+        PURPLE = BaseLookup.getFilamentContainer().getFilamentByID("RBX-ABS-PP156");
+        WHITE = BaseLookup.getFilamentContainer().getFilamentByID("RBX-ABS-WH169");
+        GREEN = BaseLookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
     }
 
     private ModelContainer makeModelContainer(boolean useExtruder0)

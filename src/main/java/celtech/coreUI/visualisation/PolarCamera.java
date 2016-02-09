@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.visualisation;
 
-import celtech.configuration.PrintBed;
+import celtech.roboxbase.configuration.PrintBed;
 import celtech.roboxbase.utils.Math.MathUtils;
 import celtech.roboxbase.utils.Math.PolarCoordinate;
 import javafx.beans.property.DoubleProperty;

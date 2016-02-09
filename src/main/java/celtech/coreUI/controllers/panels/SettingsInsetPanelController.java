@@ -5,19 +5,21 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
+import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.PrinterListChangesAdapter;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -86,7 +88,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private Printer currentPrinter;
     private Project currentProject;
-    private PrinterSettings printerSettings;
+    private PrinterSettingsOverrides printerSettings;
     private String currentHeadType = HeadContainer.defaultHeadID;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
     private boolean populatingForProject = false;
@@ -136,7 +138,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
 
-            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
+            BaseLookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
             {
 
                 @Override
@@ -541,17 +543,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             case DRAFT:
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.draftSettingsProfileName, currentHeadType);
+                        BaseConfiguration.draftSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case NORMAL:
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.normalSettingsProfileName, currentHeadType);
+                        BaseConfiguration.normalSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case FINE:
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.fineSettingsProfileName, currentHeadType);
+                        BaseConfiguration.fineSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case CUSTOM:
@@ -624,7 +626,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     }
 
     @Override
-    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+    public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
     }
 

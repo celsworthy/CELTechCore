@@ -1,19 +1,20 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
-import celtech.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.HeadContainer;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import static celtech.coreUI.controllers.panels.FXMLUtilities.addColonsToLabels;
-import celtech.comms.remote.exceptions.RoboxCommsException;
-import celtech.comms.remote.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
-import celtech.utils.PrinterUtils;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.comms.rx.HeadEEPROMDataResponse;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.utils.PrinterUtils;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -111,7 +112,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             selectedPrinter.formatHeadEEPROM();
             Head singleMaterialHead = new Head(HeadContainer.getHeadByID(HeadContainer.defaultHeadID));
             selectedPrinter.writeHeadEEPROM(singleMaterialHead);
-            Lookup.getSystemNotificationHandler().showCalibrationDialogue();
+            BaseLookup.getSystemNotificationHandler().showCalibrationDialogue();
         } catch (PrinterException | RoboxCommsException ex)
         {
             steno.error("Unable to format and write head");
@@ -218,7 +219,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                         }
                     });
 
-            Lookup.getPrinterListChangesNotifier().addListener(this);
+            BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
             if (Lookup.getSelectedPrinterProperty().get() != null)
             {

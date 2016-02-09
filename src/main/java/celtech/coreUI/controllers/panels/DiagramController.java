@@ -3,10 +3,10 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
-import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.XAndYStateTransitionManager;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ReadOnlyDoubleProperty;

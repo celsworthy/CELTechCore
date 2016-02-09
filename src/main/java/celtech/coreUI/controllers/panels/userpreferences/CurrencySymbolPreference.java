@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.units.CurrencySymbol;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
-import javafx.beans.property.ObjectProperty;
+import celtech.roboxbase.BaseLookup;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;

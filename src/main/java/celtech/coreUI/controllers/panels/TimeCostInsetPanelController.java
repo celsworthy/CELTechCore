@@ -5,17 +5,19 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Printer;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.PrinterListChangesAdapter;
-import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.SimpleCancellable;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.utils.tasks.Cancellable;
+import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -85,7 +87,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private ToggleGroup qualityToggleGroup;
 
     private Project currentProject;
-    private PrinterSettings printerSettings;
+    private PrinterSettingsOverrides printerSettings;
     private Printer currentPrinter;
     private String currentHeadType;
 
@@ -99,7 +101,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     {
         try
         {
-            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
+            BaseLookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
             {
 
                 @Override
@@ -242,7 +244,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             }
 
             @Override
-            public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+            public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
             {
                 updateFields(project);
             }
@@ -278,7 +280,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     {
         try
         {
-            String filePath = ApplicationConfiguration.getApplicationStorageDirectory()
+            String filePath = BaseConfiguration.getApplicationStorageDirectory()
                     + ApplicationConfiguration.timeAndCostFileSubpath;
             File folder = new File(filePath);
             for (final File fileEntry : folder.listFiles())
@@ -356,7 +358,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     }
                 }
                 SlicerParametersFile settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.draftSettingsProfileName,
+                        BaseConfiguration.draftSettingsProfileName,
                         currentHeadType);
                 updateFieldsForProfile(project, settings, lblDraftTime,
                         lblDraftWeight,
@@ -366,7 +368,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     return;
                 }
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.normalSettingsProfileName,
+                        BaseConfiguration.normalSettingsProfileName,
                         currentHeadType);
                 updateFieldsForProfile(project, settings, lblNormalTime,
                         lblNormalWeight,
@@ -376,7 +378,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     return;
                 }
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.fineSettingsProfileName,
+                        BaseConfiguration.fineSettingsProfileName,
                         currentHeadType);
                 updateFieldsForProfile(project, settings, lblFineTime,
                         lblFineWeight,
@@ -397,7 +399,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         String working = Lookup.i18n("timeCost.working");
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             lblTime.setText(working);
             lblWeight.setText(working);
@@ -423,7 +425,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         {
             steno.error("Error running slicer/postprocessor");
             String failed = Lookup.i18n("timeCost.failed");
-            Lookup.getTaskExecutor().runOnGUIThread(() ->
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 lblTime.setText(failed);
                 lblWeight.setText(failed);
@@ -432,7 +434,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
     }
 
-    private void updatePrintQuality(PrinterSettings printerSettings)
+    private void updatePrintQuality(PrinterSettingsOverrides printerSettings)
     {
         switch (printerSettings.getPrintQuality())
         {

@@ -4,7 +4,7 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
+import celtech.roboxbase.configuration.Filament;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 

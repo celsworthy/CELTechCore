@@ -3,6 +3,7 @@ package celtech.coreUI.components;
 import celtech.Lookup;
 import celtech.roboxbase.ApplicationEnvironment;
 import celtech.configuration.units.UnitType;
+import celtech.roboxbase.BaseLookup;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -329,7 +330,7 @@ public class RestrictedNumberField extends TextField
             Locale usersLocale = null;
             try
             {
-                ApplicationEnvironment applicationEnvironment = Lookup.getApplicationEnvironment();
+                ApplicationEnvironment applicationEnvironment = BaseLookup.getApplicationEnvironment();
                 if (applicationEnvironment == null)
                 {
                     usersLocale = Locale.getDefault();
@@ -356,7 +357,7 @@ public class RestrictedNumberField extends TextField
         {
             try
             {
-                decimalSeparator = Character.toString(new DecimalFormatSymbols(Lookup.getApplicationEnvironment().getAppLocale()).getDecimalSeparator());
+                decimalSeparator = Character.toString(new DecimalFormatSymbols(BaseLookup.getApplicationEnvironment().getAppLocale()).getDecimalSeparator());
             } catch (NoClassDefFoundError ex)
             {
                 //We should only be here if we're being loaded by Scene Builder

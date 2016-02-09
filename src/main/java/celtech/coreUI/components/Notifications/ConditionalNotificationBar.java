@@ -1,6 +1,7 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.roboxbase.BaseLookup;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

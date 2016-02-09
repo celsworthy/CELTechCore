@@ -1,21 +1,21 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.comms.remote.EEPROMState;
-import celtech.configuration.Filament;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.MaterialType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import static celtech.comms.remote.ColourStringConverter.colourToString;
-import static celtech.comms.remote.ColourStringConverter.stringToColor;
-import celtech.comms.remote.exceptions.RoboxCommsException;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesAdapter;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
+import static celtech.roboxbase.utils.ColourStringConverter.stringToColor;
+import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
     private ObservableList<Filament> comboItems;
     private final ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
-    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    private final FilamentContainer filamentContainer = BaseLookup.getFilamentContainer();
     private PrinterListChangesListener listener;
     private Filament reel0Filament;
     private Filament reel1Filament;
@@ -281,7 +281,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             }
 
         };
-        Lookup.getPrinterListChangesNotifier().addListener(listener);
+        BaseLookup.getPrinterListChangesNotifier().addListener(listener);
     }
 
     private void updateSaveBindings()

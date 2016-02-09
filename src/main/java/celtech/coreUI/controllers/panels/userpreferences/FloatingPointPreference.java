@@ -3,7 +3,6 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
-import java.text.ParseException;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;

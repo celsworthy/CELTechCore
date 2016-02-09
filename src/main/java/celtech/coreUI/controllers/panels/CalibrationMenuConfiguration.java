@@ -5,7 +5,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.coreUI.components.VerticalMenu;
-import celtech.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.Printer;
 import java.util.concurrent.Callable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

@@ -2,6 +2,7 @@ package celtech.services.modelLoader;
 
 import celtech.Lookup;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.roboxbase.BaseLookup;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.utils.threed.importers.stl.STLImporter;
 import celtech.utils.threed.importers.svg.SVGImporter;

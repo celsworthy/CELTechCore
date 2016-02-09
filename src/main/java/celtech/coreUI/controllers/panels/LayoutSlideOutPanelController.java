@@ -6,7 +6,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.Project;
-import celtech.printerControl.PrintJob;
+import celtech.roboxbase.printerControl.PrintJob;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.ListChangeListener;

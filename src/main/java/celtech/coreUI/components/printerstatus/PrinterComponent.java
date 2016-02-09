@@ -4,12 +4,13 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.Lookup;
-import celtech.comms.remote.PauseStatus;
+import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.PrinterStatus;
-import static celtech.comms.remote.ColourStringConverter.colourToString;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import com.sun.javafx.tk.FontMetrics;
 import com.sun.javafx.tk.Toolkit;

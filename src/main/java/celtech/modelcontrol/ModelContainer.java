@@ -1,6 +1,6 @@
 package celtech.modelcontrol;
 
-import celtech.configuration.PrintBed;
+import celtech.roboxbase.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.CameraViewChangeListener;
 import celtech.coreUI.visualisation.Edge;
@@ -10,10 +10,11 @@ import celtech.coreUI.visualisation.ShapeProvider;
 import celtech.coreUI.visualisation.collision.CollisionShapeListener;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.roboxbase.utils.Math.MathUtils;
 import celtech.roboxbase.utils.Math.packing.PackableItem;
+import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -75,7 +76,7 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
  * @author Ian Hudson @ Liberty Systems Limited
  */
 public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
-        ScreenExtentsProvider, CameraViewChangeListener, PackableItem
+        ScreenExtentsProvider, CameraViewChangeListener, PackableItem, MeshToWorldTransformer
 {
 
     private static final long serialVersionUID = 1L;
@@ -94,7 +95,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private SimpleStringProperty modelName;
     private boolean isInvalidMesh = false;
 
-    ModelBounds originalModelBounds;
+    RectangularBounds originalModelBounds;
 
     protected Scale transformScalePreferred;
     private Translate transformDropToBedYAdjust;
@@ -131,7 +132,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * also the bounds in the bed coordinates. They are kept valid even after
      * translates etc.
      */
-    protected ModelBounds lastTransformedBoundsInParent;
+    protected RectangularBounds lastTransformedBoundsInParent;
     private SelectionHighlighter selectionHighlighter;
     private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
@@ -499,7 +500,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return transformMoveToPreferred.getZ();
     }
 
-    public ModelBounds getLocalBounds()
+    public RectangularBounds getLocalBounds()
     {
         return originalModelBounds;
     }
@@ -732,7 +733,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public List<Float> getMaxAndMinYInBedCoords()
     {
         List<Float> maxMin = new ArrayList<>();
-        ModelBounds modelBounds = calculateBoundsInBedCoordinateSystem();
+        RectangularBounds modelBounds = calculateBoundsInBedCoordinateSystem();
         maxMin.add((float) modelBounds.getMaxY());
         maxMin.add((float) modelBounds.getMinY());
         return maxMin;
@@ -1114,7 +1115,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void resizeWidth(double width)
     {
-        ModelBounds bounds = getLocalBounds();
+        RectangularBounds bounds = getLocalBounds();
 
         double originalWidth = bounds.getWidth();
 
@@ -1126,7 +1127,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void resizeHeight(double height)
     {
-        ModelBounds bounds = getLocalBounds();
+        RectangularBounds bounds = getLocalBounds();
 
         double currentHeight = bounds.getHeight();
 
@@ -1140,7 +1141,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void resizeDepth(double depth)
     {
 
-        ModelBounds bounds = getLocalBounds();
+        RectangularBounds bounds = getLocalBounds();
 
         double currentDepth = bounds.getDepth();
 
@@ -1157,7 +1158,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void translateXTo(double xPosition)
     {
-        ModelBounds bounds = lastTransformedBoundsInParent;
+        RectangularBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -1188,7 +1189,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void translateZTo(double zPosition)
     {
-        ModelBounds bounds = lastTransformedBoundsInParent;
+        RectangularBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxZ = zPosition + bounds.getDepth() / 2;
         double newMinZ = zPosition - bounds.getDepth() / 2;
@@ -1251,7 +1252,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      */
     public void checkOffBed()
     {
-        ModelBounds bounds = lastTransformedBoundsInParent;
+        RectangularBounds bounds = lastTransformedBoundsInParent;
 
         double epsilon = 0.001;
 
@@ -1281,7 +1282,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the
      * original model dimensions before any transforms).
      */
-    ModelBounds calculateBoundsInLocal()
+    RectangularBounds calculateBoundsInLocal()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -1316,7 +1317,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
                 newheight, newdepth, newcentreX, newcentreY,
                 newcentreZ);
     }
@@ -1377,7 +1378,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Calculate max/min X,Y,Z after all the transforms have been applied all
      * the way to the bed coordinate system.
      */
-    public ModelBounds calculateBoundsInBedCoordinateSystem()
+    public RectangularBounds calculateBoundsInBedCoordinateSystem()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -1426,7 +1427,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
                 newheight, newdepth, newcentreX, newcentreY,
                 newcentreZ);
     }
@@ -1435,7 +1436,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      * Calculate max/min X,Y,Z after the transforms have been applied (ie in the
      * parent node).
      */
-    public ModelBounds calculateBoundsInParentCoordinateSystem()
+    public RectangularBounds calculateBoundsInParentCoordinateSystem()
     {
 
         double minX = Double.MAX_VALUE;
@@ -1485,7 +1486,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
                 newheight, newdepth, newcentreX, newcentreY,
                 newcentreZ);
     }
@@ -1697,7 +1698,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return v1;
     }
 
-    public ModelBounds getOriginalModelBounds()
+    public RectangularBounds getOriginalModelBounds()
     {
         return originalModelBounds;
     }
@@ -1706,7 +1707,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     {
         // Correct transformPostRotationYAdjust for change in height (Y)
         transformDropToBedYAdjust.setY(0);
-        ModelBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
+        RectangularBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
         transformDropToBedYAdjust.setY(-modelBoundsParent.getMaxY());
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
@@ -1880,6 +1881,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
+    @Override
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
         return bed.sceneToLocal(meshView.localToScene(vertexX, vertexY, vertexZ));

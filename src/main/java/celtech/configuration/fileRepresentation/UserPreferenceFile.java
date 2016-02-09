@@ -1,6 +1,6 @@
 package celtech.configuration.fileRepresentation;
 
-import celtech.configuration.SlicerType;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.units.CurrencySymbol;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

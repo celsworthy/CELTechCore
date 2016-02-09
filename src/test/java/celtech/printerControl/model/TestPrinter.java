@@ -3,38 +3,47 @@
  */
 package celtech.printerControl.model;
 
-import celtech.appManager.Project;
-import celtech.comms.remote.EEPROMState;
-import celtech.configuration.Filament;
-import celtech.configuration.Macro;
+import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.MaterialType;
-import celtech.configuration.PrinterEdition;
-import celtech.configuration.PrinterModel;
-import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.comms.CommandInterface;
-import celtech.comms.remote.exceptions.RoboxCommsException;
-import celtech.comms.remote.rx.AckResponse;
-import celtech.comms.remote.rx.FirmwareError;
-import celtech.comms.remote.rx.FirmwareResponse;
-import celtech.comms.remote.rx.HeadEEPROMDataResponse;
-import celtech.comms.remote.rx.ListFilesResponse;
-import celtech.comms.remote.rx.PrinterIDResponse;
-import celtech.comms.remote.rx.ReelEEPROM0DataResponse;
-import celtech.comms.remote.rx.ReelEEPROMDataResponse;
-import celtech.comms.remote.rx.RoboxRxPacket;
-import celtech.comms.remote.rx.SendFile;
-import celtech.comms.remote.rx.StatusResponse;
-import celtech.printerControl.comms.events.ErrorConsumer;
-import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
-import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
-import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
-import celtech.services.printing.DatafileSendAlreadyInProgress;
-import celtech.services.printing.DatafileSendNotInitialised;
-import celtech.utils.AxisSpecifier;
-import celtech.utils.TestHead;
-import celtech.utils.tasks.Cancellable;
-import celtech.utils.tasks.TaskResponder;
+import celtech.roboxbase.configuration.PrinterEdition;
+import celtech.roboxbase.configuration.PrinterModel;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.comms.CommandInterface;
+import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.comms.rx.AckResponse;
+import celtech.roboxbase.comms.rx.FirmwareError;
+import celtech.roboxbase.comms.rx.FirmwareResponse;
+import celtech.roboxbase.comms.rx.HeadEEPROMDataResponse;
+import celtech.roboxbase.comms.rx.ListFilesResponse;
+import celtech.roboxbase.comms.rx.PrinterIDResponse;
+import celtech.roboxbase.comms.rx.ReelEEPROM0DataResponse;
+import celtech.roboxbase.comms.rx.ReelEEPROMDataResponse;
+import celtech.roboxbase.comms.rx.RoboxRxPacket;
+import celtech.roboxbase.comms.rx.SendFile;
+import celtech.roboxbase.comms.rx.StatusResponse;
+import celtech.roboxbase.comms.events.ErrorConsumer;
+import celtech.roboxbase.printerControl.PrintableMeshes;
+import celtech.roboxbase.printerControl.model.Extruder;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.PrintEngine;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterAncillarySystems;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterIdentity;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.TemperatureAndPWMData;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.XAndYStateTransitionManager;
+import celtech.roboxbase.services.printing.DatafileSendAlreadyInProgress;
+import celtech.roboxbase.services.printing.DatafileSendNotInitialised;
+import celtech.roboxbase.utils.AxisSpecifier;
+import celtech.roboxbase.utils.tasks.Cancellable;
+import celtech.roboxbase.utils.tasks.TaskResponder;
 import java.util.List;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
@@ -71,12 +80,12 @@ public class TestPrinter implements Printer
 
         if (numExtruders > 0)
         {
-            extruder0.isFitted.set(true);
+            extruder0.isFittedProperty().set(true);
         }
 
         if (numExtruders > 1)
         {
-            extruder1.isFitted.set(true);
+            extruder1.isFittedProperty().set(true);
         }
         extrudersProperty.add(extruder0);
         extrudersProperty.add(extruder1);
@@ -138,7 +147,7 @@ public class TestPrinter implements Printer
 
     public void loadFilament(int extruderNumber)
     {
-        extrudersProperty().get(extruderNumber).filamentLoaded.set(true);
+        extrudersProperty().get(extruderNumber).filamentLoadedProperty().set(true);
     }
 
     @Override
@@ -288,12 +297,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void goToOpenDoorPosition(TaskResponder responder) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void goToTargetBedTemperature()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -355,12 +358,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void pause() throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void printProject(Project project)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -864,12 +861,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public PurgeStateTransitionManager startPurge() throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void transferGCodeFileToPrinterAndCallbackWhenDone(String string, TaskResponder taskResponder)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -877,12 +868,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void homeAllAxes(boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -978,12 +963,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void ejectStuckMaterial(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public ReadOnlyBooleanProperty headPowerOnFlagProperty()
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -991,18 +970,6 @@ public class TestPrinter implements Printer
 
     @Override
     public void loadFirmware(String firmwareFilePath)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void miniPurge(boolean blockUntilFinished, Cancellable cancellable, int nozzleNumber) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1099,6 +1066,48 @@ public class TestPrinter implements Printer
 
     @Override
     public CommandInterface getCommandInterface()
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public PurgeStateTransitionManager startPurge(boolean requireSafetyFeatures) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void goToOpenDoorPosition(TaskResponder responder, boolean safetyFeaturesRequired) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void printMeshes(PrintableMeshes printableMeshes) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void purgeMaterial(boolean requireNozzle0, boolean requireNozzle1, boolean safetyFeaturesRequired, boolean blockUntilFinished, Cancellable cancellable) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void miniPurge(boolean blockUntilFinished, Cancellable cancellable, int nozzleNumber, boolean safetyFeaturesRequired) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void ejectStuckMaterial(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable, boolean safetyFeaturesRequired) throws PrinterException
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void cleanNozzle(int nozzleNumber, boolean blockUntilFinished, Cancellable cancellable, boolean safetyFeaturesRequired) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

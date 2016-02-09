@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
 import celtech.coreUI.controllers.StatusInsetController;
-import celtech.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ReadOnlyBooleanProperty;

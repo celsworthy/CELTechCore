@@ -5,7 +5,7 @@ package celtech.appManager.undo;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
+import celtech.roboxbase.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
 import java.util.Set;
 import javafx.scene.shape.MeshView;

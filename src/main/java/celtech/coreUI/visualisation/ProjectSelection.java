@@ -5,7 +5,7 @@ package celtech.coreUI.visualisation;
 
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import java.util.HashSet;
@@ -218,7 +218,7 @@ public class ProjectSelection implements ProjectChangesListener
     }
 
     @Override
-    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+    public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
     }
 
