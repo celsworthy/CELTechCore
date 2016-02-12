@@ -336,8 +336,6 @@ public interface Printer extends RoboxResponseConsumer
      * handler for the duration of the 'print'.
      *
      * @param canDisconnectDuringPrint
-     * @see executeMacro executeMacro - if you wish to run a macro rather than
-     * execute a print job
      * @param fileName
      * @throws PrinterException
      */
@@ -478,15 +476,15 @@ public interface Printer extends RoboxResponseConsumer
 
     public ReadOnlyObjectProperty<BusyStatus> busyStatusProperty();
 
-    /**
-     * As of v741 firmware this is now handled within Robox
-     * Causes a reduction in feedrate until the minimum value is reached.
-     * Returns false if the limit has not been reached and true if it has
-     * (implying further action is needed by the caller)
-     *
-     * @param error
-     * @return
-     */
+//    /**
+//     * As of v741 firmware this is now handled within Robox
+//     * Causes a reduction in feedrate until the minimum value is reached.
+//     * Returns false if the limit has not been reached and true if it has
+//     * (implying further action is needed by the caller)
+//     *
+//     * @param error
+//     * @return
+//     */
 //    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error);
 
     public void extrudeUntilSlip(int extruderNumber, int extrusionVolume, int feedrate_mm_per_min) throws PrinterException;

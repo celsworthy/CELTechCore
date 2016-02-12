@@ -1074,7 +1074,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     /**
      * This must be called whenever the project is changed.
      *
-     * @param projectTab
+     * @param project
      */
     public void whenProjectChanges(Project project)
     {

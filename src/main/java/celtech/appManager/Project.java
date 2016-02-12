@@ -827,7 +827,7 @@ public class Project
     }
 
     /**
-     * Return a Map of child_model_id -> parent_model_id for all model:group and
+     * Return a Map of child_model_id - parent_model_id for all model:group and
      * group:group relationships.
      */
     public Map<Integer, Set<Integer>> getGroupStructure()
@@ -841,7 +841,7 @@ public class Project
     }
 
     /**
-     * Return a Map of model_id -> state for all models holding models (ie
+     * Return a Map of model_id - state for all models holding models (ie
      * groups).
      */
     public Map<Integer, ModelContainer.State> getGroupState()

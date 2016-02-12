@@ -274,7 +274,7 @@ public class GCodeMacros
 
     /**
      * Macros are stored in a single directory They are named as follows:
-     * <baseMacroName>_<[S|U]>_<headType>_<[nozzle0Used|nozzle1Used]>
+     * baseMacroName_[S|U]_headType_[nozzle0Used|nozzle1Used]
      * e.g. macroA_S_RBX01-SM - is a macro that should be used for safe mode
      * when using head RBX01-SM
      *

@@ -3025,15 +3025,15 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         errorConsumers.remove(errorConsumer);
     }
 
-    /**
-     *
-     * * As of v741 firmware this functionality is now handled within Robox
-     *
-     *
-     * @param error
-     * @return True if the filament slip routine has been called the max number
-     * of times for this print
-     */
+//    /**
+//     *
+//     * * As of v741 firmware this functionality is now handled within Robox
+//     *
+//     *
+//     * @param error
+//     * @return True if the filament slip routine has been called the max number
+//     * of times for this print
+//     */
 //    @Override
 //    public boolean doFilamentSlipActionWhilePrinting(FirmwareError error)
 //    {

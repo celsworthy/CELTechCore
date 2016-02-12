@@ -418,8 +418,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     /**
      * Returns 0 for no downgrade and 1 for downgrade
      *
-     * @param requiredFirmwareVersion
-     * @param actualFirmwareVersion
      * @return True if the user has agreed to update, otherwise false
      */
     @Override
@@ -1055,7 +1053,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     /**
      *
-     * @param printerName
      */
     @Override
     public void showKeepPushingFilamentNotification()
