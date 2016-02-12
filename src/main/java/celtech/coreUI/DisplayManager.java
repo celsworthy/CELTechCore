@@ -29,6 +29,8 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -313,7 +315,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
-    public void configureDisplayManager(Stage mainStage, String applicationName)
+    public void configureDisplayManager(Stage mainStage, String applicationName, List<String> modelsToLoadAtStartup)
     {
         steno.debug("start configure display manager");
         this.mainStage = mainStage;
@@ -559,6 +561,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         steno.debug("load projects");
         loadProjectsAtStartup();
+        loadModelsIntoNewProject(modelsToLoadAtStartup);
 
         addPageTab = new Tab();
         addPageTab.setText("+");
@@ -755,7 +758,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         nodesMayHaveMoved.set(!nodesMayHaveMoved.get());
 
 //        steno.info("Window size change: " + scene.getWidth() + " : " + scene.getHeight());
-
         if (scene.getHeight() < VERY_SHORT_SCALE_BELOW_HEIGHT)
         {
             if (displayScalingModeProperty.get() != DisplayScalingMode.VERY_SHORT)
@@ -952,5 +954,41 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     public ReadOnlyObjectProperty<DisplayScalingMode> getDisplayScalingModeProperty()
     {
         return displayScalingModeProperty;
+    }
+
+    public void loadModelsIntoNewProject(List<String> modelsWithPaths)
+    {
+        if (modelsWithPaths != null
+                && modelsWithPaths.size() > 0)
+        {
+            List<File> listOfFiles = new ArrayList<>();
+
+            modelsWithPaths.forEach(modelRef ->
+            {
+                File fileRef = new File(modelRef);
+
+                if (fileRef.exists())
+                {
+                    listOfFiles.add(fileRef);
+                }
+            });
+
+            if (listOfFiles.size() > 0)
+            {
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    Project newProject = new Project();
+                    newProject.setProjectName("Import");
+
+                    ModelLoader loader = new ModelLoader();
+                    loader.loadExternalModels(newProject, listOfFiles, false);
+
+                    ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
+                            tabDisplay.heightProperty());
+                    tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
+                    tabDisplay.getSelectionModel().select(projectTab);
+                });
+            }
+        }
     }
 }
