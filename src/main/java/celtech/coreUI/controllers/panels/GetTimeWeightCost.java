@@ -10,18 +10,20 @@ import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriter;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriterFactory;
 import celtech.roboxbase.postprocessor.PrintJobStatistics;
-import celtech.roboxbase.printerControl.PrintableMeshes;
+import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
 import celtech.roboxbase.services.postProcessor.PostProcessorTask;
 import celtech.roboxbase.services.slicer.SliceResult;
 import celtech.roboxbase.services.slicer.SlicerTask;
+import celtech.roboxbase.utils.models.MeshForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
 import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
@@ -113,20 +116,17 @@ public class GetTimeWeightCost
             return false;
         }
 
-        Map<MeshToWorldTransformer, List<MeshView>> meshMap = new HashMap<>();
+        List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
         List<Integer> extruderForModel = new ArrayList<>();
 
         for (ModelContainer modelContainer : project.getTopLevelModels())
         {
-            List<MeshView> meshViewsToOutput = new ArrayList<>();
-
-            for (MeshView meshView : modelContainer.descendentMeshViews())
+            for (ModelContainer modelContainerWithMesh : modelContainer.getModelsHoldingMeshViews())
             {
-                meshViewsToOutput.add(meshView);
-                extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+                MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                meshesForProcessing.add(meshForProcessing);
+                extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
             }
-
-            meshMap.put(modelContainer, meshViewsToOutput);
         }
 
         Printer printer = Lookup.getSelectedPrinterProperty().get();
@@ -140,11 +140,11 @@ public class GetTimeWeightCost
             centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
             centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
         });
-        
+
         Vector3D centreOfPrintedObject = centreCalc.getResult();
 
         PrintableMeshes printableMeshes = new PrintableMeshes(
-                meshMap,
+                meshesForProcessing,
                 project.getUsedExtruders(printer),
                 extruderForModel,
                 "bart",

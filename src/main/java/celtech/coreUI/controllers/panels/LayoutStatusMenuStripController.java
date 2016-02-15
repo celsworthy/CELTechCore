@@ -30,15 +30,15 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.printerControl.PrintableMeshes;
+import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
-import celtech.roboxbase.services.CameraTriggerManager;
 import celtech.roboxbase.utils.PrinterUtils;
+import celtech.roboxbase.utils.models.MeshForProcessing;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import celtech.roboxbase.utils.threed.CentreCalculations;
@@ -276,20 +276,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer, currentProject.getUsedExtruders(printer));
 
-        Map<MeshToWorldTransformer, List<MeshView>> meshMap = new HashMap<>();
+        List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
         List<Integer> extruderForModel = new ArrayList<>();
 
         for (ModelContainer modelContainer : currentProject.getTopLevelModels())
         {
-            List<MeshView> meshViewsToOutput = new ArrayList<>();
-
-            for (MeshView meshView : modelContainer.descendentMeshViews())
+            for (ModelContainer modelContainerWithMesh : modelContainer.getModelsHoldingMeshViews())
             {
-                meshViewsToOutput.add(meshView);
-                extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+                MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                meshesForProcessing.add(meshForProcessing);
+                extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
             }
-
-            meshMap.put(modelContainer, meshViewsToOutput);
         }
 
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
@@ -303,9 +300,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         });
 
         Vector3D centreOfPrintedObject = centreCalc.getResult();
-        
+
         CameraTriggerData cameraTriggerData = null;
-        
+
         if (Lookup.getUserPreferences().isSafetyFeaturesOn())
         {
             cameraTriggerData = new CameraTriggerData(
@@ -317,7 +314,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
 
         PrintableMeshes printableMeshes = new PrintableMeshes(
-                meshMap,
+                meshesForProcessing,
                 currentProject.getUsedExtruders(printer),
                 extruderForModel,
                 currentProject.getLastPrintJobID(),
