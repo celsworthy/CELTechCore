@@ -1,14 +1,21 @@
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.utils.FileUtilities;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.utils.threed.importers.stl.STLImporter;
 import celtech.utils.threed.importers.svg.SVGImporter;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -16,6 +23,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -25,7 +33,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
 {
 
     private Stenographer steno = StenographerFactory.
-        getStenographer(ModelLoaderTask.class.getName());
+            getStenographer(ModelLoaderTask.class.getName());
 
     private final List<File> modelFilesToLoad;
     private final DoubleProperty percentProgress = new SimpleDoubleProperty();
@@ -47,6 +55,8 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
     @Override
     protected ModelLoadResults call() throws Exception
     {
+        ModelLoadResults modelLoadResults = new ModelLoadResults();
+        
         List<ModelLoadResult> modelLoadResultList = new ArrayList<>();
 
         updateTitle(Lookup.i18n("dialogs.loadModelTitle"));
@@ -55,30 +65,72 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
         {
             steno.info("Model file load started:" + modelFileToLoad.getName());
 
-            ModelLoadResult modelLoadResult = null;
             String modelFilePath = modelFileToLoad.getAbsolutePath();
             updateMessage(Lookup.i18n("dialogs.gcodeLoadMessagePrefix")
-                + modelFileToLoad.getName());
+                    + modelFileToLoad.getName());
             updateProgress(0, 100);
-            if (modelFilePath.toUpperCase().endsWith("OBJ"))
+
+            final List<String> fileNamesToLoad = new ArrayList<>();
+
+            if (modelFilePath.toUpperCase().endsWith("ZIP"))
             {
-                ObjImporter reader = new ObjImporter();
-                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath);
-            } else if (modelFilePath.toUpperCase().endsWith("STL"))
-            {
-                STLImporter reader = new STLImporter();
-                modelLoadResult = reader.loadFile(this, modelFileToLoad,
-                                                  percentProgress);
-            } else if (modelFilePath.toUpperCase().endsWith("SVG"))
-            {
-                SVGImporter reader = new SVGImporter();
-                modelLoadResult = reader.loadFile(this, modelFileToLoad,
-                                                  percentProgress);
+//                modelLoadResults.setShouldCentre(false);
+                ZipFile zipFile = new ZipFile(modelFilePath);
+
+                try
+                {
+                    final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                    while (entries.hasMoreElements())
+                    {
+                        final ZipEntry entry = entries.nextElement();
+                        final String tempTargetname = BaseConfiguration.getUserTempDirectory() + entry.getName();
+                        FileUtilities.writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
+                        fileNamesToLoad.add(tempTargetname);
+                    }
+                } catch (IOException ex)
+                {
+                    steno.error("Error unwrapping zip - " + ex.getMessage());
+                } finally
+                {
+                    zipFile.close();
+                }
             }
-            modelLoadResultList.add(modelLoadResult);
+            else
+            {
+                fileNamesToLoad.add(modelFilePath);
+            }
+
+            for (String filenameToLoad : fileNamesToLoad)
+            {
+                modelLoadResultList.add(loadTheFile(filenameToLoad));
+            }
         }
 
-        return new ModelLoadResults(modelLoadResultList);
+        modelLoadResults.setResults(modelLoadResultList);
+        return modelLoadResults;
+    }
+
+    private ModelLoadResult loadTheFile(String modelFileToLoad)
+    {
+        ModelLoadResult modelLoadResult = null;
+
+        if (modelFileToLoad.toUpperCase().endsWith("OBJ"))
+        {
+            ObjImporter reader = new ObjImporter();
+            modelLoadResult = reader.loadFile(this, "file:///" + new File(modelFileToLoad));
+        } else if (modelFileToLoad.toUpperCase().endsWith("STL"))
+        {
+            STLImporter reader = new STLImporter();
+            modelLoadResult = reader.loadFile(this, new File(modelFileToLoad),
+                    percentProgress);
+        } else if (modelFileToLoad.toUpperCase().endsWith("SVG"))
+        {
+            SVGImporter reader = new SVGImporter();
+            modelLoadResult = reader.loadFile(this, new File(modelFileToLoad),
+                    percentProgress);
+        }
+
+        return modelLoadResult;
     }
 
     /**

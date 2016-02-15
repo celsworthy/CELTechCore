@@ -100,6 +100,8 @@ public class ModelLoader
 
         boolean projectIsEmpty = project.getTopLevelModels().isEmpty();
         Set<ModelContainer> allModelContainers = new HashSet<>();
+        boolean shouldCentre = loadResults.isShouldCentre();
+
         for (ModelLoadResult loadResult : loadResults.getResults())
         {
             if (loadResult != null)
@@ -116,7 +118,7 @@ public class ModelLoader
                 steno.error("Error whilst attempting to load model");
             }
         }
-        addToProject(project, allModelContainers);
+        addToProject(project, allModelContainers, shouldCentre);
         if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
         {
 //            project.autoLayout();
@@ -158,7 +160,7 @@ public class ModelLoader
      * there is more than one ModelContainer/Group then put them in one
      * overarching group.
      */
-    private void addToProject(Project project, Set<ModelContainer> modelContainers)
+    private void addToProject(Project project, Set<ModelContainer> modelContainers, boolean shouldCentre)
     {
         UndoableProject undoableProject = new UndoableProject(project);
 
@@ -170,8 +172,11 @@ public class ModelLoader
         {
             modelContainer = project.createNewGroupAndAddModelListeners(modelContainers);
         }
-        modelContainer.moveToCentre();
-        modelContainer.dropToBed();
+        if (shouldCentre)
+        {
+            modelContainer.moveToCentre();
+            modelContainer.dropToBed();
+        }
         shrinkIfRequested(modelContainer);
         modelContainer.checkOffBed();
         undoableProject.addModel(modelContainer);
