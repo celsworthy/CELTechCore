@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.model.Extruder;
@@ -14,6 +15,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -58,6 +60,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     @FXML
     private NumberAxis temperatureAxis;
+
     @FXML
     private NumberAxis timeAxis;
 
@@ -112,6 +115,36 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private Group dualMaterialHead;
 
+    @FXML
+    private VBox graphContainer;
+
+    @FXML
+    private VBox graphAlternativeGrid;
+
+    @FXML
+    private Label graphAlternativeN1Temp;
+
+    @FXML
+    private Label graphAlternativeN2Temp;
+
+    @FXML
+    private Label graphAlternativeBedTemp;
+
+    @FXML
+    private Label graphAlternativeAmbientTemp;
+
+    @FXML
+    private Label graphAlternativeN1Legend;
+
+    @FXML
+    private Label graphAlternativeN2Legend;
+
+    @FXML
+    private Label graphAlternativeBedLegend;
+
+    @FXML
+    private Label graphAlternativeAmbientLegend;
+
     private Printer previousSelectedPrinter = null;
     private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
 
@@ -148,6 +181,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        updateForScalingModeChange(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
+        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener((ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode newValue) ->
+        {
+            updateForScalingModeChange(newValue);
+        });
+
         chartManager = new ChartManager(temperatureChart);
 
         selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
@@ -157,6 +196,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     whenPrinterSelected(newValue);
                 });
 
+        graphAlternativeAmbientLegend.setVisible(false);
+        graphAlternativeAmbientTemp.setVisible(false);
+        graphAlternativeBedLegend.setVisible(false);
+        graphAlternativeBedTemp.setVisible(false);
         showNoHead();
 
         initialiseTemperatureChart();
@@ -181,6 +224,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         temperatureChart.setLegendSide(Side.RIGHT);
 
         temperatureChart.setVisible(false);
+
+        graphAlternativeGrid.setVisible(false);
     }
 
     /**
@@ -232,6 +277,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         chartManager.setLegendLabels(legendNozzleS, legendNozzleT, legendBed, legendAmbient);
         chartManager.bindPrinter(printer);
 
+        graphAlternativeBedTemp.setVisible(true);
+        graphAlternativeBedLegend.setVisible(true);
+        graphAlternativeBedTemp.textProperty().bind(printer.getPrinterAncillarySystems().bedTemperatureProperty().asString("%d°C"));
+        graphAlternativeAmbientTemp.setVisible(true);
+        graphAlternativeAmbientLegend.setVisible(true);
+        graphAlternativeAmbientTemp.textProperty().bind(printer.getPrinterAncillarySystems().ambientTemperatureProperty().asString("%d°C"));
+
         refreshMaterialContainer(printer);
     }
 
@@ -269,6 +321,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             unbindHeadProperties(printer.headProperty().get());
         }
 
+        graphAlternativeBedTemp.setVisible(false);
+        graphAlternativeBedLegend.setVisible(false);
+        graphAlternativeBedTemp.textProperty().unbind();
+        graphAlternativeAmbientTemp.setVisible(false);
+        graphAlternativeAmbientLegend.setVisible(false);
+        graphAlternativeAmbientTemp.textProperty().unbind();
+
         currentAmbientTemperatureHistory = null;
         chartManager.unbindPrinter();
 
@@ -283,6 +342,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         dualMaterialHead.setVisible(false);
         singleMaterialHead.setVisible(false);
         singleMaterialLiteHead.setVisible(false);
+        graphAlternativeN1Legend.setVisible(false);
+        graphAlternativeN1Temp.setVisible(false);
+        graphAlternativeN2Legend.setVisible(false);
+        graphAlternativeN2Temp.setVisible(false);
     }
 
     private void unbindHeadProperties(Head head)
@@ -290,6 +353,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
                 graphDataPointChangeListener);
         chartManager.removeAllNozzles();
+
+        graphAlternativeN1Temp.textProperty().unbind();
+        graphAlternativeN2Temp.textProperty().unbind();
 
         showNoHead();
     }
@@ -310,6 +376,20 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     nozzleHeater.nozzleTemperatureProperty());
 
         }
+
+        if (head.getNozzleHeaters().size() > 0)
+        {
+            graphAlternativeN1Temp.setVisible(true);
+            graphAlternativeN1Legend.setVisible(true);
+            graphAlternativeN1Temp.textProperty().bind(head.getNozzleHeaters().get(0).nozzleTemperatureProperty().asString("%d°C"));
+        }
+        if (head.getNozzleHeaters().size() > 1)
+        {
+            graphAlternativeN2Legend.setVisible(true);
+            graphAlternativeN2Temp.setVisible(true);
+            graphAlternativeN2Temp.textProperty().bind(head.getNozzleHeaters().get(1).nozzleTemperatureProperty().asString("%d°C"));
+        }
+
         headTitleBold.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleBold"));
         headTitleLight.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleLight"));
         headDescription.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".description"));
@@ -424,4 +504,21 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         }
     }
 
+    private void updateForScalingModeChange(DisplayManager.DisplayScalingMode displayScalingMode)
+    {
+        switch (displayScalingMode)
+        {
+            case SHORT:
+            case VERY_SHORT:
+                graphContainer.setVisible(false);
+                graphContainer.setMaxHeight(0);
+                graphAlternativeGrid.setVisible(true);
+                break;
+            default:
+                graphContainer.setVisible(true);
+                graphContainer.setMaxHeight(-1);
+                graphAlternativeGrid.setVisible(false);
+                break;
+        }
+    }
 }
