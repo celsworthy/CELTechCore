@@ -106,9 +106,9 @@
                     </children>
                 </VBox>
                 <VBox fx:id="materialContainer" alignment="CENTER" prefWidth="260.0" minHeight="-Infinity" styleClass="statusPanelChild"/>
-                <StackPane>
+                <VBox VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER" maxHeight="1000" minHeight="-1">
                     <children>
-                        <VBox fx:id="graphContainer" VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER" maxHeight="1000" minHeight="100">
+                        <VBox fx:id="graphContainer" VBox.vgrow="NEVER" prefHeight="-1" maxHeight="-1" minHeight="0">
                             <children>
                                 <LineChart id="temperatureChart" fx:id="temperatureChart" alternativeColumnFillVisible="true" alternativeRowFillVisible="true" animated="false" horizontalGridLinesVisible="false" legendVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="100" minWidth="-Infinity" prefHeight="160.0" prefWidth="260.0" verticalGridLinesVisible="false">
                                     <xAxis>
@@ -175,7 +175,7 @@
                                 </GridPane>
                             </children>
                         </VBox>
-                        <VBox fx:id="graphAlternativeGrid">
+                        <VBox fx:id="graphAlternativeGrid" minHeight="0">
                             <children>
                                 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="260.0">
                                     <columnConstraints>
@@ -202,7 +202,7 @@
                             </children>
                         </VBox>
                     </children>
-                </StackPane>
+                </VBox>
             </children>
         </VBox>
     </children>

@@ -513,11 +513,13 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                 graphContainer.setVisible(false);
                 graphContainer.setMaxHeight(0);
                 graphAlternativeGrid.setVisible(true);
+                graphAlternativeGrid.setMaxHeight(-1);
                 break;
             default:
                 graphContainer.setVisible(true);
                 graphContainer.setMaxHeight(-1);
                 graphAlternativeGrid.setVisible(false);
+                graphAlternativeGrid.setMaxHeight(0);
                 break;
         }
     }
