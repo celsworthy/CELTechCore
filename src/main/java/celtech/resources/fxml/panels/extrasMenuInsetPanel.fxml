@@ -23,20 +23,25 @@
                                 <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
-                        <VBox fx:id="insetNodeContainer">
+                        <VBox>
                             <children>
+                                <VBox prefHeight="95" minHeight="0">
+                                    <children>
+                                    </children>
+                                </VBox>
+                                <VBox fx:id="insetNodeContainer" minHeight="-Infinity">
+                                    <children>
+                                    </children>
+                                </VBox>
                             </children>
-                            <padding>
-                                <Insets top="95.0" />
-                            </padding>
-                     <HBox.margin>
-                        <Insets left="20.0" />
-                     </HBox.margin>
+                            <HBox.margin>
+                                <Insets left="20.0" bottom="20.0"/>
+                            </HBox.margin>
                         </VBox>
                     </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
                 </HBox>
                 <StackPane minHeight="90.0">
                     <children>
@@ -44,23 +49,23 @@
                             <children>
                                 <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" prefWidth="80.0" />
                             </children>
-                     <StackPane.margin>
-                        <Insets left="10.0" />
-                     </StackPane.margin>
+                            <StackPane.margin>
+                                <Insets left="10.0" />
+                            </StackPane.margin>
                         </HBox>
                         <HBox fx:id="buttonBoxContainer" alignment="CENTER" pickOnBounds="false" prefHeight="90.0" BorderPane.alignment="CENTER">
                             <children>
                             </children>
-                     <StackPane.margin>
-                        <Insets />
-                     </StackPane.margin>
+                            <StackPane.margin>
+                                <Insets />
+                            </StackPane.margin>
                         </HBox>
                     </children>
                 </StackPane>
             </children>
-         <VBox.margin>
-            <Insets />
-         </VBox.margin>
+            <VBox.margin>
+                <Insets />
+            </VBox.margin>
         </VBox>
     </children>
     <VBox.margin>
