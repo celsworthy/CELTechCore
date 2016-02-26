@@ -4,7 +4,7 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.HashSet;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
@@ -21,10 +21,10 @@ public class CopyModelsCommand extends Command
         CopyModelsCommand.class.getName());
 
     Project project;
-    Set<ModelContainer> modelContainers;
-    Set<ModelContainer> newModelContainers;
+    Set<ProjectifiableThing> modelContainers;
+    Set<ProjectifiableThing> newProjectifiableThings;
 
-    public CopyModelsCommand(Project project, Set<ModelContainer> modelContainers)
+    public CopyModelsCommand(Project project, Set<ProjectifiableThing> modelContainers)
     {
         this.project = project;
         this.modelContainers = modelContainers;
@@ -33,12 +33,12 @@ public class CopyModelsCommand extends Command
     @Override
     public void do_()
     {
-        newModelContainers = new HashSet<>();
-        for (ModelContainer modelContainer : modelContainers)
+        newProjectifiableThings = new HashSet<>();
+        for (ProjectifiableThing modelContainer : modelContainers)
         {
-            ModelContainer newModel = modelContainer.makeCopy();
+            ProjectifiableThing newModel = modelContainer.makeCopy();
             newModel.translateBy(20, 20);
-            newModelContainers.add(newModel);
+            newProjectifiableThings.add(newModel);
         }
         redo();
     }
@@ -46,13 +46,13 @@ public class CopyModelsCommand extends Command
     @Override
     public void undo()
     {
-        project.removeModels(newModelContainers);
+        project.removeModels(newProjectifiableThings);
     }
 
     @Override
     public void redo()
     {
-        for (ModelContainer modelContainer : newModelContainers)
+        for (ProjectifiableThing modelContainer : newProjectifiableThings)
         {
             project.addModel(modelContainer);
         }

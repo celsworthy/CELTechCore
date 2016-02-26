@@ -4,6 +4,7 @@ import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import static celtech.roboxbase.utils.Math.MathUtils.RAD_TO_DEG;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +43,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     private final double arrowOffsetFromCorner = 30;
 
     private LineDirection direction;
-    private Set<ModelContainer> modelContainerSet;
+    private Set<ProjectifiableThing> modelContainerSet;
     private UndoableProject undoableproject;
 
     private double normaliseArrowAngle(final double angle)

@@ -17,8 +17,6 @@ import celtech.roboxbase.utils.Math.packing.PackableItem;
 import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -75,24 +73,14 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends Group implements Serializable, Comparable, ShapeProvider,
+public class ModelContainer extends ProjectifiableThing implements Serializable, Comparable, ShapeProvider,
         ScreenExtentsProvider, CameraViewChangeListener, PackableItem, MeshToWorldTransformer
 {
-
+ 
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
-    /**
-     * The modelId is only guaranteed unique at the project level because it
-     * could be reloaded with duplicate values from saved models into other
-     * projects.
-     */
-    protected int modelId;
     private Stenographer steno;
     private PrintBed printBed;
-    private boolean isCollided = false;
-    private BooleanProperty isSelected;
-    private BooleanProperty isOffBed;
-    private SimpleStringProperty modelName;
     private boolean isInvalidMesh = false;
 
     RectangularBounds originalModelBounds;
@@ -144,8 +132,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     private double cameraDistance = 1;
 
-    private File modelFile;
-
     private Group bed;
 
     private Camera cameraViewingMe = null;
@@ -158,10 +144,12 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public ModelContainer()
     {
+        super();
     }
 
     public ModelContainer(File modelFile, MeshView meshView)
     {
+        super(modelFile);
         this.meshView = meshView;
         getChildren().add(meshView);
 
@@ -192,11 +180,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         }
     }
 
-    public File getModelFile()
-    {
-        return modelFile;
-    }
-
     public Scale getTransformScale()
     {
         return transformScalePreferred;
@@ -205,7 +188,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * Clear the meshes so as to free memory.
      */
-    public void clearMeshes()
+    @Override
+    public void clearElements()
     {
         getChildren().clear();
     }
@@ -328,7 +312,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     protected void initialise(File modelFile)
     {
-        this.modelFile = modelFile;
+        setModelFile(modelFile);
         modelId = nextModelId;
         nextModelId += 1;
 
@@ -337,16 +321,13 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
-        isSelected = new SimpleBooleanProperty(false);
-        isOffBed = new SimpleBooleanProperty(false);
-
         if (modelFile != null)
         {
-            modelName = new SimpleStringProperty(modelFile.getName());
+            setModelName(modelFile.getName());
             this.setId(modelFile.getName() + Integer.toString(modelId));
         } else
         {
-            modelName = new SimpleStringProperty("group " + modelId);
+            setModelName("group " + modelId);
             this.setId("group " + modelId);
         }
 
@@ -420,7 +401,8 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
      *
      * @return
      */
-    public ModelContainer makeCopy()
+    @Override
+    public ProjectifiableThing makeCopy()
     {
         MeshView newMeshView = new MeshView();
         newMeshView.setMesh(meshView.getMesh());
@@ -428,18 +410,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         newMeshView.setCullFace(CullFace.BACK);
         newMeshView.setId(meshView.getId());
 
-        ModelContainer copy = new ModelContainer(this.modelFile, newMeshView);
+        ModelContainer copy = new ModelContainer(getModelFile(), newMeshView);
         copy.setUseExtruder0(associateWithExtruderNumber.get() == 0);
         copy.setState(this.getState());
         copy.recalculateScreenExtents();
         return copy;
     }
 
+    @Override
     public void translateBy(double xMove, double zMove)
     {
         translateBy(xMove, 0, zMove);
     }
 
+    @Override
     public void translateBy(double xMove, double yMove, double zMove)
     {
         Point3D localPoint = new Point3D(xMove, yMove, zMove);
@@ -568,7 +552,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     /**
      * Move the CENTRE of the object to the desired x,z position.
+     * @param xPosition
+     * @param zPosition
      */
+    @Override
     public void translateTo(double xPosition, double zPosition)
     {
         translateXTo(xPosition);
@@ -626,26 +613,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
-    }
-
-    public void setCollision(boolean hasCollided)
-    {
-        this.isCollided = hasCollided;
-    }
-
-    public boolean isCollided()
-    {
-        return isCollided;
-    }
-
-    public void setModelName(String modelName)
-    {
-        this.modelName.set(modelName);
-    }
-
-    public String getModelName()
-    {
-        return modelName.get();
     }
 
     /**
@@ -793,6 +760,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    @Override
     public void setXScale(double scaleFactor)
     {
         preferredXScale.set(scaleFactor);
@@ -800,6 +768,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateScaleTransform();
     }
 
+    @Override
     public void setYScale(double scaleFactor)
     {
         preferredYScale.set(scaleFactor);
@@ -807,6 +776,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         updateScaleTransform();
     }
 
+    @Override
     public void setZScale(double scaleFactor)
     {
         preferredZScale.set(scaleFactor);
@@ -841,16 +811,19 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         transformRotateTurnPreferred.setAxis(Y_AXIS);
     }
 
+    @Override
     public double getXScale()
     {
         return preferredXScale.get();
     }
 
+    @Override
     public double getYScale()
     {
         return preferredYScale.get();
     }
 
+    @Override
     public double getZScale()
     {
         return preferredZScale.get();
@@ -904,9 +877,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return preferredRotationLean.get();
     }
 
-    public void setSelected(boolean selected)
+    @Override
+    public void selectedAction()
     {
-        if (selected)
+        if (isSelected())
         {
             if (selectionHighlighter == null)
             {
@@ -917,12 +891,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             hideSelectionHighlighter();
         }
-        isSelected.set(selected);
-    }
-
-    public boolean isSelected()
-    {
-        return isSelected.get();
     }
 
     public BooleanProperty isSelectedProperty()
@@ -933,7 +901,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void writeObject(ObjectOutputStream out)
             throws IOException
     {
-        out.writeUTF(modelName.get());
+        out.writeUTF(getModelName());
 
         // unused
         out.writeInt(0);
@@ -988,7 +956,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         MeshView newMesh = new MeshView(triMesh);
         newMesh.setMaterial(ApplicationMaterials.getDefaultModelMaterial());
         newMesh.setCullFace(CullFace.BACK);
-        newMesh.setId(modelName + "_mesh");
+        newMesh.setId(getModelName() + "_mesh");
 
         return newMesh;
     }
@@ -1113,6 +1081,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         return associateWithExtruderNumber;
     }
 
+    @Override
     public void resizeWidth(double width)
     {
         RectangularBounds bounds = getLocalBounds();
@@ -1125,6 +1094,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    @Override
     public void resizeHeight(double height)
     {
         RectangularBounds bounds = getLocalBounds();
@@ -1138,6 +1108,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    @Override
     public void resizeDepth(double depth)
     {
 
@@ -1155,7 +1126,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * N.B. It only works for top level objects i.e. top level groups or
      * ungrouped models.
+     * @param xPosition
      */
+    @Override
     public void translateXTo(double xPosition)
     {
         RectangularBounds bounds = lastTransformedBoundsInParent;
@@ -1186,7 +1159,9 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     /**
      * N.B. It only works for top level objects i.e. top level groups or
      * ungrouped models.
+     * @param zPosition
      */
+    @Override
     public void translateZTo(double zPosition)
     {
         RectangularBounds bounds = lastTransformedBoundsInParent;
@@ -1623,7 +1598,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshView.setCullFace(CullFace.BACK);
             meshView.setId(getId() + "-" + binCounter);
 
-            ModelContainer modelContainer = new ModelContainer(modelFile, meshView);
+            ModelContainer modelContainer = new ModelContainer(getModelFile(), meshView);
 
             outputMeshes.add(modelContainer);
         }
@@ -2103,17 +2078,20 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         notifyScreenExtentsChange();
     }
 
+    @Override
     public void addChildNodes(ObservableList<Node> nodes)
     {
         getChildren().addAll(nodes);
     }
 
+    @Override
     public void addChildNode(Node node)
     {
         getChildren().add(node);
     }
 
-    public ObservableList<Node> getMeshGroupChildren()
+    @Override
+    public ObservableList<Node> getChildNodes()
     {
         return getChildren();
 
@@ -2130,71 +2108,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     }
 
-    /**
-     * State captures the state of all the transforms being applied to this
-     * ModelContainer. It is used as an efficient way of applying Undo and Redo
-     * to changes to a Set of ModelContainers.
-     */
-    public static class State
-    {
-
-        public int modelId;
-        public double x;
-        public double y;
-        public double z;
-        public double preferredXScale;
-        public double preferredYScale;
-        public double preferredZScale;
-        public double preferredRotationTwist;
-        public double preferredRotationTurn;
-        public double preferredRotationLean;
-
-        public State()
-        {
-        }
-
-        @JsonCreator
-        public State(
-                @JsonProperty("modelId") int modelId,
-                @JsonProperty("x") double x,
-                @JsonProperty("y") double y,
-                @JsonProperty("z") double z,
-                @JsonProperty("preferredXScale") double preferredXScale,
-                @JsonProperty("preferredYScale") double preferredYScale,
-                @JsonProperty("preferredZScale") double preferredZScale,
-                @JsonProperty("preferredRotationTwist") double preferredRotationTwist,
-                @JsonProperty("preferredRotationTurn") double preferredRotationTurn,
-                @JsonProperty("preferredRotationLean") double preferredRotationLean)
-        {
-            this.modelId = modelId;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.preferredXScale = preferredXScale;
-            this.preferredYScale = preferredYScale;
-            this.preferredZScale = preferredZScale;
-            this.preferredRotationTwist = preferredRotationTwist;
-            this.preferredRotationTurn = preferredRotationTurn;
-            this.preferredRotationLean = preferredRotationLean;
-        }
-
-        /**
-         * The assignment operator.
-         */
-        public void assignFrom(State fromState)
-        {
-            this.x = fromState.x;
-            this.y = fromState.y;
-            this.z = fromState.z;
-            this.preferredXScale = fromState.preferredXScale;
-            this.preferredYScale = fromState.preferredYScale;
-            this.preferredZScale = fromState.preferredZScale;
-            this.preferredRotationTwist = fromState.preferredRotationTwist;
-            this.preferredRotationTurn = fromState.preferredRotationTurn;
-            this.preferredRotationLean = fromState.preferredRotationLean;
-        }
-    }
-
+    @Override
     public State getState()
     {
         return new State(modelId,
@@ -2206,6 +2120,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 preferredRotationLean.get());
     }
 
+    @Override
     public void setState(State state)
     {
         transformMoveToPreferred.setX(state.x);
@@ -2228,11 +2143,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         notifyScreenExtentsChange();
         notifyShapeChange();
-    }
-
-    public int getModelId()
-    {
-        return modelId;
     }
 
     public boolean isInvalidMesh()

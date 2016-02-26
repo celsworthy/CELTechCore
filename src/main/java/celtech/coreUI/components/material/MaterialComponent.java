@@ -266,31 +266,8 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         }
     }
 
-    private void updateForDisplayScaling(DisplayManager.DisplayScalingMode displayScalingMode)
-    {
-        switch (displayScalingMode)
-        {
-            case NORMAL:
-                materialRemainingHBox.setPrefHeight(-1);
-                materialRemaining.setVisible(true);
-                break;
-            case SHORT:
-                materialRemainingHBox.setPrefHeight(5);
-                materialRemaining.setVisible(false);
-                break;
-            case VERY_SHORT:
-                break;
-        }
-    }
-
     private void configureDisplay()
     {
-
-        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener((ObservableValue<? extends DisplayManager.DisplayScalingMode> observable, DisplayManager.DisplayScalingMode oldValue, DisplayManager.DisplayScalingMode newValue) ->
-        {
-            updateForDisplayScaling(newValue);
-        });
-
         materialColourContainer.setVisible(true);
         if (printer.reelsProperty().containsKey(extruderNumber))
         {

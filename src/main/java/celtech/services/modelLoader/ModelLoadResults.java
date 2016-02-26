@@ -1,10 +1,11 @@
 /*
  * Copyright 2014 CEL UK
  */
-
 package celtech.services.modelLoader;
 
+import celtech.appManager.Project;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import java.util.List;
 
 /**
@@ -13,16 +14,20 @@ import java.util.List;
  */
 public class ModelLoadResults
 {
+    private final ModelLoadResultType type;
     private List<ModelLoadResult> results;
     private boolean shouldCentre = true;
+    private Project referencedProject;
 
-    public ModelLoadResults()
+    public ModelLoadResults(ModelLoadResultType type, List<ModelLoadResult> results)
     {
+        this.type = type;
+        this.results = results;
     }
 
-    public ModelLoadResults(List<ModelLoadResult> results)
+    public ModelLoadResultType getType()
     {
-        this.results = results;
+        return type;
     }
 
     public void setResults(List<ModelLoadResult> results)

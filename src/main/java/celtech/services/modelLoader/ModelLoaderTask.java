@@ -1,9 +1,8 @@
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
-import celtech.roboxbase.BaseLookup;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.utils.FileUtilities;
 import celtech.utils.threed.importers.obj.ObjImporter;
@@ -23,7 +22,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -55,8 +53,6 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
     @Override
     protected ModelLoadResults call() throws Exception
     {
-        ModelLoadResults modelLoadResults = new ModelLoadResults();
-        
         List<ModelLoadResult> modelLoadResultList = new ArrayList<>();
 
         updateTitle(Lookup.i18n("dialogs.loadModelTitle"));
@@ -106,8 +102,12 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             }
         }
 
-        modelLoadResults.setResults(modelLoadResultList);
-        return modelLoadResults;
+        ModelLoadResultType type = null;
+        if (!modelLoadResultList.isEmpty())
+        {
+                type = modelLoadResultList.get(0).getType();
+        }
+        return new ModelLoadResults(type, modelLoadResultList);
     }
 
     private ModelLoadResult loadTheFile(String modelFileToLoad)

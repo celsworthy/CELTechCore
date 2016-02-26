@@ -4,7 +4,7 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -18,9 +18,9 @@ public class DeleteModelsCommand extends Command
     private final Stenographer steno = StenographerFactory.getStenographer(DeleteModelsCommand.class.getName());
 
     Project project;
-    Set<ModelContainer> modelContainers;
+    Set<ProjectifiableThing> modelContainers;
     
-    public DeleteModelsCommand(Project project, Set<ModelContainer> modelContainers)
+    public DeleteModelsCommand(Project project, Set<ProjectifiableThing> modelContainers)
     {
         this.project = project;
         this.modelContainers = modelContainers;
@@ -35,7 +35,7 @@ public class DeleteModelsCommand extends Command
     @Override
     public void undo()
     {
-        for (ModelContainer modelContainer : modelContainers)
+        for (ProjectifiableThing modelContainer : modelContainers)
         {
             project.addModel(modelContainer);
         }

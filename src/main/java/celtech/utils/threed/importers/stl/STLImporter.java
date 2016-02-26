@@ -1,9 +1,9 @@
 package celtech.utils.threed.importers.stl;
 
-import celtech.appManager.Project;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
@@ -39,15 +39,14 @@ public class STLImporter
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        STLImporter.class.getName());
+            STLImporter.class.getName());
     private TriangleMesh meshToOutput = null;
     private ModelLoaderTask parentTask = null;
     private DoubleProperty percentProgressProperty = null;
     private final String spacePattern = "[ ]+";
 
-
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, File modelFile,
-        DoubleProperty percentProgressProperty)
+            DoubleProperty percentProgressProperty)
     {
         this.parentTask = parentTask;
         this.percentProgressProperty = percentProgressProperty;
@@ -85,7 +84,7 @@ public class STLImporter
             } catch (STLFileParsingException ex)
             {
                 steno.error("File parsing exception whilst processing " + modelFile.getName()
-                    + " : " + ex + " on line " + lineNumber);
+                        + " : " + ex + " on line " + lineNumber);
             } finally
             {
                 //ensure the underlying stream is always closed
@@ -115,9 +114,10 @@ public class STLImporter
             modelContainers.add(modelContainer);
 
             ModelLoadResult result = new ModelLoadResult(
-                                                         modelFile.getAbsolutePath(),
-                                                         modelFile.getName(), 
-                                                         modelContainers);
+                    ModelLoadResultType.Mesh,
+                    modelFile.getAbsolutePath(),
+                    modelFile.getName(),
+                    (Set)modelContainers);
             return result;
         } else
         {
@@ -183,12 +183,11 @@ public class STLImporter
         } catch (IOException ex)
         {
             steno.error("Failed to determine whether " + stlFile.getName() + " was binary or ascii."
-                + ex.toString());
+                    + ex.toString());
         }
 
         return fileIsBinary;
     }
-
 
     public TriangleMesh processBinarySTLData(File stlFile) throws STLFileParsingException
     {
@@ -254,10 +253,10 @@ public class STLImporter
                         inputVertexX = dataBuffer.getFloat();
                         inputVertexY = dataBuffer.getFloat();
                         inputVertexZ = dataBuffer.getFloat();
-                        
+
                         Vector3D generatedVertex = new Vector3D(inputVertexX,
-                                                                -inputVertexZ,
-                                                                inputVertexY);
+                                -inputVertexZ,
+                                inputVertexY);
 
                         if (!graph.containsKey(generatedVertex))
                         {
@@ -273,7 +272,7 @@ public class STLImporter
                     // Add the face to the triangle mesh
                     triangleMesh.getFaces().addAll(faceIndexArray, 0, 6);
 
-                // After each facet there are 2 bytes without information
+                    // After each facet there are 2 bytes without information
                     // In the last iteration we dont have to skip those bytes..
                     if (facetNum != numberOfFacets - 1)
                     {
@@ -283,32 +282,32 @@ public class STLImporter
                 }
 
                 steno.debug("Started with " + numberOfFacets * 3 + " vertices and now have "
-                    + graph.size());
+                        + graph.size());
 
                 float[] tempVertexPointArray = new float[3];
                 graph.entrySet()
-                    .stream()
-                    .sorted((s1, s2) ->
-                        {
-                            if (s1.getValue() == s2.getValue())
-                            {
-                                return 0;
-                            } else if (s1.getValue() > s2.getValue())
-                            {
-                                return 1;
-                            } else
-                            {
-                                return -1;
-                            }
-                    })
-                    .forEach(vertexEntry ->
-                        {
-                            tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
-                            tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
-                            tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
+                        .stream()
+                        .sorted((s1, s2) ->
+                                {
+                                    if (s1.getValue() == s2.getValue())
+                                    {
+                                        return 0;
+                                    } else if (s1.getValue() > s2.getValue())
+                                    {
+                                        return 1;
+                                    } else
+                                    {
+                                        return -1;
+                                    }
+                        })
+                        .forEach(vertexEntry ->
+                                {
+                                    tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
+                                    tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
+                                    tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
 
-                            triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
-                    });
+                                    triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
+                        });
 
                 FloatArrayList texCoords = new FloatArrayList();
                 texCoords.add(0f);
@@ -322,8 +321,8 @@ public class STLImporter
                 }
                 triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
                 steno.debug("The mesh contains " + triangleMesh.getPoints().size() / 3
-                    + " points, " + triangleMesh.getTexCoords().size() / 2 + " tex coords and "
-                    + triangleMesh.getFaces().size() / 6 + " faces");
+                        + " points, " + triangleMesh.getTexCoords().size() / 2 + " tex coords and "
+                        + triangleMesh.getFaces().size() / 6 + " faces");
             }
 
         } catch (FileNotFoundException ex)
@@ -351,7 +350,7 @@ public class STLImporter
         try
         {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(
-                modelFile)));
+                    modelFile)));
 
             String line = null;
 
@@ -360,7 +359,7 @@ public class STLImporter
             int facetCounter = 0;
 
             while ((line = reader.readLine()) != null
-                && !parentTask.isCancelled())
+                    && !parentTask.isCancelled())
             {
 
                 if (line.trim().startsWith("vertex"))
@@ -372,9 +371,9 @@ public class STLImporter
                         String[] lineBits = line.trim().split(spacePattern);
 
                         Vector3D generatedVertex = new Vector3D(
-                            Float.valueOf(lineBits[1]),
-                            -Float.valueOf(lineBits[3]),
-                            Float.valueOf(lineBits[2]));
+                                Float.valueOf(lineBits[1]),
+                                -Float.valueOf(lineBits[3]),
+                                Float.valueOf(lineBits[2]));
 
                         if (!graph.containsKey(generatedVertex))
                         {
@@ -413,32 +412,32 @@ public class STLImporter
             reader.close();
 
             steno.debug("Started with " + facetCounter * 3 + " vertices and now have "
-                + graph.size());
+                    + graph.size());
 
             float[] tempVertexPointArray = new float[3];
             graph.entrySet()
-                .stream()
-                .sorted((s1, s2) ->
-                    {
-                        if (s1.getValue() == s2.getValue())
-                        {
-                            return 0;
-                        } else if (s1.getValue() > s2.getValue())
-                        {
-                            return 1;
-                        } else
-                        {
-                            return -1;
-                        }
-                })
-                .forEach(vertexEntry ->
-                    {
-                        tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
-                        tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
-                        tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
+                    .stream()
+                    .sorted((s1, s2) ->
+                            {
+                                if (s1.getValue() == s2.getValue())
+                                {
+                                    return 0;
+                                } else if (s1.getValue() > s2.getValue())
+                                {
+                                    return 1;
+                                } else
+                                {
+                                    return -1;
+                                }
+                    })
+                    .forEach(vertexEntry ->
+                            {
+                                tempVertexPointArray[0] = (float) vertexEntry.getKey().getX();
+                                tempVertexPointArray[1] = (float) vertexEntry.getKey().getY();
+                                tempVertexPointArray[2] = (float) vertexEntry.getKey().getZ();
 
-                        triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
-                });
+                                triangleMesh.getPoints().addAll(tempVertexPointArray, 0, 3);
+                    });
 
             FloatArrayList texCoords = new FloatArrayList();
             texCoords.add(0f);
@@ -452,8 +451,8 @@ public class STLImporter
             }
             triangleMesh.getFaceSmoothingGroups().addAll(smoothingGroups);
             steno.debug("The mesh contains " + triangleMesh.getPoints().size()
-                + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
-                + triangleMesh.getFaces().size() + " faces");
+                    + " points, " + triangleMesh.getTexCoords().size() + " tex coords and "
+                    + triangleMesh.getFaces().size() + " faces");
 
         } catch (FileNotFoundException ex)
         {
@@ -461,7 +460,7 @@ public class STLImporter
         } catch (IOException ex)
         {
             steno.error("IO Exception on line " + lineNumber + " when reading STL file "
-                + modelFile.getAbsolutePath());
+                    + modelFile.getAbsolutePath());
         }
 
         return triangleMesh;

@@ -3,10 +3,11 @@
  */
 package celtech.appManager.undo;
 
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.roboxbase.configuration.PrintBed;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,13 +25,13 @@ public class UngroupCommand extends Command
     private final Stenographer steno = StenographerFactory.getStenographer(
             UngroupCommand.class.getName());
 
-    Project project;
+    ModelContainerProject project;
     Map<Integer, Set<ModelContainer>> groupIds;
     private Set<ModelContainer.State> originalStates;
     private Set<ModelContainer.State> newStates;
     private Set<ModelContainer> containersToRecentre = new HashSet<>();
 
-    public UngroupCommand(Project project, Set<ModelContainer> modelContainers)
+    public UngroupCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
     {
         this.project = project;
         groupIds = new HashMap<>();
@@ -69,11 +70,12 @@ public class UngroupCommand extends Command
             try
             {
                 project.ungroup(project.getModelContainersOfIds(groupIds.keySet()));
-            } catch (Project.ProjectLoadException ex)
+            } catch (ModelContainerProject.ProjectLoadException ex)
             {
                 steno.exception("Could not ungroup", ex);
             }
-            project.translateModelsTo(containersToRecentre, PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
+            Set<ProjectifiableThing> recentreThese = (Set)containersToRecentre;
+            project.translateModelsTo(recentreThese, PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
             newStates = project.getModelStates();
         } catch (Exception ex)
         {

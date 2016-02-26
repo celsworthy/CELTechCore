@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
@@ -65,7 +65,7 @@ public class PurgeInsetPanelController implements Initializable
     private final Stenographer steno = StenographerFactory.getStenographer(
             PurgeInsetPanelController.class.getName());
 
-    private Project project = null;
+    private ModelContainerProject project = null;
     private Printer printer = null;
     private Filament currentMaterial0;
     private Filament currentMaterial1;
@@ -634,7 +634,7 @@ public class PurgeInsetPanelController implements Initializable
      * This is called when the user wants to print and the system has detected
      * that a purge is required.
      */
-    public void purgeAndPrint(Project project, Printer printerToUse)
+    public void purgeAndPrint(ModelContainerProject project, Printer printerToUse)
     {
         this.project = project;
         bindPrinter(printerToUse);
@@ -649,7 +649,7 @@ public class PurgeInsetPanelController implements Initializable
     /**
      * If a nozzle needs purging then set the appropriate flag to true.
      */
-    private void setPurgeForRequiredNozzles(Project project)
+    private void setPurgeForRequiredNozzles(ModelContainerProject project)
     {
         if (!headHasTwoNozzleHeaters(printer))
         {

@@ -5,7 +5,7 @@ package celtech.modelcontrol;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.TestUtils;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;

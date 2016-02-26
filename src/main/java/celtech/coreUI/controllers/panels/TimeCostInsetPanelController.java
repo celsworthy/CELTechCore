@@ -3,6 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.HeadContainer;
@@ -10,7 +11,7 @@ import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContain
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
-import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -215,13 +216,13 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         {
 
             @Override
-            public void whenModelAdded(ModelContainer modelContainer)
+            public void whenModelAdded(ProjectifiableThing modelContainer)
             {
                 updateFields(project);
             }
 
             @Override
-            public void whenModelsRemoved(Set<ModelContainer> modelContainers)
+            public void whenModelsRemoved(Set<ProjectifiableThing> modelContainers)
             {
                 updateFields(project);
             }
@@ -232,13 +233,13 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             }
 
             @Override
-            public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+            public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
             {
                 updateFields(project);
             }
 
             @Override
-            public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+            public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
             {
                 updateFields(project);
             }
@@ -328,7 +329,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
         Cancellable cancellable = new SimpleCancellable();
         if (currentProject != null
-                && !currentProject.getTopLevelModels().isEmpty())
+                && currentProject.getNumberOfProjectifiableElements() > 0)
         {
             Runnable runUpdateFields = () ->
             {
@@ -398,39 +399,42 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
-        String working = Lookup.i18n("timeCost.working");
-        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        if (project instanceof ModelContainerProject)
         {
-            lblTime.setText(working);
-            lblWeight.setText(working);
-            lblCost.setText(working);
-        });
-
-        GetTimeWeightCost updateDetails = new GetTimeWeightCost(project, settings,
-                lblTime, lblWeight,
-                lblCost, cancellable);
-
-        boolean slicedAndPostProcessed = false;
-
-        try
-        {
-            slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
-        } catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-
-        if (!slicedAndPostProcessed
-                && !cancellable.cancelled().get())
-        {
-            steno.error("Error running slicer/postprocessor");
-            String failed = Lookup.i18n("timeCost.failed");
+            String working = Lookup.i18n("timeCost.working");
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                lblTime.setText(failed);
-                lblWeight.setText(failed);
-                lblCost.setText(failed);
+                lblTime.setText(working);
+                lblWeight.setText(working);
+                lblCost.setText(working);
             });
+
+            GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, settings,
+                    lblTime, lblWeight,
+                    lblCost, cancellable);
+
+            boolean slicedAndPostProcessed = false;
+
+            try
+            {
+                slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
+            } catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+
+            if (!slicedAndPostProcessed
+                    && !cancellable.cancelled().get())
+            {
+                steno.error("Error running slicer/postprocessor");
+                String failed = Lookup.i18n("timeCost.failed");
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    lblTime.setText(failed);
+                    lblWeight.setText(failed);
+                    lblCost.setText(failed);
+                });
+            }
         }
     }
 

@@ -2976,3 +2976,11 @@ color-picker-label .text-field {
     -fx-text-fill: black;
     -fx-background-color: white;
 }
+
+.load-a-model-text
+{
+    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-smoothing-type: lcd;
+    -fx-font-size: 60px;
+    -fx-text-fill: white;
+}

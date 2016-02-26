@@ -4,6 +4,7 @@
 package celtech;
 
 import celtech.appManager.Project;
+import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManagerJavaFX;
 import celtech.configuration.Languages;
 import celtech.configuration.UserPreferences;

@@ -4,13 +4,14 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelGroup;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
@@ -26,19 +27,14 @@ import celtech.roboxbase.services.slicer.SlicerTask;
 import celtech.roboxbase.utils.models.MeshForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
-import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.control.Label;
-import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -55,7 +51,8 @@ public class GetTimeWeightCost
     private final Stenographer steno = StenographerFactory.getStenographer(
             GetTimeWeightCost.class.getName());
 
-    private final Project project;
+    //We are allowed to use ModelContainerProject here since this class can only run calcs for projects with meshes
+    private final ModelContainerProject project;
     private final Label lblTime;
     private final Label lblWeight;
     private final Label lblCost;
@@ -66,7 +63,7 @@ public class GetTimeWeightCost
     private final Cancellable cancellable;
     private Random random = new Random();
 
-    public GetTimeWeightCost(Project project, SlicerParametersFile settings,
+    public GetTimeWeightCost(ModelContainerProject project, SlicerParametersFile settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         this.project = project;
@@ -119,9 +116,10 @@ public class GetTimeWeightCost
         List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
         List<Integer> extruderForModel = new ArrayList<>();
 
-        for (ModelContainer modelContainer : project.getTopLevelModels())
+        // Only to be run on a ModelContainerProject
+        for (ProjectifiableThing modelContainer : project.getTopLevelThings())
         {
-            for (ModelContainer modelContainerWithMesh : modelContainer.getModelsHoldingMeshViews())
+            for (ModelContainer modelContainerWithMesh : ((ModelContainer)modelContainer).getModelsHoldingMeshViews())
             {
                 MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
                 meshesForProcessing.add(meshForProcessing);
@@ -134,7 +132,7 @@ public class GetTimeWeightCost
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
         CentreCalculations centreCalc = new CentreCalculations();
 
-        project.getTopLevelModels().forEach(model ->
+        project.getTopLevelThings().forEach(model ->
         {
             Bounds modelBounds = model.getBoundsInParent();
             centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());

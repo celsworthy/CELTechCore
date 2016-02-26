@@ -4,7 +4,7 @@ import celtech.CoreTest;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
@@ -20,25 +20,15 @@ import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.MathUtils;
 import celtech.roboxbase.utils.Math.PolarCoordinate;
 import celtech.roboxbase.utils.TimeUtils;
-import celtech.utils.threed.MeshSeparator;
-import com.bulletphysics.collision.broadphase.AxisSweep3;
-import com.bulletphysics.collision.broadphase.BroadphaseInterface;
-import com.bulletphysics.collision.dispatch.CollisionDispatcher;
-import com.bulletphysics.collision.dispatch.CollisionWorld;
-import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.ConvexHullShape;
-import eu.mihosoft.vrl.v3d.Bounds;
 import eu.mihosoft.vrl.v3d.CSG;
-import eu.mihosoft.vrl.v3d.Cube;
 import eu.mihosoft.vrl.v3d.MeshContainer;
 import eu.mihosoft.vrl.v3d.PlaneBisect;
-import eu.mihosoft.vrl.v3d.Vector3d;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -84,9 +74,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.Transform;
 import javafx.util.Duration;
-import javax.vecmath.Vector3f;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.fxyz.utils.MeshUtils;
@@ -95,13 +83,13 @@ import org.fxyz.utils.MeshUtils;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager implements Project.ProjectChangesListener, ScreenCoordinateConverter
+public class ThreeDViewManager implements ModelContainerProject.ProjectChangesListener, ScreenCoordinateConverter
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
             ThreeDViewManager.class.getName());
 
-    private ObservableList<ModelContainer> loadedModels;
+    private ObservableList<ProjectifiableThing> loadedModels;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
     private final PrintBed printBedData = PrintBed.getInstance();
@@ -185,7 +173,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
     };
 
-    private final Project project;
+    private final ModelContainerProject project;
     private final UndoableProject undoableProject;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     private boolean justEnteredDragMode;
@@ -238,9 +226,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         cameraRotateXform.setRotateX(-demandedCameraRotationX.get());
         cameraRotateXform.setRotateY(-demandedCameraRotationY.get());
 
-        for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
+        for (ProjectifiableThing modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
-            modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
+            ((ModelContainer)modelContainer).cameraViewOfYouHasChanged(cameraDistance.get());
         }
 
         //Output the bed co-ordinates in screen terms
@@ -350,7 +338,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private void notifyModelsOfCameraViewChange()
     {
-        for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
+        Set<ProjectifiableThing> selectedModels = projectSelection.getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = (Set)selectedModels;
+        for (ModelContainer modelContainer : modelContainers)
         {
             modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
         }
@@ -480,8 +470,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             }
             // if clicked mc is within a selected group then isolate the objects below the selected
             // group.e
-            Set<ModelContainer> selectedModelContainers
+            Set<ProjectifiableThing> selectedProjectifiableThings
                     = Lookup.getProjectGUIState(project).getProjectSelection().getSelectedModelsSnapshot();
+            Set<ModelContainer> selectedModelContainers = (Set)selectedProjectifiableThings;
             Set<MeshView> selectedMeshViews
                     = selectedModelContainers.stream().
                     map(mc -> mc.descendentMeshViews()).
@@ -672,7 +663,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     {
         inSelectedGroupButNotSelected.clear();
 
-        for (ModelContainer model : projectSelection.getSelectedModelsSnapshot())
+        Set<ProjectifiableThing> selectedProjectifiableThings = projectSelection.getSelectedModelsSnapshot();
+        Set<ModelContainer> selectedModels = (Set)selectedProjectifiableThings;
+        for (ModelContainer model : selectedModels)
         {
             ModelGroup parentGroup = getTopLevelAncestorGroup(model);
             if (parentGroup != null)
@@ -918,12 +911,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         updateModelColours();
     };
 
-    public ThreeDViewManager(Project project,
+    public ThreeDViewManager(ModelContainerProject project,
             ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.project = project;
         this.undoableProject = new UndoableProject(project);
-        loadedModels = project.getTopLevelModels();
+        loadedModels = project.getTopLevelThings();
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
         inSelectedGroupButNotSelected = Lookup.getProjectGUIState(project).getExcludedFromSelection();
@@ -1070,12 +1063,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
          */
         project.addProjectChangesListener(this);
 
-        for (ModelContainer model : loadedModels)
+        for (ProjectifiableThing model : loadedModels)
         {
             models.getChildren().add(model);
 
-            addBedReferenceToModel(model);
-            model.heresYourCamera(camera);
+            addBedReferenceToModel((ModelContainer)model);
+            ((ModelContainer)model).heresYourCamera(camera);
         }
     }
 
@@ -1126,20 +1119,20 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL);
-        MeshView outerMeshView = bedOuterLoadResult.getModelContainers().iterator().next().getMeshView();
+        MeshView outerMeshView = ((ModelContainer)bedOuterLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         outerMeshView.setMaterial(bedOuterMaterial);
         bed.getChildren().addAll(outerMeshView);
 
         ObjImporter peiSheetImporter = new ObjImporter();
         ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadFile(null, peiSheetURL);
-        MeshView peiMeshView = peiSheetLoadResult.getModelContainers().iterator().next().getMeshView();
+        MeshView peiMeshView = ((ModelContainer)peiSheetLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         peiMeshView.setMaterial(peiSheetMaterial);
 
         bed.getChildren().addAll(peiMeshView);
 
         ObjImporter bedClipsImporter = new ObjImporter();
         ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadFile(null, bedClipsURL);
-        MeshView bedClipsMeshView = bedClipsLoadResult.getModelContainers().iterator().next().getMeshView();
+        MeshView bedClipsMeshView = ((ModelContainer)bedClipsLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         bedClipsMeshView.setMaterial(bedClipsMaterial);
         bed.getChildren().addAll(bedClipsMeshView);
 
@@ -1255,7 +1248,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             {
                 projectSelection.deselectAllModels();
             }
-            projectSelection.addModelContainer(selectedNode);
+            projectSelection.addSelectedItem(selectedNode);
         }
 
         updateGroupSelectionList();
@@ -1328,7 +1321,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             projectSelection.deselectAllModels();
 
             //Just select the intersected node...
-            projectSelection.addModelContainer(parentModelContainer);
+            projectSelection.addSelectedItem(parentModelContainer);
 
             updateGroupSelectionList();
         }
@@ -1450,7 +1443,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             materialToUseForExtruder0 = extruder1Material;
             materialToUseForExtruder1 = extruder2Material;
         }
-        for (ModelContainer model : loadedModels)
+        for (ProjectifiableThing model : loadedModels)
         {
             if (model instanceof ModelGroup)
             {
@@ -1460,7 +1453,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 }
             } else
             {
-                updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, model);
+                updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, (ModelContainer)model);
             }
         }
     }
@@ -1489,16 +1482,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private void deselectAllModels()
     {
-        for (ModelContainer modelContainer : loadedModels)
+        for (ProjectifiableThing modelContainer : loadedModels)
         {
-            deselectModel(modelContainer);
+            deselectModel((ModelContainer)modelContainer);
         }
     }
 
     /**
      * Models must reflect the project filament colours.
      */
-    private void setupFilamentListeners(Project project)
+    private void setupFilamentListeners(ModelContainerProject project)
     {
         project.getExtruder0FilamentProperty().addListener(
                 (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
@@ -1515,8 +1508,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     }
 
     @Override
-    public void whenModelAdded(ModelContainer modelContainer)
+    public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
+        ModelContainer modelContainer = (ModelContainer)projectifiableThing;
         models.getChildren().add(modelContainer);
         modelContainer.setBedReference(bed);
 
@@ -1534,12 +1528,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     }
 
     @Override
-    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
+    public void whenModelsRemoved(Set<ProjectifiableThing> modelContainers)
     {
         models.getChildren().removeAll(modelContainers);
         modelContainers.stream().forEach(model ->
         {
-            collisionManager.removeModel(model);
+            collisionManager.removeModel((ModelContainer)model);
         });
     }
 
@@ -1550,14 +1544,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     }
 
     @Override
-    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
     {
         updateModelColours();
-        collisionManager.modelsTransformed(modelContainers);
+        Set<ModelContainer> containers = (Set)modelContainers;
+        collisionManager.modelsTransformed(containers);
     }
 
     @Override
-    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
     {
         updateModelColours();
     }

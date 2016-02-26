@@ -4,13 +4,19 @@
 package celtech.coreUI.visualisation;
 
 import celtech.Lookup;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ProjectCallback;
+import celtech.appManager.ProjectMode;
+import celtech.appManager.SVGProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.roboxbase.configuration.PrintBed;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.services.modelLoader.ModelLoadResults;
@@ -42,7 +48,7 @@ public class ModelLoader
      */
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
 
-    private void offerShrinkAndAddToProject(Project project, boolean relayout)
+    private void offerShrinkAndAddToProject(Project project, boolean relayout, ProjectCallback callMeBack)
     {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
@@ -50,80 +56,104 @@ public class ModelLoader
             return;
         }
 
-        // validate incoming meshes
-        // Associate the loaded meshes with extruders in turn, respecting the original groups / model files
-        int numExtruders = 1;
-
-        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
-        if (selectedPrinter != null)
+        if (loadResults.getType() == ModelLoadResultType.Mesh)
         {
-            numExtruders = selectedPrinter.extrudersProperty().size();
-        }
+            project.setMode(ProjectMode.MESH);
+            // validate incoming meshes
+            // Associate the loaded meshes with extruders in turn, respecting the original groups / model files
+            int numExtruders = 1;
 
-        int currentExtruder = 0;
-
-        for (ModelLoadResult loadResult : loadResults.getResults())
-        {
-            Set<ModelContainer> modelContainers = loadResult.getModelContainers();
-            Set<String> invalidModelNames = new HashSet<>();
-            for (ModelContainer modelContainer : modelContainers)
+            Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
+            if (selectedPrinter != null)
             {
-                Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
-                if (error.isPresent())
+                numExtruders = selectedPrinter.extrudersProperty().size();
+            }
+
+            int currentExtruder = 0;
+
+            for (ModelLoadResult loadResult : loadResults.getResults())
+            {
+                Set<ModelContainer> modelContainers = (Set) loadResult.getProjectifiableThings();
+                Set<String> invalidModelNames = new HashSet<>();
+                for (ModelContainer modelContainer : modelContainers)
                 {
-                    invalidModelNames.add(modelContainer.getModelName());
-                    modelContainer.setIsInvalidMesh(true);
+                    Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
+                    if (error.isPresent())
+                    {
+                        invalidModelNames.add(modelContainer.getModelName());
+                        modelContainer.setIsInvalidMesh(true);
+                    }
+
+                    //Assign the models incrementally to the extruders
+                    modelContainer.getAssociateWithExtruderNumberProperty().set(currentExtruder);
                 }
 
-                //Assign the models incrementally to the extruders
-                modelContainer.getAssociateWithExtruderNumberProperty().set(currentExtruder);
-            }
-
-            if (currentExtruder < numExtruders - 1)
-            {
-                currentExtruder++;
-            } else
-            {
-                currentExtruder = 0;
-            }
-
-            if (!invalidModelNames.isEmpty())
-            {
-                boolean load
-                        = BaseLookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
-                if (!load)
+                if (currentExtruder < numExtruders - 1)
                 {
-                    return;
-                }
-            }
-        }
-
-        boolean projectIsEmpty = project.getTopLevelModels().isEmpty();
-        Set<ModelContainer> allModelContainers = new HashSet<>();
-        boolean shouldCentre = loadResults.isShouldCentre();
-
-        for (ModelLoadResult loadResult : loadResults.getResults())
-        {
-            if (loadResult != null)
-            {
-                if (Lookup.getUserPreferences().isLoosePartSplitOnLoad())
-                {
-                    allModelContainers.add(makeGroup(loadResult.getModelContainers()));
+                    currentExtruder++;
                 } else
                 {
-                    allModelContainers.addAll(loadResult.getModelContainers());
+                    currentExtruder = 0;
                 }
-            } else
-            {
-                steno.error("Error whilst attempting to load model");
+
+                if (!invalidModelNames.isEmpty())
+                {
+                    boolean load
+                            = BaseLookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
+                    if (!load)
+                    {
+                        return;
+                    }
+                }
             }
-        }
-        addToProject(project, allModelContainers, shouldCentre);
-        if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
-        {
+
+            boolean projectIsEmpty = project.getNumberOfProjectifiableElements() == 0;
+            Set<ModelContainer> allModelContainers = new HashSet<>();
+            boolean shouldCentre = loadResults.isShouldCentre();
+
+            for (ModelLoadResult loadResult : loadResults.getResults())
+            {
+                if (loadResult != null)
+                {
+                    Set<ModelContainer> modelContainersToOperateOn = (Set) loadResult.getProjectifiableThings();
+                    if (Lookup.getUserPreferences().isLoosePartSplitOnLoad())
+                    {
+                        allModelContainers.add(makeGroup(modelContainersToOperateOn));
+                    } else
+                    {
+                        allModelContainers.addAll(modelContainersToOperateOn);
+                    }
+                } else
+                {
+                    steno.error("Error whilst attempting to load model");
+                }
+            }
+            Set<ProjectifiableThing> allProjectifiableThings = (Set) allModelContainers;
+
+            addToProject(project, allProjectifiableThings, shouldCentre);
+            if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
+            {
 //            project.autoLayout();
+            }
+        } else if (loadResults.getType() == ModelLoadResultType.SVG)
+        {
+
+            Set<ProjectifiableThing> allProjectifiableThings = new HashSet<>();
+            for (ModelLoadResult result : loadResults.getResults())
+            {
+                allProjectifiableThings.addAll(result.getProjectifiableThings());
+            }
+
+            addToProject(project, allProjectifiableThings, false);
+
+            project.setMode(ProjectMode.SVG);
         }
-        return;
+        
+        if (project != null
+                && callMeBack != null)
+        {
+            callMeBack.heresTheProject(project);
+        }
     }
 
     public ReadOnlyBooleanProperty modelLoadingProperty()
@@ -133,24 +163,54 @@ public class ModelLoader
 
     /**
      * Load each model in modelsToLoad, do not lay them out on the bed.
+     *
+     * @param project
+     * @param modelsToLoad
+     * @param callMeBack
      */
-    public void loadExternalModels(Project project, List<File> modelsToLoad)
+    public void loadExternalModels(Project project, List<File> modelsToLoad, ProjectCallback callMeBack)
     {
-        loadExternalModels(project, modelsToLoad, false);
+        loadExternalModels(project, modelsToLoad, false, callMeBack);
     }
 
     /**
      * Load each model in modelsToLoad and relayout if requested. If there are
      * already models loaded in the project then do not relayout even if
      * relayout=true;
+     *
+     * @param project
+     * @param modelsToLoad
+     * @param relayout
+     * @param callMeBack
      */
-    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
+    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout, ProjectCallback callMeBack)
     {
         modelLoaderService.reset();
         modelLoaderService.setModelFilesToLoad(modelsToLoad);
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
-            offerShrinkAndAddToProject(project, relayout);
+            Project projectToUse = null;
+
+            if (project == null)
+            {
+                ModelLoadResults loadResults = modelLoaderService.getValue();
+                if (!loadResults.getResults().isEmpty())
+                {
+                    switch (loadResults.getType())
+                    {
+                        case Mesh:
+                            projectToUse = new ModelContainerProject();
+                            break;
+                        case SVG:
+                            projectToUse = new SVGProject();
+                            break;
+                    }
+                }
+            } else
+            {
+                projectToUse = project;
+            }
+            offerShrinkAndAddToProject(projectToUse, relayout, callMeBack);
         });
         modelLoaderService.start();
     }
@@ -160,26 +220,38 @@ public class ModelLoader
      * there is more than one ModelContainer/Group then put them in one
      * overarching group.
      */
-    private void addToProject(Project project, Set<ModelContainer> modelContainers, boolean shouldCentre)
+    private void addToProject(Project project, Set<ProjectifiableThing> modelContainers, boolean shouldCentre)
     {
         UndoableProject undoableProject = new UndoableProject(project);
 
-        ModelContainer modelContainer;
-        if (modelContainers.size() == 1)
+        ProjectifiableThing projectifiableThing = null;
+
+        if (project instanceof ModelContainerProject)
         {
-            modelContainer = modelContainers.iterator().next();
+            ModelContainer modelContainer;
+
+            if (modelContainers.size() == 1)
+            {
+                modelContainer = (ModelContainer) modelContainers.iterator().next();
+            } else
+            {
+                Set<ModelContainer> thingsToGroup = (Set) modelContainers;
+                modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(thingsToGroup);
+            }
+            if (shouldCentre)
+            {
+                modelContainer.moveToCentre();
+                modelContainer.dropToBed();
+            }
+            shrinkIfRequested(modelContainer);
+            modelContainer.checkOffBed();
+            projectifiableThing = modelContainer;
         } else
         {
-            modelContainer = project.createNewGroupAndAddModelListeners(modelContainers);
+            projectifiableThing = modelContainers.iterator().next();
         }
-        if (shouldCentre)
-        {
-            modelContainer.moveToCentre();
-            modelContainer.dropToBed();
-        }
-        shrinkIfRequested(modelContainer);
-        modelContainer.checkOffBed();
-        undoableProject.addModel(modelContainer);
+
+        undoableProject.addModel(projectifiableThing);
     }
 
     private void shrinkIfRequested(ModelContainer modelContainer)

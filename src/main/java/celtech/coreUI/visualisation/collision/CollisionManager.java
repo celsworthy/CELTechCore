@@ -196,7 +196,7 @@ public class CollisionManager implements CollisionShapeListener
 
         for (Entry<ModelContainer, GhostObject> monitoredModelEntry : monitoredModels.entrySet())
         {
-            monitoredModelEntry.getKey().setCollision(collidedObjects.contains(monitoredModelEntry.getValue()));
+            monitoredModelEntry.getKey().setCollided(collidedObjects.contains(monitoredModelEntry.getValue()));
         }
 
         lastTickMilliseconds = timeNowMilliseconds;

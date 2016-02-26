@@ -3,6 +3,8 @@ package celtech.coreUI;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ModelContainerProject;
+import celtech.appManager.Project;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
@@ -23,6 +25,7 @@ import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
@@ -182,13 +185,13 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             File firstUsePrintFile = new File(BaseConfiguration.
                     getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
 
-            Project newProject = new Project();
+            Project newProject = new ModelContainerProject();
             newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));
 
             List<File> fileToLoad = new ArrayList<>();
             fileToLoad.add(firstUsePrintFile);
             ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, fileToLoad, false);
+            loader.loadExternalModels(newProject, fileToLoad, false, null);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                     tabDisplay.heightProperty());
@@ -700,15 +703,15 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         ProjectSelection projectSelection
                 = Lookup.getProjectGUIState(project).getProjectSelection();
-        for (ModelContainer modelContainer : project.getTopLevelModels())
+        for (ProjectifiableThing modelContainer : project.getAllModels())
         {
-            projectSelection.addModelContainer(modelContainer);
+            projectSelection.addSelectedItem(modelContainer);
         }
     }
 
     private void deleteSelectedModels(Project project, UndoableProject undoableProject)
     {
-        Set<ModelContainer> selectedModels
+        Set<ProjectifiableThing> selectedModels
                 = Lookup.getProjectGUIState(project).getProjectSelection().
                 getSelectedModelsSnapshot();
         undoableProject.deleteModels(selectedModels);
@@ -977,11 +980,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             {
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
-                    Project newProject = new Project();
+                    Project newProject = new ModelContainerProject();
                     newProject.setProjectName("Import");
 
                     ModelLoader loader = new ModelLoader();
-                    loader.loadExternalModels(newProject, listOfFiles, false);
+                    loader.loadExternalModels(newProject, listOfFiles, false, null);
 
                     ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                             tabDisplay.heightProperty());

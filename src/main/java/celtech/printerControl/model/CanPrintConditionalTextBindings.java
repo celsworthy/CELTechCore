@@ -4,9 +4,7 @@
 package celtech.printerControl.model;
 
 import celtech.roboxbase.printerControl.model.Printer;
-import celtech.appManager.Project;
-import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.appManager.ModelContainerProject;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
 import libertysystems.stenographer.Stenographer;
@@ -22,10 +20,10 @@ public class CanPrintConditionalTextBindings
     private final Stenographer steno = StenographerFactory.getStenographer(
             CanPrintConditionalTextBindings.class.getName());
 
-    private final Project project;
+    private final ModelContainerProject project;
     private final Printer printer;
 
-    public CanPrintConditionalTextBindings(Project project, Printer printer)
+    public CanPrintConditionalTextBindings(ModelContainerProject project, Printer printer)
     {
         this.project = project;
         this.printer = printer;
@@ -43,7 +41,7 @@ public class CanPrintConditionalTextBindings
             {
                 super.bind(project.getExtruder0FilamentProperty(),
                         project.getExtruder1FilamentProperty(),
-                        project.getTopLevelModels(),
+                        project.getTopLevelThings(),
                         project.getModelColourChanged() // USE USEEXTRUDERS ? as observable
                 );
             }
@@ -68,7 +66,7 @@ public class CanPrintConditionalTextBindings
             {
                 super.bind(project.getExtruder0FilamentProperty(),
                         project.getExtruder1FilamentProperty(),
-                        project.getTopLevelModels(),
+                        project.getTopLevelThings(),
                         project.getModelColourChanged() // USE USEEXTRUDERS ? as observable
                 );
             }

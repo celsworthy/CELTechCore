@@ -3,7 +3,7 @@ package celtech.coreUI.controllers;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
@@ -186,7 +186,7 @@ public class MyMiniFactoryLoaderController implements Initializable
                 if (result.isSuccess())
                 {
                     modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
-                            result.getFilesToLoad());
+                            result.getFilesToLoad(), null);
                 }
                 finishedWithEngines();
                 ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);

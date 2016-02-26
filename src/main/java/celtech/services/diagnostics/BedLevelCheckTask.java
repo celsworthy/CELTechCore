@@ -1,6 +1,6 @@
 package celtech.services.diagnostics;
 
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -19,7 +19,7 @@ public class BedLevelCheckTask extends Task<BedLevelCheckResult> implements Cont
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(BedLevelCheckTask.class.getName());
-    private Project project = null;
+    private ModelContainerProject project = null;
     private Filament filament = null;
     private PrintQualityEnumeration printQuality = null;
     private SlicerParametersFile settings = null;

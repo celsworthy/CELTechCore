@@ -3,7 +3,7 @@
  */
 package celtech.appManager.undo;
 
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.modelcontrol.ModelContainer;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,12 +15,12 @@ import java.util.Set;
 public class GroupCommand extends Command
 {
 
-    Project project;
+    ModelContainerProject project;
     Set<ModelContainer> modelContainers;
     private Set<ModelContainer.State> states;
     ModelContainer group;
 
-    public GroupCommand(Project project, Set<ModelContainer> modelContainers)
+    public GroupCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
     {
         states = new HashSet<>();
         this.project = project;

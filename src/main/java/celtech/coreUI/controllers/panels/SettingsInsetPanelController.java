@@ -3,8 +3,8 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
@@ -14,6 +14,7 @@ import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.model.Head;
@@ -53,7 +54,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsInsetPanelController implements Initializable, ProjectAwareController, Project.ProjectChangesListener
+public class SettingsInsetPanelController implements Initializable, ProjectAwareController, ModelContainerProject.ProjectChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -417,11 +418,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 } else
                 {
                     if (currentProject != null
-                            && currentProject.getUsedExtruders(printer).size() == 1)
+                            && currentProject instanceof ModelContainerProject
+                            && ((ModelContainerProject)currentProject).getUsedExtruders(printer).size() == 1)
                     {
                         // Only one extruder used in this project
                         // Auto select the same material that is being used
-                        supportComboBox.getSelectionModel().select((currentProject.getUsedExtruders(printer).contains(0) == true) ? SupportType.MATERIAL_1 : SupportType.MATERIAL_2);
+                        supportComboBox.getSelectionModel().select((((ModelContainerProject)currentProject).getUsedExtruders(printer).contains(0) == true) ? SupportType.MATERIAL_1 : SupportType.MATERIAL_2);
                     } else
                     {
                         // More than one extruder used in the project or the current project isn't set
@@ -598,13 +600,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     }
 
     @Override
-    public void whenModelAdded(ModelContainer modelContainer)
+    public void whenModelAdded(ProjectifiableThing modelContainer)
     {
         updateSupportCombo(currentPrinter);
     }
 
     @Override
-    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
+    public void whenModelsRemoved(Set<ProjectifiableThing> modelContainers)
     {
         updateSupportCombo(currentPrinter);
     }
@@ -615,12 +617,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     }
 
     @Override
-    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
     {
     }
 
     @Override
-    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
     {
         updateSupportCombo(currentPrinter);
     }

@@ -35,6 +35,7 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
 import java.io.BufferedReader;
@@ -111,6 +112,8 @@ public class ObjImporter
 
             Set<ModelContainer> modelContainers = new HashSet<>();
 
+            ModelLoadResultType resultType = null;
+            
             for (int i = 0; i < meshes_.size(); i++)
             {
                 MeshView meshView = meshes_.get(i);
@@ -120,9 +123,11 @@ public class ObjImporter
                 modelContainers.add(childModelContainer);
             }
 
-            modelLoadResult = new ModelLoadResult(modelFileToLoad,
+            modelLoadResult = new ModelLoadResult(
+                    ModelLoadResultType.Mesh,
+                    modelFileToLoad,
                     modelFile.getName(),
-                    modelContainers);
+                    (Set)modelContainers);
 
         } catch (Exception ex)
         {

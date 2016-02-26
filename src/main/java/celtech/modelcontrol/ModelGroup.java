@@ -240,7 +240,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
         Set<ModelContainer> childModels = new HashSet<>();
         for (ModelContainer childModel : childModelContainers)
         {
-            ModelContainer modelContainerCopy = childModel.makeCopy();
+            ModelContainer modelContainerCopy = (ModelContainer)childModel.makeCopy();
             modelContainerCopy.setState(childModel.getState());
             childModels.add(modelContainerCopy);
         }

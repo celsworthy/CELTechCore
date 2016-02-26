@@ -3,7 +3,7 @@
  */
 package celtech.appManager.undo;
 
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.modelcontrol.ModelContainer;
 import javafx.scene.shape.MeshView;
 
@@ -14,12 +14,12 @@ import javafx.scene.shape.MeshView;
 public class SetUserExtruder0Command extends Command
 {
 
-    Project project;
+    ModelContainerProject project;
     ModelContainer modelContainer;
     MeshView pickedMesh;
     boolean useExtruder0;
 
-    public SetUserExtruder0Command(Project project,
+    public SetUserExtruder0Command(ModelContainerProject project,
             ModelContainer modelContainer,
             boolean useExtruder0)
     {

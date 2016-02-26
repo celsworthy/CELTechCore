@@ -109,7 +109,7 @@ public class LoadModelInsetPanelController implements Initializable
                     DirectoryMemoryProperty.MODEL,
                     files.get(0).getParentFile().getAbsolutePath());
                 modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), files,
-                                               true);
+                                               true, null);
             }
         });
     }
@@ -217,7 +217,7 @@ public class LoadModelInsetPanelController implements Initializable
                             filesToLoad.add(new File(tempTargetname));
                         }
                         modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
-                                                       filesToLoad);
+                                                       filesToLoad, null);
                     } finally
                     {
                         zipFile.close();

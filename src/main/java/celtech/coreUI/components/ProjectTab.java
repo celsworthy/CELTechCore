@@ -3,9 +3,12 @@ package celtech.coreUI.components;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.SVGProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.ProjectAwareController;
@@ -13,8 +16,10 @@ import celtech.coreUI.visualisation.BedAxes;
 import celtech.coreUI.visualisation.DimensionLineManager;
 import celtech.coreUI.visualisation.DragMode;
 import celtech.coreUI.visualisation.ModelLoader;
+import celtech.coreUI.visualisation.SVGViewManager;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
 import java.io.File;
@@ -22,14 +27,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -40,7 +48,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.PopupWindow;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -48,7 +55,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ProjectTab extends Tab
+public class ProjectTab extends Tab implements ProjectCallback
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -59,6 +66,7 @@ public class ProjectTab extends Tab
     private Project project = null;
     private AnchorPane basePane = null;
     private ThreeDViewManager viewManager = null;
+    private SVGViewManager svgViewManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
     private final ModelLoader modelLoader = new ModelLoader();
@@ -67,13 +75,22 @@ public class ProjectTab extends Tab
     private ZCutEntryBox zCutEntryBox = null;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
+    private ReadOnlyDoubleProperty tabDisplayWidthProperty;
+    private ReadOnlyDoubleProperty tabDisplayHeightProperty;
+
+    private Node modelActionsInsetPanel;
+
+    private BooleanProperty hideDimensions = new SimpleBooleanProperty(false);
+
+    private VBox nonSpecificModelIndicator = new VBox();
+
     public ProjectTab(
             ReadOnlyDoubleProperty tabDisplayWidthProperty,
             ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-        project = new Project();
-        projectManager.projectOpened(project);
-        initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
+        this.tabDisplayWidthProperty = tabDisplayWidthProperty;
+        this.tabDisplayHeightProperty = tabDisplayHeightProperty;
+        coreInitialisation();
     }
 
     public ProjectTab(Project inboundProject,
@@ -81,11 +98,13 @@ public class ProjectTab extends Tab
             ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
         project = inboundProject;
-        initialise(tabDisplayWidthProperty, tabDisplayHeightProperty);
+        this.tabDisplayWidthProperty = tabDisplayWidthProperty;
+        this.tabDisplayHeightProperty = tabDisplayHeightProperty;
+        coreInitialisation();
+        initialiseWithProject();
     }
 
-    private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty,
-            ReadOnlyDoubleProperty tabDisplayHeightProperty)
+    private void coreInitialisation()
     {
         setOnCloseRequest((Event t) ->
         {
@@ -97,31 +116,47 @@ public class ProjectTab extends Tab
 
         setOnSelectionChanged((Event t) ->
         {
-            bedAxes.updateArrowAndTextPosition();
+            if (bedAxes != null)
+            {
+                bedAxes.updateArrowAndTextPosition();
+            }
         });
 
-        viewManager = new ThreeDViewManager(project,
-                tabDisplayWidthProperty,
-                tabDisplayHeightProperty);
-        
+        AnchorPane.setBottomAnchor(nonSpecificModelIndicator, 0.0);
+        AnchorPane.setTopAnchor(nonSpecificModelIndicator, 0.0);
+        AnchorPane.setLeftAnchor(nonSpecificModelIndicator, 0.0);
+        AnchorPane.setRightAnchor(nonSpecificModelIndicator, 0.0);
+        nonSpecificModelIndicator.setAlignment(Pos.CENTER);
+        nonSpecificModelIndicator.setMouseTransparent(true);
+        nonSpecificModelIndicator.setPickOnBounds(false);
+        Label loadAModel = new Label(BaseLookup.i18n("projectTab.loadAModel"));
+        loadAModel.getStyleClass().add("load-a-model-text");
+        nonSpecificModelIndicator.getChildren().add(loadAModel);
+
+        basePane = new AnchorPane();
+        basePane.getStyleClass().add("project-view-background");
+
+        basePane.getChildren().add(nonSpecificModelIndicator);
+
+        setupDragHandlers();
+
+        this.setContent(basePane);
+
+        this.setGraphic(nonEditableProjectNameField);
+    }
+
+    private void initialiseWithProject()
+    {
+
         VBox rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
         Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
         Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
         rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
-        
+
         rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
-        Node modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
-        modelActionsInsetPanel.mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
-
-        basePane = new AnchorPane();
-        basePane.getStyleClass().add("project-view-background");
-
-        setupDragHandlers();
-
-        bedAxes = new BedAxes(viewManager);
-        bedAxes.visibleProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
+        modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
 
         VBox dimensionContainer = new VBox();
         dimensionContainer.setMouseTransparent(true);
@@ -129,15 +164,12 @@ public class ProjectTab extends Tab
         AnchorPane.setTopAnchor(dimensionContainer, 0.0);
         AnchorPane.setRightAnchor(dimensionContainer, 0.0);
         AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
-        
-        basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, rhInsetContainer, modelActionsInsetPanel);
 
-        setupDragHandlers();
-        dimensionLineManager = new DimensionLineManager(basePane, project, viewManager.getDragModeProperty());
-        viewManager.addCameraViewChangeListener(bedAxes);
+        basePane.getChildren().addAll(rhInsetContainer, modelActionsInsetPanel);
+
+        dimensionLineManager = new DimensionLineManager(basePane, project, hideDimensions);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
-        zCutEntryBox = new ZCutEntryBox(basePane, layoutSubmode, viewManager, project);
 
         layoutSubmode.addListener(new ChangeListener<LayoutSubmode>()
         {
@@ -146,10 +178,13 @@ public class ProjectTab extends Tab
             {
                 if (newValue == LayoutSubmode.Z_CUT)
                 {
-                    Set<ModelContainer> selectedModelContainers
+                    Set<ProjectifiableThing> selectedModelContainers
                             = Lookup.getProjectGUIState(project).getProjectSelection().getSelectedModelsSnapshot();
-                    zCutEntryBox.prime(selectedModelContainers.iterator().next());
-                    basePane.getChildren().add(zCutEntryBox);
+                    if (project instanceof ModelContainerProject)
+                    {
+                        zCutEntryBox.prime((ModelContainer) selectedModelContainers.iterator().next());
+                        basePane.getChildren().add(zCutEntryBox);
+                    }
                 } else
                 {
                     if (basePane.getChildren().contains(zCutEntryBox))
@@ -173,12 +208,44 @@ public class ProjectTab extends Tab
         AnchorPane.setLeftAnchor(modelActionsInsetPanel,
                 30.0);
 
-        this.setContent(basePane);
-
-        this.setGraphic(nonEditableProjectNameField);
-
         setupNameFields();
 
+        if (project instanceof ModelContainerProject)
+        {
+            setup3DView();
+        } else if (project instanceof SVGProject)
+        {
+            setupSVGView();
+        }
+    }
+
+    private void setup3DView()
+    {
+        nonSpecificModelIndicator.setVisible(false);
+        viewManager = new ThreeDViewManager((ModelContainerProject) project,
+                tabDisplayWidthProperty,
+                tabDisplayHeightProperty);
+
+        modelActionsInsetPanel.mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
+
+        zCutEntryBox = new ZCutEntryBox(basePane, layoutSubmode, viewManager, (ModelContainerProject) project);
+        bedAxes = new BedAxes(viewManager);
+        bedAxes.visibleProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
+        viewManager.addCameraViewChangeListener(bedAxes);
+
+        basePane.getChildren().add(0, viewManager.getSubScene());
+        basePane.getChildren().add(1, bedAxes);
+
+        hideDimensions.bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
+
+    }
+
+    private void setupSVGView()
+    {
+        nonSpecificModelIndicator.setVisible(false);
+        svgViewManager = new SVGViewManager(project);
+
+        basePane.getChildren().add(0, svgViewManager);
     }
 
     private Node loadInsetPanel(String innerPanelFXMLName, Project project)
@@ -263,9 +330,15 @@ public class ProjectTab extends Tab
                             for (File file : fileList)
                             {
                                 boolean extensionFound = false;
-                                for (String extension : ApplicationConfiguration.
-                                        getSupportedFileExtensions(
-                                                ProjectMode.MESH))
+                                ProjectMode projectMode = ProjectMode.NONE;
+                                if (project != null)
+                                {
+                                    projectMode = project.getMode();
+                                }
+                                List<String> extensions = ApplicationConfiguration.
+                                        getSupportedFileExtensions(projectMode);
+
+                                for (String extension : extensions)
                                 {
                                     if (file.getName().toUpperCase().endsWith(
                                             extension.toUpperCase()))
@@ -312,9 +385,14 @@ public class ProjectTab extends Tab
                             for (File file : fileList)
                             {
                                 boolean extensionFound = false;
-                                for (String extension : ApplicationConfiguration.
-                                        getSupportedFileExtensions(
-                                                ProjectMode.MESH))
+                                ProjectMode projectMode = ProjectMode.NONE;
+                                if (project != null)
+                                {
+                                    projectMode = project.getMode();
+                                }
+                                List<String> extensions = ApplicationConfiguration.
+                                        getSupportedFileExtensions(projectMode);
+                                for (String extension : extensions)
                                 {
                                     if (file.getName().endsWith(extension))
                                     {
@@ -363,7 +441,7 @@ public class ProjectTab extends Tab
                 Dragboard db = event.getDragboard();
                 if (db.hasFiles())
                 {
-                    modelLoader.loadExternalModels(project, db.getFiles(), true);
+                    modelLoader.loadExternalModels(project, db.getFiles(), true, this);
                 } else
                 {
                     steno.error("No files in dragboard");
@@ -399,14 +477,25 @@ public class ProjectTab extends Tab
 
     public void saveProject()
     {
-
         Project.saveProject(project);
-
-        viewManager.shutdown();
+        if (viewManager != null)
+        {
+            viewManager.shutdown();
+        }
     }
 
     public void fireProjectSelected()
     {
         Lookup.setSelectedProject(project);
+    }
+
+    @Override
+    public void heresTheProject(Project project)
+    {
+        if (this.project == null)
+        {
+            this.project = project;
+            initialiseWithProject();
+        }
     }
 }
