@@ -8,9 +8,9 @@
 
 <VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="30.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GridPane fx:id="headEEPROMControls" maxWidth="400.0" prefWidth="400.0" vgap="2.0">
+        <GridPane fx:id="headEEPROMControls" maxWidth="-Infinity" prefWidth="450.0" vgap="2.0">
             <columnConstraints>
-                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints />
@@ -40,13 +40,13 @@
                 <RestrictedTextField fx:id="headThermistorBeta" disable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="7" />
                 <RestrictedTextField fx:id="headThermistorTCal" disable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="8" />
                                   
-                <Label styleClass="preferenceControl" text="%headPanel.headType" GridPane.halignment="LEFT" />
-                <Label styleClass="preferenceControl" text="%headPanel.uniqueId" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
-                <Label styleClass="preferenceControl" text="%headPanel.hourCounter" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
-                <Label styleClass="preferenceControl" text="%headPanel.maxTemp" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
-                <Label styleClass="preferenceControl" text="%headPanel.lastFilamentTemperature" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
-                <Label styleClass="preferenceControl" text="%headPanel.thermBeta" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
-                <Label styleClass="preferenceControl" text="%headPanel.thermTCal" GridPane.halignment="LEFT" GridPane.rowIndex="8" />
+                <Label styleClass="preferenceLabel" text="%headPanel.headType" GridPane.halignment="LEFT" />
+                <Label styleClass="preferenceLabel" text="%headPanel.uniqueId" GridPane.halignment="LEFT" GridPane.rowIndex="2" />
+                <Label styleClass="preferenceLabel" text="%headPanel.hourCounter" GridPane.halignment="LEFT" GridPane.rowIndex="3" />
+                <Label styleClass="preferenceLabel" text="%headPanel.maxTemp" GridPane.halignment="LEFT" GridPane.rowIndex="5" />
+                <Label styleClass="preferenceLabel" text="%headPanel.lastFilamentTemperature" GridPane.halignment="LEFT" GridPane.rowIndex="6" />
+                <Label styleClass="preferenceLabel" text="%headPanel.thermBeta" GridPane.halignment="LEFT" GridPane.rowIndex="7" />
+                <Label styleClass="preferenceLabel" text="%headPanel.thermTCal" GridPane.halignment="LEFT" GridPane.rowIndex="8" />
                 <RestrictedTextField fx:id="lastFilamentTemperature1" disable="true" editable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="6">
                     <GridPane.margin>
                         <Insets left="5.0" />
@@ -55,12 +55,12 @@
                 <Label text="Heater 1" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4">
                <styleClass>
                   <String fx:value="filamentLibTitle" />
-                  <String fx:value="preferenceControl" />
+                  <String fx:value="preferenceLabel" />
                </styleClass></Label>
                 <Label text="Heater 2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="4">
                <styleClass>
                   <String fx:value="filamentLibTitle" />
-                  <String fx:value="preferenceControl" />
+                  <String fx:value="preferenceLabel" />
                </styleClass></Label>
             </children>
         </GridPane>
@@ -79,9 +79,9 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label alignment="CENTER" styleClass="preferenceControl" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" />
+                <Label alignment="CENTER" styleClass="preferenceLabel" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="2" GridPane.columnSpan="2" />
 
-                <Label styleClass="preferenceControl" text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" />
+                <Label styleClass="preferenceLabel" text="%printerStatus.Nozzle1ControlLabel" GridPane.columnIndex="1" GridPane.columnSpan="1" />
                 <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                 <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <GridPane.margin>
@@ -109,22 +109,22 @@
                 <Label text=" X" GridPane.halignment="LEFT" GridPane.rowIndex="1">
                <styleClass>
                   <String fx:value="colon" />
-                  <String fx:value="preferenceControl" />
+                  <String fx:value="preferenceLabel" />
                </styleClass></Label>
                 <Label text=" Y" GridPane.halignment="LEFT" GridPane.rowIndex="2">
                <styleClass>
                   <String fx:value="colon" />
-                  <String fx:value="preferenceControl" />
+                  <String fx:value="preferenceLabel" />
                </styleClass></Label>
                 <Label text=" Z" GridPane.halignment="LEFT" GridPane.rowIndex="3">
                <styleClass>
                   <String fx:value="colon" />
-                  <String fx:value="preferenceControl" />
+                  <String fx:value="preferenceLabel" />
                </styleClass></Label>
                 <Label text=" B" GridPane.halignment="LEFT" GridPane.rowIndex="4">
                <styleClass>
                   <String fx:value="colon" />
-                  <String fx:value="preferenceControl" />
+                  <String fx:value="preferenceLabel" />
                </styleClass></Label>
             </children>
          <padding>

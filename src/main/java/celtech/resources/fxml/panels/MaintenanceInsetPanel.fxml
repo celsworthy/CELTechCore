@@ -17,7 +17,7 @@
 
 <VBox fx:id="container" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-              <GridPane alignment="TOP_CENTER" hgap="10.0" maxWidth="450.0" vgap="8.0">
+              <GridPane alignment="TOP_CENTER" hgap="10.0" vgap="8.0">
                   <children>
                       <Button fx:id="sendGCodeSDButton" layoutX="10.0" layoutY="19.0" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#sendGCodeSD" styleClass="preferenceControl" text="%maintenancePanel.sendGCodeSD" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0" />
                       <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1">

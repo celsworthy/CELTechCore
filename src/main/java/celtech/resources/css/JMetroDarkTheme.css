@@ -2252,12 +2252,12 @@ modal-dialogue{
 
 .preferenceLabel {
     -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-size: 15pt;
+    -fx-font-size: 13pt;
 }
 
 .preferenceControl {
     -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-size: 12pt;
+    -fx-font-size: 13pt;
 
 }
 

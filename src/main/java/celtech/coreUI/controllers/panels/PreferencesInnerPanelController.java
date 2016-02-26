@@ -21,7 +21,7 @@ import javafx.scene.layout.RowConstraints;
 public class PreferencesInnerPanelController implements Initializable, MenuInnerPanel
 {
 
-    private static final int ROW_HEIGHT = 60;
+    private static final int ROW_HEIGHT = 45;
 
     public interface Preference
     {
@@ -72,6 +72,7 @@ public class PreferencesInnerPanelController implements Initializable, MenuInner
         Label description = getPreferenceDescriptionLabel(preference);
         Control editor = getPreferenceEditorControl(preference);
         preferencesGridPane.addRow(rowNo, description, editor);
+        preferencesGridPane.setVgap(5);
 
         if (preferencesGridPane.getRowConstraints().size() < rowNo)
         {
