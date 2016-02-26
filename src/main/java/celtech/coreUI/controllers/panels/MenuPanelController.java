@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.VerticalMenu;
 import java.io.IOException;
 import java.net.URL;
@@ -10,10 +11,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -53,7 +57,7 @@ public abstract class MenuPanelController implements Initializable
 
     InnerPanelDetails profileDetails;
     ProfileLibraryPanelController profileDetailsController;
-    
+
     protected String paneli18Name = "";
 
     private final ObjectProperty<MenuInnerPanel> innerPanelProperty = new SimpleObjectProperty<>(null);
@@ -70,6 +74,27 @@ public abstract class MenuPanelController implements Initializable
         setupInnerPanels();
 
         buildExtras();
+
+        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener(new ChangeListener<DisplayManager.DisplayScalingMode>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode t1)
+            {
+                switch (t1)
+                {
+                    case SHORT:
+                    case VERY_SHORT:
+                        Insets shortInsets = new Insets(20, 0, 0, 0);
+                        insetNodeContainer.setPadding(shortInsets);
+                        break;
+                    default:
+                        Insets normalInsets = new Insets(95, 0, 0, 0);
+                        insetNodeContainer.setPadding(normalInsets);
+                        break;
+                }
+            }
+        });
     }
 
     /**
@@ -81,9 +106,10 @@ public abstract class MenuPanelController implements Initializable
 
     /**
      * Load the given inner panel.
+     *
      * @param fxmlLocation
      * @param extrasMenuInnerPanel
-     * @return 
+     * @return
      */
     protected InnerPanelDetails loadInnerPanel(String fxmlLocation, MenuInnerPanel extrasMenuInnerPanel)
     {

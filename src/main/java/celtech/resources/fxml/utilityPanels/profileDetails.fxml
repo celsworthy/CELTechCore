@@ -8,47 +8,38 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="480.0" spacing="5.0" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="600.0" spacing="5.0" styleClass="inset-panel" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <HBox alignment="CENTER">
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
-            <VBox spacing="15.0">
-               <children>
-                      <ComboBox fx:id="cmbHeadType" prefWidth="150.0">
-                     <styleClass>
-                        <String fx:value="cmbPrintProfile" />
-                        <String fx:value="cmbCleanCombo" />
-                     </styleClass>
-                  </ComboBox>
-                  <ComboBox fx:id="cmbPrintProfile" prefWidth="150.0">
-                     <styleClass>
-                        <String fx:value="cmbPrintProfile" />
-                        <String fx:value="cmbCleanCombo" />
-                     </styleClass>
-                  </ComboBox>
-               </children>
-            </VBox>
+                <ComboBox fx:id="cmbHeadType" prefWidth="150.0" styleClass="cmbCleanCombo" />
+            <ComboBox fx:id="cmbPrintProfile" prefWidth="150.0">
+               <styleClass>
+                  <String fx:value="cmbPrintProfile" />
+                  <String fx:value="cmbCleanCombo" />
+               </styleClass>
+            </ComboBox>
             </children>
             <padding>
                 <Insets bottom="10.0" top="10.0" />
             </padding>
         </HBox>
-        <GridPane vgap="8.0">
-            <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                <RowConstraints vgrow="SOMETIMES" />
-            </rowConstraints>
-            <children>
-                <ComboBox fx:id="slicerChooser" prefWidth="111.0" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefHeight="25.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" />
-                <Label styleClass="colon" text="%sidePanel_settings.Profilename" />
-                <Label styleClass="colon" text="%sidePanel_settings.slicerType" GridPane.rowIndex="1" />
-            </children>
-        </GridPane>
+      <HBox spacing="20.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="5.0">
+               <children>
+                      <Label styleClass="colon" text="%sidePanel_settings.Profilename" />
+                      <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefColumnCount="18" prefHeight="30.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="5.0">
+               <children>
+                      <Label styleClass="colon" text="%sidePanel_settings.slicerType" />
+                      <ComboBox fx:id="slicerChooser" prefWidth="111.0" styleClass="cmbCleanCombo" />
+               </children>
+            </HBox>
+         </children>
+      </HBox>
         <VBox>
             <children>
                 <HBox alignment="TOP_CENTER" spacing="5.0">
@@ -59,7 +50,7 @@
                 <HBox alignment="CENTER" />
             </children>
         </VBox>
-        <TabPane id="printProfileTabPane" fx:id="customTabPane" opacity="1.0" tabClosingPolicy="UNAVAILABLE">
+        <TabPane id="printProfileTabPane" fx:id="customTabPane" minHeight="-Infinity" opacity="1.0" prefHeight="355.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
                 <Tab>
                     <content>
@@ -129,7 +120,7 @@
                                         <Label text="%sidePanel_settings.NozzleTab" />
                                     </children>
                                 </HBox>
-                                <GridPane id="Content" fx:id="extrusionControls" alignment="TOP_CENTER" maxHeight="-1.0" styleClass="printProfileGrid" vgap="8.0">
+                                <GridPane id="Content" fx:id="extrusionControls" alignment="TOP_CENTER" maxHeight="-1.0" styleClass="printProfileGrid" vgap="8.0" VBox.vgrow="ALWAYS">
                                     <children>
                                         <Label fx:id="extrusionWidthLabel" style="-fx-text-alignment: CENTER;" text="%extrusion.extrusionWidth" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                                         <Label fx:id="nozzleLabel" style="-fx-text-alignment: CENTER;" text="%extrusion.nozzle" GridPane.columnIndex="1" />
@@ -599,10 +590,14 @@
                     <content>
                         <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
                             <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
+                                <HBox alignment="CENTER" spacing="260.0" styleClass="blackTabUnderline">
                                     <children>
                                         <Label text="%sidePanel_settings.speedTab" />
+                              <Label layoutX="291.0" layoutY="14.0" text="%sidePanel_settings.speedTab" />
                                     </children>
+                           <padding>
+                              <Insets left="40.0" />
+                           </padding>
                                 </HBox>
                                 <GridPane id="Content" fx:id="speedGrid" alignment="TOP_CENTER" minHeight="0.0" minWidth="0.0" vgap="8.0">
                                     <children>
@@ -638,55 +633,55 @@
                                             </children>
                                         </HBox>
                                       
-                                        <Label styleClass="colon" text="%speed.infill" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                        <Label styleClass="colon" text="%speed.infill" GridPane.columnIndex="2" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="3">
                                             <children>
                                                 <RestrictedNumberField fx:id="infillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
                                       
-                                        <Label styleClass="colon" text="%speed.solidInfill" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                        <Label styleClass="colon" text="%speed.solidInfill" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
                                             <children>
                                                 <RestrictedNumberField fx:id="solidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
                                       
-                                        <Label styleClass="colon" text="%speed.topSolidInfill" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                        <Label styleClass="colon" text="%speed.topSolidInfill" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
                                             <children>
                                                 <RestrictedNumberField fx:id="topSolidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
                                       
-                                        <Label styleClass="colon" text="%speed.supportMaterial" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                        <Label styleClass="colon" text="%speed.supportMaterial" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                             <children>
                                                 <RestrictedNumberField fx:id="supportMaterialSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
                                       
-                                        <Label styleClass="colon" text="%speed.bridges" GridPane.columnIndex="0" GridPane.rowIndex="8" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                        <Label styleClass="colon" text="%speed.bridges" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                             <children>
                                                 <RestrictedNumberField fx:id="bridgesSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
                                       
-                                        <Label styleClass="colon" text="%speed.gapFill" GridPane.columnIndex="0" GridPane.rowIndex="9" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                        <Label styleClass="colon" text="%speed.gapFill" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                             <children>
                                                 <RestrictedNumberField fx:id="gapFillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
                                             </children>
                                         </HBox>
-                                        <Label styleClass="colon" text="%speed.interface" GridPane.columnIndex="0" GridPane.rowIndex="10" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                                        <Label styleClass="colon" text="%speed.interface" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                             <children>
                                                 <RestrictedNumberField fx:id="interfaceSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label text="%misc.mmpersec" />
@@ -696,6 +691,8 @@
                                     <columnConstraints>
                                         <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
                                         <ColumnConstraints percentWidth="50.0" />
+                              <ColumnConstraints minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                              <ColumnConstraints minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
                                     </columnConstraints>
                                     <rowConstraints>
                                         <RowConstraints />
@@ -735,9 +732,9 @@
                                 </HBox>
                                 <GridPane id="Content" fx:id="coolingGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
                                     <children>
-                                        <CheckBox id="autoUnretract" fx:id="enableAutoCooling" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%cooling.enableAutoCooling" GridPane.columnIndex="1" />
-                                        <Label styleClass="printProfileDivider" text="%cooling.fanSettingsTitle" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableAutoCooling" />
+                                        <CheckBox id="autoUnretract" fx:id="enableAutoCooling" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%cooling.enableAutoCooling" GridPane.columnIndex="2" />
+                                        <Label styleClass="printProfileDivider" text="%cooling.fanSettingsTitle" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableAutoCooling" GridPane.columnIndex="1" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.MinimumSpeed" GridPane.rowIndex="2" />
                                         <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.MaximumSpeed" GridPane.rowIndex="3" />
@@ -756,23 +753,23 @@
                                                 <Label minWidth="-1.0" text="%misc.layers" />
                                             </children>
                                         </HBox>
-                                        <Label styleClass="printProfileDivider" text="%cooling.thresholdsTitle" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableFanIfPrintTimeBelow" GridPane.rowIndex="7" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                        <Label styleClass="printProfileDivider" text="%cooling.thresholdsTitle" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
+                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableFanIfPrintTimeBelow" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
                                             <children>
                                                 <RestrictedNumberField id="unretractLength" fx:id="enableFanIfLayerTimeBelow" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label minWidth="-1.0" text="%misc.secs" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.slowFanIfBelow" GridPane.rowIndex="8" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.slowFanIfBelow" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
                                             <children>
                                                 <RestrictedNumberField id="unretractLength" fx:id="slowFanIfLayerTimeBelow" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label minWidth="-1.0" text="%misc.secs" />
                                             </children>
                                         </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.minPrintSpeed" GridPane.rowIndex="9" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.minPrintSpeed" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
                                             <children>
                                                 <RestrictedNumberField id="unretractLength" fx:id="minPrintSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" />
                                                 <Label minWidth="-1.0" text="%misc.mmpersec" />
@@ -782,6 +779,8 @@
                                     <columnConstraints>
                                         <ColumnConstraints fillWidth="false" halignment="LEFT" percentWidth="50.0" />
                                         <ColumnConstraints fillWidth="false" percentWidth="50.0" />
+                              <ColumnConstraints fillWidth="false" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+                              <ColumnConstraints fillWidth="false" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
                                     </columnConstraints>
                                     <rowConstraints>
                                         <RowConstraints />
