@@ -45,7 +45,7 @@
             <String fx:value="preferenceControl" />
          </styleClass></Label>
                       
-        <RestrictedTextField fx:id="name" directorySafeName="true" maxLength="26" maxWidth="-Infinity" restrict="a-zA-Z0-9_" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+        <RestrictedTextField fx:id="name" directorySafeName="true" maxLength="26" maxWidth="-Infinity" restrict="a-zA-Z0-9_ " GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
          <styleClass>
             <String fx:value="filamentLibUpper" />
             <String fx:value="preferenceControl" />
