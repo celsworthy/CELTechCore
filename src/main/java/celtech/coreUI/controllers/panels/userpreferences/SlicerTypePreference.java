@@ -6,6 +6,7 @@ import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 
@@ -25,14 +26,16 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
 
         control = new ComboBox<>();
         control.getStyleClass().add("cmbCleanCombo");
-        control.setItems(FXCollections.observableArrayList(SlicerType.values()));
+        ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
+        slicerTypes.add(SlicerType.Cura);
+        control.setItems(slicerTypes);
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
         control.valueProperty().addListener(
-            (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-            {
-                updateValueFromControl();
-            });
+                (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
+                {
+                    updateValueFromControl();
+                });
     }
 
     @Override
@@ -45,7 +48,12 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     @Override
     public void populateControlWithCurrentValue()
     {
-        control.setValue(userPreferences.getSlicerType());
+        SlicerType chosenType = userPreferences.getSlicerType();
+        if (chosenType == SlicerType.Slic3r)
+        {
+            chosenType = SlicerType.Cura;
+        }
+        control.setValue(chosenType);
     }
 
     @Override
