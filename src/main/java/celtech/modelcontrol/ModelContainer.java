@@ -997,6 +997,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException
     {
+        boolean was_legacy_model = false;
         associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
         String modelName = in.readUTF();
@@ -1027,6 +1028,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         } catch (IOException ex)
         {
             meshView = readContainer_1_03_00_Contents(in);
+            was_legacy_model = true;
         }
         
         getChildren().add(meshView);
@@ -1090,6 +1092,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         if (convertSnapFace)
         {
             snapToGround(meshView, storedSnapFaceIndexLegacy);
+        }
+        
+        if (was_legacy_model)
+        {
+            dropToBed();
         }
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
