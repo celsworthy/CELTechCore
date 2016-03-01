@@ -1045,6 +1045,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
          */
         setupFilamentListeners(project);
         updateModelColours();
+        
+        if (Lookup.getSelectedProjectProperty().get() != null)
+        {
+            Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+        }
+        
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
