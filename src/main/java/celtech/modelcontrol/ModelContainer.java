@@ -964,6 +964,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException
     {
+        boolean was_legacy_model = false;
         associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
         String modelName = in.readUTF();
@@ -994,6 +995,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         } catch (IOException ex)
         {
             meshView = readContainer_1_03_00_Contents(in);
+            was_legacy_model = true;
         }
         
         getChildren().add(meshView);
@@ -1058,7 +1060,12 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         {
             snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
-
+        
+        if (was_legacy_model)
+        {
+            dropToBed();
+        }
+        
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
