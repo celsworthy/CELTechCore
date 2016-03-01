@@ -228,7 +228,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
         for (ProjectifiableThing modelContainer : projectSelection.getSelectedModelsSnapshot())
         {
-            ((ModelContainer)modelContainer).cameraViewOfYouHasChanged(cameraDistance.get());
+            ((ModelContainer) modelContainer).cameraViewOfYouHasChanged(cameraDistance.get());
         }
 
         //Output the bed co-ordinates in screen terms
@@ -339,7 +339,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     private void notifyModelsOfCameraViewChange()
     {
         Set<ProjectifiableThing> selectedModels = projectSelection.getSelectedModelsSnapshot();
-        Set<ModelContainer> modelContainers = (Set)selectedModels;
+        Set<ModelContainer> modelContainers = (Set) selectedModels;
         for (ModelContainer modelContainer : modelContainers)
         {
             modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
@@ -472,7 +472,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
             // group.e
             Set<ProjectifiableThing> selectedProjectifiableThings
                     = Lookup.getProjectGUIState(project).getProjectSelection().getSelectedModelsSnapshot();
-            Set<ModelContainer> selectedModelContainers = (Set)selectedProjectifiableThings;
+            Set<ModelContainer> selectedModelContainers = (Set) selectedProjectifiableThings;
             Set<MeshView> selectedMeshViews
                     = selectedModelContainers.stream().
                     map(mc -> mc.descendentMeshViews()).
@@ -664,7 +664,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         inSelectedGroupButNotSelected.clear();
 
         Set<ProjectifiableThing> selectedProjectifiableThings = projectSelection.getSelectedModelsSnapshot();
-        Set<ModelContainer> selectedModels = (Set)selectedProjectifiableThings;
+        Set<ModelContainer> selectedModels = (Set) selectedProjectifiableThings;
         for (ModelContainer model : selectedModels)
         {
             ModelGroup parentGroup = getTopLevelAncestorGroup(model);
@@ -1038,6 +1038,12 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
          */
         setupFilamentListeners(project);
         updateModelColours();
+
+        if (Lookup.getSelectedProjectProperty().get() != null)
+        {
+            Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+        }
+
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
@@ -1067,8 +1073,8 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         {
             models.getChildren().add(model);
 
-            addBedReferenceToModel((ModelContainer)model);
-            ((ModelContainer)model).heresYourCamera(camera);
+            addBedReferenceToModel((ModelContainer) model);
+            ((ModelContainer) model).heresYourCamera(camera);
         }
     }
 
@@ -1119,20 +1125,20 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL);
-        MeshView outerMeshView = ((ModelContainer)bedOuterLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
+        MeshView outerMeshView = ((ModelContainer) bedOuterLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         outerMeshView.setMaterial(bedOuterMaterial);
         bed.getChildren().addAll(outerMeshView);
 
         ObjImporter peiSheetImporter = new ObjImporter();
         ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadFile(null, peiSheetURL);
-        MeshView peiMeshView = ((ModelContainer)peiSheetLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
+        MeshView peiMeshView = ((ModelContainer) peiSheetLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         peiMeshView.setMaterial(peiSheetMaterial);
 
         bed.getChildren().addAll(peiMeshView);
 
         ObjImporter bedClipsImporter = new ObjImporter();
         ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadFile(null, bedClipsURL);
-        MeshView bedClipsMeshView = ((ModelContainer)bedClipsLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
+        MeshView bedClipsMeshView = ((ModelContainer) bedClipsLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         bedClipsMeshView.setMaterial(bedClipsMaterial);
         bed.getChildren().addAll(bedClipsMeshView);
 
@@ -1453,7 +1459,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                 }
             } else
             {
-                updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, (ModelContainer)model);
+                updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, (ModelContainer) model);
             }
         }
     }
@@ -1484,7 +1490,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     {
         for (ProjectifiableThing modelContainer : loadedModels)
         {
-            deselectModel((ModelContainer)modelContainer);
+            deselectModel((ModelContainer) modelContainer);
         }
     }
 
@@ -1510,7 +1516,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     @Override
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
-        ModelContainer modelContainer = (ModelContainer)projectifiableThing;
+        ModelContainer modelContainer = (ModelContainer) projectifiableThing;
         models.getChildren().add(modelContainer);
         modelContainer.setBedReference(bed);
 
@@ -1533,7 +1539,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         models.getChildren().removeAll(modelContainers);
         modelContainers.stream().forEach(model ->
         {
-            collisionManager.removeModel((ModelContainer)model);
+            collisionManager.removeModel((ModelContainer) model);
         });
     }
 
@@ -1547,7 +1553,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
     {
         updateModelColours();
-        Set<ModelContainer> containers = (Set)modelContainers;
+        Set<ModelContainer> containers = (Set) modelContainers;
         collisionManager.modelsTransformed(containers);
     }
 
