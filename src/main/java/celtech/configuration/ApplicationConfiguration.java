@@ -858,7 +858,7 @@ public class ApplicationConfiguration
         if (applicationName.equals("CEL AutoMaker"))
         {
             return "0abc523fc24";
-        } else if (applicationName.equals("CEL Configurator"))
+        } else if (applicationName.equals("CEL ReelProgrammer"))
         {
             return "14f690bc22c";
         } else if (applicationName.equals("CEL Commissionator"))
