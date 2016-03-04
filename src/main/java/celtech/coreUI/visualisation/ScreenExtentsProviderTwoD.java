@@ -4,7 +4,7 @@ package celtech.coreUI.visualisation;
  *
  * @author Ian
  */
-public interface ScreenExtentsProvider
+public interface ScreenExtentsProviderTwoD
 {
 
     public ScreenExtents getScreenExtents();
@@ -13,8 +13,6 @@ public interface ScreenExtentsProvider
 
     public double getTransformedWidth();
 
-    public double getTransformedDepth();
-
     public void addScreenExtentsChangeListener(ScreenExtentsListener listener);
 
     public void removeScreenExtentsChangeListener(ScreenExtentsListener listener);
@@ -22,6 +20,6 @@ public interface ScreenExtentsProvider
     public interface ScreenExtentsListener
     {
 
-        public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider);
+        public void screenExtentsChanged(ScreenExtentsProviderTwoD screenExtentsProvider);
     }
 }

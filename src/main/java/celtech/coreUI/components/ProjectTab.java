@@ -244,6 +244,11 @@ public class ProjectTab extends Tab implements ProjectCallback
     {
         nonSpecificModelIndicator.setVisible(false);
         svgViewManager = new SVGViewManager(project);
+        
+        AnchorPane.setBottomAnchor(svgViewManager, 0.0);
+        AnchorPane.setTopAnchor(svgViewManager, 0.0);
+        AnchorPane.setLeftAnchor(svgViewManager, 0.0);
+        AnchorPane.setRightAnchor(svgViewManager, 0.0);
 
         basePane.getChildren().add(0, svgViewManager);
     }

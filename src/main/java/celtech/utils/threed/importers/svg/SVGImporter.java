@@ -57,7 +57,8 @@ public class SVGImporter
         this.percentProgressProperty = percentProgressProperty;
 
         List<SVGMetaPart> metaparts = new ArrayList<>();
-        RenderableSVG renderableSVG = new RenderableSVG();
+        ShapeContainer renderableSVG = new ShapeContainer(modelFile);
+        renderableSVG.setModelName(modelFile.getName());
 
         try
         {

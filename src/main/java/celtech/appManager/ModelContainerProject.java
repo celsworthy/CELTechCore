@@ -7,11 +7,15 @@ import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.PrintBed;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.RotatableThreeD;
+import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -34,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -127,7 +132,7 @@ public class ModelContainerProject extends Project
 
         if (projectFile instanceof ModelContainerProjectFile)
         {
-            ModelContainerProjectFile mcProjectFile = (ModelContainerProjectFile)projectFile;
+            ModelContainerProjectFile mcProjectFile = (ModelContainerProjectFile) projectFile;
             try
             {
                 version = projectFile.getVersion();
@@ -482,110 +487,6 @@ public class ModelContainerProject extends Project
                 modelExtruderNumberListener);
     }
 
-    /**
-     * Create a new group from models that are not yet in the project.
-     *
-     * @param modelContainers
-     * @return
-     */
-    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-
-        ModelGroup modelGroup = new ModelGroup(modelContainers);
-        modelGroup.checkOffBed();
-        modelGroup.notifyScreenExtentsChange();
-        return modelGroup;
-    }
-
-    private void checkNotAlreadyInGroup(Set<ModelContainer> modelContainers)
-    {
-        Set<ModelContainer> modelsAlreadyInGroups = getDescendentModelsInAllGroups();
-        for (ModelContainer model : modelContainers)
-        {
-            if (modelsAlreadyInGroups.contains(model))
-            {
-                throw new RuntimeException("Model " + model + " is already in a group");
-            }
-        }
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project, and add
-     * model listeners to all descendent children.
-     *
-     * @param modelContainers
-     * @return
-     */
-    public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup(modelContainers);
-        addModelListeners(modelGroup);
-        for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
-        {
-            addModelListeners(childModelContainer);
-        }
-        modelGroup.checkOffBed();
-        return modelGroup;
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project.
-     *
-     * @param modelContainers
-     * @param groupModelId
-     * @return
-     */
-    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers, int groupModelId)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
-        modelGroup.checkOffBed();
-        return modelGroup;
-    }
-
-    public ModelGroup group(Set<ModelContainer> modelContainers)
-    {
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-
-        removeModels(projectifiableThings);
-        ModelGroup modelGroup = createNewGroup(modelContainers);
-        addModel(modelGroup);
-        return modelGroup;
-    }
-
-    public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
-    {
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-
-        removeModels(projectifiableThings);
-        ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
-        addModel(modelGroup);
-        return modelGroup;
-    }
-
-    public void ungroup(Set<? extends ModelContainer> modelContainers)
-    {
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            if (modelContainer instanceof ModelGroup)
-            {
-                ModelGroup modelGroup = (ModelGroup) modelContainer;
-                Set<ProjectifiableThing> modelGroups = new HashSet<>();
-                modelGroups.add(modelGroup);
-                removeModels(modelGroups);
-                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
-                {
-                    addModel(childModelContainer);
-                    childModelContainer.setBedCentreOffsetTransform();
-//                    childModelContainer.applyGroupTransformToThis(modelGroup);
-                    childModelContainer.checkOffBed();
-                }
-            }
-        }
-    }
-
     private Set<ModelContainer> getModelsHoldingMeshViews()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
@@ -664,9 +565,9 @@ public class ModelContainerProject extends Project
      *
      * @return
      */
-    public Map<Integer, ModelContainer.State> getGroupState()
+    public Map<Integer, ItemState> getGroupState()
     {
-        Map<Integer, ModelContainer.State> groupState = new HashMap<>();
+        Map<Integer, ItemState> groupState = new HashMap<>();
         for (ModelContainer modelContainer : getModelsHoldingModels())
         {
             groupState.put(modelContainer.getModelId(), modelContainer.getState());
@@ -687,7 +588,7 @@ public class ModelContainerProject extends Project
      * @throws celtech.appManager.ModelContainerProject.ProjectLoadException
      */
     public void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
-            Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+            Map<Integer, ItemState> groupStates) throws ProjectLoadException
     {
         int numNewGroups;
         do
@@ -703,14 +604,17 @@ public class ModelContainerProject extends Project
      * @return the number of groups created
      */
     private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure,
-            Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+            Map<Integer, ItemState> groupStates) throws ProjectLoadException
     {
         int numGroups = 0;
         for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
         {
             if (allModelsInstantiated(entry.getValue()))
             {
-                Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
+                Set<Groupable> modelContainers = getModelContainersOfIds(entry.getValue())
+                        .stream()
+                        .filter((model) -> (model instanceof Groupable))
+                        .collect(Collectors.toSet());
                 int groupModelId = entry.getKey();
                 ModelGroup group = group(modelContainers, groupModelId);
                 recreateGroupState(group, groupStates);
@@ -786,7 +690,7 @@ public class ModelContainerProject extends Project
     /**
      * Update the transforms of the given group as indicated by groupState.
      */
-    private void recreateGroupState(ModelGroup group, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
+    private void recreateGroupState(ModelGroup group, Map<Integer, ItemState> groupStates) throws ProjectLoadException
     {
         group.setState(groupStates.get(group.getModelId()));
         group.checkOffBed();
@@ -824,46 +728,37 @@ public class ModelContainerProject extends Project
         }
     }
 
-    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateLeanModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
-        for (ModelContainer model : modelContainers)
+        for (RotatableThreeD model : modelContainers)
         {
-            {
-                model.setRotationLean(rotation);
-            }
+            model.setRotationLean(rotation);
         }
         projectModified();
 
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateTwistModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
-        for (ModelContainer model : modelContainers)
+        for (RotatableThreeD model : modelContainers)
         {
-            {
-                model.setRotationTwist(rotation);
-            }
+            model.setRotationTwist(rotation);
         }
         projectModified();
 
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
     {
-        for (ModelContainer model : modelContainers)
+        for (RotatableTwoD model : modelContainers)
         {
-            {
-                model.setRotationTurn(rotation);
-            }
+            model.setRotationTurn(rotation);
         }
         projectModified();
 
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
     public void dropToBed(Set<ModelContainer> modelContainers)
@@ -939,4 +834,39 @@ public class ModelContainerProject extends Project
 
         projectModified();
     }
+
+    @Override
+    protected void checkNotAlreadyInGroup(Set<Groupable> modelContainers)
+    {
+        Set<ModelContainer> modelsAlreadyInGroups = getDescendentModelsInAllGroups();
+        for (Groupable model : modelContainers)
+        {
+            if (modelsAlreadyInGroups.contains(model))
+            {
+                throw new RuntimeException("Model " + model + " is already in a group");
+            }
+        }
+    }
+
+    /**
+     * Create a new group from models that are not yet in the project, and add
+     * model listeners to all descendent children.
+     *
+     * @param modelContainers
+     * @return
+     */
+    @Override
+    public ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers)
+    {
+        checkNotAlreadyInGroup(modelContainers);
+        ModelGroup modelGroup = new ModelGroup((Set)modelContainers);
+        addModelListeners(modelGroup);
+        for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
+        {
+            addModelListeners(childModelContainer);
+        }
+        modelGroup.checkOffBed();
+        return modelGroup;
+    }
+
 }

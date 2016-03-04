@@ -13,6 +13,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.roboxbase.configuration.PrintBed;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
+import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
@@ -235,7 +236,7 @@ public class ModelLoader
                 modelContainer = (ModelContainer) modelContainers.iterator().next();
             } else
             {
-                Set<ModelContainer> thingsToGroup = (Set) modelContainers;
+                Set<Groupable> thingsToGroup = (Set) modelContainers;
                 modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(thingsToGroup);
             }
             if (shouldCentre)

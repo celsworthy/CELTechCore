@@ -5,8 +5,8 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.CameraViewChangeListener;
 import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
-import celtech.coreUI.visualisation.ScreenExtentsProvider;
-import celtech.coreUI.visualisation.ShapeProvider;
+import celtech.coreUI.visualisation.ScreenExtentsProviderThreeD;
+import celtech.coreUI.visualisation.ShapeProviderThreeD;
 import celtech.coreUI.visualisation.collision.CollisionShapeListener;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
@@ -33,10 +33,8 @@ import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableFloatArray;
 import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
@@ -73,10 +71,20 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ModelContainer extends ProjectifiableThing implements Serializable, Comparable, ShapeProvider,
-        ScreenExtentsProvider, CameraViewChangeListener, PackableItem, MeshToWorldTransformer
+public class ModelContainer extends ProjectifiableThing implements Serializable,
+        Comparable,
+        CameraViewChangeListener,
+        PackableItem,
+        MeshToWorldTransformer,
+        ScaleableThreeD,
+        TranslateableThreeD,
+        ResizeableThreeD,
+        RotatableThreeD,
+        Groupable,
+        ScreenExtentsProviderThreeD,
+        ShapeProviderThreeD
 {
- 
+
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
     private Stenographer steno;
@@ -122,8 +130,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      */
     protected RectangularBounds lastTransformedBoundsInParent;
     private SelectionHighlighter selectionHighlighter;
-    private List<ShapeProvider.ShapeChangeListener> shapeChangeListeners;
-    private List<ScreenExtentsProvider.ScreenExtentsListener> screenExtentsChangeListeners;
 
     /**
      * Print the part using the extruder of the given number.
@@ -135,7 +141,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     private Group bed;
 
     private Camera cameraViewingMe = null;
-    private ScreenExtents extents = null;
 
     private List<Transform> rotationTransforms;
 
@@ -316,8 +321,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         modelId = nextModelId;
         nextModelId += 1;
 
-        shapeChangeListeners = new ArrayList<>();
-        screenExtentsChangeListeners = new ArrayList<>();
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
         printBed = PrintBed.getInstance();
 
@@ -552,6 +555,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
     /**
      * Move the CENTRE of the object to the desired x,z position.
+     *
      * @param xPosition
      * @param zPosition
      */
@@ -829,6 +833,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         return preferredZScale.get();
     }
 
+    @Override
     public void setRotationTwist(double value)
     {
         preferredRotationTwist.set(value);
@@ -840,11 +845,13 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         notifyScreenExtentsChange();
     }
 
+    @Override
     public double getRotationTwist()
     {
         return preferredRotationTwist.get();
     }
 
+    @Override
     public void setRotationTurn(double value)
     {
         preferredRotationTurn.set(value);
@@ -856,11 +863,13 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         notifyScreenExtentsChange();
     }
 
+    @Override
     public double getRotationTurn()
     {
         return preferredRotationTurn.get();
     }
 
+    @Override
     public void setRotationLean(double value)
     {
         preferredRotationLean.set(value);
@@ -872,6 +881,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         notifyScreenExtentsChange();
     }
 
+    @Override
     public double getRotationLean()
     {
         return preferredRotationLean.get();
@@ -997,7 +1007,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
             meshView = readContainer_1_03_00_Contents(in);
             was_legacy_model = true;
         }
-        
+
         getChildren().add(meshView);
 
         initialise(new File(modelName));
@@ -1060,12 +1070,12 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         {
             snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
-        
+
         if (was_legacy_model)
         {
             dropToBed();
         }
-        
+
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
@@ -1133,6 +1143,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     /**
      * N.B. It only works for top level objects i.e. top level groups or
      * ungrouped models.
+     *
      * @param xPosition
      */
     @Override
@@ -1166,6 +1177,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     /**
      * N.B. It only works for top level objects i.e. top level groups or
      * ungrouped models.
+     *
      * @param zPosition
      */
     @Override
@@ -1480,7 +1492,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     public ModelContainer splitIntoParts()
     {
         Set<ModelContainer> parts = new HashSet<>();
-        ModelContainer.State state = getState();
+        ItemState state = getState();
         String modelName = getModelName();
 
         ModelContainer modelContainer = this;
@@ -1728,33 +1740,15 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public double getOriginalHeight()
-    {
-        return getLocalBounds().getHeight();
-    }
-
-    @Override
     public double getScaledHeight()
     {
         return getLocalBounds().getHeight() * preferredYScale.doubleValue();
     }
 
     @Override
-    public double getOriginalDepth()
-    {
-        return getLocalBounds().getDepth();
-    }
-
-    @Override
     public double getScaledDepth()
     {
         return getLocalBounds().getDepth() * preferredZScale.doubleValue();
-    }
-
-    @Override
-    public double getOriginalWidth()
-    {
-        return getLocalBounds().getWidth();
     }
 
     @Override
@@ -1840,30 +1834,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public void addShapeChangeListener(ShapeProvider.ShapeChangeListener listener)
-    {
-        shapeChangeListeners.add(listener);
-    }
-
-    @Override
-    public void removeShapeChangeListener(ShapeProvider.ShapeChangeListener listener)
-    {
-        shapeChangeListeners.remove(listener);
-    }
-
-    /**
-     * This method must be called at the end of any operation that changes one
-     * or more of the transforms.
-     */
-    public void notifyShapeChange()
-    {
-        for (ShapeProvider.ShapeChangeListener shapeChangeListener : shapeChangeListeners)
-        {
-            shapeChangeListener.shapeChanged(this);
-        }
-    }
-
-    @Override
     public Point3D transformMeshToRealWorldCoordinates(float vertexX, float vertexY, float vertexZ)
     {
         return bed.sceneToLocal(meshView.localToScene(vertexX, vertexY, vertexZ));
@@ -1922,31 +1892,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public void addScreenExtentsChangeListener(ScreenExtentsProvider.ScreenExtentsListener listener)
-    {
-        recalculateScreenExtents();
-        screenExtentsChangeListeners.add(listener);
-    }
-
-    @Override
-    public void removeScreenExtentsChangeListener(
-            ScreenExtentsProvider.ScreenExtentsListener listener)
-    {
-        screenExtentsChangeListeners.remove(listener);
-    }
-
-    public void notifyScreenExtentsChange()
-    {
-        if (recalculateScreenExtents())
-        {
-            for (ScreenExtentsProvider.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
-            {
-                screenExtentsListener.screenExtentsChanged(this);
-            }
-        }
-    }
-
-    public boolean recalculateScreenExtents()
+    protected boolean recalculateScreenExtents()
     {
         boolean extentsChanged = false;
 
@@ -2041,16 +1987,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public ScreenExtents getScreenExtents()
-    {
-        if (extents == null)
-        {
-            recalculateScreenExtents();
-        }
-        return extents;
-    }
-
-    @Override
     public double getTransformedHeight()
     {
         return getScaledHeight();
@@ -2116,9 +2052,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public State getState()
+    public ThreeDItemState getState()
     {
-        return new State(modelId,
+        return new ThreeDItemState(modelId,
                 transformMoveToPreferred.getX(),
                 transformDropToBedYAdjust.getY(),
                 transformMoveToPreferred.getZ(),
@@ -2128,28 +2064,32 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public void setState(State state)
+    public void setState(ItemState state)
     {
-        transformMoveToPreferred.setX(state.x);
-        transformMoveToPreferred.setZ(state.z);
-        transformDropToBedYAdjust.setY(state.y);
+        if (state instanceof ThreeDItemState)
+        {
+            ThreeDItemState convertedState = (ThreeDItemState) state;
+            transformMoveToPreferred.setX(convertedState.x);
+            transformMoveToPreferred.setZ(convertedState.z);
+            transformDropToBedYAdjust.setY(convertedState.y);
 
-        preferredXScale.set(state.preferredXScale);
-        transformScalePreferred.setX(state.preferredXScale);
-        preferredYScale.set(state.preferredYScale);
-        transformScalePreferred.setY(state.preferredYScale);
-        preferredZScale.set(state.preferredZScale);
-        transformScalePreferred.setZ(state.preferredZScale);
+            preferredXScale.set(convertedState.preferredXScale);
+            transformScalePreferred.setX(convertedState.preferredXScale);
+            preferredYScale.set(convertedState.preferredYScale);
+            transformScalePreferred.setY(convertedState.preferredYScale);
+            preferredZScale.set(convertedState.preferredZScale);
+            transformScalePreferred.setZ(convertedState.preferredZScale);
 
-        preferredRotationLean.set(state.preferredRotationLean);
-        preferredRotationTwist.set(state.preferredRotationTwist);
-        preferredRotationTurn.set(state.preferredRotationTurn);
+            preferredRotationLean.set(convertedState.preferredRotationLean);
+            preferredRotationTwist.set(convertedState.preferredRotationTwist);
+            preferredRotationTurn.set(convertedState.preferredRotationTurn);
 
-        updateTransformsFromLeanTwistTurnAngles();
+            updateTransformsFromLeanTwistTurnAngles();
 
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        notifyScreenExtentsChange();
-        notifyShapeChange();
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+            notifyScreenExtentsChange();
+            notifyShapeChange();
+        }
     }
 
     public boolean isInvalidMesh()

@@ -1,8 +1,11 @@
 package celtech.modelcontrol;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import celtech.coreUI.visualisation.ScreenExtents;
+import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
+import celtech.coreUI.visualisation.ShapeProviderTwoD;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,13 +17,16 @@ import javafx.scene.Node;
  *
  * @author ianhudson
  */
-public abstract class ProjectifiableThing extends Group implements Scaleable, Translateable, Resizeable
+public abstract class ProjectifiableThing extends Group implements ScreenExtentsProviderTwoD, ShapeProviderTwoD
 {
 
     private File modelFile;
     protected boolean isCollided = false;
     protected BooleanProperty isSelected;
     protected BooleanProperty isOffBed;
+    protected ScreenExtents extents = null;
+    private List<ShapeProviderTwoD.ShapeChangeListener> shapeChangeListeners;
+    private List<ScreenExtentsProviderTwoD.ScreenExtentsListener> screenExtentsChangeListeners;
 
     /**
      * The modelId is only guaranteed unique at the project level because it
@@ -39,12 +45,15 @@ public abstract class ProjectifiableThing extends Group implements Scaleable, Tr
     public ProjectifiableThing(File modelFile)
     {
         this.modelFile = modelFile;
+        initialise();
     }
 
     private void initialise()
     {
         isSelected = new SimpleBooleanProperty(false);
         isOffBed = new SimpleBooleanProperty(false);
+        shapeChangeListeners = new ArrayList<>();
+        screenExtentsChangeListeners = new ArrayList<>();
     }
 
     public int getModelId()
@@ -52,9 +61,9 @@ public abstract class ProjectifiableThing extends Group implements Scaleable, Tr
         return modelId;
     }
 
-    public abstract ProjectifiableThing.State getState();
+    public abstract ItemState getState();
 
-    public abstract void setState(ProjectifiableThing.State state);
+    public abstract void setState(ItemState state);
 
     /**
      * Make a copy of this ModelContainer and return it.
@@ -112,76 +121,71 @@ public abstract class ProjectifiableThing extends Group implements Scaleable, Tr
     {
         this.isCollided = collided;
     }
-    
+
     public final boolean isCollided()
     {
         return isCollided;
     }
 
-    /**
-     * State captures the state of all the transforms being applied to this
-     * ModelContainer. It is used as an efficient way of applying Undo and Redo
-     * to changes to a Set of ModelContainers.
-     */
-    public static class State
+    protected abstract boolean recalculateScreenExtents();
+
+    @Override
+    public final ScreenExtents getScreenExtents()
     {
-
-        public int modelId;
-        public double x;
-        public double y;
-        public double z;
-        public double preferredXScale;
-        public double preferredYScale;
-        public double preferredZScale;
-        public double preferredRotationTwist;
-        public double preferredRotationTurn;
-        public double preferredRotationLean;
-
-        public State()
+        if (extents == null)
         {
+            recalculateScreenExtents();
         }
+        return extents;
+    }
 
-        @JsonCreator
-        public State(
-                @JsonProperty("modelId") int modelId,
-                @JsonProperty("x") double x,
-                @JsonProperty("y") double y,
-                @JsonProperty("z") double z,
-                @JsonProperty("preferredXScale") double preferredXScale,
-                @JsonProperty("preferredYScale") double preferredYScale,
-                @JsonProperty("preferredZScale") double preferredZScale,
-                @JsonProperty("preferredRotationTwist") double preferredRotationTwist,
-                @JsonProperty("preferredRotationTurn") double preferredRotationTurn,
-                @JsonProperty("preferredRotationLean") double preferredRotationLean)
+    @Override
+    public final void addScreenExtentsChangeListener(ScreenExtentsProviderTwoD.ScreenExtentsListener listener)
+    {
+        recalculateScreenExtents();
+        screenExtentsChangeListeners.add(listener);
+    }
+
+    @Override
+    public final void removeScreenExtentsChangeListener(
+            ScreenExtentsProviderTwoD.ScreenExtentsListener listener)
+    {
+        screenExtentsChangeListeners.remove(listener);
+    }
+
+    public final void notifyScreenExtentsChange()
+    {
+        if (recalculateScreenExtents())
         {
-            this.modelId = modelId;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.preferredXScale = preferredXScale;
-            this.preferredYScale = preferredYScale;
-            this.preferredZScale = preferredZScale;
-            this.preferredRotationTwist = preferredRotationTwist;
-            this.preferredRotationTurn = preferredRotationTurn;
-            this.preferredRotationLean = preferredRotationLean;
+            for (ScreenExtentsProviderTwoD.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+            {
+                screenExtentsListener.screenExtentsChanged(this);
+            }
         }
+    }
 
-        /**
-         * The assignment operator.
-         *
-         * @param fromState
-         */
-        public void assignFrom(State fromState)
+    @Override
+    public final void addShapeChangeListener(ShapeProviderTwoD.ShapeChangeListener listener)
+    {
+        shapeChangeListeners.add(listener);
+    }
+
+    @Override
+    public final void removeShapeChangeListener(ShapeProviderTwoD.ShapeChangeListener listener)
+    {
+        shapeChangeListeners.remove(listener);
+    }
+
+    
+    /**
+     * This method must be called at the end of any operation that changes one
+     * or more of the transforms.
+     */
+    public final void notifyShapeChange()
+    {
+        for (ShapeProviderTwoD.ShapeChangeListener shapeChangeListener : shapeChangeListeners)
         {
-            this.x = fromState.x;
-            this.y = fromState.y;
-            this.z = fromState.z;
-            this.preferredXScale = fromState.preferredXScale;
-            this.preferredYScale = fromState.preferredYScale;
-            this.preferredZScale = fromState.preferredZScale;
-            this.preferredRotationTwist = fromState.preferredRotationTwist;
-            this.preferredRotationTurn = fromState.preferredRotationTurn;
-            this.preferredRotationLean = fromState.preferredRotationLean;
+            shapeChangeListener.shapeChanged(this);
         }
     }
 }

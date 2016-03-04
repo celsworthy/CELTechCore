@@ -3,9 +3,11 @@ package celtech.appManager;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.SVGProjectFile;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.utils.threed.importers.svg.RenderableSVG;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,9 +39,9 @@ public class SVGProject extends Project
     @Override
     public void addModel(ProjectifiableThing projectifiableThing)
     {
-        if (projectifiableThing instanceof RenderableSVG)
+        if (projectifiableThing instanceof ShapeContainer)
         {
-            RenderableSVG modelContainer = (RenderableSVG) projectifiableThing;
+            ShapeContainer modelContainer = (ShapeContainer) projectifiableThing;
             topLevelThings.add(modelContainer);
             projectModified();
 //            fireWhenModelAdded(modelContainer);
@@ -54,9 +56,9 @@ public class SVGProject extends Project
     @Override
     public void removeModels(Set<ProjectifiableThing> projectifiableThings)
     {
-        Set<RenderableSVG> modelContainers = (Set) projectifiableThings;
+        Set<ShapeContainer> modelContainers = (Set) projectifiableThings;
 
-        for (RenderableSVG modelContainer : modelContainers)
+        for (ShapeContainer modelContainer : modelContainers)
         {
             assert modelContainer != null;
         }
@@ -138,8 +140,20 @@ public class SVGProject extends Project
 
         for (int i = 0; i < numModels; i++)
         {
-            RenderableSVG modelContainer = (RenderableSVG) modelsInput.readObject();
+            ShapeContainer modelContainer = (ShapeContainer) modelsInput.readObject();
             addModel(modelContainer);
         }
+    }
+
+    @Override
+    protected void checkNotAlreadyInGroup(Set<Groupable> modelContainers)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -4,16 +4,17 @@
 package celtech.appManager;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.Lookup;
 import celtech.TestUtils;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.roboxbase.configuration.Filament;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.BaseLookup;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
@@ -21,8 +22,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.util.Pair;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -97,11 +96,11 @@ public class ProjectTest extends JavaFXConfiguredTest
         project.addModel(mc2);
         project.addModel(mc3);
 
-        Set<ProjectifiableThing> toTranslate = new HashSet<>();
+        Set<TranslateableTwoD> toTranslate = new HashSet<>();
         toTranslate.add(mc2);
         project.translateModelsBy(toTranslate, 10, 20);
 
-        Set<ModelContainer> modelContainers = new HashSet<>();
+        Set<Groupable> modelContainers = new HashSet<>();
         modelContainers.add(mc1);
         modelContainers.add(mc2);
         ModelGroup group = project.group(modelContainers);
@@ -122,7 +121,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         project.addModel(mc3);
         project.addModel(mc4);
 
-        Set<ModelContainer> modelContainers = new HashSet<>();
+        Set<Groupable> modelContainers = new HashSet<>();
         modelContainers.add(mc1);
         modelContainers.add(mc2);
         ModelContainer group = project.group(modelContainers);

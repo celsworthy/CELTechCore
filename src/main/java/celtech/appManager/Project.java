@@ -4,10 +4,19 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
+import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ProjectifiableThing;
-import celtech.modelcontrol.Scaleable;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.ScaleableThreeD;
+import celtech.modelcontrol.ScaleableTwoD;
+import celtech.modelcontrol.TranslateableThreeD;
+import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -285,31 +294,56 @@ public abstract class Project
      * @param projectifiableThings
      * @param ratio
      */
-    public final void scaleXYZRatioSelection(Set<ProjectifiableThing> projectifiableThings, double ratio)
+    public final void scaleXYZRatioSelection(Set<ScaleableThreeD> projectifiableThings, double ratio)
     {
-        for (Scaleable scaleableThing : projectifiableThings)
+        for (ScaleableThreeD projectifiableThing : projectifiableThings)
         {
-            scaleableThing.setXScale(scaleableThing.getXScale() * ratio);
-            scaleableThing.setYScale(scaleableThing.getYScale() * ratio);
-            scaleableThing.setZScale(scaleableThing.getZScale() * ratio);
+            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio);
+            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio);
+            projectifiableThing.setZScale(projectifiableThing.getZScale() * ratio);
         }
         projectModified();
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public final void scaleXModels(Set<ProjectifiableThing> projectifiableThings, double newScale,
+    /**
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given
+     * scale. I.e. the ratio is not an absolute figure to be applied to the
+     * models but a ratio to be applied to the current scale.
+     *
+     * @param projectifiableThings
+     * @param ratio
+     */
+    public final void scaleXYRatioSelection(Set<ScaleableTwoD> projectifiableThings, double ratio)
+    {
+        for (ScaleableTwoD projectifiableThing : projectifiableThings)
+        {
+            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio);
+            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio);
+        }
+        projectModified();
+        fireWhenModelsTransformed((Set) projectifiableThings);
+    }
+
+    public final void scaleXModels(Set<ScaleableTwoD> projectifiableThings, double newScale,
             boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
             assert (projectifiableThings.size() == 1);
-            ProjectifiableThing projectifiableThing = projectifiableThings.iterator().next();
+            ScaleableTwoD projectifiableThing = projectifiableThings.iterator().next();
             double ratio = newScale / projectifiableThing.getXScale();
-            scaleXYZRatioSelection(projectifiableThings, ratio);
+            if (projectifiableThing instanceof ScaleableThreeD)
+            {
+                scaleXYZRatioSelection((Set) projectifiableThings, ratio);
+            } else
+            {
+                scaleXYRatioSelection(projectifiableThings, ratio);
+            }
         } else
         {
-            for (ProjectifiableThing projectifiableThing : projectifiableThings)
+            for (ScaleableTwoD projectifiableThing : projectifiableThings)
             {
                 {
                     projectifiableThing.setXScale(newScale);
@@ -317,22 +351,29 @@ public abstract class Project
             }
         }
         projectModified();
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public final void scaleYModels(Set<ProjectifiableThing> projectifiableThings, double newScale,
+    public final void scaleYModels(Set<ScaleableTwoD> projectifiableThings, double newScale,
             boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
             assert (projectifiableThings.size() == 1);
-            ProjectifiableThing projectifiableThing = projectifiableThings.iterator().next();
+            ScaleableTwoD projectifiableThing = projectifiableThings.iterator().next();
             double ratio = newScale / projectifiableThing.getYScale();
-            scaleXYZRatioSelection(projectifiableThings, ratio);
+
+            if (projectifiableThing instanceof ScaleableThreeD)
+            {
+                scaleXYZRatioSelection((Set) projectifiableThings, ratio);
+            } else
+            {
+                scaleXYRatioSelection(projectifiableThings, ratio);
+            }
         } else
         {
-            for (ProjectifiableThing projectifiableThing : projectifiableThings)
+            for (ScaleableTwoD projectifiableThing : projectifiableThings)
             {
                 {
                     projectifiableThing.setYScale(newScale);
@@ -340,22 +381,22 @@ public abstract class Project
             }
         }
         projectModified();
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public final void scaleZModels(Set<ProjectifiableThing> projectifiableThings, double newScale,
+    public final void scaleZModels(Set<ScaleableThreeD> projectifiableThings, double newScale,
             boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
             assert (projectifiableThings.size() == 1);
-            ProjectifiableThing projectifiableThing = projectifiableThings.iterator().next();
+            ScaleableThreeD projectifiableThing = projectifiableThings.iterator().next();
             double ratio = newScale / projectifiableThing.getZScale();
             scaleXYZRatioSelection(projectifiableThings, ratio);
         } else
         {
-            for (ProjectifiableThing projectifiableThing : projectifiableThings)
+            for (ScaleableThreeD projectifiableThing : projectifiableThings)
             {
                 {
                     projectifiableThing.setZScale(newScale);
@@ -363,104 +404,90 @@ public abstract class Project
             }
         }
         projectModified();
-        fireWhenModelsTransformed(projectifiableThings);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public void translateModelsBy(Set<ProjectifiableThing> modelContainers, double x, double z)
+    public void translateModelsBy(Set<TranslateableTwoD> modelContainers, double x, double y)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
-            {
-                model.translateBy(x, z);
-            }
+            model.translateBy(x, y);
         }
         projectModified();
 
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void translateModelsTo(Set<ProjectifiableThing> modelContainers, double x, double z)
+    public void translateModelsTo(Set<TranslateableTwoD> modelContainers, double x, double y)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
-            {
-                model.translateTo(x, z);
-            }
+            model.translateTo(x, y);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void translateModelsXTo(Set<ProjectifiableThing> modelContainers, double x)
+    public void translateModelsXTo(Set<TranslateableTwoD> modelContainers, double x)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
-            {
-                model.translateXTo(x);
-            }
+            model.translateXTo(x);
         }
         projectModified();
 
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void translateModelsZTo(Set<ProjectifiableThing> modelContainers, double z)
+    public void translateModelsZTo(Set<TranslateableThreeD> modelContainers, double z)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (TranslateableThreeD model : modelContainers)
         {
-            {
-                model.translateZTo(z);
-            }
+            model.translateZTo(z);
         }
         projectModified();
 
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void resizeModelsDepth(Set<ProjectifiableThing> modelContainers, double depth)
+    public void resizeModelsDepth(Set<ResizeableThreeD> modelContainers, double depth)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (ResizeableThreeD model : modelContainers)
         {
-            {
-                model.resizeDepth(depth);
-            }
+            model.resizeDepth(depth);
         }
         projectModified();
 
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void resizeModelsHeight(Set<ProjectifiableThing> modelContainers, double height)
+    public void resizeModelsHeight(Set<ResizeableTwoD> modelContainers, double height)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (ResizeableTwoD model : modelContainers)
         {
-            {
-                model.resizeHeight(height);
-            }
+            model.resizeHeight(height);
         }
         projectModified();
 
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void resizeModelsWidth(Set<ProjectifiableThing> modelContainers, double width)
+    public void resizeModelsWidth(Set<ResizeableTwoD> modelContainers, double width)
     {
-        for (ProjectifiableThing model : modelContainers)
+        for (ResizeableTwoD model : modelContainers)
         {
-            {
-                model.resizeWidth(width);
-            }
+            model.resizeWidth(width);
         }
         projectModified();
 
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
     public abstract Set<ProjectifiableThing> getAllModels();
 
-    public final Set<ProjectifiableThing.State> getModelStates()
+    public final Set<ItemState> getModelStates()
     {
-        Set<ProjectifiableThing.State> states = new HashSet<>();
+        Set<ItemState> states = new HashSet<>();
         for (ProjectifiableThing model : getAllModels())
         {
             states.add(model.getState());
@@ -468,10 +495,10 @@ public abstract class Project
         return states;
     }
 
-    public final void setModelStates(Set<ProjectifiableThing.State> modelStates)
+    public final void setModelStates(Set<ItemState> modelStates)
     {
         Set<ProjectifiableThing> modelContainers = new HashSet<>();
-        for (ProjectifiableThing.State modelState : modelStates)
+        for (ItemState modelState : modelStates)
         {
             for (ProjectifiableThing model : getAllModels())
             {
@@ -533,4 +560,88 @@ public abstract class Project
     {
         return lastPrintJobID;
     }
+
+    public ModelGroup group(Set<Groupable> modelContainers)
+    {
+        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
+
+        removeModels(projectifiableThings);
+        ModelGroup modelGroup = createNewGroup(modelContainers);
+        addModel(modelGroup);
+        return modelGroup;
+    }
+
+    public ModelGroup group(Set<Groupable> modelContainers, int groupModelId)
+    {
+        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
+
+        removeModels(projectifiableThings);
+        ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
+        addModel(modelGroup);
+        return modelGroup;
+    }
+
+    /**
+     * Create a new group from models that are not yet in the project.
+     *
+     * @param modelContainers
+     * @param groupModelId
+     * @return
+     */
+    public ModelGroup createNewGroup(Set<Groupable> modelContainers, int groupModelId)
+    {
+        checkNotAlreadyInGroup(modelContainers);
+        ModelGroup modelGroup = new ModelGroup((Set)modelContainers, groupModelId);
+        modelGroup.checkOffBed();
+        return modelGroup;
+    }
+
+    public void ungroup(Set<? extends ModelContainer> modelContainers)
+    {
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            if (modelContainer instanceof ModelGroup)
+            {
+                ModelGroup modelGroup = (ModelGroup) modelContainer;
+                Set<ProjectifiableThing> modelGroups = new HashSet<>();
+                modelGroups.add(modelGroup);
+                removeModels(modelGroups);
+                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
+                {
+                    addModel(childModelContainer);
+                    childModelContainer.setBedCentreOffsetTransform();
+//                    childModelContainer.applyGroupTransformToThis(modelGroup);
+                    childModelContainer.checkOffBed();
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a new group from models that are not yet in the project.
+     *
+     * @param modelContainers
+     * @return
+     */
+    public ModelGroup createNewGroup(Set<Groupable> modelContainers)
+    {
+        checkNotAlreadyInGroup(modelContainers);
+
+        ModelGroup modelGroup = new ModelGroup((Set)modelContainers);
+        modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
+        return modelGroup;
+    }
+
+    protected abstract void checkNotAlreadyInGroup(Set<Groupable> modelContainers);
+
+    /**
+     * Create a new group from models that are not yet in the project, and add
+     * model listeners to all descendent children.
+     *
+     * @param modelContainers
+     * @return
+     */
+    public abstract ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers);
+
 }

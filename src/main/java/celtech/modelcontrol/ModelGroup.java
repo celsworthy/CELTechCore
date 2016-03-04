@@ -3,7 +3,7 @@
  */
 package celtech.modelcontrol;
 
-import celtech.coreUI.visualisation.ScreenExtentsProvider;
+import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.utils.threed.ThreeDUtils;
 import java.util.Collection;
@@ -25,7 +25,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author tony
  */
-public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.ScreenExtentsListener
+public class ModelGroup extends ModelContainer implements ScreenExtentsProviderTwoD.ScreenExtentsListener
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(ModelGroup.class.getName());
@@ -283,7 +283,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
 //    }
 
     @Override
-    public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
+    public void screenExtentsChanged(ScreenExtentsProviderTwoD screenExtentsProvider)
     {
         notifyScreenExtentsChange();
         notifyShapeChange();

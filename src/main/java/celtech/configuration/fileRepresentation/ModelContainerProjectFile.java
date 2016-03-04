@@ -2,7 +2,7 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.modelcontrol.ProjectifiableThing.State;
+import celtech.modelcontrol.ItemState;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -25,7 +25,7 @@ public class ModelContainerProjectFile extends ProjectFile
     private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
 
     private Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
-    private Map<Integer, State> groupState = new HashMap<>();
+    private Map<Integer, ItemState> groupState = new HashMap<>();
 
     public String getSettingsName()
     {
@@ -137,12 +137,12 @@ public class ModelContainerProjectFile extends ProjectFile
         this.groupStructure = groupStructure;
     }
 
-    public Map<Integer, State> getGroupState()
+    public Map<Integer, ItemState> getGroupState()
     {
         return groupState;
     }
 
-    public void setGroupState(Map<Integer, State> groupState)
+    public void setGroupState(Map<Integer, ItemState> groupState)
     {
         this.groupState = groupState;
     }

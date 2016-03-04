@@ -4,9 +4,9 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.ModelContainerProject;
+import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
-import celtech.modelcontrol.ProjectifiableThing.State;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +21,7 @@ public class SplitIntoPartsCommand extends Command
     ModelContainerProject project;
     Set<ModelContainer> modelContainers;
     Set<ModelContainer> newModelContainers;
-    Map<ModelContainer, State> states;
+    Map<ModelContainer, ItemState> states;
 
     public SplitIntoPartsCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
     {
