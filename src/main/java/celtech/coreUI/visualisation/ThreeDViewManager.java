@@ -25,20 +25,9 @@ import celtech.printerControl.model.Printer;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.Math.PolarCoordinate;
 import celtech.utils.Time.TimeUtils;
-import celtech.utils.threed.MeshSeparator;
-import com.bulletphysics.collision.broadphase.AxisSweep3;
-import com.bulletphysics.collision.broadphase.BroadphaseInterface;
-import com.bulletphysics.collision.dispatch.CollisionDispatcher;
-import com.bulletphysics.collision.dispatch.CollisionWorld;
-import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
-import com.bulletphysics.collision.shapes.CollisionShape;
-import com.bulletphysics.collision.shapes.ConvexHullShape;
-import eu.mihosoft.vrl.v3d.Bounds;
 import eu.mihosoft.vrl.v3d.CSG;
-import eu.mihosoft.vrl.v3d.Cube;
 import eu.mihosoft.vrl.v3d.MeshContainer;
 import eu.mihosoft.vrl.v3d.PlaneBisect;
-import eu.mihosoft.vrl.v3d.Vector3d;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -84,9 +73,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.Transform;
 import javafx.util.Duration;
-import javax.vecmath.Vector3f;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.fxyz.utils.MeshUtils;
@@ -1046,7 +1033,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         setupFilamentListeners(project);
         updateModelColours();
         
-        if (Lookup.getSelectedProjectProperty().get() != null)
+        if (Lookup.getSelectedProjectProperty().get() != null
+                && Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty() != null)
         {
             Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty().addListener(effectiveFilamentListener);
         }
