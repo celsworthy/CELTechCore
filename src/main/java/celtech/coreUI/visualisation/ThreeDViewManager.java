@@ -1039,7 +1039,8 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         setupFilamentListeners(project);
         updateModelColours();
 
-        if (Lookup.getSelectedProjectProperty().get() != null)
+        if (Lookup.getSelectedProjectProperty().get() != null
+                && Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty() != null)
         {
             Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty().addListener(effectiveFilamentListener);
         }
