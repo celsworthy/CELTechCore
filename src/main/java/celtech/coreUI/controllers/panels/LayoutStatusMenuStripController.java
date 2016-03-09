@@ -30,6 +30,7 @@ import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.Groupable;
 import celtech.printerControl.model.CanPrintConditionalTextBindings;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.utils.models.PrintableMeshes;
@@ -226,7 +227,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             Set<ProjectifiableThing> modelGroups = projectToWorkOn.getTopLevelThings().stream().filter(
                     mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
             Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-            Set<ModelContainer> thingsToGroup = (Set) modelContainers;
+            Set<Groupable> thingsToGroup = (Set) modelContainers;
             undoableSelectedProject.group(thingsToGroup);
             Set<ModelContainer> changedModelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
                     mc -> mc instanceof ModelGroup).collect(Collectors.toSet());

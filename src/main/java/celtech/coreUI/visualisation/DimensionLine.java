@@ -3,8 +3,8 @@ package celtech.coreUI.visualisation;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
 import static celtech.roboxbase.utils.Math.MathUtils.RAD_TO_DEG;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +24,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsListener
+class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExtentsListener
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(DimensionLine.class.getName());
@@ -43,7 +43,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     private final double arrowOffsetFromCorner = 30;
 
     private LineDirection direction;
-    private Set<ProjectifiableThing> modelContainerSet;
+    private ResizeableTwoD container;
     private UndoableProject undoableproject;
 
     private double normaliseArrowAngle(final double angle)
@@ -89,13 +89,22 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             switch (direction)
             {
                 case FORWARD_BACK:
-                    undoableproject.resizeModelsDepth(modelContainerSet, newValue.floatValue());
+                    if (ResizeableThreeD.class.isInstance(container))
+                    {
+                        Set<ResizeableThreeD> containerSet = new HashSet<>();
+                        containerSet.add((ResizeableThreeD) container);
+                        undoableproject.resizeModelsDepth(containerSet, newValue.floatValue());
+                    }
                     break;
                 case HORIZONTAL:
-                    undoableproject.resizeModelsWidth(modelContainerSet, newValue.floatValue());
+                    Set<ResizeableTwoD> hcontainerSet = new HashSet<>();
+                    hcontainerSet.add(container);
+                    undoableproject.resizeModelsWidth(hcontainerSet, newValue.floatValue());
                     break;
                 case VERTICAL:
-                    undoableproject.resizeModelsHeight(modelContainerSet, newValue.floatValue());
+                    Set<ResizeableTwoD> vcontainerSet = new HashSet<>();
+                    vcontainerSet.add(container);
+                    undoableproject.resizeModelsHeight(vcontainerSet, newValue.floatValue());
                     break;
             }
             steno.info("Changed to " + newValue);
@@ -108,14 +117,16 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         HORIZONTAL, VERTICAL, FORWARD_BACK
     }
 
-    public void initialise(Project project, ModelContainer modelContainer, LineDirection direction)
+    public void initialise(Project project, ScreenExtentsProviderTwoD screenExtentsProvider, LineDirection direction)
     {
         undoableproject = new UndoableProject(project);
-        modelContainerSet = new HashSet<>();
-        modelContainerSet.add(modelContainer);
-        
+        if (ResizeableTwoD.class.isInstance(screenExtentsProvider))
+        {
+            container = (ResizeableTwoD) screenExtentsProvider;
+        }
+
         this.direction = direction;
-        
+
         dimensionLabel.getTransforms().addAll(textTranslate, textRotate);
 
         dimensionLabel.getStyleClass().add("dimension-label");
@@ -146,26 +157,21 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         dimensionLine.setMouseTransparent(true);
         setPickOnBounds(false);
 
-        updateArrowAndTextPosition(modelContainer.getScreenExtents(),
-                modelContainer.getTransformedHeight(),
-                modelContainer.getTransformedWidth(),
-                modelContainer.getTransformedDepth());
+        updateArrowAndTextPosition(screenExtentsProvider);
     }
 
     @Override
-    public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
+    public void screenExtentsChanged(ScreenExtentsProviderTwoD screenExtentsProvider)
     {
-        updateArrowAndTextPosition(screenExtentsProvider.getScreenExtents(),
-                screenExtentsProvider.getTransformedHeight(),
-                screenExtentsProvider.getTransformedWidth(),
-                screenExtentsProvider.getTransformedDepth());
+        updateArrowAndTextPosition(screenExtentsProvider);
     }
 
-    private void updateArrowAndTextPosition(final ScreenExtents extents,
-            final double transformedHeight,
-            final double transformedWidth,
-            final double transformedDepth)
+    private void updateArrowAndTextPosition(ScreenExtentsProviderTwoD extentsProvider)
     {
+        ScreenExtents extents = extentsProvider.getScreenExtents();
+        double transformedWidth = extentsProvider.getTransformedWidth();
+        double transformedHeight = extentsProvider.getTransformedHeight();
+
         if (direction == LineDirection.VERTICAL)
         {
             dimensionLabel.setText(String.
@@ -302,7 +308,17 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 arrowRotate.setAngle(angle);
             }
-        } else if (direction == LineDirection.FORWARD_BACK)
+        }
+    }
+
+    private void updateArrowAndTextPosition(ScreenExtentsProviderThreeD extentsProvider)
+    {
+        updateArrowAndTextPosition((ScreenExtentsProviderTwoD) extentsProvider);
+
+        ScreenExtents extents = extentsProvider.getScreenExtents();
+        double transformedDepth = extentsProvider.getTransformedDepth();
+
+        if (direction == LineDirection.FORWARD_BACK)
         {
             dimensionLabel.setText(String.
                     format("%.2f", transformedDepth));
@@ -370,7 +386,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             }
         }
     }
-    
+
     public RestrictedNumberField getDimensionLabel()
     {
         return dimensionLabel;

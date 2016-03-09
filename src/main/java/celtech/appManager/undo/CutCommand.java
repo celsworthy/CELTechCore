@@ -5,6 +5,8 @@ package celtech.appManager.undo;
 
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -42,15 +44,15 @@ public class CutCommand extends Command
     {
 
         ModelGroup originalGroup;
-        Set<ModelContainer> modelsForTopGroup;
-        Set<ModelContainer> modelsForBottomGroup;
+        Set<Groupable> modelsForTopGroup;
+        Set<Groupable> modelsForBottomGroup;
         Set<ModelContainer> modelsToRemoveFromProject;
         Set<ModelContainer> modelsToAddToProject;
         ModelGroup topGroup;
         ModelGroup bottomGroup;
 
-        public GroupingOperation(ModelGroup originalGroup, Set<ModelContainer> modelsForTopGroup,
-                Set<ModelContainer> modelsForBottomGroup, Set<ModelContainer> modelsToRemoveFromProject,
+        public GroupingOperation(ModelGroup originalGroup, Set<Groupable> modelsForTopGroup,
+                Set<Groupable> modelsForBottomGroup, Set<ModelContainer> modelsToRemoveFromProject,
                 Set<ModelContainer> modelsToAddToProject)
         {
             this.originalGroup = originalGroup;
@@ -290,7 +292,7 @@ public class CutCommand extends Command
         }
     }
 
-    Map<Integer, ModelContainer.State> groupState;
+    Map<Integer, ItemState> groupState;
     Map<Integer, Set<Integer>> groupStructure;
 
     private void cutGroup(ModelGroup modelGroup, float cutHeightValue)
@@ -299,8 +301,8 @@ public class CutCommand extends Command
         Set<ModelContainer> modelsToRemoveFromProject = new HashSet<>();
         Set<ModelContainer> modelsToAddToProject = new HashSet<>();
 
-        Set<ModelContainer> topModelContainers = new HashSet<>();
-        Set<ModelContainer> bottomModelContainers = new HashSet<>();
+        Set<Groupable> topModelContainers = new HashSet<>();
+        Set<Groupable> bottomModelContainers = new HashSet<>();
 
         Set<ModelContainer> allMeshViews = modelGroup.getModelsHoldingMeshViews();
 

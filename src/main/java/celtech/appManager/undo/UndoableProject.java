@@ -6,9 +6,18 @@ package celtech.appManager.undo;
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.RotatableThreeD;
+import celtech.modelcontrol.RotatableTwoD;
+import celtech.modelcontrol.ScaleableThreeD;
+import celtech.modelcontrol.ScaleableTwoD;
+import celtech.modelcontrol.TranslateableThreeD;
+import celtech.modelcontrol.TranslateableTwoD;
 import java.util.Set;
 import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
@@ -56,7 +65,7 @@ public class UndoableProject
         commandStack = Lookup.getProjectGUIState(project).getCommandStack();
     }
 
-    public void translateModelsXTo(Set<ProjectifiableThing> modelContainers, double x)
+    public void translateModelsXTo(Set<TranslateableTwoD> modelContainers, double x)
     {
         doTransformCommand(() ->
         {
@@ -64,7 +73,7 @@ public class UndoableProject
         });
     }
 
-    public void translateModelsZTo(Set<ProjectifiableThing> modelContainers, double z)
+    public void translateModelsZTo(Set<TranslateableThreeD> modelContainers, double z)
     {
         doTransformCommand(() ->
         {
@@ -72,7 +81,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleXModels(Set<ProjectifiableThing> modelContainers, double newScale,
+    public void scaleXModels(Set<ScaleableTwoD> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
@@ -81,7 +90,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleYModels(Set<ProjectifiableThing> modelContainers, double newScale,
+    public void scaleYModels(Set<ScaleableTwoD> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
@@ -90,7 +99,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleZModels(Set<ProjectifiableThing> modelContainers, double newScale,
+    public void scaleZModels(Set<ScaleableThreeD> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
@@ -99,7 +108,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleXYZRatioSelection(Set<ProjectifiableThing> modelContainers, double ratio)
+    public void scaleXYZRatioSelection(Set<ScaleableThreeD> modelContainers, double ratio)
     {
         doTransformCommand(() ->
         {
@@ -107,7 +116,15 @@ public class UndoableProject
         });
     }
 
-    public void resizeModelsDepth(Set<ProjectifiableThing> modelContainers, double depth)
+    public void scaleXYRatioSelection(Set<ScaleableTwoD> modelContainers, double ratio)
+    {
+        doTransformCommand(() ->
+        {
+            project.scaleXYRatioSelection(modelContainers, ratio);
+        });
+    }
+
+    public void resizeModelsDepth(Set<ResizeableThreeD> modelContainers, double depth)
     {
         doTransformCommand(() ->
         {
@@ -115,7 +132,7 @@ public class UndoableProject
         });
     }
 
-    public void resizeModelsHeight(Set<ProjectifiableThing> modelContainers, double height)
+    public void resizeModelsHeight(Set<ResizeableTwoD> modelContainers, double height)
     {
         doTransformCommand(() ->
         {
@@ -123,7 +140,7 @@ public class UndoableProject
         });
     }
 
-    public void resizeModelsWidth(Set<ProjectifiableThing> modelContainers, double width)
+    public void resizeModelsWidth(Set<ResizeableTwoD> modelContainers, double width)
     {
         doTransformCommand(() ->
         {
@@ -131,7 +148,7 @@ public class UndoableProject
         });
     }
 
-    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateLeanModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
         if (project instanceof ModelContainerProject)
         {
@@ -142,7 +159,7 @@ public class UndoableProject
         }
     }
 
-    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateTwistModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
         if (project instanceof ModelContainerProject)
         {
@@ -153,7 +170,7 @@ public class UndoableProject
         }
     }
 
-    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
     {
         if (project instanceof ModelContainerProject)
         {
@@ -164,21 +181,21 @@ public class UndoableProject
         }
     }
 
-    public void translateModelsBy(Set<ProjectifiableThing> modelContainers, double x, double z,
+    public void translateModelsBy(Set<TranslateableTwoD> modelContainers, double x, double y,
             boolean canMerge)
     {
         doTransformCommand(() ->
         {
-            project.translateModelsBy(modelContainers, x, z);
+            project.translateModelsBy(modelContainers, x, y);
         }, canMerge);
     }
 
-    public void translateModelsTo(Set<ProjectifiableThing> modelContainers, double x, double z,
+    public void translateModelsTo(Set<TranslateableTwoD> modelContainers, double x, double y,
             boolean canMerge)
     {
         doTransformCommand(() ->
         {
-            project.translateModelsTo(modelContainers, x, z);
+            project.translateModelsTo(modelContainers, x, y);
         }, canMerge);
     }
 
@@ -269,7 +286,7 @@ public class UndoableProject
         }
     }
 
-    public void group(Set<ModelContainer> modelContainers)
+    public void group(Set<Groupable> modelContainers)
     {
         if (project instanceof ModelContainerProject)
         {

@@ -21,6 +21,7 @@ import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.MathUtils;
@@ -1263,7 +1264,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
     private void translateSelection(double x, double z)
     {
-        undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(), x, z,
+        undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), x, z,
                 !justEnteredDragMode);
     }
 

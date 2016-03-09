@@ -4,7 +4,7 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ItemState;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,8 +24,8 @@ class TransformCommand extends Command
         TransformCommand.class.getName());
 
     private final UndoableProject.NoArgsVoidFunc func;
-    private Set<ModelContainer.State> originalStates;
-    private Set<ModelContainer.State> newStates;
+    private Set<ItemState> originalStates;
+    private Set<ItemState> newStates;
     private final boolean canMerge;
     private final Project project;
 
@@ -96,20 +96,20 @@ class TransformCommand extends Command
     /**
      * Update states to include the changes in toStates.
      */
-    private void mergeStates(Set<ModelContainer.State> states, Set<ModelContainer.State> toStates)
+    private void mergeStates(Set<ItemState> states, Set<ItemState> toStates)
     {
-        Map<Integer, ModelContainer.State> toStatesById = makeStatesById(toStates);
-        for (ModelContainer.State state : states)
+        Map<Integer, ItemState> toStatesById = makeStatesById(toStates);
+        for (ItemState state : states)
         {
             state.assignFrom(toStatesById.get(state.modelId));
         }
 
     }
 
-    private Map<Integer, ModelContainer.State> makeStatesById(Set<ModelContainer.State> states)
+    private Map<Integer, ItemState> makeStatesById(Set<ItemState> states)
     {
-        Map<Integer, ModelContainer.State> statesById = new HashMap<>();
-        for (ModelContainer.State state : states)
+        Map<Integer, ItemState> statesById = new HashMap<>();
+        for (ItemState state : states)
         {
             statesById.put(state.modelId, state);
         }

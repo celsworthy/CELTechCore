@@ -4,10 +4,12 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.ModelContainerProject;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
 import celtech.roboxbase.configuration.PrintBed;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.TranslateableTwoD;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,9 +28,9 @@ public class UngroupCommand extends Command
             UngroupCommand.class.getName());
 
     ModelContainerProject project;
-    Map<Integer, Set<ModelContainer>> groupIds;
-    private Set<ModelContainer.State> originalStates;
-    private Set<ModelContainer.State> newStates;
+    Map<Integer, Set<Groupable>> groupIds;
+    private Set<ItemState> originalStates;
+    private Set<ItemState> newStates;
     private Set<ModelContainer> containersToRecentre = new HashSet<>();
 
     public UngroupCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
@@ -40,7 +42,7 @@ public class UngroupCommand extends Command
             if (modelContainer instanceof ModelGroup)
             {
                 containersToRecentre.addAll(modelContainer.getChildModelContainers());
-                groupIds.put(modelContainer.getModelId(), ((ModelGroup) modelContainer).getChildModelContainers());
+                groupIds.put(modelContainer.getModelId(), (Set)((ModelGroup) modelContainer).getChildModelContainers());
             }
         }
     }
@@ -74,7 +76,7 @@ public class UngroupCommand extends Command
             {
                 steno.exception("Could not ungroup", ex);
             }
-            Set<ProjectifiableThing> recentreThese = (Set)containersToRecentre;
+            Set<TranslateableTwoD> recentreThese = (Set)containersToRecentre;
             project.translateModelsTo(recentreThese, PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
             newStates = project.getModelStates();
         } catch (Exception ex)
