@@ -15,6 +15,7 @@ import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.utils.Math.MathUtils;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -959,7 +960,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         try
         {
-            double newDepth = depthTextField.getAsDouble();
+            double newDepth = limitDimension(depthTextField.getAsDouble());
             if (newDepth == lastDepth)
             {
                 return;
@@ -970,7 +971,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             if (inFixedAR())
             {
                 ModelContainer modelContainer = getSingleSelection();
-                double ratio = depthTextField.getAsDouble() / modelContainer.getScaledDepth();
+                double ratio = newDepth / modelContainer.getScaledDepth();
 
                 undoableProject.scaleXYZRatioSelection(
                         projectSelection.getSelectedModelsSnapshot(), ratio);
@@ -978,7 +979,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             } else
             {
                 undoableProject.resizeModelsDepth(projectSelection.getSelectedModelsSnapshot(),
-                        depthTextField.getAsDouble());
+                        newDepth);
             }
         } catch (ParseException ex)
         {
@@ -990,7 +991,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         try
         {
-            double newHeight = heightTextField.getAsDouble();
+            double newHeight = limitDimension(heightTextField.getAsDouble());
             if (newHeight == lastHeight)
             {
                 return;
@@ -1001,13 +1002,13 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             if (inFixedAR())
             {
                 ModelContainer modelContainer = getSingleSelection();
-                double ratio = heightTextField.getAsDouble() / modelContainer.getScaledHeight();
+                double ratio = newHeight / modelContainer.getScaledHeight();
                 undoableProject.scaleXYZRatioSelection(
                         projectSelection.getSelectedModelsSnapshot(), ratio);
             } else
             {
                 undoableProject.resizeModelsHeight(projectSelection.getSelectedModelsSnapshot(),
-                        heightTextField.getAsDouble());
+                        newHeight);
             }
         } catch (ParseException ex)
         {
@@ -1015,11 +1016,54 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
     }
 
+    private final double MINIMUM_DIMENSION = 0.1;
+
+    private double limitDimension(final double inboundDimension)
+    {
+        return Math.max(MINIMUM_DIMENSION, inboundDimension);
+    }
+
+    private enum ApplicableDimension
+    {
+
+        WIDTH,
+        HEIGHT,
+        DEPTH
+    }
+
+    private double limitScaleFactor(final double scaleFactor, final ApplicableDimension applicableDimension)
+    {
+        double minDimension = 9999999;
+        for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
+        {
+            if (applicableDimension == ApplicableDimension.WIDTH || inFixedAR())
+            {
+                minDimension = Math.min(modelContainer.getScaledWidth(), minDimension);
+            }
+            if (applicableDimension == ApplicableDimension.HEIGHT || inFixedAR())
+            {
+                minDimension = Math.min(modelContainer.getScaledHeight(), minDimension);
+            }
+            if (applicableDimension == ApplicableDimension.DEPTH || inFixedAR())
+            {
+                minDimension = Math.min(modelContainer.getScaledDepth(), minDimension);
+            }
+        }
+
+        if (minDimension * scaleFactor < MINIMUM_DIMENSION)
+        {
+            return MINIMUM_DIMENSION / minDimension;
+        } else
+        {
+            return scaleFactor;
+        }
+    }
+
     private void updateWidth()
     {
         try
         {
-            double newWidth = widthTextField.getAsDouble();
+            double newWidth = limitDimension(widthTextField.getAsDouble());
             if (newWidth == lastWidth)
             {
                 return;
@@ -1030,13 +1074,13 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             if (inFixedAR())
             {
                 ModelContainer modelContainer = getSingleSelection();
-                double ratio = widthTextField.getAsDouble() / modelContainer.getScaledWidth();
+                double ratio = newWidth / modelContainer.getScaledWidth();
                 undoableProject.scaleXYZRatioSelection(
                         projectSelection.getSelectedModelsSnapshot(), ratio);
             } else
             {
                 undoableProject.resizeModelsWidth(projectSelection.getSelectedModelsSnapshot(),
-                        widthTextField.getAsDouble());
+                        newWidth);
             }
         } catch (ParseException ex)
         {
@@ -1056,7 +1100,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         try
         {
             double newScaleDepth = scaleTextDepthField.getAsDouble();
-            if (newScaleDepth == lastScaleDepth
+            if (MathUtils.compareDouble(newScaleDepth, lastScaleDepth, 0.001) == MathUtils.EQUAL
                     || newScaleDepth < 0)
             {
                 return;
@@ -1064,7 +1108,14 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             {
                 lastScaleDepth = newScaleDepth;
             }
-            double scaleFactor = scaleTextDepthField.getAsDouble() / 100.0;
+
+            double scaleFactor = limitScaleFactor(newScaleDepth / 100.0, ApplicableDimension.DEPTH);
+            if (MathUtils.compareDouble(scaleFactor, newScaleDepth / 100.0, 0.00001) != MathUtils.EQUAL)
+            {
+                newScaleDepth = scaleFactor * 100.0;
+                lastScaleDepth = newScaleDepth;
+            }
+
             if (inMultiSelectWithFixedAR())
             {
                 double ratio = scaleFactor / lastScaleRatio;
@@ -1089,7 +1140,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         try
         {
             double newScaleHeight = scaleTextHeightField.getAsDouble();
-            if (newScaleHeight == lastScaleHeight
+
+            if (MathUtils.compareDouble(newScaleHeight, lastScaleHeight, 0.001) == MathUtils.EQUAL
                     || newScaleHeight < 0)
             {
                 return;
@@ -1097,7 +1149,14 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             {
                 lastScaleHeight = newScaleHeight;
             }
-            double scaleFactor = scaleTextHeightField.getAsDouble() / 100.0;
+
+            double scaleFactor = limitScaleFactor(newScaleHeight / 100.0, ApplicableDimension.HEIGHT);
+            if (MathUtils.compareDouble(scaleFactor, newScaleHeight / 100.0, 0.00001) != MathUtils.EQUAL)
+            {
+                newScaleHeight = scaleFactor * 100.0;
+                lastScaleDepth = newScaleHeight;
+            }
+
             if (inMultiSelectWithFixedAR())
             {
                 double ratio = scaleFactor / lastScaleRatio;
@@ -1122,7 +1181,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         try
         {
             double newScaleWidth = scaleTextWidthField.getAsDouble();
-            if (newScaleWidth == lastScaleWidth
+
+            if (MathUtils.compareDouble(newScaleWidth, lastScaleWidth, 0.001) == MathUtils.EQUAL
                     || newScaleWidth < 0)
             {
                 return;
@@ -1130,7 +1190,14 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             {
                 lastScaleWidth = newScaleWidth;
             }
-            double scaleFactor = scaleTextWidthField.getAsDouble() / 100.0;
+
+            double scaleFactor = limitScaleFactor(newScaleWidth / 100.0, ApplicableDimension.WIDTH);
+            if (MathUtils.compareDouble(scaleFactor, newScaleWidth / 100.0, 0.00001) != MathUtils.EQUAL)
+            {
+                newScaleWidth = scaleFactor * 100.0;
+                lastScaleDepth = newScaleWidth;
+            }
+
             if (inMultiSelectWithFixedAR())
             {
                 double ratio = scaleFactor / lastScaleRatio;
