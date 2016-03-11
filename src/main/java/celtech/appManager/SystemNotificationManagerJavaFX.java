@@ -3,8 +3,8 @@ package celtech.appManager;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.Lookup;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.SystemErrorHandlerOptions;
-import celtech.roboxbase.configuration.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
@@ -20,7 +20,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
-import java.util.ArrayList;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -29,8 +29,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
-import javafx.scene.control.ChoiceDialog;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -54,7 +59,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      */
     protected boolean sdDialogOnDisplay = false;
 
-    private boolean programInvalidHeadDialogOnDisplay = false;
+    private Stage programInvalidHeadStage = null;
 
     private boolean headNotRecognisedDialogOnDisplay = false;
 
@@ -782,30 +787,35 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> responder)
     {
-        if (!programInvalidHeadDialogOnDisplay)
+        if (programInvalidHeadStage == null)
         {
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                programInvalidHeadDialogOnDisplay = true;
-                ArrayList<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
-
-                ChoiceDialog headRewriteDialog = new ChoiceDialog(headFiles.get(0), headFiles);
-
-                headRewriteDialog.setTitle(Lookup.i18n("dialogs.headRepairTitle"));
-                headRewriteDialog.setHeaderText(Lookup.i18n("dialogs.headRepairHeader"));
-                headRewriteDialog.setContentText(Lookup.i18n("dialogs.headRepairInstruction"));
-
-                Optional<HeadFile> chosenFileOption = headRewriteDialog.showAndWait();
-                HeadFile chosenFile = null;
-                if (chosenFileOption.isPresent())
+                try
                 {
-                    chosenFile = chosenFileOption.get();
+                    URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPopupResourcePath + "resetHeadDialog.fxml");
+                    FXMLLoader resetDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+                    VBox resetDialog = (VBox) resetDialogLoader.load();
+                    programInvalidHeadStage = new Stage(StageStyle.UNDECORATED);
+                    programInvalidHeadStage.setAlwaysOnTop(true);
+                    programInvalidHeadStage.initModality(Modality.APPLICATION_MODAL);
+                    programInvalidHeadStage.setScene(new Scene(resetDialog));
+                    programInvalidHeadStage.show();
+                } catch (Exception ex)
+                {
+                    steno.exception("Couldn't load head reset dialog", ex);
                 }
-
-                BaseLookup.getTaskExecutor().respondOnGUIThread(responder, chosenFile != null,
-                        "Head profile chosen", chosenFile);
-                programInvalidHeadDialogOnDisplay = false;
             });
+        }
+    }
+
+    @Override
+    public void hideProgramInvalidHeadDialog()
+    {
+        if (programInvalidHeadStage != null)
+        {
+            programInvalidHeadStage.close();
+            programInvalidHeadStage = null;
         }
     }
 
