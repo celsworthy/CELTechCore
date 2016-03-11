@@ -85,6 +85,7 @@ public interface SystemNotificationManager
     public boolean showJobsTransferringShutdownDialog();
 
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse);
+    public void hideProgramInvalidHeadDialog();
 
     public void showHeadNotRecognisedDialog(String printerName);
 

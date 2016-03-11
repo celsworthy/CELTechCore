@@ -106,16 +106,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     void whenResetToDefaultsPressed()
     {
-        try
-        {
-            selectedPrinter.formatHeadEEPROM();
-            Head singleMaterialHead = new Head(HeadContainer.getHeadByID(HeadContainer.defaultHeadID));
-            selectedPrinter.writeHeadEEPROM(singleMaterialHead);
-            Lookup.getSystemNotificationHandler().showCalibrationDialogue();
-        } catch (PrinterException | RoboxCommsException ex)
-        {
-            steno.error("Unable to format and write head");
-        }
+        Lookup.getSystemNotificationHandler().showProgramInvalidHeadDialog(null);
     }
 
     /**
