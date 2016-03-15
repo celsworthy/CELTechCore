@@ -14,6 +14,7 @@ import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
@@ -25,6 +26,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -92,7 +94,17 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private Printer currentPrinter;
     private String currentHeadType;
 
-    private TimeCostThreadManager timeCostThreadManager = new TimeCostThreadManager();
+    private final TimeCostThreadManager timeCostThreadManager = new TimeCostThreadManager();
+
+    private MapChangeListener<Integer, Filament> effectiveFilamentListener = new MapChangeListener<Integer, Filament>()
+    {
+
+        @Override
+        public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
+        {
+            updateFields(currentProject);
+        }
+    };
 
     /**
      * Initialises the controller class.
@@ -119,18 +131,27 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             Lookup.getSelectedPrinterProperty().addListener(
                     (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                     {
+                        if (currentPrinter != null)
+                        {
+                            currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+                        }
                         currentPrinter = newValue;
+                        if (newValue != null)
+                        {
+                            currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                        }
                         updateHeadType(newValue);
                     }
             );
 
+            if (Lookup.getSelectedPrinterProperty().get() != null)
+            {
+                currentPrinter = Lookup.getSelectedPrinterProperty().get();
+                currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+            }
+
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
 
-//            Lookup.getSelectedProjectProperty().addListener(
-//                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-//                {
-//                    whenProjectChanged(newValue);
-//                });
             ApplicationStatus.getInstance()
                     .modeProperty().addListener(
                             (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
@@ -153,10 +174,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                             }
                     );
 
-//            if (Lookup.getSelectedProjectProperty().get() != null)
-//            {
-//                updateFields(Lookup.getSelectedProjectProperty().get());
-//            }
             setupQualityRadioButtons();
 
         } catch (Exception ex)
