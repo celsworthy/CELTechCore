@@ -106,7 +106,7 @@
                     </children>
                 </VBox>
                 <VBox fx:id="materialContainer" alignment="CENTER" prefWidth="260.0" minHeight="-Infinity" styleClass="statusPanelChild"/>
-                <VBox VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER" maxHeight="1000" minHeight="-1">
+                <VBox fx:id="uberContainer" VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER" maxHeight="1000" minHeight="-1">
                     <children>
                         <VBox fx:id="graphContainer" VBox.vgrow="NEVER" prefHeight="-1" maxHeight="-1" minHeight="0">
                             <children>
@@ -115,7 +115,7 @@
                                         <NumberAxis fx:id="timeAxis" animated="false" autoRanging="false" lowerBound="0.0" minorTickCount="2" side="BOTTOM" tickLabelsVisible="false" tickUnit="30.0" upperBound="210.0" />
                                     </xAxis>
                                     <yAxis>
-                                        <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%printerStatus.temperatureGraphTempAxisTitle" minorTickCount="2" side="RIGHT" tickUnit="50.0" upperBound="300.0">
+                                        <NumberAxis id="temperatureGraphTempAxis" fx:id="temperatureAxis" animated="false" autoRanging="false" label="%misc.degreesC" minorTickCount="2" side="RIGHT" tickUnit="50.0" upperBound="300.0">
                                             <tickLabelFont>
                                                 <Font size="9.0" />
                                             </tickLabelFont>

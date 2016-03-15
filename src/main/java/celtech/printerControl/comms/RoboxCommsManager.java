@@ -133,12 +133,11 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
             {
                 boolean noNeedToAddPrinter = false;
 
-//                steno.info("Found printer on " + detectedPrinter);
+                steno.debug("Found printer on " + detectedPrinter);
                 for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
                 {
                     if (detectedPrinter.equals(pendingPrinterToCheck))
                     {
-//                        steno.info("Found already pending printer " + detectedPrinter);
                         noNeedToAddPrinter = true;
                         break;
                     }
@@ -150,7 +149,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
                     {
                         if (detectedPrinter.equals(activePrinterToCheck))
                         {
-//                            steno.info("Found already active printer " + detectedPrinter);
                             noNeedToAddPrinter = true;
                             break;
                         }

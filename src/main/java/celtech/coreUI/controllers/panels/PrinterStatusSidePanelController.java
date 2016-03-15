@@ -2,7 +2,6 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.printerControl.model.Extruder;
@@ -145,6 +144,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @FXML
     private Label graphAlternativeAmbientLegend;
 
+    @FXML
+    private VBox uberContainer;
+
     private Printer previousSelectedPrinter = null;
     private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
 
@@ -181,12 +183,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        updateForScalingModeChange(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
-        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener((ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode newValue) ->
-        {
-            updateForScalingModeChange(newValue);
-        });
-
         chartManager = new ChartManager(temperatureChart);
 
         selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
@@ -208,6 +204,28 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         headPanel.setVisible(false);
 
         Lookup.getPrinterListChangesNotifier().addListener(this);
+
+        uberContainer.heightProperty().addListener(new ChangeListener<Number>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                if (t1.intValue() < 140)
+                {
+                    graphContainer.setVisible(false);
+                    graphContainer.setMaxHeight(0);
+                    graphAlternativeGrid.setVisible(true);
+                    graphAlternativeGrid.setMaxHeight(-1);
+                } else
+                {
+                    graphContainer.setVisible(true);
+                    graphContainer.setMaxHeight(-1);
+                    graphAlternativeGrid.setVisible(false);
+                    graphAlternativeGrid.setMaxHeight(0);
+                }
+            }
+        });
     }
 
     private void initialiseTemperatureChart()
@@ -501,26 +519,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         if (printer == selectedPrinter.get())
         {
             refreshMaterialContainer(printer);
-        }
-    }
-
-    private void updateForScalingModeChange(DisplayManager.DisplayScalingMode displayScalingMode)
-    {
-        switch (displayScalingMode)
-        {
-            case SHORT:
-            case VERY_SHORT:
-                graphContainer.setVisible(false);
-                graphContainer.setMaxHeight(0);
-                graphAlternativeGrid.setVisible(true);
-                graphAlternativeGrid.setMaxHeight(-1);
-                break;
-            default:
-                graphContainer.setVisible(true);
-                graphContainer.setMaxHeight(-1);
-                graphAlternativeGrid.setVisible(false);
-                graphAlternativeGrid.setMaxHeight(0);
-                break;
         }
     }
 }

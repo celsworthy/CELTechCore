@@ -33,16 +33,14 @@ import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -70,19 +68,22 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private ComboBox<SupportType> supportComboBox;
 
     @FXML
-    private Slider raftSlider;
+    private RadioButton supportButton;
 
     @FXML
-    private VBox customProfileVBox;
+    private RadioButton raftButton;
+
+    @FXML
+    private HBox customProfileBox;
 
     @FXML
     private Slider fillDensitySlider;
 
     @FXML
-    private Label createProfileLabel;
+    private Label fillDensityPercent;
 
     @FXML
-    private CheckBox cbSupport;
+    private Label createProfileLabel;
 
     private Printer currentPrinter;
     private Project currentProject;
@@ -164,6 +165,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             ex.printStackTrace();
         }
+
+        fillDensityPercent.textProperty().bind(fillDensitySlider.valueProperty().asString("%.0f"));
     }
 
     PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->
@@ -261,7 +264,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     }
                 });
 
-        cbSupport.selectedProperty().addListener(
+        supportButton.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
                 {
                     if (populatingForProject)
@@ -274,48 +277,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     printerSettings.setPrintSupportOverride(selected);
                 });
 
-        raftSlider.setLabelFormatter(new StringConverter<Double>()
-        {
-            @Override
-            public String toString(Double n)
-            {
-                String returnedText = "";
-
-                if (n <= 0)
+        raftButton.selectedProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
                 {
-                    returnedText = Lookup.i18n("genericFirstLetterCapitalised.Off");
-                } else
-                {
-                    returnedText = Lookup.i18n("genericFirstLetterCapitalised.On");
-                }
-                return returnedText;
-            }
-
-            @Override
-            public Double fromString(String s)
-            {
-                double returnVal = 0;
-
-                if (s.equals(Lookup.i18n("genericFirstLetterCapitalised.Off")))
-                {
-                    returnVal = 0;
-                } else if (s.equals(Lookup.i18n("genericFirstLetterCapitalised.On")))
-                {
-                    returnVal = 1;
-                }
-                return returnVal;
-            }
-        }
-        );
-
-        raftSlider.valueProperty().addListener(
-                (ObservableValue<? extends Number> ov, Number lastRaftValue, Number newRaftValue) ->
-                {
-                    if (!raftSlider.isValueChanging())
+                    if (populatingForProject)
                     {
-                        boolean raftSelected = (newRaftValue.doubleValue() >= 1.0);
-                        printerSettings.setRaftOverride(raftSelected);
+                        return;
                     }
+
+                    printerSettings.setRaftOverride(selected);
                 });
 
         fillDensitySlider.valueProperty()
@@ -482,7 +452,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
-        raftSlider.setValue(savePrintRaft ? 1 : 0);
+
+        raftButton.setSelected(savePrintRaft);
 
         supportComboBox.setValue(saveSupports);
 
@@ -496,7 +467,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
         });
 
-        cbSupport.setSelected(autoSupport);
+        supportButton.setSelected(autoSupport);
 
         if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
         {
@@ -524,7 +495,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void enableCustomChooser(boolean enable)
     {
-        customProfileVBox.setDisable(!enable);
+        customProfileBox.setDisable(!enable);
     }
 
     private void showPleaseCreateProfile(boolean show)

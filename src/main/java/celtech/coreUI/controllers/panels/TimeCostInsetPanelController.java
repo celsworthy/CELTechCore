@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -22,6 +23,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -91,6 +93,16 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     private TimeCostThreadManager timeCostThreadManager = new TimeCostThreadManager();
 
+    private MapChangeListener<Integer, Filament> effectiveFilamentListener = new MapChangeListener<Integer, Filament>()
+    {
+
+        @Override
+        public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
+        {
+            updateFields(currentProject);
+        }
+    };
+
     /**
      * Initialises the controller class.
      */
@@ -116,10 +128,24 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             Lookup.getSelectedPrinterProperty().addListener(
                     (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                     {
+                        if (currentPrinter != null)
+                        {
+                            currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+                        }
                         currentPrinter = newValue;
+                        if (newValue != null)
+                        {
+                            currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                        }
                         updateHeadType(newValue);
                     }
             );
+
+            if (Lookup.getSelectedPrinterProperty().get() != null)
+            {
+                currentPrinter = Lookup.getSelectedPrinterProperty().get();
+                currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+            }
 
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
 
