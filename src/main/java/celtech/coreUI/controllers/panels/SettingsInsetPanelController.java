@@ -87,6 +87,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @FXML
     private Label createProfileLabel;
 
+    @FXML
+    private HBox raftSupportBrimChooserBox;
+
     private Printer currentPrinter;
     private Project currentProject;
     private PrinterSettingsOverrides printerSettings;
@@ -368,44 +371,19 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             populatingForProject = true;
 
-            SupportType selectionBefore = supportComboBox.getSelectionModel().getSelectedItem();
-
-            // Support Type
-            // Material 1 - the only option for single extruder machines - default
-            // Material 2 - only available on dual extruder machines
-            supportComboBox.getItems().clear();
-            supportComboBox.getItems().add(SupportType.MATERIAL_1);
             if (getNumExtruders(printer) > 1
                     && (printer.headProperty().get() != null
                     && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD))
             {
-                supportComboBox.getItems().add(SupportType.MATERIAL_2);
-                if (supportComboBox.getItems().contains(selectionBefore))
-                {
-                    // The old selection is still available - select it again
-                    supportComboBox.getSelectionModel().select(selectionBefore);
-                } else
-                {
-                    if (currentProject != null
-                            && currentProject instanceof ModelContainerProject
-                            && ((ModelContainerProject) currentProject).getUsedExtruders(printer).size() == 1)
-                    {
-                        // Only one extruder used in this project
-                        // Auto select the same material that is being used
-                        supportComboBox.getSelectionModel().select((((ModelContainerProject) currentProject).getUsedExtruders(printer).contains(0) == true) ? SupportType.MATERIAL_1 : SupportType.MATERIAL_2);
-                    } else
-                    {
-                        // More than one extruder used in the project or the current project isn't set
-                        // Select the first option
-                        supportComboBox.getSelectionModel().selectFirst();
-                    }
-                }
-
-                supportComboBox.setDisable(false);
-            } else
+                raftSupportBrimChooserBox.setVisible(true);
+                raftSupportBrimChooserBox.setMinHeight(-1);
+                raftSupportBrimChooserBox.setPrefHeight(-1);
+            }
+            else
             {
-                supportComboBox.getSelectionModel().selectFirst();
-                supportComboBox.setDisable(true);
+                raftSupportBrimChooserBox.setVisible(false);
+                raftSupportBrimChooserBox.setMinHeight(0);
+                raftSupportBrimChooserBox.setPrefHeight(0);
             }
 
             populatingForProject = false;

@@ -15,6 +15,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
@@ -126,6 +127,15 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     }
                 }
 
+                @Override
+                public void whenHeadRemoved(Printer printer, Head head)
+                {
+                    if (printer == currentPrinter)
+                    {
+                        updateHeadType(currentPrinter);
+                    }
+                }
+
             });
 
             Lookup.getSelectedPrinterProperty().addListener(
@@ -135,12 +145,17 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                         {
                             currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
                         }
-                        currentPrinter = newValue;
                         if (newValue != null)
                         {
-                            currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                            newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
                         }
                         updateHeadType(newValue);
+
+                        if (currentPrinter != newValue)
+                        {
+                            updateFields(currentProject);
+                        }
+                        currentPrinter = newValue;
                     }
             );
 
