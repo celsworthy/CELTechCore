@@ -133,7 +133,6 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
             {
                 boolean noNeedToAddPrinter = false;
 
-                steno.debug("Found printer on " + detectedPrinter);
                 for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
                 {
                     if (detectedPrinter.equals(pendingPrinterToCheck))

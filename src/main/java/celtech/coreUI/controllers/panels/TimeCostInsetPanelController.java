@@ -12,6 +12,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
 import celtech.utils.PrinterListChangesAdapter;
@@ -123,6 +124,15 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     }
                 }
 
+                @Override
+                public void whenHeadRemoved(Printer printer, Head head)
+                {
+                    if (printer == currentPrinter)
+                    {
+                        updateHeadType(currentPrinter);
+                    }
+                }
+
             });
 
             Lookup.getSelectedPrinterProperty().addListener(
@@ -132,12 +142,17 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                         {
                             currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
                         }
-                        currentPrinter = newValue;
                         if (newValue != null)
                         {
-                            currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+                            newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
                         }
                         updateHeadType(newValue);
+
+                        if (currentPrinter != newValue)
+                        {
+                            updateFields(currentProject);
+                        }
+                        currentPrinter = newValue;
                     }
             );
 
