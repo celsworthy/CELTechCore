@@ -4,7 +4,6 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import javafx.geometry.Pos;
@@ -33,6 +32,7 @@ public class FilamentCell extends ListCell<Filament>
         rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
         label = new Label();
         label.setId("materialComponentComboLabel");
+        label.getStyleClass().add("filamentSwatchPadding");
         cellContainer.getChildren().addAll(rectangle, label);
     }
 
@@ -56,7 +56,6 @@ public class FilamentCell extends ListCell<Filament>
             {
                 label.setText(filament.getLongFriendlyName());
             }
-            label.getStyleClass().add("filamentSwatchPadding");
         } else if (item == FilamentContainer.UNKNOWN_FILAMENT)
         {
             Filament filament = (Filament) item;
@@ -64,7 +63,6 @@ public class FilamentCell extends ListCell<Filament>
             rectangle.setVisible(false);
 
             label.setText(filament.getLongFriendlyName());
-            label.getStyleClass().add("filamentSwatchPadding");
         } else
         {
             setGraphic(null);
