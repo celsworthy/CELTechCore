@@ -196,6 +196,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar chooseACustomProfileNotificationBar;
     private ConditionalNotificationBar printHeadPowerOffNotificationBar;
     private ConditionalNotificationBar noHeadNotificationBar;
+    private ConditionalNotificationBar noModelsNotificationBar;
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
@@ -717,6 +718,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         chooseACustomProfileNotificationBar = new ConditionalNotificationBar("dialogs.chooseACustomProfile", NotificationDisplay.NotificationType.CAUTION);
         printHeadPowerOffNotificationBar = new ConditionalNotificationBar("dialogs.printHeadPowerOff", NotificationDisplay.NotificationType.CAUTION);
         noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationDisplay.NotificationType.CAUTION);
+        noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationDisplay.NotificationType.CAUTION);
 
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
@@ -889,6 +891,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         invalidMeshInProjectNotificationBar.setAppearanceCondition(project.hasInvalidMeshes().
                 and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+
+        noModelsNotificationBar.setAppearanceCondition(Bindings.isEmpty(project.getTopLevelModels())
+                .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
     }
 
     /**
@@ -981,6 +986,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         chooseACustomProfileNotificationBar.clearAppearanceCondition();
         printHeadPowerOffNotificationBar.clearAppearanceCondition();
         noHeadNotificationBar.clearAppearanceCondition();
+        noModelsNotificationBar.clearAppearanceCondition();
     }
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
