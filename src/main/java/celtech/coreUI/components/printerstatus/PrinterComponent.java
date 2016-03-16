@@ -226,10 +226,10 @@ public class PrinterComponent extends Pane
         {
             if (newValue)
             {
-                printerSVG.setOpacity(0.25);
+                this.setOpacity(0.1);
             } else
             {
-                printerSVG.setOpacity(1);
+                this.setOpacity(1);
             }
         });
     }
