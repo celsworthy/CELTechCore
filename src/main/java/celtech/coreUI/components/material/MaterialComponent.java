@@ -92,7 +92,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
     @FXML
     private HBox materialRemainingHBox;
-    
+
     @FXML
     private TextFlow materialColourContainer;
 
@@ -160,9 +160,17 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
         repopulateCmbMaterials();
 
-        comboItems.add(0, FilamentContainer.UNKNOWN_FILAMENT);
-        cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
-
+        if (printer != null
+                && printer.effectiveFilamentsProperty() != null)
+        {
+            if (printer.effectiveFilamentsProperty().containsKey(extruderNumber))
+            {
+                cmbMaterials.setValue(printer.effectiveFilamentsProperty().get(extruderNumber));
+            }
+        } else
+        {
+            cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
+        }
         filamentContainer.getUserFilamentList().addListener(
                 (ListChangeListener.Change<? extends Filament> change) ->
                 {
@@ -230,7 +238,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
         try
         {
-
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
                 allFilaments.addAll(filamentContainer.getCompleteFilamentList());
@@ -247,6 +254,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         Filament currentVal = cmbMaterials.getValue();
 
         List<Filament> filamentsList = new ArrayList<>();
+        filamentsList.add(FilamentContainer.UNKNOWN_FILAMENT);
         filamentsList.addAll(allFilaments);
 
         comboItems = FXCollections.observableArrayList(filamentsList);
