@@ -54,9 +54,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     private final BooleanProperty printingDisabled = new SimpleBooleanProperty(false);
     private final BooleanProperty noHead = new SimpleBooleanProperty(false);
     private final BooleanProperty dualHead = new SimpleBooleanProperty(false);
-    ;
     private final BooleanProperty singleHead = new SimpleBooleanProperty(false);
-    ;
     private final BooleanProperty noFilamentE = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentD = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentEOrD = new SimpleBooleanProperty(false);
@@ -315,7 +313,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                 .or(singleHead.and(noFilamentEOrD)));
 
             EjectStuckMaterialButton1.disableProperty().bind(printingDisabled.or(noFilamentE));
-            EjectStuckMaterialButton2.disableProperty().bind(printingDisabled.or(noFilamentD));
+            EjectStuckMaterialButton2.disableProperty().bind(printingDisabled.or(noFilamentD).or(singleHead));
 
             SpeedTestButton.disableProperty().bind(printingDisabled);
             XTestButton.disableProperty().bind(printingDisabled);
