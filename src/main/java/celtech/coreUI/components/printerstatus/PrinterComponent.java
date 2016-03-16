@@ -7,7 +7,6 @@ import celtech.Lookup;
 import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
@@ -227,10 +226,10 @@ public class PrinterComponent extends Pane
         {
             if (newValue)
             {
-                printerSVG.setOpacity(0.25);
+                this.setOpacity(0.1);
             } else
             {
-                printerSVG.setOpacity(1);
+                this.setOpacity(1);
             }
         });
     }
