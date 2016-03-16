@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterIdentity;
@@ -11,12 +12,17 @@ import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 
 /**
  *
@@ -35,6 +41,39 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
 
     @FXML
     private Label version;
+
+        @FXML
+    private Label infoLabel;
+
+    @FXML
+    private Text bdLabel;
+
+    @FXML
+    private Text bdNames;
+
+    @FXML
+    private Text hwengLabel;
+
+    @FXML
+    private Text hwengNames;
+
+    @FXML
+    private Text swengLabel;
+
+    @FXML
+    private Text swengNames;
+
+    @FXML
+    private Text amTitleText1;
+
+    @FXML
+    private Text amTitleText2;
+
+    @FXML
+    private Text amTitleText3;
+
+    @FXML
+    private VBox logoBox;
 
     @FXML
     private void viewREADME(ActionEvent event)
@@ -73,6 +112,46 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     {
         Lookup.getPrinterListChangesNotifier().addListener(this);
         version.setText(ApplicationConfiguration.getApplicationVersion());
+        
+        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener(new ChangeListener<DisplayManager.DisplayScalingMode>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode scalingMode)
+            {
+                switch(scalingMode)
+                {
+                    case NORMAL:
+                        infoLabel.setStyle("-fx-font-size: 21px");
+                        hwengLabel.setStyle("-fx-font-size: 21px");
+                        hwengNames.setStyle("-fx-font-size: 21px");
+                        swengLabel.setStyle("-fx-font-size: 21px");
+                        swengNames.setStyle("-fx-font-size: 21px");
+                        bdLabel.setStyle("-fx-font-size: 21px");
+                        bdNames.setStyle("-fx-font-size: 21px");
+                        amTitleText1.setStyle("-fx-font-size: 100px");
+                        amTitleText2.setStyle("-fx-font-size: 100px");
+                        amTitleText3.setStyle("-fx-font-size: 14px");
+                        logoBox.setScaleX(1);
+                        logoBox.setScaleY(1);
+                        break;
+                    default:
+                        infoLabel.setStyle("-fx-font-size: 14px");
+                        hwengLabel.setStyle("-fx-font-size: 14px");
+                        hwengNames.setStyle("-fx-font-size: 14px");
+                        swengLabel.setStyle("-fx-font-size: 14px");
+                        swengNames.setStyle("-fx-font-size: 14px");
+                        bdLabel.setStyle("-fx-font-size: 14px");
+                        bdNames.setStyle("-fx-font-size: 14px");
+                        amTitleText1.setStyle("-fx-font-size: 70px");
+                        amTitleText2.setStyle("-fx-font-size: 70px");
+                        amTitleText3.setStyle("-fx-font-size: 10px");
+                        logoBox.setScaleX(0.8);
+                        logoBox.setScaleY(0.8);
+                        break;
+                        
+                }
+            }
+        });
     }
 
     @Override
