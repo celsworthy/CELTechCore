@@ -53,11 +53,11 @@
                                                         <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="180.0" minWidth="10.0" prefWidth="150.0" />
                                                     </columnConstraints>
                                                     <rowConstraints>
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="30.0" prefHeight="60.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
                                                         <Text fill="WHITE" layoutX="10.0" layoutY="107.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="colon" text="%purgeMaterial.purgeTemperature" textAlignment="CENTER" GridPane.rowIndex="3">
@@ -86,11 +86,11 @@
                                                         <ColumnConstraints halignment="LEFT" hgrow="NEVER" maxWidth="180.0" minWidth="10.0" prefWidth="150.0" />
                                                     </columnConstraints>
                                                     <rowConstraints>
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                        <RowConstraints minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="30.0" prefHeight="60.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
                                                         <RestrictedNumberField id="purgeTemperature" fx:id="purgeTemperature1" maxLength="3" prefColumnCount="4" styleClass="purgeInstructions" GridPane.columnIndex="1" GridPane.rowIndex="3" />
