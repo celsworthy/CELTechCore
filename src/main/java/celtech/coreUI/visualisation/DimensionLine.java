@@ -79,25 +79,19 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         return angleToReturn;
     }
 
-    private ChangeListener<Number> dimensionEntryChangeListener = new ChangeListener<Number>()
+    private final ChangeListener<Number> dimensionEntryChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
-
-        @Override
-        public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+        switch (direction)
         {
-            switch (direction)
-            {
-                case FORWARD_BACK:
-                    undoableproject.resizeModelsDepth(modelContainerSet, newValue.floatValue());
-                    break;
-                case HORIZONTAL:
-                    undoableproject.resizeModelsWidth(modelContainerSet, newValue.floatValue());
-                    break;
-                case VERTICAL:
-                    undoableproject.resizeModelsHeight(modelContainerSet, newValue.floatValue());
-                    break;
-            }
-            steno.info("Changed to " + newValue);
+            case FORWARD_BACK:
+                undoableproject.resizeModelsDepth(modelContainerSet, newValue.floatValue());
+                break;
+            case HORIZONTAL:
+                undoableproject.resizeModelsWidth(modelContainerSet, newValue.floatValue());
+                break;
+            case VERTICAL:
+                undoableproject.resizeModelsHeight(modelContainerSet, newValue.floatValue());
+                break;
         }
     };
 
@@ -167,8 +161,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     {
         if (direction == LineDirection.VERTICAL)
         {
-            dimensionLabel.setText(String.
-                    format("%.2f", transformedHeight));
+            dimensionLabel.floatValueProperty().set((float)transformedHeight);
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
@@ -235,8 +228,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             }
         } else if (direction == LineDirection.HORIZONTAL)
         {
-            dimensionLabel.setText(String.
-                    format("%.2f", transformedWidth));
+            dimensionLabel.floatValueProperty().set((float)transformedWidth);
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
@@ -303,8 +295,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             }
         } else if (direction == LineDirection.FORWARD_BACK)
         {
-            dimensionLabel.setText(String.
-                    format("%.2f", transformedDepth));
+            dimensionLabel.floatValueProperty().set((float)transformedDepth);
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()
