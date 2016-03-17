@@ -148,7 +148,7 @@ public class ProjectTab extends Tab
         overlayPane.getChildren().addAll(bedAxes);
 
         setupDragHandlers();
-        dimensionLineManager = new DimensionLineManager(overlayPane, project, viewManager.getDragModeProperty());
+        dimensionLineManager = new DimensionLineManager(basePane, project, viewManager.getDragModeProperty());
         viewManager.addCameraViewChangeListener(bedAxes);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
