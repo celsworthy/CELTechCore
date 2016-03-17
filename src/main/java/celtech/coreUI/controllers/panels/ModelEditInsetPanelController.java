@@ -896,7 +896,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                         }
                     } catch (Exception ex)
                     {
-                        steno.debug("exception updating number field " + ex);
+                        steno.warning("exception updating number field " + ex);
                     }
                 });
 
