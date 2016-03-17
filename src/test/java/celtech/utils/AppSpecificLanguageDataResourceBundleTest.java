@@ -47,7 +47,7 @@ public class AppSpecificLanguageDataResourceBundleTest
         Locale.setDefault(Locale.ENGLISH);
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.utils.language.LanguageDataResourceBundle", new UTF8Control());
         assertEquals("Nozzle firmware control", bundle.getString("error.ERROR_B_POSITION_LOST"));
-        assertEquals(1012, bundle.keySet().size());
+        assertEquals(1014, bundle.keySet().size());
     }
     
     @Test
@@ -56,7 +56,7 @@ public class AppSpecificLanguageDataResourceBundleTest
         Locale.setDefault(Locale.ENGLISH);
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.utils.language.LanguageDataResourceBundle", new UTF8Control());
         assertEquals("Bed", bundle.getString("reelPanel.bed"));
-        assertEquals(1012, bundle.keySet().size());
+        assertEquals(1014, bundle.keySet().size());
     }
     
 }
