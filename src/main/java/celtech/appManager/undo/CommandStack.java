@@ -3,6 +3,7 @@
  */
 package celtech.appManager.undo;
 
+import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -15,16 +16,17 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The CommandStack is a stack of Commands that has an index into the current stack position. When
- * an undo is applied the Command at the current index is undone, and the index is reduced by 1.
+ * The CommandStack is a stack of Commands that has an index into the current
+ * stack position. When an undo is applied the Command at the current index is
+ * undone, and the index is reduced by 1.
  *
  * @author tony
  */
 public class CommandStack
 {
-    
+
     private static final Stenographer steno = StenographerFactory.getStenographer(
-        CommandStack.class.getName());
+            CommandStack.class.getName());
 
     private final BooleanProperty canUndo = new SimpleBooleanProperty();
     private final BooleanProperty canRedo = new SimpleBooleanProperty();
@@ -55,15 +57,23 @@ public class CommandStack
         clearEndOfList();
         commands.add(command);
         command.do_();
-        index.set(index.get() + 1);
+        if (index.get() < commands.size() - 1)
+        {
+            index.set(index.get() + 1);
+        }
         tryMerge();
     }
-    
+
     /**
      * Clear all list entries that are after the current index.
      */
-    private void clearEndOfList() {
-        commands.subList(index.get() + 1, commands.size()).clear();
+    private void clearEndOfList()
+    {
+        List<Command> commandsToClear = commands.subList(index.get() + 1, commands.size());
+        if (!commandsToClear.isEmpty())
+        {
+            commandsToClear.clear();
+        }
     }
 
     public void undo() throws UndoException
@@ -103,12 +113,14 @@ public class CommandStack
      */
     private void tryMerge()
     {
-        if (index.get() < 1) {
+        if (index.get() < 1)
+        {
             return;
         }
         Command lastCommand = commands.get(index.get());
         Command previousCommand = commands.get(index.get() - 1);
-        if (previousCommand.canMergeWith(lastCommand)) {
+        if (previousCommand.canMergeWith(lastCommand))
+        {
             previousCommand.merge(lastCommand);
             // remove last command from list
             commands.remove(commands.size() - 1);
