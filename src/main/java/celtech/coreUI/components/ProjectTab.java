@@ -38,6 +38,9 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.PopupWindow;
 import libertysystems.stenographer.Stenographer;
@@ -56,7 +59,9 @@ public class ProjectTab extends Tab
     private final Label nonEditableProjectNameField = new Label();
     private final RestrictedTextField editableProjectNameField = new RestrictedTextField();
     private Project project = null;
+    private Pane baseContainer = null;
     private AnchorPane basePane = null;
+    private AnchorPane overlayPane = null;
     private ThreeDViewManager viewManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
@@ -114,8 +119,18 @@ public class ProjectTab extends Tab
         Node modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
         modelActionsInsetPanel.mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
 
+        baseContainer = new Pane();
+        
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
+        basePane.prefWidthProperty().bind(tabDisplayWidthProperty);
+        basePane.prefHeightProperty().bind(tabDisplayHeightProperty);
+        basePane.maxWidth(Region.USE_PREF_SIZE);
+        basePane.maxHeight(Region.USE_PREF_SIZE);
+
+        overlayPane = new AnchorPane();
+        overlayPane.setMouseTransparent(true);
+        overlayPane.setPickOnBounds(false);
 
         setupDragHandlers();
 
@@ -129,14 +144,15 @@ public class ProjectTab extends Tab
         AnchorPane.setRightAnchor(dimensionContainer, 0.0);
         AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
         
-        basePane.getChildren().addAll(viewManager.getSubScene(), bedAxes, rhInsetContainer, modelActionsInsetPanel);
+        basePane.getChildren().addAll(viewManager.getSubScene(), rhInsetContainer, modelActionsInsetPanel);
+        overlayPane.getChildren().addAll(bedAxes);
 
         setupDragHandlers();
-        dimensionLineManager = new DimensionLineManager(basePane, project, viewManager.getDragModeProperty());
+        dimensionLineManager = new DimensionLineManager(overlayPane, project, viewManager.getDragModeProperty());
         viewManager.addCameraViewChangeListener(bedAxes);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
-        zCutEntryBox = new ZCutEntryBox(basePane, layoutSubmode, viewManager, project);
+        zCutEntryBox = new ZCutEntryBox(overlayPane, layoutSubmode, viewManager, project);
 
         layoutSubmode.addListener(new ChangeListener<LayoutSubmode>()
         {
@@ -148,12 +164,12 @@ public class ProjectTab extends Tab
                     Set<ModelContainer> selectedModelContainers
                             = Lookup.getProjectGUIState(project).getProjectSelection().getSelectedModelsSnapshot();
                     zCutEntryBox.prime(selectedModelContainers.iterator().next());
-                    basePane.getChildren().add(zCutEntryBox);
+                    overlayPane.getChildren().add(zCutEntryBox);
                 } else
                 {
-                    if (basePane.getChildren().contains(zCutEntryBox))
+                    if (overlayPane.getChildren().contains(zCutEntryBox))
                     {
-                        basePane.getChildren().remove(zCutEntryBox);
+                        overlayPane.getChildren().remove(zCutEntryBox);
                     }
                 }
             }
@@ -172,7 +188,8 @@ public class ProjectTab extends Tab
         AnchorPane.setLeftAnchor(modelActionsInsetPanel,
                 30.0);
 
-        this.setContent(basePane);
+        baseContainer.getChildren().addAll(basePane, overlayPane);
+        this.setContent(baseContainer);
 
         this.setGraphic(nonEditableProjectNameField);
 
@@ -331,7 +348,7 @@ public class ProjectTab extends Tab
 
                             if (accept)
                             {
-                                basePane.setEffect(new Glow());
+                                overlayPane.setEffect(new Glow());
                                 event.consume();
                             }
                         }
