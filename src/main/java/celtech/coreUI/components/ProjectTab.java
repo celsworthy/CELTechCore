@@ -248,7 +248,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         viewManager.addCameraViewChangeListener(bedAxes);
 
         basePane.getChildren().add(0, viewManager.getSubScene());
-        overlayPane.getChildren().add(1, bedAxes);
+        overlayPane.getChildren().add(bedAxes);
 
         hideDimensions.bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
 
