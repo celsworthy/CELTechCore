@@ -85,7 +85,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     @FXML
     private Label createProfileLabel;
-    
+
     @FXML
     private HBox raftSupportBrimChooserBox;
 
@@ -296,7 +296,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 .addListener(
                         (ObservableValue<? extends Number> observable, Number was, Number now) ->
                         {
-                            if (!fillDensitySlider.isValueChanging())
+                            if (!fillDensitySlider.isValueChanging()
+                            || now.doubleValue() >= 100.0
+                            || now.doubleValue() <= 0.0)
                             {
                                 printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
                             }
@@ -377,8 +379,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 raftSupportBrimChooserBox.setVisible(true);
                 raftSupportBrimChooserBox.setMinHeight(-1);
                 raftSupportBrimChooserBox.setPrefHeight(-1);
-            }
-            else
+            } else
             {
                 raftSupportBrimChooserBox.setVisible(false);
                 raftSupportBrimChooserBox.setMinHeight(0);
