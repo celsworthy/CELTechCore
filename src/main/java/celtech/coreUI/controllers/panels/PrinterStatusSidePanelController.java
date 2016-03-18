@@ -2,9 +2,11 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ApplicationStatus;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.material.MaterialComponent;
 import celtech.coreUI.components.printerstatus.PrinterGridComponent;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.model.Extruder;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.NozzleHeater;
@@ -13,6 +15,7 @@ import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -400,13 +403,21 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         {
             graphAlternativeN1Temp.setVisible(true);
             graphAlternativeN1Legend.setVisible(true);
-            graphAlternativeN1Temp.textProperty().bind(head.getNozzleHeaters().get(0).nozzleTemperatureProperty().asString("%d°C"));
+            graphAlternativeN1Temp.textProperty().bind(Bindings
+                    .when(head.getNozzleHeaters().get(0).nozzleTemperatureProperty()
+                            .greaterThanOrEqualTo(BaseConfiguration.minTempToDisplayOnGraph))
+                    .then(head.getNozzleHeaters().get(0).nozzleTemperatureProperty().asString("%d°C"))
+                    .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
         }
         if (head.getNozzleHeaters().size() > 1)
         {
             graphAlternativeN2Legend.setVisible(true);
             graphAlternativeN2Temp.setVisible(true);
-            graphAlternativeN2Temp.textProperty().bind(head.getNozzleHeaters().get(1).nozzleTemperatureProperty().asString("%d°C"));
+            graphAlternativeN2Temp.textProperty().bind(Bindings
+                    .when(head.getNozzleHeaters().get(1).nozzleTemperatureProperty()
+                            .greaterThanOrEqualTo(BaseConfiguration.minTempToDisplayOnGraph))
+                    .then(head.getNozzleHeaters().get(1).nozzleTemperatureProperty().asString("%d°C"))
+                    .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
         }
 
         headTitleBold.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleBold"));
