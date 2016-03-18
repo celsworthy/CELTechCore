@@ -11,6 +11,7 @@ import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
+import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -80,9 +81,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     @FXML
     private Slider fillDensitySlider;
-
+    
     @FXML
-    private Label fillDensityPercent;
+    private RestrictedNumberField fillDensityPercentEntry;
 
     @FXML
     private Label createProfileLabel;
@@ -171,7 +172,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             ex.printStackTrace();
         }
 
-        fillDensityPercent.textProperty().bind(fillDensitySlider.valueProperty().asString("%.0f"));
+        fillDensityPercentEntry.floatValueProperty().bindBidirectional(fillDensitySlider.valueProperty());
     }
 
     PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->

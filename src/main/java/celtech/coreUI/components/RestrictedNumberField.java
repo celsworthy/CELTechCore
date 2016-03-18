@@ -1,8 +1,7 @@
 package celtech.coreUI.components;
 
-import celtech.Lookup;
-import celtech.roboxbase.ApplicationEnvironment;
 import celtech.configuration.units.UnitType;
+import celtech.roboxbase.ApplicationEnvironment;
 import celtech.roboxbase.BaseLookup;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -41,6 +40,10 @@ public class RestrictedNumberField extends TextField
     private final FloatProperty floatValue = new SimpleFloatProperty(-1);
     private final DoubleProperty doubleValue = new SimpleDoubleProperty(-1);
     private final BooleanProperty allowNegative = new SimpleBooleanProperty(false);
+    private final BooleanProperty maxValueSet = new SimpleBooleanProperty(false);
+    private final DoubleProperty maxValue = new SimpleDoubleProperty(-1);
+    private final BooleanProperty minValueSet = new SimpleBooleanProperty(false);
+    private final DoubleProperty minValue = new SimpleDoubleProperty(-1);
     private final ObjectProperty<UnitType> units = new SimpleObjectProperty<>(UnitType.NONE);
     private Pattern restrictionPattern = Pattern.compile("[0-9]+");
 
@@ -84,6 +87,66 @@ public class RestrictedNumberField extends TextField
     public BooleanProperty allowNegativeProperty()
     {
         return allowNegative;
+    }
+
+    public boolean getMaxValueSet()
+    {
+        return maxValueSet.get();
+    }
+
+    public void setMaxValueSet(boolean maxValueSet)
+    {
+        this.maxValueSet.set(maxValueSet);
+    }
+
+    public BooleanProperty maxValueSetProperty()
+    {
+        return maxValueSet;
+    }
+
+    public boolean getMinValueSet()
+    {
+        return minValueSet.get();
+    }
+
+    public void setMinValueSet(boolean minValueSet)
+    {
+        this.minValueSet.set(minValueSet);
+    }
+
+    public BooleanProperty minValueSetProperty()
+    {
+        return minValueSet;
+    }
+
+    public double getMinValue()
+    {
+        return minValue.get();
+    }
+
+    public void setMinValue(double minValue)
+    {
+        this.minValue.set(minValue);
+    }
+
+    public DoubleProperty minValueProperty()
+    {
+        return minValue;
+    }
+
+    public double getMaxValue()
+    {
+        return maxValue.get();
+    }
+
+    public void setMaxValue(double maxValue)
+    {
+        this.maxValue.set(maxValue);
+    }
+
+    public DoubleProperty maxValueProperty()
+    {
+        return maxValue;
     }
 
     /**
@@ -183,6 +246,18 @@ public class RestrictedNumberField extends TextField
 
         doubleChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
+            if (maxValueSet.get() && newValue.doubleValue() > maxValue.get())
+            {
+                doubleValue.set(maxValue.get());
+                return;
+            }
+
+            if (minValueSet.get() && newValue.doubleValue() < minValue.get())
+            {
+                doubleValue.set(minValue.get());
+                return;
+            }
+
             if (!suppressTextToNumberUpdate)
             {
                 setText(getNumberFormatter().format(newValue));
@@ -195,6 +270,18 @@ public class RestrictedNumberField extends TextField
 
         floatChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
+            if (maxValueSet.get() && newValue.doubleValue() > maxValue.get())
+            {
+                floatValue.set((float) maxValue.get());
+                return;
+            }
+
+            if (minValueSet.get() && newValue.doubleValue() < minValue.get())
+            {
+                floatValue.set((float) minValue.get());
+                return;
+            }
+
             if (!suppressTextToNumberUpdate)
             {
                 setText(getNumberFormatter().format(newValue));
@@ -207,6 +294,18 @@ public class RestrictedNumberField extends TextField
 
         intChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
+            if (maxValueSet.get() && newValue.doubleValue() > maxValue.get())
+            {
+                intValue.set((int) maxValue.get());
+                return;
+            }
+
+            if (minValueSet.get() && newValue.doubleValue() < minValue.get())
+            {
+                intValue.set((int) minValue.get());
+                return;
+            }
+
             if (!suppressTextToNumberUpdate)
             {
                 setText(getNumberFormatter().format(newValue));
@@ -271,12 +370,26 @@ public class RestrictedNumberField extends TextField
 
     private void updateNumberValues()
     {
+        double newValue = 0;
+
         try
         {
+            newValue = getNumberFormatter().parse(this.getText()).doubleValue();
+
+            if (maxValueSet.get() && newValue > maxValue.get())
+            {
+                newValue = maxValue.get();
+            }
+
+            if (minValueSet.get() && newValue < minValue.get())
+            {
+                newValue = minValue.get();
+            }
+
             suppressTextToNumberUpdate = true;
-            intValue.set(getNumberFormatter().parse(this.getText()).intValue());
-            floatValue.set(getNumberFormatter().parse(this.getText()).floatValue());
-            doubleValue.set(getNumberFormatter().parse(this.getText()).doubleValue());
+            intValue.set((int) newValue);
+            floatValue.set((float) newValue);
+            doubleValue.set(newValue);
             suppressTextToNumberUpdate = false;
         } catch (ParseException ex)
         {
