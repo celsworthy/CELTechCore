@@ -11,6 +11,7 @@ import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProfileChoiceListCell;
+import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
@@ -80,7 +81,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private Slider fillDensitySlider;
 
     @FXML
-    private Label fillDensityPercent;
+    private RestrictedNumberField fillDensityPercentEntry;
 
     @FXML
     private Label createProfileLabel;
@@ -169,7 +170,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             ex.printStackTrace();
         }
 
-        fillDensityPercent.textProperty().bind(fillDensitySlider.valueProperty().asString("%.0f"));
+        fillDensityPercentEntry.floatValueProperty().bindBidirectional(fillDensitySlider.valueProperty());
     }
 
     PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->

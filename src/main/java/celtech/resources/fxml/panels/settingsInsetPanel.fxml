@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import celtech.coreUI.components.*?>
 <?import celtech.coreUI.components.printerstatus.*?>
 <?import celtech.coreUI.components.material.*?>
 <?import java.lang.*?>
@@ -67,19 +68,15 @@
                       </HBox>
                     <VBox spacing="5.0">
                         <children>
-                            <HBox spacing="5.0">
+                            <HBox alignment="CENTER_LEFT" spacing="5.0">
                                 <children>
                                     <Label text="%sidePanel_settings.fillDensityLabel">
                            <HBox.margin>
                               <Insets />
                            </HBox.margin>
                         </Label>
-                                    <HBox>
-                                        <children>
-                                            <Label fx:id="fillDensityPercent" text="n" />
-                                            <Label fx:id="fillDensityPercent1" layoutX="10.0" layoutY="10.0" text="\%" />
-                                        </children>
-                                    </HBox>
+                        <RestrictedNumberField fx:id="fillDensityPercentEntry" maxLength="3" maxValue="100.0" maxValueSet="true" minValue="0.0" minValueSet="true" prefColumnCount="3" prefWidth="28.0" text="100" />
+                        <Label layoutX="10.0" layoutY="14.0" text="\%" />
                                 </children>
                             </HBox>
                               <Slider fx:id="fillDensitySlider" majorTickUnit="10.0" max="100.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" />
