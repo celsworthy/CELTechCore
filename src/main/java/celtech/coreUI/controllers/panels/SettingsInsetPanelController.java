@@ -467,14 +467,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void selectCurrentCustomSettings()
     {
-        Head currentHead = currentPrinter.headProperty().get();
-        String headType = HeadContainer.defaultHeadID;
-        if (currentHead != null)
+        if (currentPrinter != null)
         {
-            headType = currentHead.typeCodeProperty().get();
+            Head currentHead = currentPrinter.headProperty().get();
+            String headType = HeadContainer.defaultHeadID;
+            if (currentHead != null)
+            {
+                headType = currentHead.typeCodeProperty().get();
+            }
+            customProfileChooser.getSelectionModel().select(
+                    printerSettings.getSettings(headType));
         }
-        customProfileChooser.getSelectionModel().select(
-                printerSettings.getSettings(headType));
     }
 
     private void enableCustomChooser(boolean enable)
