@@ -7,6 +7,7 @@ import celtech.Lookup;
 import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
+import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
@@ -187,6 +188,10 @@ public class PrinterComponent extends Pane
         if (printer != null)
         {
             nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
+            if (printer.getCommandInterface() instanceof RoboxRemoteCommandInterface)
+            {
+                nameText += " (R)";
+            }
             setColour(printer.getPrinterIdentity().printerColourProperty().get());
             printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
             printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);

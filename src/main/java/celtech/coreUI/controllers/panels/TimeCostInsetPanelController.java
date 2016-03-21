@@ -431,28 +431,31 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
+        boolean slicedAndPostProcessed = false;
+
         if (project instanceof ModelContainerProject)
         {
-            String working = Lookup.i18n("timeCost.working");
-            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+            if (settings != null)
             {
-                lblTime.setText(working);
-                lblWeight.setText(working);
-                lblCost.setText(working);
-            });
+                String working = Lookup.i18n("timeCost.working");
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    lblTime.setText(working);
+                    lblWeight.setText(working);
+                    lblCost.setText(working);
+                });
 
-            GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, settings,
-                    lblTime, lblWeight,
-                    lblCost, cancellable);
+                GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, settings,
+                        lblTime, lblWeight,
+                        lblCost, cancellable);
 
-            boolean slicedAndPostProcessed = false;
-
-            try
-            {
-                slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
-            } catch (Exception ex)
-            {
-                ex.printStackTrace();
+                try
+                {
+                    slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
+                } catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
             }
 
             if (!slicedAndPostProcessed

@@ -8,7 +8,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -43,8 +42,6 @@ public class OuterPanelController implements Initializable
         this.visibilityProperty = visibilityProperty;
          crossButton.setOnMouseClicked((MouseEvent event) ->
         {
-            rootPane.setMinHeight(0);
-            rootPane.setPrefHeight(0);
             this.visibilityProperty.set(false);
         });
     }
