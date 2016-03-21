@@ -104,6 +104,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         try
         {
+            supportComboBox.getItems().clear();
+            supportComboBox.getItems().addAll(SupportType.values());
+
             setupCustomProfileChooser();
 
             setupOverrides();
