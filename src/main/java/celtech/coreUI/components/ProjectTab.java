@@ -460,7 +460,7 @@ public class ProjectTab extends Tab implements ProjectCallback
                 Dragboard db = event.getDragboard();
                 if (db.hasFiles())
                 {
-                    modelLoader.loadExternalModels(project, db.getFiles(), true, this);
+                    modelLoader.loadExternalModels(project, db.getFiles(), true, this, false);
                 } else
                 {
                     steno.error("No files in dragboard");

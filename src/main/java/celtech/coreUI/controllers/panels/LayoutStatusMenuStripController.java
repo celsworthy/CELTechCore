@@ -432,7 +432,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 ApplicationConfiguration.setLastDirectory(
                         DirectoryMemoryProperty.MODEL,
                         files.get(0).getParentFile().getAbsolutePath());
-                modelLoader.loadExternalModels(selectedProject, files, true, null);
+                modelLoader.loadExternalModels(selectedProject, files, true, null, false);
             }
         });
     }

@@ -191,7 +191,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             List<File> fileToLoad = new ArrayList<>();
             fileToLoad.add(firstUsePrintFile);
             ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, fileToLoad, false, null);
+            loader.loadExternalModels(newProject, fileToLoad, false, null, false);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                     tabDisplay.heightProperty());
@@ -318,7 +318,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
-    public void configureDisplayManager(Stage mainStage, String applicationName, List<String> modelsToLoadAtStartup)
+    public void configureDisplayManager(Stage mainStage, String applicationName,
+            String modelsToLoadAtStartup_projectName,
+            List<String> modelsToLoadAtStartup,
+            boolean dontGroupStartupModels)
     {
         steno.debug("start configure display manager");
         this.mainStage = mainStage;
@@ -564,7 +567,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         steno.debug("load projects");
         loadProjectsAtStartup();
-        loadModelsIntoNewProject(modelsToLoadAtStartup);
+        loadModelsIntoNewProject(modelsToLoadAtStartup_projectName,
+                modelsToLoadAtStartup,
+                dontGroupStartupModels);
 
         addPageTab = new Tab();
         addPageTab.setText("+");
@@ -959,7 +964,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return displayScalingModeProperty;
     }
 
-    public void loadModelsIntoNewProject(List<String> modelsWithPaths)
+    public void loadModelsIntoNewProject(String projectName, List<String> modelsWithPaths, boolean dontGroupModels)
     {
         if (modelsWithPaths != null
                 && modelsWithPaths.size() > 0)
@@ -981,10 +986,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
                     Project newProject = new ModelContainerProject();
-                    newProject.setProjectName("Import");
+                    newProject.setProjectName(projectName);
 
                     ModelLoader loader = new ModelLoader();
-                    loader.loadExternalModels(newProject, listOfFiles, false, null);
+                    loader.loadExternalModels(newProject, listOfFiles, false, null, dontGroupModels);
 
                     ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                             tabDisplay.heightProperty());

@@ -49,7 +49,8 @@ public class ModelLoader
      */
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
 
-    private void offerShrinkAndAddToProject(Project project, boolean relayout, ProjectCallback callMeBack)
+    private void offerShrinkAndAddToProject(Project project, boolean relayout, ProjectCallback callMeBack,
+            boolean dontGroupModelsOverride)
     {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
@@ -131,7 +132,7 @@ public class ModelLoader
             }
             Set<ProjectifiableThing> allProjectifiableThings = (Set) allModelContainers;
 
-            addToProject(project, allProjectifiableThings, shouldCentre);
+            addToProject(project, allProjectifiableThings, shouldCentre, dontGroupModelsOverride);
             if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
             {
 //            project.autoLayout();
@@ -145,11 +146,11 @@ public class ModelLoader
                 allProjectifiableThings.addAll(result.getProjectifiableThings());
             }
 
-            addToProject(project, allProjectifiableThings, false);
+            addToProject(project, allProjectifiableThings, false, dontGroupModelsOverride);
 
             project.setMode(ProjectMode.SVG);
         }
-        
+
         if (project != null
                 && callMeBack != null)
         {
@@ -171,7 +172,7 @@ public class ModelLoader
      */
     public void loadExternalModels(Project project, List<File> modelsToLoad, ProjectCallback callMeBack)
     {
-        loadExternalModels(project, modelsToLoad, false, callMeBack);
+        loadExternalModels(project, modelsToLoad, false, callMeBack, false);
     }
 
     /**
@@ -184,7 +185,8 @@ public class ModelLoader
      * @param relayout
      * @param callMeBack
      */
-    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout, ProjectCallback callMeBack)
+    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout, ProjectCallback callMeBack,
+            boolean dontGroupModelsOverride)
     {
         modelLoaderService.reset();
         modelLoaderService.setModelFilesToLoad(modelsToLoad);
@@ -211,7 +213,7 @@ public class ModelLoader
             {
                 projectToUse = project;
             }
-            offerShrinkAndAddToProject(projectToUse, relayout, callMeBack);
+            offerShrinkAndAddToProject(projectToUse, relayout, callMeBack, dontGroupModelsOverride);
         });
         modelLoaderService.start();
     }
@@ -221,11 +223,11 @@ public class ModelLoader
      * there is more than one ModelContainer/Group then put them in one
      * overarching group.
      */
-    private void addToProject(Project project, Set<ProjectifiableThing> modelContainers, boolean shouldCentre)
+    private void addToProject(Project project, Set<ProjectifiableThing> modelContainers,
+            boolean shouldCentre,
+            boolean dontGroupModelsOverride)
     {
         UndoableProject undoableProject = new UndoableProject(project);
-
-        ProjectifiableThing projectifiableThing = null;
 
         if (project instanceof ModelContainerProject)
         {
@@ -234,25 +236,37 @@ public class ModelLoader
             if (modelContainers.size() == 1)
             {
                 modelContainer = (ModelContainer) modelContainers.iterator().next();
-            } else
+                addModelSequence(undoableProject, modelContainer, shouldCentre);
+            } else if (!dontGroupModelsOverride)
             {
                 Set<Groupable> thingsToGroup = (Set) modelContainers;
                 modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(thingsToGroup);
-            }
-            if (shouldCentre)
+                addModelSequence(undoableProject, modelContainer, shouldCentre);
+            } else
             {
-                modelContainer.moveToCentre();
-                modelContainer.dropToBed();
+                modelContainers.iterator().forEachRemaining(mc ->
+                {
+                    addModelSequence(undoableProject, (ModelContainer)mc, shouldCentre);
+                });
             }
-            shrinkIfRequested(modelContainer);
-            modelContainer.checkOffBed();
-            projectifiableThing = modelContainer;
         } else
         {
-            projectifiableThing = modelContainers.iterator().next();
+            undoableProject.addModel(modelContainers.iterator().next());
         }
+    }
 
-        undoableProject.addModel(projectifiableThing);
+    private void addModelSequence(UndoableProject undoableProject,
+            ModelContainer modelContainer,
+            boolean shouldCentre)
+    {
+        if (shouldCentre)
+        {
+            modelContainer.moveToCentre();
+            modelContainer.dropToBed();
+        }
+        shrinkIfRequested(modelContainer);
+        modelContainer.checkOffBed();
+        undoableProject.addModel(modelContainer);
     }
 
     private void shrinkIfRequested(ModelContainer modelContainer)

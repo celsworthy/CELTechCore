@@ -29,17 +29,17 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ModelLoaderTask extends Task<ModelLoadResults>
 {
-
+    
     private Stenographer steno = StenographerFactory.
             getStenographer(ModelLoaderTask.class.getName());
-
+    
     private final List<File> modelFilesToLoad;
     private final DoubleProperty percentProgress = new SimpleDoubleProperty();
-
+    
     public ModelLoaderTask(List<File> modelFilesToLoad)
     {
         this.modelFilesToLoad = modelFilesToLoad;
-
+        
         percentProgress.addListener(new ChangeListener<Number>()
         {
             @Override
@@ -49,30 +49,30 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             }
         });
     }
-
+    
     @Override
     protected ModelLoadResults call() throws Exception
     {
         List<ModelLoadResult> modelLoadResultList = new ArrayList<>();
-
+        
         updateTitle(Lookup.i18n("dialogs.loadModelTitle"));
-
+        
         for (File modelFileToLoad : modelFilesToLoad)
         {
             steno.info("Model file load started:" + modelFileToLoad.getName());
-
+            
             String modelFilePath = modelFileToLoad.getAbsolutePath();
             updateMessage(Lookup.i18n("dialogs.gcodeLoadMessagePrefix")
                     + modelFileToLoad.getName());
             updateProgress(0, 100);
-
+            
             final List<String> fileNamesToLoad = new ArrayList<>();
-
+            
             if (modelFilePath.toUpperCase().endsWith("ZIP"))
             {
 //                modelLoadResults.setShouldCentre(false);
                 ZipFile zipFile = new ZipFile(modelFilePath);
-
+                
                 try
                 {
                     final Enumeration<? extends ZipEntry> entries = zipFile.entries();
@@ -90,30 +90,36 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
                 {
                     zipFile.close();
                 }
-            }
-            else
+            } else
             {
                 fileNamesToLoad.add(modelFilePath);
             }
-
+            
             for (String filenameToLoad : fileNamesToLoad)
             {
-                modelLoadResultList.add(loadTheFile(filenameToLoad));
+                ModelLoadResult loadResult = loadTheFile(filenameToLoad);
+                if (loadResult != null)
+                {
+                    modelLoadResultList.add(loadTheFile(filenameToLoad));
+                } else
+                {
+                    steno.warning("Failed to load model: " + filenameToLoad);
+                }
             }
         }
-
+        
         ModelLoadResultType type = null;
         if (!modelLoadResultList.isEmpty())
         {
-                type = modelLoadResultList.get(0).getType();
+            type = modelLoadResultList.get(0).getType();
         }
         return new ModelLoadResults(type, modelLoadResultList);
     }
-
+    
     private ModelLoadResult loadTheFile(String modelFileToLoad)
     {
         ModelLoadResult modelLoadResult = null;
-
+        
         if (modelFileToLoad.toUpperCase().endsWith("OBJ"))
         {
             ObjImporter reader = new ObjImporter();
@@ -129,7 +135,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             modelLoadResult = reader.loadFile(this, new File(modelFileToLoad),
                     percentProgress);
         }
-
+        
         return modelLoadResult;
     }
 

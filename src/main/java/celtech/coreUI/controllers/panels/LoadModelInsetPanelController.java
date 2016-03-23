@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
@@ -109,7 +104,7 @@ public class LoadModelInsetPanelController implements Initializable
                     DirectoryMemoryProperty.MODEL,
                     files.get(0).getParentFile().getAbsolutePath());
                 modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), files,
-                                               true, null);
+                                               true, null, false);
             }
         });
     }
