@@ -1030,7 +1030,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             meshView = readContainer_1_03_00_Contents(in);
             was_legacy_model = true;
         }
-        
+
         getChildren().add(meshView);
 
         initialise(new File(modelName));
@@ -1093,7 +1093,7 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
         {
             snapToGround(meshView, storedSnapFaceIndexLegacy);
         }
-        
+
         if (was_legacy_model)
         {
             dropToBed();
@@ -2112,7 +2112,11 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
 
     public void addChildNodes(ObservableList<Node> nodes)
     {
-        getChildren().addAll(nodes);
+        List<Node> nodesToAdd = new ArrayList<>(nodes);
+        nodesToAdd.stream().forEach((node) ->
+        {
+            getChildren().add(node);
+        });
     }
 
     public void addChildNode(Node node)
@@ -2199,6 +2203,44 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
             this.preferredRotationTwist = fromState.preferredRotationTwist;
             this.preferredRotationTurn = fromState.preferredRotationTurn;
             this.preferredRotationLean = fromState.preferredRotationLean;
+        }
+
+        @Override
+        public String toString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Id:");
+            sb.append(modelId);
+            sb.append("\n");
+            sb.append("X:");
+            sb.append(x);
+            sb.append("\t");
+            sb.append("Y:");
+            sb.append(y);
+            sb.append("\t");
+            sb.append("Z:");
+            sb.append(z);
+            sb.append("\n");
+            sb.append("Scale X:");
+            sb.append(preferredXScale);
+            sb.append("\t");
+            sb.append("Scale Y:");
+            sb.append(preferredYScale);
+            sb.append("\t");
+            sb.append("Scale Z:");
+            sb.append(preferredZScale);
+            sb.append("\n");
+            sb.append("Lean:");
+            sb.append(preferredRotationLean);
+            sb.append("\t");
+            sb.append("Twist:");
+            sb.append(preferredRotationTwist);
+            sb.append("\t");
+            sb.append("Turn:");
+            sb.append(preferredRotationTurn);
+            sb.append("\n");
+
+            return sb.toString();
         }
     }
 

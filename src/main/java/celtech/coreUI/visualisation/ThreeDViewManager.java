@@ -294,15 +294,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     }
 
-    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle)
+    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle, double distance)
     {
         final Timeline timeline = new Timeline();
         timeline.getKeyFrames().addAll(new KeyFrame[]
         {
             new KeyFrame(Duration.millis(milliseconds), new KeyValue[]
-            {// Frame End                
+            {
                 new KeyValue(demandedCameraRotationX, xAngle, Interpolator.EASE_BOTH),
-                new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH)
+                new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH),
+                new KeyValue(cameraDistance, distance, Interpolator.EASE_BOTH)
             })
         });
         timeline.playFromStart();
@@ -727,7 +728,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             double z = bedTranslateXform.getTz() + (mouseDeltaY * 0.2);
             cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
             notifyModelsOfCameraViewChange();
         } else if (event.isSecondaryButtonDown())
         {
@@ -753,7 +753,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     {
                         newCutHeight = 0;
                     }
-                    cutHeight.set(newCutHeight);
+//                    cutHeight.set(newCutHeight);
                     justEnteredDragMode = false;
                 }
                 lastDragPosition = pickedDragPlanePoint;
@@ -846,7 +846,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             double z = bedTranslateXform.getTz() - (event.getDeltaY() * 0.2);
             cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
 //            cameraDistance.set(cameraDistance.get() - (event.getDeltaY() * 0.2));
 //            refreshCameraPosition();
         }
@@ -859,7 +858,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
             notifyModelsOfCameraViewChange();
 //            cameraDistance.set(cameraDistance.get() / event.getZoomFactor());
 //            refreshCameraPosition();
@@ -878,7 +876,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             deselectAllModels();
-                            transitionCameraTo(1000, 30, 0);
+                            transitionCameraTo(1000, 30, 0, initialCameraDistance);
 
 //                            startSettingsAnimation();
                             break;
@@ -1000,6 +998,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         bedTranslateXform.rx.angleProperty().bind(demandedCameraRotationX);
         bedTranslateXform.ry.angleProperty().bind(demandedCameraRotationY);
+        bedTranslateXform.t.zProperty().bind(cameraDistance);
+
         rotateCameraAroundAxes(-30, 0);
 
         subScene.widthProperty().bind(widthPropertyToFollow);
@@ -1032,13 +1032,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
          */
         setupFilamentListeners(project);
         updateModelColours();
-        
+
         if (Lookup.getSelectedPrinterProperty().get() != null
                 && Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty() != null)
         {
             Lookup.getSelectedPrinterProperty().get().effectiveFilamentsProperty().addListener(effectiveFilamentListener);
         }
-        
+
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
@@ -1067,7 +1067,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         for (ModelContainer model : loadedModels)
         {
             models.getChildren().add(model);
-
+            model.cameraViewOfYouHasChanged(cameraDistance.get());
             addBedReferenceToModel(model);
             model.heresYourCamera(camera);
         }
@@ -1417,7 +1417,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
                 {
                     materialToUseForExtruder0 = loaded1Material;
-                    loaded1Material.setDiffuseColor(filament0.getDisplayColour());
+                    Color dispColour = filament0.getDisplayColour();
+                    if (dispColour.getBlue() == 0
+                            && dispColour.getRed() == 0
+                            && dispColour.getGreen() == 0)
+                    {
+                        dispColour = dispColour.brighter().brighter();
+                    }
+
+                    loaded1Material.setDiffuseColor(dispColour);
                 } else
                 {
                     materialToUseForExtruder0 = greyExcludedMaterial;
@@ -1432,7 +1440,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
                     {
                         materialToUseForExtruder1 = loaded2Material;
-                        loaded2Material.setDiffuseColor(filament1.getDisplayColour());
+                        Color dispColour = filament1.getDisplayColour();
+                        if (dispColour.getBlue() == 0
+                                && dispColour.getRed() == 0
+                                && dispColour.getGreen() == 0)
+                        {
+                            dispColour = dispColour.brighter().brighter();
+                        }
+                        loaded2Material.setDiffuseColor(dispColour);
                     } else
                     {
                         materialToUseForExtruder1 = greyExcludedMaterial;
@@ -1561,7 +1576,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     {
     }
 
-    private DoubleProperty cutHeight = null;
+    private ReadOnlyDoubleProperty cutHeight = null;
     private double maxCutHeight = 0;
 
     private ChangeListener<Number> cutHeightChangeListener = new ChangeListener<Number>()
@@ -1573,7 +1588,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
     };
 
-    public void showZCutPlane(ModelContainer modelContainer, DoubleProperty cutHeight)
+    public void showZCutPlane(ModelContainer modelContainer, ReadOnlyDoubleProperty cutHeight)
     {
         processModeChange();
 

@@ -781,7 +781,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             public void changed(
                     ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                steno.info("Status box managed=" + newValue.booleanValue());
                 statusButtonHBox.setManaged(newValue);
             }
         });

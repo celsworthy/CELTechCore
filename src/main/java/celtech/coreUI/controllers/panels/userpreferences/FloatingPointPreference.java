@@ -3,7 +3,6 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
-import java.text.ParseException;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Control;
@@ -34,7 +33,7 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
         control.setAllowedDecimalPlaces(decimalPlaces);
         control.setAllowNegative(negativeAllowed);
         control.setMaxLength(digits);
-        control.floatValueProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        control.valueChangedProperty().addListener((ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
         {
             updateValueFromControl();
         });
@@ -43,16 +42,16 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
     @Override
     public void updateValueFromControl()
     {
-        floatProperty.set(control.floatValueProperty().get());
+        floatProperty.set(control.getAsFloat());
 
         // User Preferences controls whether the property can be set - read back just in case our selection was overridden
-        control.floatValueProperty().set(floatProperty.get());
+        control.setValue(floatProperty.get());
     }
 
     @Override
     public void populateControlWithCurrentValue()
     {
-        control.floatValueProperty().set(floatProperty.get());
+        control.setValue(floatProperty.get());
     }
 
     @Override

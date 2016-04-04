@@ -181,11 +181,11 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
     public void prime(ModelContainer modelContainer)
     {
         currentModel = modelContainer;
-        cutHeight.doubleValueProperty().set(modelContainer.getTransformedHeight() / 2);
+        cutHeight.setValue(modelContainer.getTransformedHeight() / 2);
 
         modelContainer.addScreenExtentsChangeListener(this);
 
-        viewManager.showZCutPlane(modelContainer, cutHeight.doubleValueProperty());
+//        viewManager.showZCutPlane(modelContainer, cutHeight.doubleValueProperty());
 
         positionCutBox(currentModel.getScreenExtents());
     }

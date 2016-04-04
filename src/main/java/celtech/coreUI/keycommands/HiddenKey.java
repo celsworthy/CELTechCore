@@ -20,54 +20,56 @@ public class HiddenKey
     private boolean captureKeys = false;
     private ArrayList<String> commandSequences = new ArrayList<>();
     private ArrayList<String> parameterCaptureSequences = new ArrayList<>();
-    private ArrayList<KeyCommandListener> keyCommandListeners = new ArrayList<>();
+    private final ArrayList<KeyCommandListener> keyCommandListeners = new ArrayList<>();
+    private UnhandledKeyListener unhandledKeyListener = null;
     private String hiddenCommandKeyBuffer = "";
     private String parameterCaptureBuffer = "";
     private boolean parameterCaptureInProgress = false;
 
     private final EventHandler<KeyEvent> hiddenErrorCommandEventHandler = (KeyEvent event) ->
     {
+        boolean wasConsumed = false;
 
         switch (event.getCode())
         {
             case DIGIT1:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:",
-                                     DummyPrinterCommandInterface.defaultRoboxAttachCommand);
+                    wasConsumed |= triggerListeners("dummy:",
+                            DummyPrinterCommandInterface.defaultRoboxAttachCommand);
                 }
                 break;
             case DIGIT2:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:",
-                                     DummyPrinterCommandInterface.defaultRoboxAttachCommand2);
+                    wasConsumed |= triggerListeners("dummy:",
+                            DummyPrinterCommandInterface.defaultRoboxAttachCommand2);
                 }
                 break;
             case DIGIT3:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", "ATTACH EXTRUDER 1");
+                    wasConsumed |= triggerListeners("dummy:", "ATTACH EXTRUDER 1");
                 }
                 break;
             case DIGIT4:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
-                    triggerListeners("dummy:", "ATTACH REEL RBX-PLA-OR022 1");
+                    wasConsumed |= triggerListeners("dummy:", "ATTACH REEL RBX-PLA-OR022 1");
                 }
                 break;
             case B:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     // trigger B_STUCK
-                    triggerListeners("dummy:", "ERROR B_STUCK");
+                    wasConsumed |= triggerListeners("dummy:", "ERROR B_STUCK");
                 }
                 break;
             case E:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     // trigger E_FILAMENT_SLIP
-                    triggerListeners("dummy:", "ERROR E_FILAMENT_SLIP");
+                    wasConsumed |= triggerListeners("dummy:", "ERROR E_FILAMENT_SLIP");
                 }
                 break;
 
@@ -75,12 +77,12 @@ public class HiddenKey
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     if (Lookup.getSelectedPrinterProperty().get().
-                        extrudersProperty().get(0).filamentLoadedProperty().get())
+                            extrudersProperty().get(0).filamentLoadedProperty().get())
                     {
-                        triggerListeners("dummy:", "UNLOAD 0");
+                        wasConsumed |= triggerListeners("dummy:", "UNLOAD 0");
                     } else
                     {
-                        triggerListeners("dummy:", "LOAD 0");
+                        wasConsumed |= triggerListeners("dummy:", "LOAD 0");
                     }
 
                 }
@@ -89,12 +91,12 @@ public class HiddenKey
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     if (Lookup.getSelectedPrinterProperty().get().
-                        extrudersProperty().get(1).filamentLoadedProperty().get())
+                            extrudersProperty().get(1).filamentLoadedProperty().get())
                     {
-                        triggerListeners("dummy:", "UNLOAD 1");
+                        wasConsumed |= triggerListeners("dummy:", "UNLOAD 1");
                     } else
                     {
-                        triggerListeners("dummy:", "LOAD 1");
+                        wasConsumed |= triggerListeners("dummy:", "LOAD 1");
                     }
 
                 }
@@ -103,17 +105,26 @@ public class HiddenKey
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     // trigger D_FILAMENT_SLIP
-                    triggerListeners("dummy:", "ERROR D_FILAMENT_SLIP");
+                    wasConsumed |= triggerListeners("dummy:", "ERROR D_FILAMENT_SLIP");
                 }
             case S:
                 if (event.isShortcutDown() && event.isAltDown())
                 {
                     // trigger detach printer
-                    triggerListeners("dummy:", "DETACH PRINTER");
+                    wasConsumed |= triggerListeners("dummy:", "DETACH PRINTER");
                 }
 
                 break;
 
+        }
+
+        if (!wasConsumed)
+        {
+            unhandledKeyListener.unhandledKeyEvent(event);
+        }
+        else
+        {
+            event.consume();
         }
     };
 
@@ -147,7 +158,7 @@ public class HiddenKey
                     matchedNone = false;
                     break;
                 } else if (commandSequence.startsWith(hiddenCommandKeyBuffer + event.
-                    getCharacter()))
+                        getCharacter()))
                 {
                     hiddenCommandKeyBuffer += event.getCharacter();
                     matchedNone = false;
@@ -160,15 +171,15 @@ public class HiddenKey
                 for (String parameterCaptureSequence : parameterCaptureSequences)
                 {
                     if (!parameterCaptureInProgress
-                        && parameterCaptureSequence.equals(hiddenCommandKeyBuffer + event.
-                            getCharacter()))
+                            && parameterCaptureSequence.equals(hiddenCommandKeyBuffer + event.
+                                    getCharacter()))
                     {
                         hiddenCommandKeyBuffer += event.getCharacter();
                         parameterCaptureInProgress = true;
                         matchedNone = false;
                         break;
                     } else if (parameterCaptureSequence.startsWith(hiddenCommandKeyBuffer + event.
-                        getCharacter()))
+                            getCharacter()))
                     {
                         hiddenCommandKeyBuffer += event.getCharacter();
                         matchedNone = false;
@@ -214,24 +225,37 @@ public class HiddenKey
         keyCommandListeners.add(listener);
     }
 
-    private void triggerListeners(String commandSequence)
+    private boolean triggerListeners(String commandSequence)
     {
+        boolean wasConsumed = false;
+
         for (KeyCommandListener listener : keyCommandListeners)
         {
-            listener.trigger(commandSequence, null);
+            wasConsumed |= listener.trigger(commandSequence, null);
         }
+
+        return wasConsumed;
     }
 
-    private void triggerListeners(String commandSequence, String capturedParameter)
+    private boolean triggerListeners(String commandSequence, String capturedParameter)
     {
+        boolean wasConsumed = false;
+
         for (KeyCommandListener listener : keyCommandListeners)
         {
-            listener.trigger(commandSequence, capturedParameter);
+            wasConsumed |= listener.trigger(commandSequence, capturedParameter);
         }
+
+        return wasConsumed;
     }
 
     public void addCommandWithParameterSequence(String commandPrefix)
     {
         parameterCaptureSequences.add(commandPrefix);
+    }
+    
+    public void addUnhandledKeyListener(UnhandledKeyListener listener)
+    {
+        unhandledKeyListener = listener;
     }
 }

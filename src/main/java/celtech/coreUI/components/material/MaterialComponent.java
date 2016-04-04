@@ -202,20 +202,21 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
     public void whenMaterialSelected(ActionEvent e)
     {
         filamentInUse = cmbMaterials.getValue();
-        if (filamentInUse != FilamentContainer.UNKNOWN_FILAMENT)
+
+        if (filamentInUse != null)
         {
-            Platform.runLater(() ->
+            if (filamentInUse != FilamentContainer.UNKNOWN_FILAMENT)
             {
-                comboItems.remove(FilamentContainer.UNKNOWN_FILAMENT);
-            });
-        }
-        configureDisplay();
-        if (Lookup.getSelectedPrinterProperty().get() != null)
-        {
-            Lookup.getSelectedPrinterProperty().get().overrideFilament(extruderNumber, filamentInUse);
-        } else
-        {
-            System.out.println("Called with null filament");
+                Platform.runLater(() ->
+                {
+                    comboItems.remove(FilamentContainer.UNKNOWN_FILAMENT);
+                });
+            }
+            configureDisplay();
+            if (Lookup.getSelectedPrinterProperty().get() != null)
+            {
+                Lookup.getSelectedPrinterProperty().get().overrideFilament(extruderNumber, filamentInUse);
+            }
         }
     }
 
@@ -258,7 +259,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         filamentsList.addAll(allFilaments);
 
         comboItems = FXCollections.observableArrayList(filamentsList);
-        cmbMaterials.setItems(null);
         cmbMaterials.setItems(comboItems);
 
         if (comboItems.contains(currentVal))

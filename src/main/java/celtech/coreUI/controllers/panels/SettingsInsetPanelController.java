@@ -173,7 +173,22 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             ex.printStackTrace();
         }
 
-        fillDensityPercentEntry.floatValueProperty().bindBidirectional(fillDensitySlider.valueProperty());
+        fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                fillDensityPercentEntry.setValue(t1.doubleValue());
+            }
+        });
+        fillDensityPercentEntry.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                fillDensitySlider.setValue(fillDensityPercentEntry.getAsDouble());
+            }
+        });
     }
 
     PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->

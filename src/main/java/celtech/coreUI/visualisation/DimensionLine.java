@@ -3,13 +3,14 @@ package celtech.coreUI.visualisation;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.controllers.panels.ModelEditInsetPanelController;
 import celtech.modelcontrol.ModelContainer;
 import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
 import java.util.HashSet;
 import java.util.Set;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -45,52 +46,18 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     private Set<ModelContainer> modelContainerSet;
     private UndoableProject undoableproject;
 
-    private double normaliseArrowAngle(final double angle)
-    {
-        double angleToReturn = 0;
-//        if (angle < 0)
-//        {
-//            angleToReturn = -angle - 180;
-//        } else
-        if (angle < 0)
-        {
-            angleToReturn = angle;
-        } else
-        {
-            angleToReturn = -angle;
-        }
-//        steno.info("Rotate in " + angle + " out " + angleToReturn);
-
-        return angleToReturn;
-    }
-
-    private double normaliseTextAngle(final double angle)
-    {
-        double angleToReturn = 0;
-        if (angle >= -90 && angle <= 0)
-        {
-            angleToReturn = -angle - 90;
-        } else
-        {
-            angleToReturn = -angle - 270;
-        }
-//        steno.info("Rotate in " + angle + " out " + angleToReturn);
-
-        return angleToReturn;
-    }
-
-    private final ChangeListener<Number> dimensionEntryChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    private void dimensionEntryChanged()
     {
         switch (direction)
         {
             case FORWARD_BACK:
-                undoableproject.resizeModelsDepth(modelContainerSet, newValue.floatValue());
+                undoableproject.resizeModelsDepth(modelContainerSet, dimensionLabel.getAsFloat());
                 break;
             case HORIZONTAL:
-                undoableproject.resizeModelsWidth(modelContainerSet, newValue.floatValue());
+                undoableproject.resizeModelsWidth(modelContainerSet, dimensionLabel.getAsFloat());
                 break;
             case VERTICAL:
-                undoableproject.resizeModelsHeight(modelContainerSet, newValue.floatValue());
+                undoableproject.resizeModelsHeight(modelContainerSet, dimensionLabel.getAsFloat());
                 break;
         }
     };
@@ -106,15 +73,15 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         undoableproject = new UndoableProject(project);
         modelContainerSet = new HashSet<>();
         modelContainerSet.add(modelContainer);
-        
+
         this.direction = direction;
-        
+
         dimensionLabel.getTransforms().addAll(textTranslate, textRotate);
 
         dimensionLabel.getStyleClass().add("dimension-label");
         dimensionLabel.setAllowNegative(false);
         dimensionLabel.setAllowedDecimalPlaces(2);
-        dimensionLabel.floatValueProperty().addListener(dimensionEntryChangeListener);
+        addNumberFieldListener(dimensionLabel, this::dimensionEntryChanged);
 
         dimensionLine.setStroke(Color.WHITE);
         upArrow.setFill(Color.WHITE);
@@ -161,7 +128,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
     {
         if (direction == LineDirection.VERTICAL)
         {
-            dimensionLabel.floatValueProperty().set((float)transformedHeight);
+            dimensionLabel.setValue((float) transformedHeight);
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
@@ -224,11 +191,11 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 secondArrowTranslate.setX(bottomPoint.getX());
                 secondArrowTranslate.setY(bottomPoint.getY());
-                arrowRotate.setAngle(normaliseArrowAngle(angle));
+                arrowRotate.setAngle(angle);
             }
         } else if (direction == LineDirection.HORIZONTAL)
         {
-            dimensionLabel.floatValueProperty().set((float)transformedWidth);
+            dimensionLabel.setValue((float) transformedWidth);
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
@@ -295,7 +262,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             }
         } else if (direction == LineDirection.FORWARD_BACK)
         {
-            dimensionLabel.floatValueProperty().set((float)transformedDepth);
+            dimensionLabel.setValue((float) transformedDepth);
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()
@@ -356,11 +323,45 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 secondArrowTranslate.setX(frontPoint.getX());
                 secondArrowTranslate.setY(frontPoint.getY());
-                arrowRotate.setAngle(normaliseArrowAngle(angle));
+                arrowRotate.setAngle(angle);
             }
         }
     }
-    
+
+    private void addNumberFieldListener(RestrictedNumberField textField, ModelEditInsetPanelController.NoArgsVoidFunc func)
+    {
+        textField.focusedProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    try
+                    {
+                        if (!newValue)
+                        {
+                            func.run();
+                        }
+                    } catch (Exception ex)
+                    {
+                        steno.warning("exception updating number field " + ex);
+                    }
+                });
+
+        textField.setOnKeyPressed((KeyEvent t) ->
+        {
+            switch (t.getCode())
+            {
+                case ENTER:
+                    try
+                    {
+                        func.run();
+                    } catch (Exception ex)
+                    {
+                        steno.warning("exception updating number field " + ex);
+                    }
+                    break;
+            }
+        });
+    }
+
     public RestrictedNumberField getDimensionLabel()
     {
         return dimensionLabel;

@@ -387,6 +387,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (printerToUse == null
                 || !printerToUse.effectiveFilamentsProperty().containsKey(0)
+                || printerToUse.effectiveFilamentsProperty().get(0) == null
                 || printerToUse.effectiveFilamentsProperty().get(0) == FilamentContainer.UNKNOWN_FILAMENT)
         {
             reel1Background.setVisible(false);
@@ -402,6 +403,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (printerToUse == null
                 || !printerToUse.effectiveFilamentsProperty().containsKey(1)
+                || printerToUse.effectiveFilamentsProperty().get(1) == null
                 || printerToUse.effectiveFilamentsProperty().get(1) == FilamentContainer.UNKNOWN_FILAMENT)
         {
             reel2Background.setVisible(false);

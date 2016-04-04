@@ -3,7 +3,6 @@
  */
 package celtech.appManager.undo;
 
-import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -57,10 +56,11 @@ public class CommandStack
         clearEndOfList();
         commands.add(command);
         command.do_();
-        if (index.get() < commands.size() - 1)
-        {
-            index.set(index.get() + 1);
-        }
+//        steno.info("Asked to do- " + command.toString());
+//        if (index.get() < commands.size() - 1)
+//        {
+        index.set(index.get() + 1);
+//        }
         tryMerge();
     }
 
@@ -69,11 +69,12 @@ public class CommandStack
      */
     private void clearEndOfList()
     {
-        List<Command> commandsToClear = commands.subList(index.get() + 1, commands.size());
-        if (!commandsToClear.isEmpty())
-        {
-            commandsToClear.clear();
-        }
+        commands.subList(index.get() + 1, commands.size()).clear();
+//        List<Command> commandsToClear = commands.subList(index.get() + 1, commands.size());
+//        if (!commandsToClear.isEmpty())
+//        {
+//            commandsToClear.clear();
+//        }
     }
 
     public void undo() throws UndoException
@@ -84,6 +85,7 @@ public class CommandStack
         }
         Command currentCommand = commands.get(index.get());
         currentCommand.undo();
+//        steno.info("Asked to undo - " + currentCommand.toString());
         index.set(index.get() - 1);
     }
 
@@ -95,6 +97,7 @@ public class CommandStack
         }
         Command followingCommand = commands.get(index.get() + 1);
         followingCommand.redo();
+//        steno.info("Asked to redo- " + followingCommand.toString());
         index.set(index.get() + 1);
     }
 

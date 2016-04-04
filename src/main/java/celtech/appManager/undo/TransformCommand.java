@@ -21,7 +21,7 @@ class TransformCommand extends Command
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(
-        TransformCommand.class.getName());
+            TransformCommand.class.getName());
 
     private final UndoableProject.NoArgsVoidFunc func;
     private Set<ModelContainer.State> originalStates;
@@ -69,7 +69,8 @@ class TransformCommand extends Command
         {
             TransformCommand transformCommand = (TransformCommand) command;
             return transformCommand.getCanMerge();
-        } else {
+        } else
+        {
             return false;
         }
     }
@@ -114,5 +115,41 @@ class TransformCommand extends Command
             statesById.put(state.modelId, state);
         }
         return statesById;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getClass().toGenericString());
+        sb.append("\n");
+        sb.append("Project: ");
+        sb.append(project.getProjectName());
+        sb.append("\n");
+        sb.append("Original States: ");
+        if (originalStates != null)
+        {
+            originalStates.iterator().forEachRemaining(item ->
+            {
+                sb.append(item.toString());
+            });
+        } else
+        {
+            sb.append("None");
+        }
+        sb.append("\n");
+        sb.append("New States: ");
+        if (newStates != null)
+        {
+            newStates.iterator().forEachRemaining(item ->
+            {
+                sb.append(item.toString());
+            });
+        } else
+        {
+            sb.append("None");
+        }
+        sb.append("\n");
+        return sb.toString();
     }
 }

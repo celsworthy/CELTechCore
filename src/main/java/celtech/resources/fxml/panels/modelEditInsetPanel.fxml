@@ -114,20 +114,20 @@
                                 <Group />
                                 <StackPane GridPane.columnIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="9" prefColumnCount="4" text="" />
-                                        <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="9" drivesUndoableOperation="true" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" drivesUndoableOperation="true" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <StackPane fx:id="textHeightField" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" maxLength="9" prefColumnCount="4" text="" />
-                                        <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextHeightField" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="9" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="heightTextField" allowedDecimalPlaces="2" drivesUndoableOperation="true" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <StackPane GridPane.columnIndex="2" GridPane.rowIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" maxLength="9" prefColumnCount="4" text="" />
-                                        <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextDepthField" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="9" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="depthTextField" allowedDecimalPlaces="2" drivesUndoableOperation="true" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
                                 <Label text="%modelEdit.UseProportionalScale" GridPane.columnSpan="2" GridPane.rowIndex="3" />
@@ -163,8 +163,8 @@
                             <children>
                                 <Label text="%modelEdit.XAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <Label text="%modelEdit.YAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <RestrictedNumberField allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
-                                <RestrictedNumberField fx:id="yAxisTextField" allowedDecimalPlaces="2" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <RestrictedNumberField allowedDecimalPlaces="2" maxLength="6" drivesUndoableOperation="true" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
+                                <RestrictedNumberField fx:id="yAxisTextField" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             </children>
                             <columnConstraints>
                                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="50.0" />
@@ -187,9 +187,9 @@
                                 <Label text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <Label text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <Label text="%modelEdit.turn" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
-                                <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <RestrictedNumberField fx:id="rotationZTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" drivesUndoableOperation="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
+                                <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" drivesUndoableOperation="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <RestrictedNumberField fx:id="rotationZTextField" allowNegative="true" drivesUndoableOperation="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             </children>
                             <columnConstraints>
                                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="50.0" />
