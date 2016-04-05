@@ -1,18 +1,12 @@
 package celtech.crypto;
 
-import celtech.configuration.ApplicationConfiguration;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -101,7 +95,7 @@ public class CryptoFileStore
         }
     }
 
-    protected String encrypt(String plainText)
+    public String encrypt(String plainText)
     {
         String encryptedText = null;
 
@@ -135,7 +129,7 @@ public class CryptoFileStore
         return encryptedText;
     }
 
-    protected String decrypt(String encryptedText)
+    public String decrypt(String encryptedText)
     {
         String decryptedText = null;
 

@@ -6,8 +6,10 @@ import celtech.configuration.MachineType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -149,6 +151,27 @@ public class AutoUpdate extends Thread
         int upgradeStatus = ERROR;
 
         String url = "http://downloads.cel-robox.com:8001/" + appDirectory + "/" + applicationName + "-update.xml";
+
+        String encodedSwVersion = null;
+        try
+        {
+            encodedSwVersion = URLEncoder.encode(ApplicationConfiguration.getApplicationVersion(), "UTF-8");
+            url += "?sw=" + encodedSwVersion;
+        } catch (UnsupportedEncodingException ex)
+        {
+        }
+
+        String encodedHwVersion = null;
+        try
+        {
+            if (ApplicationConfiguration.getLastPrinterAttached() != null)
+            {
+                encodedHwVersion = URLEncoder.encode(ApplicationConfiguration.getLastPrinterAttached(), "UTF-8");
+                url += "&hw=" + encodedHwVersion;
+            }
+        } catch (UnsupportedEncodingException ex)
+        {
+        }
 
         try
         {

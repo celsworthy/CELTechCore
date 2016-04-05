@@ -17,6 +17,7 @@ import celtech.printerControl.model.PrinterException;
 import celtech.services.firmware.FirmwareLoadResult;
 import celtech.services.firmware.FirmwareLoadService;
 import celtech.utils.PrinterUtils;
+import java.util.Locale;
 import javafx.concurrent.WorkerStateEvent;
 import libertysystems.configuration.ConfigItemIsAnArray;
 import libertysystems.configuration.ConfigNotLoadedException;
@@ -54,6 +55,8 @@ public abstract class CommandInterface extends Thread
     protected boolean suppressComms = false;
 
     private String printerName = null;
+
+    private PrinterIDResponse lastPrinterIDResponse = null;
 
     /**
      *
@@ -211,8 +214,6 @@ public abstract class CommandInterface extends Thread
                 case CHECKING_ID:
                     steno.debug("Check id " + printerHandle);
 
-                    PrinterIDResponse lastPrinterIDResponse = null;
-
                     try
                     {
                         lastPrinterIDResponse = printerToUse.readPrinterID();
@@ -251,6 +252,16 @@ public abstract class CommandInterface extends Thread
                         determinePrinterStatus(statusResponse);
 
                         controlInterface.printerConnected(printerHandle);
+
+                        //Stash the connected printer info
+                        String printerIDToUse = null;
+                        if (lastPrinterIDResponse != null
+                                && lastPrinterIDResponse.getAsFormattedString() != null)
+                        {
+                            printerIDToUse = lastPrinterIDResponse.getAsFormattedString();
+                        }
+                        ApplicationConfiguration.setLastPrinterAttached(printerIDToUse, String.format(Locale.UK, "%.2f", firmwareVersionInUse));
+
                         commsState = RoboxCommsState.CONNECTED;
                     } catch (RoboxCommsException ex)
                     {

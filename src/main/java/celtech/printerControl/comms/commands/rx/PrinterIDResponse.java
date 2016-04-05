@@ -92,7 +92,7 @@ public class PrinterIDResponse extends RoboxRxPacket
             byteOffset += WritePrinterID.BYTES_FOR_SECOND_PAD;
 
             String colourDigits = new String(byteData, byteOffset,
-                                             PrinterIDDataStructure.colourBytes * 3, charsetToUse);
+                    PrinterIDDataStructure.colourBytes * 3, charsetToUse);
             byteOffset += PrinterIDDataStructure.colourBytes * 3;
 
             printerColour = stringToColor(colourDigits);
@@ -254,4 +254,22 @@ public class PrinterIDResponse extends RoboxRxPacket
         return 257;
     }
 
+    public String getAsFormattedString()
+    {
+        StringBuilder idString = new StringBuilder();
+        idString.append(model);
+        idString.append("-");
+        idString.append(edition);
+        idString.append("-");
+        idString.append(weekOfManufacture);
+        idString.append(yearOfManufacture);
+        idString.append("-");
+        idString.append(poNumber);
+        idString.append("-");
+        idString.append(serialNumber);
+        idString.append("-");
+        idString.append(checkByte);
+
+        return idString.toString();
+    }
 }

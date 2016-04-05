@@ -1,6 +1,7 @@
 package celtech.configuration;
 
 import celtech.appManager.ProjectMode;
+import celtech.crypto.CryptoFileStore;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -172,6 +173,7 @@ public class ApplicationConfiguration
     private static Properties installationProperties = null;
     private static Properties applicationMemoryProperties = null;
     private static final String fileMemoryItem = "FileMemory";
+    public static final String lastPrinterAttachedMemoryItem = "LastPrinter";
     private static final String userLocaleItem = "Locale";
 
     private static String applicationVersion = null;
@@ -419,9 +421,9 @@ public class ApplicationConfiguration
             if (getMachineType() == MachineType.WINDOWS)
             {
                 String registryValue = WindowsRegistry.currentUser("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal");
-                
+
                 if (registryValue != null)
-                {                    
+                {
                     Path regPath = Paths.get(registryValue);
                     if (Files.exists(regPath, LinkOption.NOFOLLOW_LINKS))
                     {
@@ -777,6 +779,36 @@ public class ApplicationConfiguration
         }
 
         applicationMemoryProperties.setProperty(fileMemoryItem + whichProperty.name(), directoryName);
+    }
+
+    public static String getLastPrinterAttached()
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        String directory = applicationMemoryProperties.getProperty(lastPrinterAttachedMemoryItem);
+
+        return directory;
+    }
+
+    public static void setLastPrinterAttached(String printerID, String firmwareVersion)
+    {
+        if (applicationMemoryProperties == null)
+        {
+            loadApplicationMemoryProperties();
+        }
+
+        String idToWrite = "No Serial";
+        if (printerID != null
+                && !printerID.equals(""))
+        {
+            CryptoFileStore a = new CryptoFileStore(lastPrinterAttachedMemoryItem);
+            a.encrypt(printerID);
+            idToWrite = a.encrypt(printerID);
+        }
+        applicationMemoryProperties.setProperty(lastPrinterAttachedMemoryItem, idToWrite + "->" + firmwareVersion);
     }
 
     public static Locale getUserPreferredLocale()
