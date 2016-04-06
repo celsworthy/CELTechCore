@@ -75,7 +75,7 @@
             <String fx:value="preferenceControl" />
             </styleClass>
         </ColorPicker>
-        <ComboBox id="cmbLibraryFilament" fx:id="cmbFilament" prefWidth="150.0" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER">
+        <ComboBox fx:id="cmbFilament" prefWidth="380.0" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER">
          <styleClass>
             <String fx:value="cmbCleanCombo" />
             <String fx:value="preferenceControl" />
