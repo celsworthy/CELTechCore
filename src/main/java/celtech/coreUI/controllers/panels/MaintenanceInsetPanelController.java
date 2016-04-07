@@ -9,6 +9,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.PrinterStatus;
 import celtech.printerControl.comms.commands.rx.FirmwareResponse;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
 import celtech.services.printing.GCodePrintResult;
@@ -101,7 +102,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
 
     @FXML
     private Button ZTestButton;
-    
+
     @FXML
     void ejectStuckMaterial1(ActionEvent event)
     {
@@ -109,7 +110,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(0, false, null);
+                connectedPrinter.ejectStuckMaterial(1, false, null);
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material E");
@@ -124,7 +125,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(1, false, null);
+                connectedPrinter.ejectStuckMaterial(0, false, null);
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material D");
@@ -145,7 +146,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void testX(ActionEvent event)
+    void testX(ActionEvent event
+    )
     {
         try
         {
@@ -157,7 +159,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void testY(ActionEvent event)
+    void testY(ActionEvent event
+    )
     {
         try
         {
@@ -169,7 +172,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void testZ(ActionEvent event)
+    void testZ(ActionEvent event
+    )
     {
         try
         {
@@ -181,7 +185,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void cleanNozzleT0(ActionEvent event)
+    void cleanNozzleT0(ActionEvent event
+    )
     {
         try
         {
@@ -193,7 +198,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void cleanNozzleT1(ActionEvent event)
+    void cleanNozzleT1(ActionEvent event
+    )
     {
         try
         {
@@ -205,7 +211,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void speedTest(ActionEvent event)
+    void speedTest(ActionEvent event
+    )
     {
         try
         {
@@ -217,7 +224,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void loadFirmware(ActionEvent event)
+    void loadFirmware(ActionEvent event
+    )
     {
         firmwareFileChooser.setInitialFileName("Untitled");
 
@@ -249,7 +257,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void sendGCodeSD(ActionEvent event)
+    void sendGCodeSD(ActionEvent event
+    )
     {
         gcodeFileChooser.setInitialFileName("Untitled");
 
@@ -273,7 +282,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     }
 
     @FXML
-    void purge(ActionEvent event)
+    void purge(ActionEvent event
+    )
     {
         DisplayManager.getInstance().getPurgeInsetPanelController().purge(connectedPrinter);
     }
@@ -285,7 +295,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
      * @param rb
      */
     @Override
-    public void initialize(URL url, ResourceBundle rb)
+    public void initialize(URL url, ResourceBundle rb
+    )
     {
         try
         {
@@ -300,18 +311,18 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
 
             YTestButton.disableProperty().bind(printingDisabled);
             PurgeMaterialButton.disableProperty().bind(
-                noFilamentEOrD.or(noHead).or(printingDisabled));
+                    noFilamentEOrD.or(noHead).or(printingDisabled));
 
             T0CleanButton.disableProperty().bind(
-                noHead
-                .or(printingDisabled)
-                .or(dualHead.and(noFilamentE))
-                .or(singleHead.and(noFilamentEOrD)));
+                    noHead
+                    .or(printingDisabled)
+                    .or(dualHead.and(noFilamentE))
+                    .or(singleHead.and(noFilamentEOrD)));
             T1CleanButton.disableProperty().bind(
-                noHead
-                .or(printingDisabled)
-                .or(dualHead.and(noFilamentD))
-                .or(singleHead.and(noFilamentEOrD)));
+                    noHead
+                    .or(printingDisabled)
+                    .or(dualHead.and(noFilamentD))
+                    .or(singleHead.and(noFilamentEOrD)));
 
             EjectStuckMaterialButton1.disableProperty().bind(printingDisabled.or(noFilamentE));
             EjectStuckMaterialButton2.disableProperty().bind(printingDisabled.or(noFilamentD).or(singleHead));
@@ -322,9 +333,9 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             LevelGantryButton.disableProperty().bind(printingDisabled);
             ZTestButton.disableProperty().bind(printingDisabled);
             loadFirmwareButton.disableProperty().bind(printingDisabled.or(Lookup.
-                getUserPreferences().advancedModeProperty().not()));
+                    getUserPreferences().advancedModeProperty().not()));
             sendGCodeSDButton.disableProperty().bind(printingDisabled.or(Lookup.
-                getUserPreferences().advancedModeProperty().not()));
+                    getUserPreferences().advancedModeProperty().not()));
 
             currentFirmwareField.setStyle("-fx-font-weight: bold;");
 
@@ -377,62 +388,62 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                                             "maintenancePanel.firmwareFileDescription"), "*.bin"));
 
             Lookup.getSelectedPrinterProperty().addListener(
-                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    if (connectedPrinter != null)
+                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                     {
-                        sendGCodeSDButton.disableProperty().unbind();
-                        loadFirmwareButton.disableProperty().unbind();
-
-                        printingDisabled.unbind();
-                        printingDisabled.set(true);
-                        noHead.unbind();
-                        noHead.set(true);
-                        noFilamentE.unbind();
-                        noFilamentE.set(true);
-                        noFilamentD.unbind();
-                        noFilamentD.set(true);
-                        noFilamentEOrD.unbind();
-                        noFilamentEOrD.set(true);
-
-                        dualHead.unbind();
-                        dualHead.set(false);
-                        singleHead.unbind();
-                        singleHead.set(false);
-                    }
-
-                    connectedPrinter = newValue;
-
-                    if (connectedPrinter != null)
-                    {
-                        readFirmwareVersion();
-
-                        printingDisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
-                                PrinterStatus.IDLE));
-
-                        noHead.bind(connectedPrinter.headProperty().isNull());
-
-                        if (noHead.not().get())
+                        if (connectedPrinter != null)
                         {
-                            dualHead.bind(Bindings.size(
-                                    connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
-                                    2));
-                            singleHead.bind(Bindings.size(
-                                    connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
-                                    1));
+                            sendGCodeSDButton.disableProperty().unbind();
+                            loadFirmwareButton.disableProperty().unbind();
+
+                            printingDisabled.unbind();
+                            printingDisabled.set(true);
+                            noHead.unbind();
+                            noHead.set(true);
+                            noFilamentE.unbind();
+                            noFilamentE.set(true);
+                            noFilamentD.unbind();
+                            noFilamentD.set(true);
+                            noFilamentEOrD.unbind();
+                            noFilamentEOrD.set(true);
+
+                            dualHead.unbind();
+                            dualHead.set(false);
+                            singleHead.unbind();
+                            singleHead.set(false);
                         }
 
-                        noFilamentE.bind(
-                            connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not());
-                        noFilamentD.bind(
-                            connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not());
+                        connectedPrinter = newValue;
 
-                        noFilamentEOrD.bind(
-                            connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not()
-                            .and(
-                                connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not()));
-                    }
-                });
+                        if (connectedPrinter != null)
+                        {
+                            readFirmwareVersion();
+
+                            printingDisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
+                                            PrinterStatus.IDLE));
+
+                            noHead.bind(connectedPrinter.headProperty().isNull());
+
+                            if (noHead.not().get())
+                            {
+                                dualHead.bind(Bindings.size(
+                                                connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
+                                                2));
+                                singleHead.bind(Bindings.size(
+                                                connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
+                                                1));
+                            }
+
+                            noFilamentE.bind(
+                                    connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not());
+                            noFilamentD.bind(
+                                    connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not());
+
+                            noFilamentEOrD.bind(
+                                    connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not()
+                                    .and(
+                                            connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not()));
+                        }
+                    });
         } catch (Exception ex)
         {
             ex.printStackTrace();
