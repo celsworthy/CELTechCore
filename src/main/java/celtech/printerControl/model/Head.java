@@ -562,4 +562,21 @@ public class Head implements Cloneable, RepairableComponent
 
         dataChanged.set(!dataChanged.get());
     }
+
+    public String getFormattedSerial()
+    {
+        StringBuilder formattedHeadSerial = new StringBuilder();
+        formattedHeadSerial.append(typeCodeProperty().get());
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(getWeekNumber());
+        formattedHeadSerial.append(getYearNumber());
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(getPONumber());
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(getSerialNumber());
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(getChecksum());
+        
+        return formattedHeadSerial.toString();
+    }
 }

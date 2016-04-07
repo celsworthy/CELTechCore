@@ -30,9 +30,10 @@ import javafx.scene.text.Text;
  */
 public class AboutPanelController implements Initializable, PrinterListChangesListener
 {
+
     private final Clipboard clipboard = Clipboard.getSystemClipboard();
     private final ClipboardContent content = new ClipboardContent();
-    
+
     @FXML
     private Label roboxSerialNumber;
 
@@ -42,7 +43,7 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @FXML
     private Label version;
 
-        @FXML
+    @FXML
     private Label infoLabel;
 
     @FXML
@@ -74,6 +75,8 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
 
     @FXML
     private VBox logoBox;
+
+    private Printer currentPrinter = null;
 
     @FXML
     private void viewREADME(ActionEvent event)
@@ -112,13 +115,13 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     {
         Lookup.getPrinterListChangesNotifier().addListener(this);
         version.setText(ApplicationConfiguration.getApplicationVersion());
-        
+
         DisplayManager.getInstance().getDisplayScalingModeProperty().addListener(new ChangeListener<DisplayManager.DisplayScalingMode>()
         {
             @Override
             public void changed(ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode scalingMode)
             {
-                switch(scalingMode)
+                switch (scalingMode)
                 {
                     case NORMAL:
                         infoLabel.setStyle("-fx-font-size: 21px");
@@ -148,7 +151,20 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
                         logoBox.setScaleX(0.8);
                         logoBox.setScaleY(0.8);
                         break;
-                        
+
+                }
+            }
+        });
+
+        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
+            {
+                if (t1 == ApplicationMode.ABOUT
+                        && currentPrinter != null)
+                {
+                    headSerialNumber.setText(currentPrinter.headProperty().get().getFormattedSerial());
                 }
             }
         });
@@ -172,22 +188,21 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
         idString.append("-");
         idString.append(identity.printercheckByteProperty().get());
         roboxSerialNumber.setText(idString.toString());
+
+        currentPrinter = printer;
     }
 
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
         roboxSerialNumber.setText("");
+        currentPrinter = null;
     }
 
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        headSerialNumber.setText(printer.headProperty().get().typeCodeProperty().get() + "-"
-                + printer.headProperty().get().getWeekNumber() + printer.headProperty().get().getYearNumber() + "-"
-                + printer.headProperty().get().getPONumber() + "-"
-                + printer.headProperty().get().getSerialNumber() + "-"
-                + printer.headProperty().get().getChecksum());
+        headSerialNumber.setText(printer.headProperty().get().getFormattedSerial());
     }
 
     @Override
