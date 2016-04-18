@@ -40,47 +40,12 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
 
     private final double arrowHeight = 18;
     private final double arrowWidth = 8;
-    private final double arrowOffsetFromCorner = 30;
 
     private LineDirection direction;
     private ResizeableTwoD container;
     private UndoableProject undoableproject;
 
-    private double normaliseArrowAngle(final double angle)
-    {
-        double angleToReturn = 0;
-//        if (angle < 0)
-//        {
-//            angleToReturn = -angle - 180;
-//        } else
-        if (angle < 0)
-        {
-            angleToReturn = angle;
-        } else
-        {
-            angleToReturn = -angle;
-        }
-//        steno.info("Rotate in " + angle + " out " + angleToReturn);
-
-        return angleToReturn;
-    }
-
-    private double normaliseTextAngle(final double angle)
-    {
-        double angleToReturn = 0;
-        if (angle >= -90 && angle <= 0)
-        {
-            angleToReturn = -angle - 90;
-        } else
-        {
-            angleToReturn = -angle - 270;
-        }
-//        steno.info("Rotate in " + angle + " out " + angleToReturn);
-
-        return angleToReturn;
-    }
-
-    private final ChangeListener<Number> dimensionEntryChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    private final ChangeListener<Boolean> dimensionEntryChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         switch (direction)
         {
@@ -89,18 +54,18 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
                 {
                     Set<ResizeableThreeD> containerSet = new HashSet<>();
                     containerSet.add((ResizeableThreeD) container);
-                    undoableproject.resizeModelsDepth(containerSet, newValue.floatValue());
+                    undoableproject.resizeModelsDepth(containerSet, dimensionLabel.getAsFloat());
                 }
                 break;
             case HORIZONTAL:
                 Set<ResizeableTwoD> hcontainerSet = new HashSet<>();
                 hcontainerSet.add(container);
-                undoableproject.resizeModelsWidth(hcontainerSet, newValue.floatValue());
+                undoableproject.resizeModelsWidth(hcontainerSet, dimensionLabel.getAsFloat());
                 break;
             case VERTICAL:
                 Set<ResizeableTwoD> vcontainerSet = new HashSet<>();
                 vcontainerSet.add(container);
-                undoableproject.resizeModelsHeight(vcontainerSet, newValue.floatValue());
+                undoableproject.resizeModelsHeight(vcontainerSet, dimensionLabel.getAsFloat());
                 break;
         }
     };
@@ -126,7 +91,7 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
         dimensionLabel.getStyleClass().add("dimension-label");
         dimensionLabel.setAllowNegative(false);
         dimensionLabel.setAllowedDecimalPlaces(2);
-        dimensionLabel.floatValueProperty().addListener(dimensionEntryChangeListener);
+        dimensionLabel.valueChangedProperty().addListener(dimensionEntryChangeListener);
 
         dimensionLine.setStroke(Color.WHITE);
         upArrow.setFill(Color.WHITE);
@@ -168,7 +133,7 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
 
         if (direction == LineDirection.VERTICAL)
         {
-            dimensionLabel.floatValueProperty().set((float) transformedHeight);
+            dimensionLabel.setValue(transformedHeight);
 
             Edge heightEdge = extents.heightEdges[0];
             for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
@@ -231,11 +196,11 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
 
                 secondArrowTranslate.setX(bottomPoint.getX());
                 secondArrowTranslate.setY(bottomPoint.getY());
-                arrowRotate.setAngle(normaliseArrowAngle(angle));
+                arrowRotate.setAngle(angle);
             }
         } else if (direction == LineDirection.HORIZONTAL)
         {
-            dimensionLabel.floatValueProperty().set((float)transformedWidth);
+            dimensionLabel.setValue(transformedWidth);
 
             Edge widthEdge = extents.widthEdges[0];
             if (extents.widthEdges[1].getFirstPoint().getY()
@@ -312,7 +277,7 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
 
         if (direction == LineDirection.FORWARD_BACK)
         {
-            dimensionLabel.floatValueProperty().set((float)transformedDepth);
+            dimensionLabel.setValue(transformedDepth);
 
             Edge depthEdge = extents.depthEdges[0];
             if (extents.depthEdges[1].getFirstPoint().getY()
@@ -373,7 +338,7 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
 
                 secondArrowTranslate.setX(frontPoint.getX());
                 secondArrowTranslate.setY(frontPoint.getY());
-                arrowRotate.setAngle(normaliseArrowAngle(angle));
+                arrowRotate.setAngle(angle);
             }
         }
     }

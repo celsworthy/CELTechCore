@@ -5,7 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.appManager.Project;
+import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
@@ -22,9 +22,9 @@ import celtech.coreUI.controllers.panels.LibraryMenuPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
+import celtech.coreUI.keycommands.UnhandledKeyListener;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
-import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.RoboxCommsManager;
@@ -32,8 +32,6 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +73,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener, SpinnerControl
+public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener, UnhandledKeyListener, SpinnerControl,
+        ProjectCallback
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -556,6 +555,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         hiddenKeyThing.addCommandSequence(addDummyPrinterCommand);
         hiddenKeyThing.addCommandWithParameterSequence(dummyCommandPrefix);
         hiddenKeyThing.addKeyCommandListener(this);
+        hiddenKeyThing.addUnhandledKeyListener(this);
         hiddenKeyThing.captureHiddenKeys(scene);
 
         // Camera required to allow 2D shapes to be rotated in 3D in the '2D' UI
@@ -675,26 +675,31 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     case DELETE:
                     case BACK_SPACE:
                         deleteSelectedModels(project, undoableProject);
+                        event.consume();
                         break;
                     case A:
                         if (event.isShortcutDown())
                         {
                             selectAllModels(project);
+                            event.consume();
                         }
                         break;
                     case Z:
                         if (event.isShortcutDown() && (!event.isShiftDown()))
                         {
                             undoCommand(project);
+                            event.consume();
                         } else if (event.isShortcutDown() && event.isShiftDown())
                         {
                             redoCommand(project);
+                            event.consume();
                         }
                         break;
                     case Y:
                         if (event.isShortcutDown())
                         {
                             redoCommand(project);
+                            event.consume();
                         }
                         break;
                     default:
@@ -812,21 +817,34 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     }
 
     @Override
-    public void trigger(String commandSequence, String capturedParameter)
+    public boolean trigger(String commandSequence, String capturedParameter)
     {
+        boolean handled = false;
+
         switch (commandSequence)
         {
             case addDummyPrinterCommand:
                 RoboxCommsManager.getInstance().addDummyPrinter();
+                handled = true;
                 break;
             case dummyCommandPrefix:
                 if (RoboxCommsManager.getInstance().getDummyPrinters().size() > 0)
                 {
                     RoboxCommsManager.getInstance().getDummyPrinters().get(0).sendRawGCode(
                             capturedParameter.replaceAll("/", " ").trim().toUpperCase(), true);
+                    handled = true;
                 }
                 break;
         }
+
+        return handled;
+    }
+
+    @Override
+    public void unhandledKeyEvent(KeyEvent keyEvent)
+    {
+        //Try sending the keyEvent to the in-focus project
+        handle(keyEvent);
     }
 
     private void configureProjectDragNDrop(Node basePane)
@@ -997,6 +1015,15 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     tabDisplay.getSelectionModel().select(projectTab);
                 });
             }
+        }
+    }
+
+    @Override
+    public void modelAddedToProject(Project project)
+    {
+        if (tabDisplay.getSelectionModel().getSelectedItem() instanceof ProjectTab)
+        {
+            ((ProjectTab)tabDisplay.getSelectionModel().getSelectedItem()).modelAddedToProject(project);
         }
     }
 }

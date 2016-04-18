@@ -1,8 +1,10 @@
 package celtech.coreUI.components;
 
 import celtech.configuration.units.UnitType;
+import celtech.coreUI.DisplayManager;
 import celtech.roboxbase.ApplicationEnvironment;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.utils.Math.MathUtils;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -11,12 +13,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -36,9 +37,6 @@ public class RestrictedNumberField extends TextField
 
     private final IntegerProperty maxLength = new SimpleIntegerProperty(0);
     private final IntegerProperty allowedDecimalPlaces = new SimpleIntegerProperty(0);
-    private final IntegerProperty intValue = new SimpleIntegerProperty(-1);
-    private final FloatProperty floatValue = new SimpleFloatProperty(-1);
-    private final DoubleProperty doubleValue = new SimpleDoubleProperty(-1);
     private final BooleanProperty allowNegative = new SimpleBooleanProperty(false);
     private final BooleanProperty maxValueSet = new SimpleBooleanProperty(false);
     private final DoubleProperty maxValue = new SimpleDoubleProperty(-1);
@@ -46,18 +44,19 @@ public class RestrictedNumberField extends TextField
     private final DoubleProperty minValue = new SimpleDoubleProperty(-1);
     private final ObjectProperty<UnitType> units = new SimpleObjectProperty<>(UnitType.NONE);
     private Pattern restrictionPattern = Pattern.compile("[0-9]+");
+    private BooleanProperty drivesUndoableOperation = new SimpleBooleanProperty(false);
+
+    private boolean lastValueValid = false;
+    private double lastValue = 0;
+    private double currentValue = 0;
+
+    private final BooleanProperty valueChangedProperty = new SimpleBooleanProperty(false);
 
     private NumberFormat numberFormatter = null;
 
     private final String standardAllowedCharacters = "[\u0008\u007f0-9]+";
     private String restriction = "[0-9]+";
     private String decimalSeparator = null;
-
-    private ChangeListener<Number> doubleChangeListener = null;
-    private ChangeListener<Number> floatChangeListener = null;
-    private ChangeListener<Number> intChangeListener = null;
-
-    private boolean suppressTextToNumberUpdate = false;
 
     public UnitType getUnits()
     {
@@ -235,6 +234,21 @@ public class RestrictedNumberField extends TextField
         return allowedDecimalPlaces;
     }
 
+    public boolean getDrivesUndoableOperation()
+    {
+        return drivesUndoableOperation.get();
+    }
+
+    public void setDrivesUndoableOperation(boolean value)
+    {
+        this.drivesUndoableOperation.set(value);
+    }
+
+    public BooleanProperty drivesUndoableOperationProperty()
+    {
+        return drivesUndoableOperation;
+    }
+
     /**
      *
      */
@@ -244,82 +258,6 @@ public class RestrictedNumberField extends TextField
 
         setText("-1");
 
-        doubleChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            if (maxValueSet.get() && newValue.doubleValue() > maxValue.get())
-            {
-                doubleValue.set(maxValue.get());
-                return;
-            }
-
-            if (minValueSet.get() && newValue.doubleValue() < minValue.get())
-            {
-                doubleValue.set(minValue.get());
-                return;
-            }
-
-            if (!suppressTextToNumberUpdate)
-            {
-                setText(getNumberFormatter().format(newValue));
-                suppressTextToNumberUpdate = true;
-                floatValue.set(newValue.floatValue());
-                intValue.set(newValue.intValue());
-                suppressTextToNumberUpdate = false;
-            }
-        };
-
-        floatChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            if (maxValueSet.get() && newValue.doubleValue() > maxValue.get())
-            {
-                floatValue.set((float) maxValue.get());
-                return;
-            }
-
-            if (minValueSet.get() && newValue.doubleValue() < minValue.get())
-            {
-                floatValue.set((float) minValue.get());
-                return;
-            }
-
-            if (!suppressTextToNumberUpdate)
-            {
-                setText(getNumberFormatter().format(newValue));
-                suppressTextToNumberUpdate = true;
-                doubleValue.set(newValue.doubleValue());
-                intValue.set(newValue.intValue());
-                suppressTextToNumberUpdate = false;
-            }
-        };
-
-        intChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
-            if (maxValueSet.get() && newValue.doubleValue() > maxValue.get())
-            {
-                intValue.set((int) maxValue.get());
-                return;
-            }
-
-            if (minValueSet.get() && newValue.doubleValue() < minValue.get())
-            {
-                intValue.set((int) minValue.get());
-                return;
-            }
-
-            if (!suppressTextToNumberUpdate)
-            {
-                setText(getNumberFormatter().format(newValue));
-                suppressTextToNumberUpdate = true;
-                floatValue.set(newValue.floatValue());
-                doubleValue.set(newValue.doubleValue());
-                suppressTextToNumberUpdate = false;
-            }
-        };
-
-        intValue.addListener(intChangeListener);
-        floatValue.addListener(floatChangeListener);
-        doubleValue.addListener(doubleChangeListener);
-
         addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>()
         {
             @Override
@@ -327,12 +265,30 @@ public class RestrictedNumberField extends TextField
             {
                 if (event.getCode() == KeyCode.ESCAPE)
                 {
-                    setText(getNumberFormatter().format(doubleValue.get()));
+                    setText(getNumberFormatter().format(currentValue));
                     event.consume();
                 } else if (event.getCode() == KeyCode.ENTER)
                 {
-                    updateNumberValues();
-                    setText(getNumberFormatter().format(doubleValue.get()));
+                    updateNumberValuesFromText();
+                    event.consume();
+                } else if (drivesUndoableOperation.get())
+                {
+                    if ((event.getCode() == KeyCode.Z
+                            || event.getCode() == KeyCode.Y)
+                            && event.isShortcutDown())
+                    {
+                        DisplayManager.getInstance().handle(event);
+//                        if (lastValueValid)
+//                        {
+//                            System.out.println("Firing from last value");
+//                            setText(getNumberFormatter().format(lastValue));
+//                            updateNumberValuesFromText();
+//                            event.consume();
+//                        } else
+//                        {
+//                            System.out.println("Last value not valid");
+//                        }
+                    }
                 }
             }
         });
@@ -342,7 +298,11 @@ public class RestrictedNumberField extends TextField
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                updateNumberValues();
+                if (!newValue && oldValue)
+                {
+                    System.out.println("Updating due to focus");
+                    updateNumberValuesFromText();
+                }
             }
         });
     }
@@ -368,29 +328,25 @@ public class RestrictedNumberField extends TextField
         enforceRestriction(oldText, oldSelectionRange);
     }
 
-    private void updateNumberValues()
+    private void updateNumberValuesFromText()
     {
-        double newValue = 0;
-
         try
         {
-            newValue = getNumberFormatter().parse(this.getText()).doubleValue();
+            double candidateValue = getNumberFormatter().parse(this.getText()).doubleValue();
+            double boundedCandidateValue = doMinMax(candidateValue);
 
-            if (maxValueSet.get() && newValue > maxValue.get())
+            if (MathUtils.compareDouble(currentValue, boundedCandidateValue, 0.000001) != MathUtils.EQUAL)
             {
-                newValue = maxValue.get();
+                lastValue = currentValue;
+                lastValueValid = true;
+                currentValue = boundedCandidateValue;
+                if (MathUtils.compareDouble(candidateValue, boundedCandidateValue, 0.000001) != MathUtils.EQUAL)
+                {
+                    //Update the text again to make sure any min/max issues are dealt with
+                    setText(getNumberFormatter().format(currentValue));
+                }
+                valueChangedProperty.set(!valueChangedProperty.get());
             }
-
-            if (minValueSet.get() && newValue < minValue.get())
-            {
-                newValue = minValue.get();
-            }
-
-            suppressTextToNumberUpdate = true;
-            intValue.set((int) newValue);
-            floatValue.set((float) newValue);
-            doubleValue.set(newValue);
-            suppressTextToNumberUpdate = false;
         } catch (ParseException ex)
         {
         }
@@ -416,24 +372,6 @@ public class RestrictedNumberField extends TextField
         super.replaceText(range, text);
 
         enforceRestriction(oldText, oldSelectionRange);
-    }
-
-    public int getAsInt() throws ParseException
-    {
-        updateNumberValues();
-        return intValue.get();
-    }
-
-    public float getAsFloat() throws ParseException
-    {
-        updateNumberValues();
-        return floatValue.get();
-    }
-
-    public double getAsDouble() throws ParseException
-    {
-        updateNumberValues();
-        return doubleValue.get();
     }
 
     private NumberFormat getNumberFormatter()
@@ -480,18 +418,66 @@ public class RestrictedNumberField extends TextField
         return decimalSeparator;
     }
 
-    public IntegerProperty intValueProperty()
+    public ReadOnlyBooleanProperty valueChangedProperty()
     {
-        return intValue;
+        return valueChangedProperty;
     }
 
-    public FloatProperty floatValueProperty()
+    private void setValueFromExternalSource(double candidateValue)
     {
-        return floatValue;
+        double boundedCandidateValue = doMinMax(candidateValue);
+        if (MathUtils.compareDouble(currentValue, boundedCandidateValue, 0.000001) != MathUtils.EQUAL)
+        {
+            currentValue = boundedCandidateValue;
+            setText(getNumberFormatter().format(currentValue));
+            lastValueValid = false;
+        }
     }
 
-    public DoubleProperty doubleValueProperty()
+    public void setValue(double value)
     {
-        return doubleValue;
+        setValueFromExternalSource(value);
+    }
+
+    public void setValue(float value)
+    {
+        setValueFromExternalSource(value);
+    }
+
+    public void setValue(int value)
+    {
+        setValueFromExternalSource(value);
+    }
+
+    private double doMinMax(final double inputValue)
+    {
+        double outputValue = inputValue;
+
+        if (maxValueSet.get() && outputValue > maxValue.get())
+        {
+            outputValue = maxValue.get();
+        }
+
+        if (minValueSet.get() && outputValue < minValue.get())
+        {
+            outputValue = minValue.get();
+        }
+
+        return outputValue;
+    }
+
+    public float getAsFloat()
+    {
+        return (float) currentValue;
+    }
+
+    public double getAsDouble()
+    {
+        return currentValue;
+    }
+
+    public int getAsInt()
+    {
+        return (int) currentValue;
     }
 }

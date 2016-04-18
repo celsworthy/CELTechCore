@@ -148,7 +148,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             String uniqueId = headDataResponse.getUniqueID();
             if (uniqueId.length() == 0)
             {
-                uniqueId = headUniqueID.getText();
+                uniqueId = headUniqueID.getText().replace("-", "");
             }
 
             selectedPrinter.transmitWriteHeadEEPROM(
@@ -163,6 +163,14 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateHeadUniqueId();
 
             offsetFieldsDirty.set(false);
+
+            try
+            {
+                selectedPrinter.readHeadEEPROM(false);
+            } catch (RoboxCommsException ex)
+            {
+                steno.error("Error reading head EEPROM");
+            }
         } catch (RoboxCommsException ex)
         {
             steno.error("Error writing head EEPROM");
@@ -250,7 +258,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     {
         headTypeCode.setText(head.typeCodeProperty().get().trim());
         headType.setText(head.nameProperty().get().trim());
-        headUniqueID.setText(head.uniqueIDProperty().get().trim());
+        headUniqueID.setText(head.getFormattedSerial());
         lastFilamentTemperature0.setText(String.format("%.0f",
                 head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
         headMaxTemperature.setText(String.format("%.0f",
@@ -356,7 +364,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     private void updateHeadUniqueId()
     {
-        if (headUniqueID.getText().length() == 0)
+        if (headUniqueID.getText().length() == 0
+                || headUniqueID.getText().length() != 28)
         {
             headUniqueID.setDisable(false);
         } else

@@ -8,9 +8,12 @@ import celtech.roboxbase.configuration.MachineType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.application.Platform;
@@ -151,6 +154,36 @@ public class AutoUpdate extends Thread
         int upgradeStatus = ERROR;
 
         String url = "http://downloads.cel-robox.com:8001/" + appDirectory + "/" + applicationName + "-update.xml";
+
+        String encodedSwVersion = null;
+        try
+        {
+            encodedSwVersion = URLEncoder.encode(BaseConfiguration.getApplicationVersion(), "UTF-8");
+            url += "?sw=" + encodedSwVersion;
+        } catch (UnsupportedEncodingException ex)
+        {
+        }
+
+        String encodedFwVersion = null;
+        try
+        {
+            encodedFwVersion = URLEncoder.encode(String.format(Locale.UK, "%.2f", BaseConfiguration.getCoreMemory().getLastPrinterFirmwareVersion()), "UTF-8");
+            url += "&fw=" + encodedFwVersion;
+        } catch (UnsupportedEncodingException ex)
+        {
+        }
+
+        String encodedHwVersion = null;
+        try
+        {
+            if (BaseConfiguration.getCoreMemory().getLastPrinterSerial() != null)
+            {
+                encodedHwVersion = URLEncoder.encode(BaseConfiguration.getCoreMemory().getLastPrinterSerial(), "UTF-8");
+                url += "&hw=" + encodedHwVersion;
+            }
+        } catch (UnsupportedEncodingException ex)
+        {
+        }
 
         try
         {

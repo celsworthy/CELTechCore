@@ -5,9 +5,12 @@ import celtech.appManager.ApplicationStatus;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import java.awt.Desktop;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -46,7 +49,20 @@ public class ReadmeInsetPanelController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        String readmeURL = "file:///" + BaseConfiguration.getApplicationInstallDirectory(ReadmeInsetPanelController.class) + "README/README_AutoMaker.html";
+        String protocol = "file:///";
+        String basePath = BaseConfiguration.getApplicationInstallDirectory(ReadmeInsetPanelController.class) + "README/README_AutoMaker.html";
+        basePath = basePath.replace("\\", "/");
+        String urlEncodedPath = "";
+
+        try
+        {
+            urlEncodedPath = URLEncoder.encode(urlEncodedPath, "UTF-8");
+        } catch (UnsupportedEncodingException ex)
+        {
+            steno.exception("Error encoding readme URL", ex);
+        }
+
+        final String normalisedURL = protocol + basePath;
 
         textContainer.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>()
         {
@@ -69,19 +85,35 @@ public class ReadmeInsetPanelController implements Initializable
                                 EventTarget target = evt.getCurrentTarget();
                                 HTMLAnchorElement anchorElement = (HTMLAnchorElement) target;
                                 String href = anchorElement.getHref();
-                                evt.preventDefault();
+
+                                //If we're going outside of the readme file then launch in the native browser
+                                String decodedHref = null;
 
                                 try
                                 {
-                                    URI outboundURI = new URI(href);
-                                    if (Desktop.isDesktopSupported()
-                                            && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
-                                    {
-                                        Desktop.getDesktop().browse(outboundURI);
-                                    }
-                                } catch (URISyntaxException | IOException ex)
+                                    decodedHref = URLDecoder.decode(href, "UTF-8");
+                                } catch (UnsupportedEncodingException ex)
                                 {
-                                    steno.error("Unable to generate URI from " + href);
+                                    steno.exception("Failed to decode README href", ex);
+                                }
+
+                                if (decodedHref == null
+                                        || !decodedHref.startsWith(normalisedURL))
+                                {
+                                    evt.preventDefault();
+
+                                    try
+                                    {
+                                        URI outboundURI = new URI(href);
+                                        if (Desktop.isDesktopSupported()
+                                                && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE))
+                                        {
+                                            Desktop.getDesktop().browse(outboundURI);
+                                        }
+                                    } catch (URISyntaxException | IOException ex)
+                                    {
+                                        steno.error("Unable to generate URI from " + href);
+                                    }
                                 }
                             }
                         }, false);
@@ -89,7 +121,7 @@ public class ReadmeInsetPanelController implements Initializable
                 }
             }
         });
-        textContainer.getEngine().load(readmeURL);
+        textContainer.getEngine().load(normalisedURL);
 
     }
 }

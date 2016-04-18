@@ -432,7 +432,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 ApplicationConfiguration.setLastDirectory(
                         DirectoryMemoryProperty.MODEL,
                         files.get(0).getParentFile().getAbsolutePath());
-                modelLoader.loadExternalModels(selectedProject, files, true, null, false);
+                modelLoader.loadExternalModels(selectedProject, files, true, DisplayManager.getInstance(), false);
             }
         });
     }
@@ -862,7 +862,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             public void changed(
                     ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                steno.info("Status box managed=" + newValue.booleanValue());
                 statusButtonHBox.setManaged(newValue);
             }
         });

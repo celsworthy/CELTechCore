@@ -4,16 +4,9 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.modelcontrol.ProjectifiableThing;
-import celtech.services.modelLoader.ModelLoadResults;
-import celtech.services.modelLoader.ModelLoaderTask;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import javafx.concurrent.WorkerStateEvent;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -56,31 +49,32 @@ public class AddModelCommand extends Command
     @Override
     public void redo()
     {
-        //TODO ensure that user does not try to undo/redo while this is still loading
-        List<File> modelFiles = new ArrayList<>();
-        modelFiles.add(modelContainer.getModelFile());
-        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles);
-        modelLoaderTask.setOnSucceeded((WorkerStateEvent event) ->
-        {
-            //Mesh-only operation
-            ModelLoadResults modelLoadResults = modelLoaderTask.getValue();
-            
-            ModelLoadResult modelLoadResult = (ModelLoadResult) modelLoadResults.getResults().get(0);
-            Set<ProjectifiableThing> loadedProjectifiableThings = modelLoadResult.getProjectifiableThings();
-            for (ProjectifiableThing loadedProjectifiableThing : loadedProjectifiableThings)
-            {
-                modelContainer.addChildNodes(loadedProjectifiableThing.getChildNodes());
-            }
-            project.addModel(modelContainer);
-
-        });
-        modelLoaderTask.setOnFailed((WorkerStateEvent event) ->
-        {
-            steno.error("Unable to re-add the model");
-        });
-        Thread th = new Thread(modelLoaderTask);
-        th.setDaemon(true);
-        th.start();
+        do_();
+//        //TODO ensure that user does not try to undo/redo while this is still loading
+//        List<File> modelFiles = new ArrayList<>();
+//        modelFiles.add(modelContainer.getModelFile());
+//        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles);
+//        modelLoaderTask.setOnSucceeded((WorkerStateEvent event) ->
+//        {
+//            //Mesh-only operation
+//            ModelLoadResults modelLoadResults = modelLoaderTask.getValue();
+//
+//            ModelLoadResult modelLoadResult = (ModelLoadResult) modelLoadResults.getResults().get(0);
+//            Set<ProjectifiableThing> loadedProjectifiableThings = modelLoadResult.getProjectifiableThings();
+//            for (ProjectifiableThing loadedProjectifiableThing : loadedProjectifiableThings)
+//            {
+//                modelContainer.addChildNodes(loadedProjectifiableThing.getChildNodes());
+//            }
+//            project.addModel(modelContainer);
+//
+//        });
+//        modelLoaderTask.setOnFailed((WorkerStateEvent event) ->
+//        {
+//            steno.error("Unable to re-add the model");
+//        });
+//        Thread th = new Thread(modelLoaderTask);
+//        th.setDaemon(true);
+//        th.start();
     }
 
     @Override
@@ -95,4 +89,17 @@ public class AddModelCommand extends Command
         throw new UnsupportedOperationException("Should never be called.");
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getClass().toGenericString());
+        sb.append("\n");
+        sb.append("Project: ");
+        sb.append(project.getProjectName());
+        sb.append("\n");
+        sb.append("ModelContainer: ");
+        sb.append(modelContainer.getModelName());
+        return sb.toString();
+    }
 }

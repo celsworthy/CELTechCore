@@ -1,19 +1,19 @@
 package celtech.coreUI.controllers.panels;
 
-import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.Lookup;
 import celtech.configuration.CustomSlicerType;
-import celtech.roboxbase.configuration.SlicerType;
+import celtech.coreUI.components.RestrictedNumberField;
+import celtech.coreUI.components.RestrictedTextField;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerMappings;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.slicer.FillPattern;
 import celtech.roboxbase.configuration.slicer.NozzleParameters;
 import celtech.roboxbase.configuration.slicer.SupportPattern;
-import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.components.RestrictedTextField;
-import celtech.roboxbase.BaseLookup;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -441,34 +441,35 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void setupHeadType()
     {
-        
+
         for (HeadFile head : HeadContainer.getCompleteHeadList())
         {
             cmbHeadType.getItems().add(head.getTypeCode());
         }
 
         cmbHeadType.valueProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-            {
-                currentHeadType.set(newValue);
-                numNozzleHeaters.set(HeadContainer.getHeadByID(newValue).getNozzleHeaters().size());
-                repopulateCmbPrintProfile();
-                selectFirstPrintProfile();
-                setSliderLimits(newValue);
-            });
+        {
+            currentHeadType.set(newValue);
+            numNozzleHeaters.set(HeadContainer.getHeadByID(newValue).getNozzleHeaters().size());
+            repopulateCmbPrintProfile();
+            selectFirstPrintProfile();
+            setSliderLimits(newValue);
+        });
 
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
     }
 
-    private void bringValueWithinDualHeadTypeLimits(RestrictedNumberField field) {
-        float currentWidth = field.floatValueProperty().get();
-                if (currentWidth < minDualHeadExtrusionWidth || currentWidth
-                    > maxDualHeadExtrusionWidth)
-                {
-                    field.floatValueProperty().set(
-                        defaultDualHeadExtrusionWidth);
-                }
+    private void bringValueWithinDualHeadTypeLimits(RestrictedNumberField field)
+    {
+        float currentWidth = field.getAsFloat();
+        if (currentWidth < minDualHeadExtrusionWidth || currentWidth
+                > maxDualHeadExtrusionWidth)
+        {
+            field.setValue(
+                    defaultDualHeadExtrusionWidth);
+        }
     }
-    
+
     private void setSliderLimits(String headType)
     {
         int numNozzleHeaters = HeadContainer.getHeadByID(headType).getNozzleHeaters().size();
@@ -476,13 +477,13 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         {
             case 1:
                 setFirstLayerExtrusionWidthLimits(
-                    firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
+                        firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
                 setSupportExtrusionWidthLimits(
-                    supportNozzleChoice.getSelectionModel().getSelectedIndex());
+                        supportNozzleChoice.getSelectionModel().getSelectedIndex());
                 setInfillExtrusionWidthLimits(
-                    fillNozzleChoice.getSelectionModel().getSelectedIndex());
+                        fillNozzleChoice.getSelectionModel().getSelectedIndex());
                 setPerimeterExtrusionWidthLimits(
-                    perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
+                        perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
                 break;
             case 2:
                 bringValueWithinDualHeadTypeLimits(firstLayerExtrusionWidth);
@@ -491,7 +492,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 bringValueWithinDualHeadTypeLimits(solidInfillExtrusionWidth);
                 bringValueWithinDualHeadTypeLimits(topSolidInfillExtrusionWidth);
                 bringValueWithinDualHeadTypeLimits(perimeterExtrusionWidth);
-     
+
                 firstLayerExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
                 firstLayerExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
                 supportExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
@@ -528,10 +529,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         repopulateCmbPrintProfile();
 
         cmbPrintProfile.valueProperty().addListener(
-            (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
-            {
-                selectPrintProfile();
-            });
+                (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
+                {
+                    selectPrintProfile();
+                });
 
         selectPrintProfile();
     }
@@ -582,9 +583,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             ObservableList<SlicerParametersFile> parametersFiles = SlicerParametersContainer.getCompleteProfileList();
             String headType = cmbHeadType.getValue();
             List filesForHeadType = parametersFiles.stream().
-                filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(
-                        headType)).
-                collect(Collectors.toList());
+                    filter(profile -> profile.getHeadType() != null && profile.getHeadType().equals(
+                                    headType)).
+                    collect(Collectors.toList());
             cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
         } catch (NoClassDefFoundError exception)
         {
@@ -614,24 +615,24 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     {
         firstLayerNozzleChoice.setItems(forceNozzleFirstLayerOptions);
         firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                setFirstLayerExtrusionWidthLimits(newValue);
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    setFirstLayerExtrusionWidthLimits(newValue);
+                });
     }
 
     private void setFirstLayerExtrusionWidthLimits(Number newValue)
     {
-        float currentWidth = firstLayerExtrusionWidth.floatValueProperty().get();
+        float currentWidth = firstLayerExtrusionWidth.getAsFloat();
         switch (newValue.intValue())
         {
             case 0:
                 // The point 3 nozzle has been selected
                 if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                    > maxPoint3ExtrusionWidth)
+                        > maxPoint3ExtrusionWidth)
                 {
-                    firstLayerExtrusionWidth.floatValueProperty().set(
-                        defaultPoint3ExtrusionWidth);
+                    firstLayerExtrusionWidth.setValue(
+                            defaultPoint3ExtrusionWidth);
                 }
                 firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                 firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
@@ -639,10 +640,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             case 1:
                 // The point 8 nozzle has been selected
                 if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                    > maxPoint8ExtrusionWidth)
+                        > maxPoint8ExtrusionWidth)
                 {
-                    firstLayerExtrusionWidth.floatValueProperty().set(
-                        defaultPoint8ExtrusionWidth);
+                    firstLayerExtrusionWidth.setValue(
+                            defaultPoint8ExtrusionWidth);
                 }
                 firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                 firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
@@ -655,25 +656,25 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         supportNozzleChoice.setItems(nozzleOptions);
 
         supportNozzleChoice.getSelectionModel()
-            .selectedIndexProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    setSupportExtrusionWidthLimits(newValue);
-                });
+                .selectedIndexProperty().addListener(
+                        (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                        {
+                            setSupportExtrusionWidthLimits(newValue);
+                        });
     }
 
     private void setSupportExtrusionWidthLimits(Number newValue)
     {
-        float currentWidth = supportExtrusionWidth.floatValueProperty().get();
+        float currentWidth = supportExtrusionWidth.getAsFloat();
         switch (newValue.intValue())
         {
             case 0:
                 // The point 3 nozzle has been selected
                 if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                    > maxPoint3ExtrusionWidth)
+                        > maxPoint3ExtrusionWidth)
                 {
-                    supportExtrusionWidth.floatValueProperty().set(
-                        defaultPoint3ExtrusionWidth);
+                    supportExtrusionWidth.setValue(
+                            defaultPoint3ExtrusionWidth);
                 }
                 supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                 supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
@@ -681,10 +682,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             case 1:
                 // The point 8 nozzle has been selected
                 if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                    > maxPoint8ExtrusionWidth)
+                        > maxPoint8ExtrusionWidth)
                 {
-                    supportExtrusionWidth.floatValueProperty().set(
-                        defaultPoint8ExtrusionWidth);
+                    supportExtrusionWidth.setValue(
+                            defaultPoint8ExtrusionWidth);
                 }
                 supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                 supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
@@ -696,41 +697,40 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     {
         fillNozzleChoice.setItems(nozzleOptions);
         fillNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                setInfillExtrusionWidthLimits(newValue);
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    setInfillExtrusionWidthLimits(newValue);
+                });
     }
 
     private void setInfillExtrusionWidthLimits(Number newValue)
     {
-        float currentInfillWidth = infillExtrusionWidth.floatValueProperty().get();
-        float currentSolidInfillWidth = solidInfillExtrusionWidth.floatValueProperty().get();
-        float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.floatValueProperty().
-            get();
+        float currentInfillWidth = infillExtrusionWidth.getAsFloat();
+        float currentSolidInfillWidth = solidInfillExtrusionWidth.getAsFloat();
+        float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.getAsFloat();
         switch (newValue.intValue())
         {
             case 0:
                 // The point 3 nozzle has been selected
                 if (currentInfillWidth < minPoint3ExtrusionWidth || currentInfillWidth
-                    > maxPoint3ExtrusionWidth)
+                        > maxPoint3ExtrusionWidth)
                 {
-                    infillExtrusionWidth.floatValueProperty().set(
-                        defaultPoint3ExtrusionWidth);
+                    infillExtrusionWidth.setValue(
+                            defaultPoint3ExtrusionWidth);
                 }
                 if (currentSolidInfillWidth < minPoint3ExtrusionWidth
-                    || currentSolidInfillWidth
-                    > maxPoint3ExtrusionWidth)
+                        || currentSolidInfillWidth
+                        > maxPoint3ExtrusionWidth)
                 {
-                    solidInfillExtrusionWidth.floatValueProperty().set(
-                        defaultPoint3ExtrusionWidth);
+                    solidInfillExtrusionWidth.setValue(
+                            defaultPoint3ExtrusionWidth);
                 }
                 if (currentTopSolidInfillWidth < minPoint3ExtrusionWidth
-                    || currentTopSolidInfillWidth
-                    > maxPoint3ExtrusionWidth)
+                        || currentTopSolidInfillWidth
+                        > maxPoint3ExtrusionWidth)
                 {
-                    topSolidInfillExtrusionWidth.floatValueProperty().set(
-                        defaultPoint3ExtrusionWidth);
+                    topSolidInfillExtrusionWidth.setValue(
+                            defaultPoint3ExtrusionWidth);
                 }
 
                 infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
@@ -743,24 +743,24 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             case 1:
                 // The point 8 nozzle has been selected
                 if (currentInfillWidth < minPoint8ExtrusionWidth || currentInfillWidth
-                    > maxPoint8ExtrusionWidth)
+                        > maxPoint8ExtrusionWidth)
                 {
-                    infillExtrusionWidth.floatValueProperty().set(
-                        defaultPoint8ExtrusionWidth);
+                    infillExtrusionWidth.setValue(
+                            defaultPoint8ExtrusionWidth);
                 }
                 if (currentSolidInfillWidth < minPoint8ExtrusionWidth
-                    || currentSolidInfillWidth
-                    > maxPoint8ExtrusionWidth)
+                        || currentSolidInfillWidth
+                        > maxPoint8ExtrusionWidth)
                 {
-                    solidInfillExtrusionWidth.floatValueProperty().set(
-                        defaultPoint8ExtrusionWidth);
+                    solidInfillExtrusionWidth.setValue(
+                            defaultPoint8ExtrusionWidth);
                 }
                 if (currentTopSolidInfillWidth < minPoint8ExtrusionWidth
-                    || currentTopSolidInfillWidth
-                    > maxPoint8ExtrusionWidth)
+                        || currentTopSolidInfillWidth
+                        > maxPoint8ExtrusionWidth)
                 {
-                    topSolidInfillExtrusionWidth.floatValueProperty().set(
-                        defaultPoint8ExtrusionWidth);
+                    topSolidInfillExtrusionWidth.setValue(
+                            defaultPoint8ExtrusionWidth);
                 }
                 infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                 infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
@@ -776,24 +776,24 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     {
         perimeterNozzleChoice.setItems(nozzleOptions);
         perimeterNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
-            (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                setPerimeterExtrusionWidthLimits(newValue);
-            });
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+                {
+                    setPerimeterExtrusionWidthLimits(newValue);
+                });
     }
 
     private void setPerimeterExtrusionWidthLimits(Number newValue)
     {
-        float currentWidth = perimeterExtrusionWidth.floatValueProperty().get();
+        float currentWidth = perimeterExtrusionWidth.getAsFloat();
         switch (newValue.intValue())
         {
             case 0:
                 // The point 3 nozzle has been selected
                 if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                    > maxPoint3ExtrusionWidth)
+                        > maxPoint3ExtrusionWidth)
                 {
-                    perimeterExtrusionWidth.floatValueProperty().set(
-                        defaultPoint3ExtrusionWidth);
+                    perimeterExtrusionWidth.setValue(
+                            defaultPoint3ExtrusionWidth);
                 }
                 perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                 perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
@@ -801,10 +801,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             case 1:
                 // The point 8 nozzle has been selected
                 if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                    > maxPoint8ExtrusionWidth)
+                        > maxPoint8ExtrusionWidth)
                 {
-                    perimeterExtrusionWidth.floatValueProperty().set(
-                        defaultPoint8ExtrusionWidth);
+                    perimeterExtrusionWidth.setValue(
+                            defaultPoint8ExtrusionWidth);
                 }
                 perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
                 perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
@@ -1335,31 +1335,125 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 });
 
         //Nozzle Page
-        firstLayerExtrusionWidthSlider.valueProperty()
-                .bindBidirectional(firstLayerExtrusionWidth.floatValueProperty());
+        firstLayerExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                firstLayerExtrusionWidth.setValue(t1.doubleValue());
+            }
+        });
+
+        firstLayerExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                firstLayerExtrusionWidthSlider.setValue(firstLayerExtrusionWidth.getAsDouble());
+            }
+        });
+
         firstLayerExtrusionWidth.textProperty().addListener(dirtyStringListener);
         firstLayerNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
                 dirtyStringListener);
 
-        perimeterExtrusionWidthSlider.valueProperty().bindBidirectional(
-                perimeterExtrusionWidth.floatValueProperty());
+        perimeterExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                perimeterExtrusionWidth.setValue(t1.doubleValue());
+            }
+        });
+
+        perimeterExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                perimeterExtrusionWidthSlider.setValue(perimeterExtrusionWidth.getAsDouble());
+            }
+        });
+
         perimeterExtrusionWidth.textProperty().addListener(dirtyStringListener);
         perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
                 dirtyStringListener);
 
-        infillExtrusionWidthSlider.valueProperty().bindBidirectional(
-                infillExtrusionWidth.floatValueProperty());
+        infillExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                infillExtrusionWidth.setValue(t1.doubleValue());
+            }
+        });
+
+        infillExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                infillExtrusionWidthSlider.setValue(infillExtrusionWidth.getAsDouble());
+            }
+        });
         infillExtrusionWidth.textProperty().addListener(dirtyStringListener);
-        solidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(
-                solidInfillExtrusionWidth.floatValueProperty());
+
+        solidInfillExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                solidInfillExtrusionWidth.setValue(t1.doubleValue());
+            }
+        });
+
+        solidInfillExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                solidInfillExtrusionWidthSlider.setValue(solidInfillExtrusionWidth.getAsDouble());
+            }
+        });
         solidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
         fillNozzleChoice.getSelectionModel().selectedItemProperty().addListener(dirtyStringListener);
-        topSolidInfillExtrusionWidthSlider.valueProperty().bindBidirectional(
-                topSolidInfillExtrusionWidth.floatValueProperty());
+        
+        topSolidInfillExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                topSolidInfillExtrusionWidth.setValue(t1.doubleValue());
+            }
+        });
+
+        topSolidInfillExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                topSolidInfillExtrusionWidthSlider.setValue(topSolidInfillExtrusionWidth.getAsDouble());
+            }
+        });
         topSolidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
 
-        supportExtrusionWidthSlider.valueProperty()
-                .bindBidirectional(supportExtrusionWidth.floatValueProperty());
+        supportExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                supportExtrusionWidth.setValue(t1.doubleValue());
+            }
+        });
+
+        supportExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                supportExtrusionWidthSlider.setValue(supportExtrusionWidth.getAsDouble());
+            }
+        });
         supportExtrusionWidth.textProperty()
                 .addListener(dirtyStringListener);
         supportNozzleChoice.getSelectionModel()
@@ -1461,84 +1555,84 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             slicerChooser.setValue(CustomSlicerType.Default);
         }
         // Extrusion tab
-        layerHeight.floatValueProperty().set(parametersFile.getLayerHeight_mm());
-        fillDensity.floatValueProperty().set(parametersFile.getFillDensity_normalised());
-        fillPatternChoice.valueProperty().set(parametersFile.getFillPattern());
-        infillEveryN.intValueProperty().set(parametersFile.getFillEveryNLayers());
-        solidLayersTop.intValueProperty().set(parametersFile.getSolidLayersAtTop());
-        solidLayersBottom.intValueProperty().set(parametersFile.getSolidLayersAtBottom());
-        numberOfPerimeters.intValueProperty().set(parametersFile.getNumberOfPerimeters());
+        layerHeight.setValue(parametersFile.getLayerHeight_mm());
+        fillDensity.setValue(parametersFile.getFillDensity_normalised());
+        fillPatternChoice.setValue(parametersFile.getFillPattern());
+        infillEveryN.setValue(parametersFile.getFillEveryNLayers());
+        solidLayersTop.setValue(parametersFile.getSolidLayersAtTop());
+        solidLayersBottom.setValue(parametersFile.getSolidLayersAtBottom());
+        numberOfPerimeters.setValue(parametersFile.getNumberOfPerimeters());
 
         //Nozzle tab
-        firstLayerExtrusionWidth.floatValueProperty().set(
+        firstLayerExtrusionWidth.setValue(
                 parametersFile.getFirstLayerExtrusionWidth_mm());
         firstLayerNozzleChoice.getSelectionModel().select(parametersFile.getFirstLayerNozzle());
 
-        perimeterExtrusionWidth.floatValueProperty().set(
+        perimeterExtrusionWidth.setValue(
                 parametersFile.getPerimeterExtrusionWidth_mm());
         perimeterNozzleChoice.getSelectionModel().select(parametersFile.getPerimeterNozzle());
 
-        infillExtrusionWidth.floatValueProperty().set(parametersFile.getFillExtrusionWidth_mm());
-        solidInfillExtrusionWidth.floatValueProperty().set(
+        infillExtrusionWidth.setValue(parametersFile.getFillExtrusionWidth_mm());
+        solidInfillExtrusionWidth.setValue(
                 parametersFile.getSolidFillExtrusionWidth_mm());
         fillNozzleChoice.getSelectionModel().select(parametersFile.getFillNozzle());
-        topSolidInfillExtrusionWidth.floatValueProperty().set(
+        topSolidInfillExtrusionWidth.setValue(
                 parametersFile.getTopSolidFillExtrusionWidth_mm());
 
-        supportExtrusionWidth.floatValueProperty().set(parametersFile.getSupportExtrusionWidth_mm());
+        supportExtrusionWidth.setValue(parametersFile.getSupportExtrusionWidth_mm());
         supportNozzleChoice.getSelectionModel().select(parametersFile.getSupportNozzle());
 
         supportInterfaceNozzleChoice.getSelectionModel().select(
                 parametersFile.getSupportInterfaceNozzle());
 
         //Support tab
-        supportOverhangThreshold.intValueProperty().set(
+        supportOverhangThreshold.setValue(
                 parametersFile.getSupportOverhangThreshold_degrees());
         supportPattern.valueProperty().set(parametersFile.getSupportPattern());
-        supportPatternSpacing.floatValueProperty().set(parametersFile.getSupportPatternSpacing_mm());
-        supportPatternAngle.intValueProperty().set(parametersFile.getSupportPatternAngle_degrees());
-        raftBaseLinewidth.floatValueProperty().set(parametersFile.getRaftBaseLinewidth_mm());
-        raftAirGapLayer0.floatValueProperty().set(parametersFile.getRaftAirGapLayer0_mm());
-        interfaceLayers.intValueProperty().set(parametersFile.getInterfaceLayers());
+        supportPatternSpacing.setValue(parametersFile.getSupportPatternSpacing_mm());
+        supportPatternAngle.setValue(parametersFile.getSupportPatternAngle_degrees());
+        raftBaseLinewidth.setValue(parametersFile.getRaftBaseLinewidth_mm());
+        raftAirGapLayer0.setValue(parametersFile.getRaftAirGapLayer0_mm());
+        interfaceLayers.setValue(parametersFile.getInterfaceLayers());
 
         //Speed tab
-        firstLayerSpeed.intValueProperty().set(parametersFile.getFirstLayerSpeed_mm_per_s());
-        perimeterSpeed.intValueProperty().set(parametersFile.getPerimeterSpeed_mm_per_s());
-        smallPerimeterSpeed.intValueProperty().set(parametersFile.getSmallPerimeterSpeed_mm_per_s());
-        externalPerimeterSpeed.intValueProperty().set(
+        firstLayerSpeed.setValue(parametersFile.getFirstLayerSpeed_mm_per_s());
+        perimeterSpeed.setValue(parametersFile.getPerimeterSpeed_mm_per_s());
+        smallPerimeterSpeed.setValue(parametersFile.getSmallPerimeterSpeed_mm_per_s());
+        externalPerimeterSpeed.setValue(
                 parametersFile.getExternalPerimeterSpeed_mm_per_s());
-        infillSpeed.intValueProperty().set(parametersFile.getFillSpeed_mm_per_s());
-        solidInfillSpeed.intValueProperty().set(parametersFile.getSolidFillSpeed_mm_per_s());
-        topSolidInfillSpeed.intValueProperty().set(parametersFile.getTopSolidFillSpeed_mm_per_s());
-        supportMaterialSpeed.intValueProperty().set(parametersFile.getSupportSpeed_mm_per_s());
-        bridgesSpeed.intValueProperty().set(parametersFile.getBridgeSpeed_mm_per_s());
-        interfaceSpeed.intValueProperty().set(parametersFile.getInterfaceSpeed_mm_per_s());
-        gapFillSpeed.intValueProperty().set(parametersFile.getGapFillSpeed_mm_per_s());
+        infillSpeed.setValue(parametersFile.getFillSpeed_mm_per_s());
+        solidInfillSpeed.setValue(parametersFile.getSolidFillSpeed_mm_per_s());
+        topSolidInfillSpeed.setValue(parametersFile.getTopSolidFillSpeed_mm_per_s());
+        supportMaterialSpeed.setValue(parametersFile.getSupportSpeed_mm_per_s());
+        bridgesSpeed.setValue(parametersFile.getBridgeSpeed_mm_per_s());
+        interfaceSpeed.setValue(parametersFile.getInterfaceSpeed_mm_per_s());
+        gapFillSpeed.setValue(parametersFile.getGapFillSpeed_mm_per_s());
 
         //Cooling tab
         enableAutoCooling.selectedProperty().set(parametersFile.getEnableCooling());
-        minFanSpeed.intValueProperty().set(parametersFile.getMinFanSpeed_percent());
-        maxFanSpeed.intValueProperty().set(parametersFile.getMaxFanSpeed_percent());
-        bridgesFanSpeed.intValueProperty().set(parametersFile.getBridgeFanSpeed_percent());
-        disableFanForFirstNLayers.intValueProperty().set(parametersFile.getDisableFanFirstNLayers());
-        enableFanIfLayerTimeBelow.intValueProperty().set(
+        minFanSpeed.setValue(parametersFile.getMinFanSpeed_percent());
+        maxFanSpeed.setValue(parametersFile.getMaxFanSpeed_percent());
+        bridgesFanSpeed.setValue(parametersFile.getBridgeFanSpeed_percent());
+        disableFanForFirstNLayers.setValue(parametersFile.getDisableFanFirstNLayers());
+        enableFanIfLayerTimeBelow.setValue(
                 parametersFile.getCoolIfLayerTimeLessThan_secs());
-        slowFanIfLayerTimeBelow.intValueProperty().set(
+        slowFanIfLayerTimeBelow.setValue(
                 parametersFile.getSlowDownIfLayerTimeLessThan_secs());
-        minPrintSpeed.intValueProperty().set(parametersFile.getMinPrintSpeed_mm_per_s());
+        minPrintSpeed.setValue(parametersFile.getMinPrintSpeed_mm_per_s());
 
         // nozzle
-        nozzleOpenVolume0.floatValueProperty().set(
+        nozzleOpenVolume0.setValue(
                 parametersFile.getNozzleParameters().get(0).getOpenOverVolume());
-        nozzleEjectionVolume0.floatValueProperty().set(parametersFile.getNozzleParameters().get(
+        nozzleEjectionVolume0.setValue(parametersFile.getNozzleParameters().get(
                 0).getEjectionVolume());
-        nozzlePartialOpen0.floatValueProperty().set(parametersFile.getNozzleParameters().get(
+        nozzlePartialOpen0.setValue(parametersFile.getNozzleParameters().get(
                 0).getPartialBMinimum());
-        nozzleOpenVolume1.floatValueProperty().set(
+        nozzleOpenVolume1.setValue(
                 parametersFile.getNozzleParameters().get(1).getOpenOverVolume());
-        nozzleEjectionVolume1.floatValueProperty().set(parametersFile.getNozzleParameters().get(
+        nozzleEjectionVolume1.setValue(parametersFile.getNozzleParameters().get(
                 1).getEjectionVolume());
-        nozzlePartialOpen1.floatValueProperty().set(parametersFile.getNozzleParameters().get(
+        nozzlePartialOpen1.setValue(parametersFile.getNozzleParameters().get(
                 1).getPartialBMinimum());
 
         updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
@@ -1666,34 +1760,34 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         settingsToUpdate.setSlicerOverride(slicerChooser.getValue().getSlicerType());
         settingsToUpdate.setProfileName(profileNameField.getText());
         // Extrusion tab
-        settingsToUpdate.setLayerHeight_mm(layerHeight.floatValueProperty().get());
-        settingsToUpdate.setFillDensity_normalised(fillDensity.floatValueProperty().get());
+        settingsToUpdate.setLayerHeight_mm(layerHeight.getAsFloat());
+        settingsToUpdate.setFillDensity_normalised(fillDensity.getAsFloat());
         settingsToUpdate.setFillPattern(fillPatternChoice.valueProperty().get());
-        settingsToUpdate.setFillEveryNLayers(infillEveryN.intValueProperty().get());
-        settingsToUpdate.setSolidLayersAtTop(solidLayersTop.intValueProperty().get());
-        settingsToUpdate.setSolidLayersAtBottom(solidLayersBottom.intValueProperty().get());
-        settingsToUpdate.setNumberOfPerimeters(numberOfPerimeters.intValueProperty().get());
+        settingsToUpdate.setFillEveryNLayers(infillEveryN.getAsInt());
+        settingsToUpdate.setSolidLayersAtTop(solidLayersTop.getAsInt());
+        settingsToUpdate.setSolidLayersAtBottom(solidLayersBottom.getAsInt());
+        settingsToUpdate.setNumberOfPerimeters(numberOfPerimeters.getAsInt());
 
         //Nozzle tab
         settingsToUpdate.setFirstLayerExtrusionWidth_mm(
-                firstLayerExtrusionWidth.floatValueProperty().get());
+                firstLayerExtrusionWidth.getAsFloat());
         settingsToUpdate.setFirstLayerNozzle(
                 firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
 
         settingsToUpdate.setPerimeterExtrusionWidth_mm(
-                perimeterExtrusionWidth.floatValueProperty().get());
+                perimeterExtrusionWidth.getAsFloat());
         settingsToUpdate.setPerimeterNozzle(
                 perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
 
-        settingsToUpdate.setFillExtrusionWidth_mm(infillExtrusionWidth.floatValueProperty().get());
+        settingsToUpdate.setFillExtrusionWidth_mm(infillExtrusionWidth.getAsFloat());
         settingsToUpdate.setSolidFillExtrusionWidth_mm(
-                solidInfillExtrusionWidth.floatValueProperty().get());
+                solidInfillExtrusionWidth.getAsFloat());
         settingsToUpdate.setFillNozzle(fillNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setTopSolidFillExtrusionWidth_mm(
-                topSolidInfillExtrusionWidth.floatValueProperty().get());
+                topSolidInfillExtrusionWidth.getAsFloat());
 
         settingsToUpdate.setSupportExtrusionWidth_mm(
-                supportExtrusionWidth.floatValueProperty().get());
+                supportExtrusionWidth.getAsFloat());
         settingsToUpdate.
                 setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
 
@@ -1704,57 +1798,57 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         settingsToUpdate.setSupportInterfaceNozzle(
                 supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(
-                supportOverhangThreshold.intValueProperty().get());
+                supportOverhangThreshold.getAsInt());
         settingsToUpdate.setSupportPattern(supportPattern.valueProperty().get());
         settingsToUpdate.setSupportPatternSpacing_mm(
-                supportPatternSpacing.floatValueProperty().get());
+                supportPatternSpacing.getAsFloat());
         settingsToUpdate.
-                setSupportPatternAngle_degrees(supportPatternAngle.intValueProperty().get());
-        settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.floatValueProperty().get());
-        settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.floatValueProperty().get());
-        settingsToUpdate.setInterfaceLayers(interfaceLayers.intValueProperty().get());
+                setSupportPatternAngle_degrees(supportPatternAngle.getAsInt());
+        settingsToUpdate.setRaftBaseLinewidth_mm(raftBaseLinewidth.getAsFloat());
+        settingsToUpdate.setRaftAirGapLayer0_mm(raftAirGapLayer0.getAsFloat());
+        settingsToUpdate.setInterfaceLayers(interfaceLayers.getAsInt());
 
         //Speed tab
-        settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.intValueProperty().get());
-        settingsToUpdate.setPerimeterSpeed_mm_per_s(perimeterSpeed.intValueProperty().get());
+        settingsToUpdate.setFirstLayerSpeed_mm_per_s(firstLayerSpeed.getAsInt());
+        settingsToUpdate.setPerimeterSpeed_mm_per_s(perimeterSpeed.getAsInt());
         settingsToUpdate.setSmallPerimeterSpeed_mm_per_s(
-                smallPerimeterSpeed.intValueProperty().get());
+                smallPerimeterSpeed.getAsInt());
         settingsToUpdate.setExternalPerimeterSpeed_mm_per_s(
-                externalPerimeterSpeed.intValueProperty().get());
-        settingsToUpdate.setFillSpeed_mm_per_s(infillSpeed.intValueProperty().get());
-        settingsToUpdate.setSolidFillSpeed_mm_per_s(solidInfillSpeed.intValueProperty().get());
-        settingsToUpdate.setTopSolidFillSpeed_mm_per_s(topSolidInfillSpeed.intValueProperty().get());
-        settingsToUpdate.setSupportSpeed_mm_per_s(supportMaterialSpeed.intValueProperty().get());
-        settingsToUpdate.setBridgeSpeed_mm_per_s(bridgesSpeed.intValueProperty().get());
-        settingsToUpdate.setInterfaceSpeed_mm_per_s(interfaceSpeed.intValueProperty().get());
-        settingsToUpdate.setGapFillSpeed_mm_per_s(gapFillSpeed.intValueProperty().get());
+                externalPerimeterSpeed.getAsInt());
+        settingsToUpdate.setFillSpeed_mm_per_s(infillSpeed.getAsInt());
+        settingsToUpdate.setSolidFillSpeed_mm_per_s(solidInfillSpeed.getAsInt());
+        settingsToUpdate.setTopSolidFillSpeed_mm_per_s(topSolidInfillSpeed.getAsInt());
+        settingsToUpdate.setSupportSpeed_mm_per_s(supportMaterialSpeed.getAsInt());
+        settingsToUpdate.setBridgeSpeed_mm_per_s(bridgesSpeed.getAsInt());
+        settingsToUpdate.setInterfaceSpeed_mm_per_s(interfaceSpeed.getAsInt());
+        settingsToUpdate.setGapFillSpeed_mm_per_s(gapFillSpeed.getAsInt());
 
         //Cooling tab
         settingsToUpdate.setEnableCooling(enableAutoCooling.selectedProperty().get());
-        settingsToUpdate.setMinFanSpeed_percent(minFanSpeed.intValueProperty().get());
-        settingsToUpdate.setMaxFanSpeed_percent(maxFanSpeed.intValueProperty().get());
-        settingsToUpdate.setBridgeFanSpeed_percent(bridgesFanSpeed.intValueProperty().get());
+        settingsToUpdate.setMinFanSpeed_percent(minFanSpeed.getAsInt());
+        settingsToUpdate.setMaxFanSpeed_percent(maxFanSpeed.getAsInt());
+        settingsToUpdate.setBridgeFanSpeed_percent(bridgesFanSpeed.getAsInt());
         settingsToUpdate.setDisableFanFirstNLayers(
-                disableFanForFirstNLayers.intValueProperty().get());
+                disableFanForFirstNLayers.getAsInt());
         settingsToUpdate.setCoolIfLayerTimeLessThan_secs(
-                enableFanIfLayerTimeBelow.intValueProperty().get());
+                enableFanIfLayerTimeBelow.getAsInt());
         settingsToUpdate.setSlowDownIfLayerTimeLessThan_secs(
-                slowFanIfLayerTimeBelow.intValueProperty().get());
-        settingsToUpdate.setMinPrintSpeed_mm_per_s(minPrintSpeed.intValueProperty().get());
+                slowFanIfLayerTimeBelow.getAsInt());
+        settingsToUpdate.setMinPrintSpeed_mm_per_s(minPrintSpeed.getAsInt());
 
         // Nozzle
         settingsToUpdate.getNozzleParameters().get(0).setOpenOverVolume(
-                nozzleOpenVolume0.floatValueProperty().get());
+                nozzleOpenVolume0.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(0).setEjectionVolume(
-                nozzleEjectionVolume0.floatValueProperty().get());
+                nozzleEjectionVolume0.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(0).setPartialBMinimum(
-                nozzlePartialOpen0.floatValueProperty().get());
+                nozzlePartialOpen0.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(1).setOpenOverVolume(
-                nozzleOpenVolume1.floatValueProperty().get());
+                nozzleOpenVolume1.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
-                nozzleEjectionVolume1.floatValueProperty().get());
+                nozzleEjectionVolume1.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
-                nozzlePartialOpen1.floatValueProperty().get());
+                nozzlePartialOpen1.getAsFloat());
 
         return settingsToUpdate;
     }
@@ -1828,7 +1922,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         repopulateCmbPrintProfile();
         state.set(ProfileLibraryPanelController.State.CUSTOM);
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettings(
-            parametersFile.getProfileName(), parametersFile.getHeadType()));
+                parametersFile.getProfileName(), parametersFile.getHeadType()));
     }
 
     void whenNewPressed()
@@ -1845,7 +1939,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile
-            = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType.get()).clone();
+                = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType.get()).clone();
 
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();

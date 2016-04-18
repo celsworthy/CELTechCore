@@ -200,11 +200,11 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
         updateSaveBindings();
 
-        canSaveAs.bind(state.isNotEqualTo(State.NEW));
+        canSaveAs.bind(state.isNotEqualTo(State.NEW).and(Lookup.getUserPreferences().advancedModeProperty()));
 
-        canDelete.bind(state.isNotEqualTo(State.ROBOX));
+        canDelete.bind(state.isNotEqualTo(State.ROBOX).and(Lookup.getUserPreferences().advancedModeProperty()));
 
-        isEditable.bind(state.isNotEqualTo(State.ROBOX));
+        isEditable.bind(state.isNotEqualTo(State.ROBOX).and(Lookup.getUserPreferences().advancedModeProperty()));
 
         isValid.bind(isNameValid.and(isNozzleTempValid));
 
@@ -325,17 +325,19 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 filament1OfDifferentID = !loadedFilamentID1.get().equals(currentFilamentID);
             }
 
-            if ((currentPrinter.get().reelsProperty().containsKey(0)
+            if (((currentPrinter.get().reelsProperty().containsKey(0)
                     && (filament0OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)
                     || !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED)))
                     || currentPrinter.get().getReelEEPROMStateProperty().get(0) == EEPROMState.NOT_PROGRAMMED)
+                    && state.get() == State.ROBOX)
             {
                 canWriteToReel1.set(true);
             }
-            if ((currentPrinter.get().reelsProperty().containsKey(1)
+            if (((currentPrinter.get().reelsProperty().containsKey(1)
                     && (filament1OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)
                     || !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED)))
                     || currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
+                    && state.get() == State.ROBOX)
             {
                 canWriteToReel2.set(true);
             }
@@ -463,17 +465,17 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         name.setText("");
         filamentID.setText("");
 //        material.getSelectionModel().select(filament.getMaterial());
-        filamentDiameter.floatValueProperty().set(0f);
-        filamentMultiplier.floatValueProperty().set(0f);
+        filamentDiameter.setValue(0f);
+        filamentMultiplier.setValue(0f);
 
-        feedRateMultiplier.floatValueProperty().set(0f);
-        ambientTemperature.intValueProperty().set(0);
-        firstLayerBedTemperature.intValueProperty().set(0);
-        bedTemperature.intValueProperty().set(0);
-        firstLayerNozzleTemperature.intValueProperty().set(0);
-        nozzleTemperature.intValueProperty().set(0);
-        costGBPPerKG.floatValueProperty().set(0);
-        remainingOnReelM.floatValueProperty().set(0);
+        feedRateMultiplier.setValue(0f);
+        ambientTemperature.setValue(0);
+        firstLayerBedTemperature.setValue(0);
+        bedTemperature.setValue(0);
+        firstLayerNozzleTemperature.setValue(0);
+        nozzleTemperature.setValue(0);
+        costGBPPerKG.setValue(0);
+        remainingOnReelM.setValue(0);
 //        colour.setValue(filament.getDisplayColour());
         isDirty.set(false);
     }
@@ -712,16 +714,16 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         name.setText(filament.getFriendlyFilamentName());
         filamentID.setText(filament.getFilamentID());
         material.getSelectionModel().select(filament.getMaterial());
-        filamentDiameter.floatValueProperty().set(filament.getDiameter());
-        filamentMultiplier.floatValueProperty().set(filament.getFilamentMultiplier());
-        feedRateMultiplier.floatValueProperty().set(filament.getFeedRateMultiplier());
-        ambientTemperature.intValueProperty().set(filament.getAmbientTemperature());
-        firstLayerBedTemperature.intValueProperty().set(filament.getFirstLayerBedTemperature());
-        bedTemperature.intValueProperty().set(filament.getBedTemperature());
-        firstLayerNozzleTemperature.intValueProperty().set(filament.getFirstLayerNozzleTemperature());
-        nozzleTemperature.intValueProperty().set(filament.getNozzleTemperature());
+        filamentDiameter.setValue(filament.getDiameter());
+        filamentMultiplier.setValue(filament.getFilamentMultiplier());
+        feedRateMultiplier.setValue(filament.getFeedRateMultiplier());
+        ambientTemperature.setValue(filament.getAmbientTemperature());
+        firstLayerBedTemperature.setValue(filament.getFirstLayerBedTemperature());
+        bedTemperature.setValue(filament.getBedTemperature());
+        firstLayerNozzleTemperature.setValue(filament.getFirstLayerNozzleTemperature());
+        nozzleTemperature.setValue(filament.getNozzleTemperature());
         colour.setValue(filament.getDisplayColour());
-        costGBPPerKG.floatValueProperty().set(filament.getCostGBPPerKG());
+        costGBPPerKG.setValue(filament.getCostGBPPerKG());
         remainingOnReelM.textProperty().set(REMAINING_ON_REEL_UNCHANGED);
         isDirty.set(false);
     }
@@ -731,8 +733,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
      */
     public void updateFilamentFromWidgets(Filament filament)
     {
-        try
-        {
             filament.setFriendlyFilamentName(name.getText());
             filament.setMaterial(material.getSelectionModel().getSelectedItem());
             filament.setFilamentDiameter(filamentDiameter.getAsFloat());
@@ -746,13 +746,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             Color webDomainColor = stringToColor(colourToString(colour.getValue()));
             filament.setDisplayColour(webDomainColor);
             filament.setCostGBPPerKG(costGBPPerKG.getAsFloat());
-
-        } catch (ParseException ex)
-        {
-            steno.error("Error parsing filament data : " + ex);
         }
-
-    }
 
     private boolean validateMaterialName(String name)
     {
@@ -842,14 +836,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 float remainingFilament = getRemainingFilament(0);
                 if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
                 {
-                    try
-                    {
                         remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
-                    } catch (ParseException ex)
-                    {
-                        steno.error("parsing remaining filament");
                     }
-                }
 
                 if (isEditable.get())
                 {
@@ -885,14 +873,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 float remainingFilament = getRemainingFilament(1);
                 if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
                 {
-                    try
-                    {
                         remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
-                    } catch (ParseException ex)
-                    {
-                        steno.error("parsing remaining filament");
                     }
-                }
 
                 filament.setRemainingFilament(remainingFilament);
             }

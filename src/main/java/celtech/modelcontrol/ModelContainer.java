@@ -2117,4 +2117,42 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     {
         collisionShapeListeners.remove(collisionShapeListener);
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Id:");
+        sb.append(modelId);
+        sb.append("\n");
+        sb.append("X:");
+        sb.append(getState().x);
+        sb.append("\t");
+        sb.append("Y:");
+        sb.append(getState().y);
+        sb.append("\t");
+        sb.append("Z:");
+        sb.append(getState().z);
+        sb.append("\n");
+        sb.append("Scale X:");
+        sb.append(preferredXScale);
+        sb.append("\t");
+        sb.append("Scale Y:");
+        sb.append(preferredYScale);
+        sb.append("\t");
+        sb.append("Scale Z:");
+        sb.append(preferredZScale);
+        sb.append("\n");
+        sb.append("Lean:");
+        sb.append(preferredRotationLean);
+        sb.append("\t");
+        sb.append("Twist:");
+        sb.append(preferredRotationTwist);
+        sb.append("\t");
+        sb.append("Turn:");
+        sb.append(preferredRotationTurn);
+        sb.append("\n");
+
+        return sb.toString();
+    }
 }

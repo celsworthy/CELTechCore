@@ -296,15 +296,16 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
     }
 
-    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle)
+    public void transitionCameraTo(double milliseconds, double xAngle, double yAngle, double distance)
     {
         final Timeline timeline = new Timeline();
         timeline.getKeyFrames().addAll(new KeyFrame[]
         {
             new KeyFrame(Duration.millis(milliseconds), new KeyValue[]
-            {// Frame End                
+            {                
                 new KeyValue(demandedCameraRotationX, xAngle, Interpolator.EASE_BOTH),
-                new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH)
+                new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH),
+                new KeyValue(cameraDistance, distance, Interpolator.EASE_BOTH)
             })
         });
         timeline.playFromStart();
@@ -734,7 +735,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         {
             double z = bedTranslateXform.getTz() + (mouseDeltaY * 0.2);
             cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
             notifyModelsOfCameraViewChange();
         } else if (event.isSecondaryButtonDown())
         {
@@ -760,7 +760,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                     {
                         newCutHeight = 0;
                     }
-                    cutHeight.set(newCutHeight);
+//                    cutHeight.set(newCutHeight);
                     justEnteredDragMode = false;
                 }
                 lastDragPosition = pickedDragPlanePoint;
@@ -853,7 +853,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         {
             double z = bedTranslateXform.getTz() - (event.getDeltaY() * 0.2);
             cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
 //            cameraDistance.set(cameraDistance.get() - (event.getDeltaY() * 0.2));
 //            refreshCameraPosition();
         }
@@ -866,7 +865,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         {
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
-            bedTranslateXform.setTz(z);
             notifyModelsOfCameraViewChange();
 //            cameraDistance.set(cameraDistance.get() / event.getZoomFactor());
 //            refreshCameraPosition();
@@ -885,7 +883,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                             subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             deselectAllModels();
-                            transitionCameraTo(1000, 30, 0);
+                            transitionCameraTo(1000, 30, 0, initialCameraDistance);
 
 //                            startSettingsAnimation();
                             break;
@@ -1007,6 +1005,8 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
         bedTranslateXform.rx.angleProperty().bind(demandedCameraRotationX);
         bedTranslateXform.ry.angleProperty().bind(demandedCameraRotationY);
+        bedTranslateXform.t.zProperty().bind(cameraDistance);
+        
         rotateCameraAroundAxes(-30, 0);
 
         subScene.widthProperty().bind(widthPropertyToFollow);
@@ -1076,6 +1076,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
             models.getChildren().add(model);
 
             addBedReferenceToModel((ModelContainer) model);
+            ((ModelContainer) model).cameraViewOfYouHasChanged(cameraDistance.get());
             ((ModelContainer) model).heresYourCamera(camera);
         }
     }
@@ -1570,7 +1571,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     {
     }
 
-    private DoubleProperty cutHeight = null;
+    private ReadOnlyDoubleProperty cutHeight = null;
     private double maxCutHeight = 0;
 
     private ChangeListener<Number> cutHeightChangeListener = new ChangeListener<Number>()
@@ -1582,7 +1583,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         }
     };
 
-    public void showZCutPlane(ModelContainer modelContainer, DoubleProperty cutHeight)
+    public void showZCutPlane(ModelContainer modelContainer, ReadOnlyDoubleProperty cutHeight)
     {
         processModeChange();
 

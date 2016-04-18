@@ -1,5 +1,6 @@
 package celtech.crypto;
 
+import celtech.roboxbase.crypto.CryptoFileStore;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,7 +47,7 @@ public class CryptoStoreTest
     {
         System.out.println("Encrypt<->Decrypt integrity");
 
-        CryptoFileStore instance = new CryptoFileStore("fred.dat");
+        CryptoFileStore instance = new CryptoFileStore("fred.dat", "abbabbdif");
 
         String stringToEncrypt = "hello world!";
 
@@ -54,7 +55,7 @@ public class CryptoStoreTest
         String secondAttemptAtencryptedString = instance.encrypt(stringToEncrypt);
         String decryptedString = instance.decrypt(encryptedString);
 
-        String expectedEncryptionResult = "FiQvWsvqupGbOyDrf+/fxg==";
+        String expectedEncryptionResult = "YWRb+KFoLjU8rp86Nd5BAQ==";
         assertEquals(encryptedString, secondAttemptAtencryptedString);
         assertEquals(expectedEncryptionResult, encryptedString);
         assertEquals(stringToEncrypt, decryptedString);
@@ -68,8 +69,8 @@ public class CryptoStoreTest
     {
         System.out.println("Encrypt uniqueness");
         
-        CryptoFileStore firstCryptoStore = new CryptoFileStore("fred.dat");
-        CryptoFileStore secondCryptoStore = new CryptoFileStore("fred2.dat");
+        CryptoFileStore firstCryptoStore = new CryptoFileStore("fred.dat", "jjhjhfif");
+        CryptoFileStore secondCryptoStore = new CryptoFileStore("fred2.dat", "lkfligu");
 
         String stringToEncrypt = "hello world!";
 

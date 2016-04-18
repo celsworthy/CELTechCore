@@ -30,7 +30,7 @@ public class IntegerPreference implements PreferencesInnerPanelController.Prefer
         control.setAllowedDecimalPlaces(0);
         control.setAllowNegative(false);
         control.setMaxLength(4);
-        control.floatValueProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        control.valueChangedProperty().addListener((ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
         {
             updateValueFromControl();
         });
@@ -39,16 +39,16 @@ public class IntegerPreference implements PreferencesInnerPanelController.Prefer
     @Override
     public void updateValueFromControl()
     {
-        integerProperty.set(control.intValueProperty().get());
+        integerProperty.set(control.getAsInt());
 
         // User Preferences controls whether the property can be set - read back just in case our selection was overridden
-        control.intValueProperty().set(integerProperty.get());
+        control.setValue(integerProperty.get());
     }
 
     @Override
     public void populateControlWithCurrentValue()
     {
-        control.floatValueProperty().set(integerProperty.get());
+        control.setValue(integerProperty.get());
     }
 
     @Override

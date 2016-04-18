@@ -6,6 +6,5 @@ package celtech.appManager;
  */
 public interface ProjectCallback
 {
-
-    public void heresTheProject(Project project);
+    public void modelAddedToProject(Project project);
 }

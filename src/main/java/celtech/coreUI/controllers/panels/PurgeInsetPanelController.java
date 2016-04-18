@@ -84,25 +84,6 @@ public class PurgeInsetPanelController implements Initializable
 
     Map<StateTransitionManager.GUIName, Region> namesToButtons = new HashMap<>();
 
-    private final ChangeListener<Number> purgeTempEntryListener0
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                if (printer.headProperty().get() != null
-                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                {
-                    transitionManager.setPurgeTemperature(1, newValue.intValue());
-                } else
-                {
-                    transitionManager.setPurgeTemperature(0, newValue.intValue());
-                }
-            };
-
-    private final ChangeListener<Number> purgeTempEntryListener1
-            = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-            {
-                transitionManager.setPurgeTemperature(0, newValue.intValue());
-            };
-
     @FXML
     private VBox container;
 
@@ -225,6 +206,25 @@ public class PurgeInsetPanelController implements Initializable
             project = null;
         }
     }
+
+    private final ChangeListener<Boolean> purgeTempEntryListener0
+            = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                if (printer.headProperty().get() != null
+                && printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    transitionManager.setPurgeTemperature(1, purgeTemperature0.getAsInt());
+                } else
+                {
+                    transitionManager.setPurgeTemperature(0, purgeTemperature0.getAsInt());
+                }
+            };
+
+    private final ChangeListener<Boolean> purgeTempEntryListener1
+            = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                transitionManager.setPurgeTemperature(0, purgeTemperature1.getAsInt());
+            };
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
@@ -398,10 +398,10 @@ public class PurgeInsetPanelController implements Initializable
         resettingPrinter.setVisible(false);
         purgeStatus.setVisible(true);
         purgeStatus.setText(Lookup.i18n(state.getStepTitle()));
-        purgeTemperature0.intValueProperty().removeListener(purgeTempEntryListener0);
+        purgeTemperature0.valueChangedProperty().removeListener(purgeTempEntryListener0);
         if (purgeTwoNozzleHeaters.get())
         {
-            purgeTemperature1.intValueProperty().removeListener(purgeTempEntryListener1);
+            purgeTemperature1.valueChangedProperty().removeListener(purgeTempEntryListener1);
         }
         switch (state)
         {
@@ -411,13 +411,13 @@ public class PurgeInsetPanelController implements Initializable
                 break;
             case CONFIRM_TEMPERATURE:
                 showCurrentMaterial0();
-                purgeTemperature0.intValueProperty().addListener(purgeTempEntryListener0);
+                purgeTemperature0.valueChangedProperty().addListener(purgeTempEntryListener0);
                 purgeDetailsGrid0.setVisible(true);
 
                 if (purgeTwoNozzleHeaters.get())
                 {
                     showCurrentMaterial1();
-                    purgeTemperature1.intValueProperty().addListener(purgeTempEntryListener1);
+                    purgeTemperature1.valueChangedProperty().addListener(purgeTempEntryListener1);
                 } else
                 {
                     purgeMaterial0.setVisible(false);

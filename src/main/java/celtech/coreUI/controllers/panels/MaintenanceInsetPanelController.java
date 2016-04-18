@@ -108,7 +108,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(0, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                connectedPrinter.ejectStuckMaterial(1, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material E");
@@ -123,7 +123,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(1, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                connectedPrinter.ejectStuckMaterial(0, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material D");

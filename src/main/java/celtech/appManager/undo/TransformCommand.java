@@ -115,4 +115,40 @@ class TransformCommand extends Command
         }
         return statesById;
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.getClass().toGenericString());
+        sb.append("\n");
+        sb.append("Project: ");
+        sb.append(project.getProjectName());
+        sb.append("\n");
+        sb.append("Original States: ");
+        if (originalStates != null)
+        {
+            originalStates.iterator().forEachRemaining(item ->
+            {
+                sb.append(item.toString());
+            });
+        } else
+        {
+            sb.append("None");
+}
+        sb.append("\n");
+        sb.append("New States: ");
+        if (newStates != null)
+        {
+            newStates.iterator().forEachRemaining(item ->
+            {
+                sb.append(item.toString());
+            });
+        } else
+        {
+            sb.append("None");
+        }
+        sb.append("\n");
+        return sb.toString();
+    }
 }

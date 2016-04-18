@@ -1,6 +1,6 @@
 package celtech.web;
 
-import celtech.crypto.CryptoFileStore;
+import celtech.roboxbase.crypto.CryptoFileStore;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class PersistentCookieStore implements CookieStore, Runnable
         // get the default in memory cookie store
         store = new CookieManager().getCookieStore();
 
-        cryptoFileStore = new CryptoFileStore(BaseConfiguration.getApplicationStorageDirectory() + filename);
+        cryptoFileStore = new CryptoFileStore(BaseConfiguration.getApplicationStorageDirectory() + filename, "ab54vi'vSDDAS5r433jjk's#a");
 //        steno.info("Reading cookie store");
         String encryptedCookieData = cryptoFileStore.readFile();
 
