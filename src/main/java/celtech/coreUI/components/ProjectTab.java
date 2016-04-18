@@ -509,7 +509,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     }
 
     @Override
-    public void heresTheProject(Project project)
+    public void modelAddedToProject(Project project)
     {
         if (this.project == null)
         {

@@ -154,7 +154,7 @@ public class ModelLoader
         if (project != null
                 && callMeBack != null)
         {
-            callMeBack.heresTheProject(project);
+            callMeBack.modelAddedToProject(project);
         }
     }
 

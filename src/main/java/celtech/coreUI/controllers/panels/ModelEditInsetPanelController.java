@@ -6,7 +6,6 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.LayoutSubmode;
@@ -27,10 +26,8 @@ import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.TranslateableThreeD;
 import celtech.roboxbase.utils.Math.MathUtils;
-import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -49,7 +46,6 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 import jfxtras.styles.jmetro8.ToggleSwitch;
@@ -494,6 +490,23 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             currentProject = project;
             undoableProject = new UndoableProject(project);
 
+        if (projectSelection != null)
+        {
+            projectSelection.getPrimarySelectedModelDetails().getWidth().removeListener(widthListener);
+            projectSelection.getPrimarySelectedModelDetails().getHeight().removeListener(heightListener);
+            projectSelection.getPrimarySelectedModelDetails().getDepth().removeListener(depthListener);
+
+            projectSelection.getPrimarySelectedModelDetails().getCentreX().removeListener(xAxisListener);
+            projectSelection.getPrimarySelectedModelDetails().getCentreZ().removeListener(yAxisListener);
+
+            projectSelection.getPrimarySelectedModelDetails().getScaleX().removeListener(modelScaleXChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getScaleY().removeListener(modelScaleYChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getScaleZ().removeListener(modelScaleZChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getRotationLean().removeListener(modelLeanChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getRotationTwist().removeListener(modelTwistChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getRotationTurn().removeListener(modelTurnChangeListener);
+        }
+
             projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
             projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
             numSelectedModels.bind(projectSelection.getNumModelsSelectedProperty());
@@ -739,51 +752,51 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     private void populateYAxisField(Number t1)
     {
-        yAxisTextField.doubleValueProperty().set(t1.doubleValue());
+        yAxisTextField.setValue(t1.doubleValue());
         lastY = t1.doubleValue();
     }
 
     private void populateXAxisField(Number t1)
     {
-        xAxisTextField.doubleValueProperty().set(t1.doubleValue());
+        xAxisTextField.setValue(t1.doubleValue());
         lastX = t1.doubleValue();
     }
 
     private void populateDepthField(Number t1)
     {
-        depthTextField.doubleValueProperty().set(t1.doubleValue());
+        depthTextField.setValue(t1.doubleValue());
         lastDepth = t1.doubleValue();
     }
 
     private void populateHeightField(Number t1)
     {
-        heightTextField.doubleValueProperty().set(t1.doubleValue());
+        heightTextField.setValue(t1.doubleValue());
         lastHeight = t1.doubleValue();
     }
 
     private void populateWidthField(Number t1)
     {
-        widthTextField.doubleValueProperty().set(t1.doubleValue());
+        widthTextField.setValue(t1.doubleValue());
         lastWidth = t1.doubleValue();
     }
 
     private void populateRotationXField(Number t1)
     {
-        rotationXTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationXTextField.setValue(t1.doubleValue());
         rotationXTextField.setText(String.format(rotationFormat, t1));
         lastRotationX = t1.doubleValue();
     }
 
     private void populateRotationZField(Number t1)
     {
-        rotationZTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationZTextField.setValue(t1.doubleValue());
         rotationZTextField.setText(String.format(rotationFormat, t1));
         lastRotationZ = t1.doubleValue();
     }
 
     private void populateRotationYField(Number t1)
     {
-        rotationYTextField.doubleValueProperty().set(t1.doubleValue());
+        rotationYTextField.setValue(t1.doubleValue());
         rotationYTextField.setText(String.format(rotationFormat, t1));
         lastRotationY = t1.doubleValue();
     }
@@ -815,11 +828,11 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
         String scaleString = myFormatter.format(scaleRatio * 100f);
-        scaleTextWidthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextWidthField.setValue(scaleRatio * 100);
         scaleTextWidthField.setText(scaleString);
-        scaleTextHeightField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextHeightField.setValue(scaleRatio * 100);
         scaleTextHeightField.setText(scaleString);
-        scaleTextDepthField.doubleValueProperty().set(scaleRatio * 100);
+        scaleTextDepthField.setValue(scaleRatio * 100);
         scaleTextDepthField.setText(scaleString);
 
         lastScaleWidth = 100.0;
@@ -831,7 +844,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         if (!inMultiSelectWithFixedAR())
         {
-            scaleTextWidthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextWidthField.setValue(t1.doubleValue() * 100);
             DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
             String scaleString = myFormatter.format(t1.doubleValue() * 100f);
             scaleTextWidthField.setText(scaleString);
@@ -843,7 +856,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         if (!inMultiSelectWithFixedAR())
         {
-            scaleTextHeightField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextHeightField.setValue(t1.doubleValue() * 100);
             DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
             String scaleString = myFormatter.format(t1.doubleValue() * 100f);
             scaleTextHeightField.setText(scaleString);
@@ -855,7 +868,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         if (!inMultiSelectWithFixedAR())
         {
-            scaleTextDepthField.doubleValueProperty().set(t1.doubleValue() * 100);
+            scaleTextDepthField.setValue(t1.doubleValue() * 100);
             DecimalFormat myFormatter = new DecimalFormat(scaleFormat);
             String scaleString = myFormatter.format(t1.doubleValue() * 100f);
             scaleTextDepthField.setText(scaleString);
@@ -865,23 +878,98 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     private void setUpNumberFieldListeners()
     {
-        addNumberFieldListener(scaleTextWidthField, this::updateScaleWidth);
-        addNumberFieldListener(scaleTextHeightField, this::updateScaleHeight);
-        addNumberFieldListener(scaleTextDepthField, this::updateScaleDepth);
-        addNumberFieldListener(rotationXTextField, this::updateRotationX);
-        addNumberFieldListener(rotationYTextField, this::updateRotationY);
-        addNumberFieldListener(rotationZTextField, this::updateRotationZ);
-        addNumberFieldListener(widthTextField, this::updateWidth);
-        addNumberFieldListener(heightTextField, this::updateHeight);
-        addNumberFieldListener(depthTextField, this::updateDepth);
-        addNumberFieldListener(xAxisTextField, this::updateX);
-        addNumberFieldListener(yAxisTextField, this::updateZ);
+        widthTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateWidth();
+    }
+        });
+        scaleTextWidthField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateScaleWidth();
+            }
+        });
+        scaleTextHeightField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateScaleHeight();
+            }
+        });
+        scaleTextDepthField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateScaleDepth();
+            }
+        });
+        rotationXTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateRotationX();
+            }
+        });
+        rotationYTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateRotationY();
+            }
+        });
+        rotationZTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateRotationZ();
+            }
+        });
+        heightTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateHeight();
+            }
+        });
+        depthTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateDepth();
+            }
+        });
+        xAxisTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateX();
+            }
+        });
+        yAxisTextField.valueChangedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                updateZ();
+            }
+        });
     }
 
     private void updateRotationX()
     {
-        try
-        {
             double newRotationX = rotationXTextField.getAsDouble();
             if (newRotationX == lastRotationX)
             {
@@ -892,17 +980,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             }
             undoableProject.rotateLeanModels((Set) projectSelection.getSelectedModelsSnapshot(),
                     rotationXTextField.getAsDouble());
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting rotation "
-                    + rotationXTextField.getText());
         }
-    }
 
     private void updateRotationY()
     {
-        try
-        {
             double newRotationY = rotationYTextField.getAsDouble();
             if (newRotationY == lastRotationY)
             {
@@ -913,17 +994,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             }
             undoableProject.rotateTwistModels((Set) projectSelection.getSelectedModelsSnapshot(),
                     rotationYTextField.getAsDouble());
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting rotation "
-                    + rotationYTextField.getText());
         }
-    }
 
     private void updateRotationZ()
     {
-        try
-        {
             double newRotationZ = rotationZTextField.getAsDouble();
             if (newRotationZ == lastRotationZ)
             {
@@ -934,54 +1008,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             }
             undoableProject.rotateTurnModels((Set) projectSelection.getSelectedModelsSnapshot(),
                     rotationZTextField.getAsDouble());
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting rotation "
-                    + rotationZTextField.getText());
         }
-    }
-
-    /**
-     * When focus is lost or ENTER is pressed, run the given function.
-     */
-    private void addNumberFieldListener(RestrictedNumberField textField, NoArgsVoidFunc func)
-    {
-        textField.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    try
-                    {
-                        if (!newValue)
-                        {
-                            func.run();
-                        }
-                    } catch (Exception ex)
-                    {
-                        steno.warning("exception updating number field " + ex);
-                    }
-                });
-
-        textField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                    try
-                    {
-                        func.run();
-                    } catch (Exception ex)
-                    {
-                        steno.warning("exception updating number field " + ex);
-                    }
-                    break;
-            }
-        });
-    }
 
     private void updateZ()
     {
-        try
-        {
             double newY = yAxisTextField.getAsDouble();
             if (newY == lastY)
             {
@@ -991,16 +1021,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 lastY = newY;
             }
             undoableProject.translateModelsZTo(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), newY);
-        } catch (ParseException ex)
-        {
-            steno.error("Error parsing y translate string " + ex + " : " + ex.getMessage());
-        }
     }
 
     private void updateX()
     {
-        try
-        {
             double newX = xAxisTextField.getAsDouble();
             if (newX == lastX)
             {
@@ -1010,17 +1034,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 lastX = newX;
             }
             undoableProject.translateModelsXTo(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), newX);
-
-        } catch (ParseException ex)
-        {
-            steno.error("Error parsing x translate string " + ex + " : " + ex.getMessage());
-        }
     }
 
     private void updateDepth()
     {
-        try
-        {
             double newDepth = limitDimension(depthTextField.getAsDouble());
             if (newDepth == lastDepth)
             {
@@ -1044,16 +1061,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 undoableProject.resizeModelsDepth(projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class),
                         newDepth);
             }
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting height " + heightTextField.getText());
-        }
     }
 
     private void updateHeight()
     {
-        try
-        {
             double newHeight = limitDimension(heightTextField.getAsDouble());
             if (newHeight == lastHeight)
             {
@@ -1076,10 +1087,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 undoableProject.resizeModelsHeight(projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class),
                         newHeight);
             }
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting height " + heightTextField.getText());
-        }
     }
 
     private final double MINIMUM_DIMENSION = 0.1;
@@ -1128,8 +1135,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     private void updateWidth()
     {
-        try
-        {
             double newWidth = limitDimension(widthTextField.getAsDouble());
             if (newWidth == lastWidth)
             {
@@ -1149,10 +1154,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 undoableProject.resizeModelsWidth(projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class),
                         newWidth);
             }
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting width " + widthTextField.getText());
-        }
     }
 
     private ProjectifiableThing getSingleSelection()
@@ -1164,8 +1165,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     private void updateScaleDepth()
     {
-        try
-        {
             double newScaleDepth = scaleTextDepthField.getAsDouble();
             if (MathUtils.compareDouble(newScaleDepth, lastScaleDepth, 0.001) == MathUtils.EQUAL
                     || newScaleDepth < 0)
@@ -1196,16 +1195,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 undoableProject.scaleZModels(projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class),
                         scaleFactor, inFixedAR());
             }
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting scale " + scaleTextDepthField.getText());
-        }
     }
 
     private void updateScaleHeight()
     {
-        try
-        {
             double newScaleHeight = scaleTextHeightField.getAsDouble();
             if (MathUtils.compareDouble(newScaleHeight, lastScaleHeight, 0.001) == MathUtils.EQUAL
                     || newScaleHeight < 0)
@@ -1236,16 +1229,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 undoableProject.scaleYModels(projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
                         scaleFactor, inFixedAR());
             }
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting scale " + scaleTextHeightField.getText());
-        }
     }
 
     private void updateScaleWidth()
     {
-        try
-        {
             double newScaleWidth = scaleTextWidthField.getAsDouble();
             if (MathUtils.compareDouble(newScaleWidth, lastScaleWidth, 0.001) == MathUtils.EQUAL
                     || newScaleWidth < 0)
@@ -1276,10 +1263,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 undoableProject.scaleXModels(projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
                         scaleFactor, inFixedAR());
             }
-        } catch (ParseException ex)
-        {
-            steno.warning("Error converting scale " + scaleTextWidthField.getText());
-        }
     }
 
     /**

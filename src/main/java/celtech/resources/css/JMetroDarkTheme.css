@@ -2528,10 +2528,6 @@ modal-dialogue{
     -fx-font-size: 10pt;
 }
 
-#cmbLibraryFilament {
-    -fx-pref-width: 320;
-}
-
 .filamentLibUpper {
     -fx-pref-width: 190;
 }

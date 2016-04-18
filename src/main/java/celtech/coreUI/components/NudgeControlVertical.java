@@ -35,27 +35,15 @@ public class NudgeControlVertical extends VBox
     @FXML
     private void upPressed(ActionEvent event)
     {
-        try
-        {
             double limitedValue = getLimitedValue(numberDisplay.getAsDouble() + deltaValue.get());
-            numberDisplay.doubleValueProperty().set(limitedValue);
-        } catch (ParseException ex)
-        {
-
-        }
+        numberDisplay.setValue(limitedValue);
     }
 
     @FXML
     private void downPressed(ActionEvent event)
     {
-        try
-        {
             double limitedValue = getLimitedValue(numberDisplay.getAsDouble() - deltaValue.get());
-            numberDisplay.doubleValueProperty().set(limitedValue);
-        } catch (ParseException ex)
-        {
-
-        }
+        numberDisplay.setValue(limitedValue);
     }
 
     private double getLimitedValue(double newValue)
@@ -89,7 +77,7 @@ public class NudgeControlVertical extends VBox
             throw new RuntimeException(exception);
         }
 
-        numberDisplay.doubleValueProperty().set(0);
+        numberDisplay.setValue(0);
     }
 
     public void setDecimalPlaces(int numberOfDecimalPlaces)
@@ -111,24 +99,14 @@ public class NudgeControlVertical extends VBox
     {
         double value = 0;
 
-        try
-        {
             numberDisplay.getAsDouble();
-        } catch (ParseException ex)
-        {
-        }
 
         return value;
     }
 
     public void setValue(double value)
     {
-        numberDisplay.doubleValueProperty().set(value);
-    }
-
-    public DoubleProperty getValueProperty()
-    {
-        return numberDisplay.doubleValueProperty();
+        numberDisplay.setValue(value);
     }
 
     public double getDeltaValue()

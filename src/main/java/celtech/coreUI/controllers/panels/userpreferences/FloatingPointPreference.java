@@ -33,7 +33,7 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
         control.setAllowedDecimalPlaces(decimalPlaces);
         control.setAllowNegative(negativeAllowed);
         control.setMaxLength(digits);
-        control.floatValueProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number t1) ->
+        control.valueChangedProperty().addListener((ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
         {
             updateValueFromControl();
         });
@@ -42,16 +42,16 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
     @Override
     public void updateValueFromControl()
     {
-        floatProperty.set(control.floatValueProperty().get());
+        floatProperty.set(control.getAsFloat());
 
         // User Preferences controls whether the property can be set - read back just in case our selection was overridden
-        control.floatValueProperty().set(floatProperty.get());
+        control.setValue(floatProperty.get());
     }
 
     @Override
     public void populateControlWithCurrentValue()
     {
-        control.floatValueProperty().set(floatProperty.get());
+        control.setValue(floatProperty.get());
     }
 
     @Override
