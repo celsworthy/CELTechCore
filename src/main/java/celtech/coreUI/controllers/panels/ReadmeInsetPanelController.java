@@ -29,11 +29,10 @@ import org.w3c.dom.html.HTMLAnchorElement;
  *
  * @author Ian
  */
-public class WelcomeInsetPanelController implements Initializable
+public class ReadmeInsetPanelController implements Initializable
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-            WelcomeInsetPanelController.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(ReadmeInsetPanelController.class.getName());
 
     @FXML
     private WebView textContainer;
@@ -47,7 +46,7 @@ public class WelcomeInsetPanelController implements Initializable
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        String readmeURL = "file:///" + BaseConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
+        String readmeURL = "file:///" + BaseConfiguration.getApplicationInstallDirectory(ReadmeInsetPanelController.class) + "README/README_AutoMaker.html";
 
         textContainer.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>()
         {

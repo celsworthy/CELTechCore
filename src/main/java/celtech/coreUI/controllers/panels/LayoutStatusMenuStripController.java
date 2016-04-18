@@ -450,11 +450,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
         String descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
 
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        ProjectMode currentProjectMode = (currentProject == null)?ProjectMode.NONE:currentProject.getMode();
         modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(descriptionOfFile,
                         ApplicationConfiguration.
                         getSupportedFileExtensionWildcards(
-                                ProjectMode.MESH)));
+                                currentProjectMode)));
         modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
                 DirectoryMemoryProperty.MODEL)));
         List<File> files;

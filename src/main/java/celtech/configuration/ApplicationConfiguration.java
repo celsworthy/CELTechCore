@@ -143,6 +143,10 @@ public class ApplicationConfiguration
                 {
                     returnVal.add("*." + extension);
                 }
+                for (String extension : supported2DModelExtensions)
+                {
+                    returnVal.add("*." + extension);
+                }
                 for (String extension : supportedProcessedModelExtensions)
                 {
                     returnVal.add("*." + extension);
@@ -150,6 +154,12 @@ public class ApplicationConfiguration
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)
+                {
+                    returnVal.add("*." + extension);
+                }
+                break;
+            case SVG:
+                for (String extension : supported2DModelExtensions)
                 {
                     returnVal.add("*." + extension);
                 }
