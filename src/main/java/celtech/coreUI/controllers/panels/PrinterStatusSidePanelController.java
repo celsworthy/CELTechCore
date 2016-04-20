@@ -270,7 +270,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         if (printer != null)
         {
             previousSelectedPrinter = printer;
-            Lookup.setSelectedPrinter(printer);
             bindDetails(printer);
             if (printer.headProperty().get() != null)
             {
