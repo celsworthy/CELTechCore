@@ -152,7 +152,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private VBox uberContainer;
 
     private Printer previousSelectedPrinter = null;
-    private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
 
     private final int MAX_DATA_POINTS = 210;
 
@@ -189,8 +188,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         chartManager = new ChartManager(temperatureChart);
 
-        selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
-        selectedPrinter.addListener(
+        Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     whenPrinterSelected(newValue);
@@ -281,9 +279,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void bindDetails(Printer printer)
     {
-        if (selectedPrinter.get() != null)
+        if (Lookup.getSelectedPrinterProperty().get() != null)
         {
-            unbindPrinter(selectedPrinter.get());
+            unbindPrinter(Lookup.getSelectedPrinterProperty().get());
         }
 
         if (printer != null)
@@ -454,7 +452,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void controlDetailsVisibility()
     {
-        boolean visible = selectedPrinter.get() != null;
+        boolean visible = Lookup.getSelectedPrinterProperty().get() != null;
 
         temperatureChart.setVisible(visible);
         temperatureChartXLabels.setVisible(visible);
@@ -484,7 +482,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenHeadAdded(Printer printer)
     {
-        if (printer == selectedPrinter.get())
+        if (printer == Lookup.getSelectedPrinterProperty().get())
         {
             Head head = printer.headProperty().get();
             bindHeadProperties(head);
@@ -494,7 +492,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
-        if (printer == selectedPrinter.get())
+        if (printer == Lookup.getSelectedPrinterProperty().get())
         {
             unbindHeadProperties(head);
         }
@@ -518,7 +516,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
-        if (printer == selectedPrinter.get())
+        if (printer == Lookup.getSelectedPrinterProperty().get())
         {
             refreshMaterialContainer(printer);
         }
@@ -527,7 +525,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
-        if (printer == selectedPrinter.get())
+        if (printer == Lookup.getSelectedPrinterProperty().get())
         {
             refreshMaterialContainer(printer);
         }
