@@ -1,33 +1,27 @@
 
 @font-face {
-    font-family: Source Sans Pro Regular;
     src: url('../fonts/SourceSansPro-Regular.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: Source Sans Pro Light;
     font-weight: 300;
     src: url('../fonts/SourceSansPro-Light.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: Source Sans Pro ExtraLight;
     font-weight: 200;
     src: url('../fonts/SourceSansPro-ExtraLight.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: Source Sans Pro Semibold;
     src: url('../fonts/SourceSansPro-Semibold.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: Source Sans Pro Bold;
     src: url('../fonts/SourceSansPro-Bold.ttf') format(ttf);
 }
 
 @font-face {
-    font-family: Source Code Pro;
     src: url('../fonts/SourceCodePro-Regular.ttf') format(ttf);
 }
 
@@ -70,13 +64,30 @@
     graph_line_blue: #0096e1;
     graph_setpoint_red: #8c0000;
     graph_setpoint_green: #145019;
-    graph_setpoint_yellow: #a07800;    
-    /*-fx-font-family: 'CrazyZoo';*/
-
+    graph_setpoint_yellow: #a07800;
 }
 
-.root {
-    -fx-font-family: 'Source Sans Pro Light';
+.text {
+    -fx-font-family: "Source Sans Pro";
+    -fx-font-smoothing-type: lcd;
+}
+
+.boldText
+{
+    -fx-font-family: 'Source Sans Pro Bold';
+    -fx-font-smoothing-type: lcd;
+}
+
+.regularText
+{
+    -fx-font-family: "Source Sans Pro";
+    -fx-font-smoothing-type: lcd;
+}
+
+.lightText
+{
+    -fx-font-family: "Source Sans Pro Light";
+    -fx-font-smoothing-type: lcd;
 }
 
 .blackBorder {
@@ -1039,12 +1050,12 @@
 }
 
 .purgeInstructions {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 18px;
 }
 
 .purgeTitle {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 24px;
 }
 
@@ -1053,13 +1064,13 @@
 }
 
 .resettingPrinter {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 24px;
     -fx-fill: white;
 }
 
 #purgeFilamentCombo {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 15px;
 }
 
@@ -1068,7 +1079,7 @@
 }
 
 .purgeToggle {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-color: white;
     -fx-text-fill: black;
     -fx-background-color: dark_grey;
@@ -1085,13 +1096,13 @@
 */
 
 .reelLabel {
-    -fx-font-family: 'Source Sans Pro Semibold';
+    -fx-font-family: "Source Sans Pro Semibold";
     -fx-font-size: 32;
     -fx-text-alignment: CENTER;
 }
 
 .reelMaterialNameBold {
-    -fx-font-family: 'Source Sans Pro Semibold';
+    -fx-font-family: "Source Sans Pro Semibold";
     -fx-font-size: 18;
     -fx-text-alignment: CENTER;
 }
@@ -1210,7 +1221,7 @@
 
 .temperatureChartLegend {
     -fx-font-size: 13px;
-    -fx-font-family: 'Source Sans Pro Semibold';
+    -fx-font-family: "Source Sans Pro Semibold";
 }
 
 #temperatureGraphTempAxis {
@@ -1218,7 +1229,7 @@
 }
 
 #temperatureChart {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-background-color: dark_grey;
 }
 
@@ -1227,7 +1238,7 @@
 }
 
 #temperatureChartXLabels {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-background-color: dark_grey;
 }
 
@@ -1281,7 +1292,7 @@
 }
 
 .main-project-tabPane {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
 }
 
 /*
@@ -1390,7 +1401,7 @@ table-view .column-header-background {
 }
 
 .regularFont {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
 }
 
 .statusPanelBackground{
@@ -1419,7 +1430,7 @@ table-view .column-header-background {
 }
 
 .sidePanelTitle{
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-text-fill: highlight_colour;
     -fx-pref-height: 60;
     -fx-font-size: 36px;
@@ -1740,7 +1751,7 @@ modal-dialogue{
 }
 
 .slider .axis {
-    -fx-tick-label-font: 13px 'Source Sans Pro Regular'; 
+    -fx-tick-label-font: 13px "Source Sans Pro"; 
 }
 
 .slider .axis:bottom {
@@ -1860,7 +1871,7 @@ modal-dialogue{
 
 .calibrationInfoField {
     -fx-background-color: white;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 22px;
 }
 
@@ -1889,7 +1900,7 @@ modal-dialogue{
 }
 
 .aboutBodyTextRegular {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 21px;
 }
 
@@ -1898,7 +1909,7 @@ modal-dialogue{
 }
 
 .aboutSerialTextHeader {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 24px;
 }
 
@@ -1929,7 +1940,7 @@ modal-dialogue{
 */
 
 #verticalMenuTitle {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size:50px;
     -fx-fill: white;
 }
@@ -1940,7 +1951,7 @@ modal-dialogue{
 }
 
 .verticalMenuOption {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 30px;
 }
 
@@ -1988,7 +1999,7 @@ modal-dialogue{
 }
 
 .statusBar {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-background-color: robox_blue;
     -fx-max-height: 60px;
 }
@@ -1998,12 +2009,12 @@ modal-dialogue{
 }
 
 .statusBar .smallerText {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 16px;
 }
 
 .statusBar .largerText {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 18px;
 }
 
@@ -2034,7 +2045,7 @@ modal-dialogue{
 }
 
 .secondaryStatusBar {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-background-color: white_60;
     -fx-max-height: 60px;
 }
@@ -2045,13 +2056,13 @@ modal-dialogue{
 }
 
 .secondaryStatusBar .smallerText {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 16px;
     -fx-text-fill: black;
 }
 
 .secondaryStatusBar .largerText {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 18px;
     -fx-text-fill: black;
 }
@@ -2064,7 +2075,7 @@ modal-dialogue{
     -fx-text-fill: black;
     -fx-font-size: 12pt;
     -fx-alignment: CENTER;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
 }
 
 #printerStatusTitle {
@@ -2171,11 +2182,11 @@ modal-dialogue{
 }
 
 #materialColour {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
 }
 
 #materialRemaining {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
 }
 
 .filamentSwatchPadding {
@@ -2192,7 +2203,7 @@ modal-dialogue{
 /* ------- MAIN BUTTON ------- */
 .cmbCleanCombo {
     /*-fx-skin: "com.sun.javafx.scene.control.skin.ComboBoxBaseSkin";*/
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-background-color: white;
     /*-fx-background-radius: 5, 5, 4, 3;
     -fx-background-insets: 0 0 -1 0, 0, 1, 2;*/
@@ -2251,12 +2262,12 @@ modal-dialogue{
 }
 
 .preferenceLabel {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 13pt;
 }
 
 .preferenceControl {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 13pt;
 
 }
@@ -2266,7 +2277,7 @@ modal-dialogue{
 */
 
 .registrationGrid {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 13px;
 }
 
@@ -2293,13 +2304,13 @@ modal-dialogue{
 
 .notification-bar-text {
     -fx-font-size: 18px;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-text-fill: white;
 }
 
 .notification-bar-step-text {
     -fx-font-size: 14px;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-text-fill: white;
 }
 
@@ -2313,7 +2324,7 @@ modal-dialogue{
  */
 .error-dialog{
     -fx-background-color: mid_grey_solid;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-spacing: 5;
     -fx-padding: 5;
     -fx-max-width: 500;
@@ -2350,7 +2361,7 @@ modal-dialogue{
 .error-dialog-choice-button
 {
     -fx-background-color: light_grey;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-max-width: 1000;
     -fx-wrap-text: true;
     -fx-max-height:1000;
@@ -2382,7 +2393,7 @@ modal-dialogue{
 
 .splashCopyright
 {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 12pt;
     -fx-fill: white;
     -fx-text-alignment: left;
@@ -2390,7 +2401,7 @@ modal-dialogue{
 
 .splashVersion
 {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 12pt;
     -fx-fill: white;
     -fx-text-alignment: right;
@@ -2403,21 +2414,21 @@ modal-dialogue{
 
 .welcome-title-bold
 {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 60px;
     -fx-fill: white;
 }
 
 .welcome-title-light
 {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 60px;
     -fx-fill: white;
 }
 
 .welcome-title-superscript
 {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 14px;
     -fx-fill: white;
     -fx-alignment: TOP_LEFT;
@@ -2425,7 +2436,7 @@ modal-dialogue{
 
 .welcome-version
 {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 24px;
     -fx-fill: white;
 }
@@ -2508,23 +2519,23 @@ modal-dialogue{
 
 #materialsGridPane {
     -fx-background-color: light_grey;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;    
 }
 
 #materialsGridPane .RestrictedNumberField {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;
 }
 
 #materialsGridPane .text-field {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;
 }
 
 #materialsGridPane .label {
     /*-fx-padding: 0 0 0 7;*/
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;
 }
 
@@ -2547,7 +2558,7 @@ modal-dialogue{
 
 #helpText {
     -fx-text-fill: white;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 9pt;  
     -fx-pref-height: 80;
     -fx-pref-width: 120;
@@ -2565,7 +2576,7 @@ modal-dialogue{
 }
 
 #cmbFilamentReelIndexLabel {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 7px;
     -fx-text-fill: black;
     -fx-padding: 0 0 0 8;
@@ -2595,7 +2606,7 @@ color-picker-label .text-field {
 }
 
 #printProfileInnerPanel {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt; 
 
 }
@@ -2643,22 +2654,22 @@ color-picker-label .text-field {
 
 .printProfileGrid {
     -fx-background-color: light_grey;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;    
 }
 
 .printProfileGrid .RestrictedNumberField {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;
 }
 
 .printProfileGrid .text-field {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;
 }
 
 .printProfileGrid .label {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt;
 }
 
@@ -2709,11 +2720,11 @@ color-picker-label .text-field {
 */
 #settingsInsetRoot {
     -fx-background-color: mid_grey_solid;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
 }
 
 #pleaseCreateProfile {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 18px;
 }
 
@@ -2749,7 +2760,7 @@ color-picker-label .text-field {
 
 .dimension-label
 {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 12pt;
     -fx-text-alignment: center;
     -fx-border-width: 0px;
@@ -2761,7 +2772,7 @@ color-picker-label .text-field {
 
 .bed-axis-label
 {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 18pt;
     -fx-text-alignment: center;
 }  
@@ -2777,7 +2788,7 @@ color-picker-label .text-field {
 
 #timeCostInsetRoot {
     -fx-background-color: mid_grey_50;
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
 }
 
 .timeCostIcons {
@@ -2800,7 +2811,7 @@ color-picker-label .text-field {
 * Menu Item
 */
 .menu-item {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 14px;
 }
 
@@ -2809,7 +2820,7 @@ color-picker-label .text-field {
 */
 
 .head_panel, .head_panel .label {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 14px;
 }
 
@@ -2819,12 +2830,12 @@ color-picker-label .text-field {
 
 .status_inner {
     -fx-background-color: mid_grey_50; 
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 18px;
 }
 
 .status_inner .title {
-    -fx-font-family: 'Source Sans Pro Regular';
+    -fx-font-family: "Source Sans Pro";
     -fx-font-size: 20px;
 }
 
@@ -2860,7 +2871,7 @@ color-picker-label .text-field {
 }
 
 .fake-tab-button {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 18px;
     -fx-padding: 0px;  
     -fx-graphic-text-gap: 2px;
@@ -2925,26 +2936,8 @@ color-picker-label .text-field {
 
 #model-edit-panel .label
 {
-    -fx-font-family: 'Source Sans Pro Light';
+    -fx-font-family: "Source Sans Pro Light";
     -fx-font-size: 18px;    
-}
-
-.boldText
-{
-    -fx-font-family: 'Source Sans Pro Bold';
-    -fx-font-smoothing-type: lcd;
-}
-
-.regularText
-{
-    -fx-font-family: 'Source Sans Pro Regular';
-    -fx-font-smoothing-type: lcd;
-}
-
-.lightText
-{
-    -fx-font-family: 'Source Sans Pro Light';
-    -fx-font-smoothing-type: lcd;
 }
 
 .gcode-transcript
