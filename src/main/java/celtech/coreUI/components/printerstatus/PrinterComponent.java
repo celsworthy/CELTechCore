@@ -180,6 +180,8 @@ public class PrinterComponent extends Pane
      */
     private void initialise()
     {
+        setStyle("-fx-background-color: white;");
+        
         name.setFill(Color.WHITE);
         
         name.getStyleClass().add(styleClassForText);
