@@ -8,10 +8,15 @@ import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
+import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
+import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
@@ -89,6 +94,13 @@ public class PostProcessor
     private final UtilityMethods utilities;
 
     private final TimeUtils timeUtils = new TimeUtils();
+
+    private static final double timeForInitialHoming_s = 20;
+    private static final double timeForPurgeAndLevelling_s = 40;
+    private static final double timeForNozzleSelect_s = 1;
+    private static final double zMoveRate_mms = 4;
+    // Add a percentage to each movement to factor in acceleration across the whole print
+    private static final double movementFudgeFactor = 1.1;
 
     public PostProcessor(Printer printer,
             String gcodeFileToProcess,
@@ -401,10 +413,10 @@ public class PostProcessor
             layerNumberToLineNumber.set(layerNumberToLineNumber.size() - 1,
                     writer.getNumberOfLinesOutput());
             int numLines = writer.getNumberOfLinesOutput();
-            
+
             String statsProfileName = "";
             float statsLayerHeight = 0;
-            
+
             if (project.getPrinterSettings().getSettings(headFile.getTypeCode()) != null)
             {
                 statsProfileName = project.getPrinterSettings().getSettings(headFile.getTypeCode()).getProfileName();
@@ -561,7 +573,6 @@ public class PostProcessor
 //            postProcessorUtilityMethods.heaterSave(layerNode, lastLayerParseResult);
 //            timeUtils.timerStop(this, heaterSaverTimerName);
 //        }
-        
         return postProcessResult;
     }
 
@@ -580,6 +591,11 @@ public class PostProcessor
         ToolSelectNode lastToolSelectNode = null;
         ToolSelectNode firstToolSelectNodeWithSameNumber = null;
         double cumulativeTimeInLastTool = 0;
+
+        if (layerNode.getLayerNumber() == 0)
+        {
+            timeForLayer += timeForInitialHoming_s + timeForPurgeAndLevelling_s;
+        }
 
         while (layerIterator.hasNext())
         {
@@ -600,7 +616,7 @@ public class PostProcessor
                 {
                     try
                     {
-                        double time = lastMovementProvider.timeToReach((MovementProvider) foundNode);
+                        double time = lastMovementProvider.timeToReach((MovementProvider) foundNode) * movementFudgeFactor;
                         timeForLayer += time;
                         timeInThisTool += time;
                     } catch (DurationCalculationException ex)
@@ -630,6 +646,23 @@ public class PostProcessor
                     ((FeedrateProvider) lastMovementProvider).getFeedrate().setFeedRate_mmPerMin(lastLayerPostProcessResult.getLastFeedrateInForce());
                 }
                 lastFeedrate = ((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
+            } else if (foundNode instanceof ToolSelectNode)
+            {
+                timeForLayer += timeForNozzleSelect_s;
+            } else if (foundNode instanceof LayerChangeDirectiveNode)
+            {
+                LayerChangeDirectiveNode lNode = (LayerChangeDirectiveNode) foundNode;
+                double heightChange = lNode.getMovement().getZ() - layerNode.getLayerHeight_mm();
+                if (heightChange > 0)
+                {
+                    timeForLayer += heightChange / zMoveRate_mms;
+                }
+            } else if (!(foundNode instanceof FillSectionNode)
+                    && !(foundNode instanceof InnerPerimeterSectionNode)
+                    && !(foundNode instanceof SkinSectionNode)
+                    && !(foundNode instanceof OuterPerimeterSectionNode))
+            {
+                steno.info("Not possible to calculate time for: " + foundNode.getClass().getName() + " : " + foundNode.toString());
             }
 
             if (foundNode instanceof ToolSelectNode)
