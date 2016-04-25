@@ -181,9 +181,11 @@ public class PrinterComponent extends Pane
      */
     private void initialise()
     {
-        name.getStyleClass().add(styleClassForText);
+        setStyle("-fx-background-color: white;");
 
+        name.getStyleClass().add(styleClassForText);
         name.setFill(Color.WHITE);
+        
         String nameText;
 
         if (printer != null)
