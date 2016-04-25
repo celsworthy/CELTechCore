@@ -123,6 +123,8 @@ public class PrinterComponent extends Pane
     private PrinterSVGComponent printerSVG;
     private final Printer printer;
     private final ComponentIsolationInterface isolationInterface;
+    
+    private String styleClassForText = "regularText";
 
     private ChangeListener<String> nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
@@ -179,8 +181,7 @@ public class PrinterComponent extends Pane
      */
     private void initialise()
     {
-
-        setStyle("-fx-background-color: white;");
+        name.getStyleClass().add(styleClassForText);
 
         name.setFill(Color.WHITE);
         String nameText;
@@ -207,7 +208,7 @@ public class PrinterComponent extends Pane
                     {
                         updateStatus(printer.printerStatusProperty().get(), newValue);
                     });
-            
+
             printer.getPrintEngine().highIntensityCommsInProgressProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
                 updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
@@ -351,7 +352,7 @@ public class PrinterComponent extends Pane
                 progressBarYOffset = 55;
                 break;
         }
-        
+
         sizePixels = currentSize.getSize();
 
         setPrefWidth(sizePixels);
@@ -383,7 +384,7 @@ public class PrinterComponent extends Pane
         }
 
         name.setStyle("-fx-font-size: " + fontSize
-                + "px !important; -fx-font-family: 'Source Sans Pro Regular';");
+                + "px;");
         name.setLayoutX(progressBarX);
 
         Font font = name.getFont();
@@ -442,13 +443,13 @@ public class PrinterComponent extends Pane
     {
 
         int FONT_SIZE = 14;
-        int AVAILABLE_WIDTH = 115;
-        double stringWidth = getWidthOfString(name, FONT_SIZE);
+        int AVAILABLE_WIDTH = 125;
+        double stringWidth = getWidthOfString(name, styleClassForText, FONT_SIZE);
         int i = 0;
         while (stringWidth > AVAILABLE_WIDTH)
         {
             name = name.substring(0, name.length() - 1);
-            stringWidth = getWidthOfString(name, FONT_SIZE);
+            stringWidth = getWidthOfString(name, styleClassForText, FONT_SIZE);
             if (i > 100)
             {
                 break;

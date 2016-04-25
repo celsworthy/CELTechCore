@@ -22,7 +22,7 @@
                 <Insets bottom="15.0" left="10.0" right="5.0" top="10.0" />
             </VBox.margin>
         </HBox>
-        <Label style="-fx-font-family: 'Source Sans Pro Regular'; -fx-font-size: 20px;" text="%modelEdit.TransformsLabel" textAlignment="RIGHT" />
+        <Label style="-fx-font-family: 'Source Sans Pro'; -fx-font-size: 20px;" text="%modelEdit.TransformsLabel" textAlignment="RIGHT" />
         <VBox>
             <children>
                 <HBox alignment="CENTER" prefWidth="86.0" spacing="2.0">

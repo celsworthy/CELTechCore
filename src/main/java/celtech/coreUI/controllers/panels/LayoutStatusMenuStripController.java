@@ -586,8 +586,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             contextMenu.getItems().add(cmItem1);
             contextMenu.getItems().add(cmItem2);
 
-            double cm1Width = getWidthOfString(cm1Text, 14);
-            double cm2Width = getWidthOfString(cm2Text, 14);
+            double cm1Width = getWidthOfString(cm1Text, "lightText", 14);
+            double cm2Width = getWidthOfString(cm2Text, "lightText", 14);
 
             contextMenu.show(ejectFilamentButton, Side.TOP,
                     35 - ((max(cm1Width, cm2Width) + 20) / 2.0), -25);
