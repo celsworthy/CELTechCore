@@ -240,21 +240,21 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             connectedPrinter.loadFirmware(file.getAbsolutePath());
         }
     }
-
-    void readFirmwareVersion()
-    {
-        try
-        {
-            FirmwareResponse response = connectedPrinter.readFirmwareVersion();
-            if (response != null)
-            {
-                currentFirmwareField.setText(response.getFirmwareRevision());
-            }
-        } catch (PrinterException ex)
-        {
-            steno.error("Error reading firmware version");
-        }
-    }
+//
+//    void readFirmwareVersion()
+//    {
+//        try
+//        {
+//            FirmwareResponse response = connectedPrinter.readFirmwareVersion();
+//            if (response != null)
+//            {
+//                currentFirmwareField.setText(response.getFirmwareRevision());
+//            }
+//        } catch (PrinterException ex)
+//        {
+//            steno.error("Error reading firmware version");
+//        }
+//    }
 
     @FXML
     void sendGCodeSD(ActionEvent event
@@ -416,7 +416,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
 
                         if (connectedPrinter != null)
                         {
-                            readFirmwareVersion();
+                            currentFirmwareField.setText(connectedPrinter.getPrinterIdentity().firmwareVersionProperty().get());
 
                             printingDisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
                                             PrinterStatus.IDLE));

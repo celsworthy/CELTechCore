@@ -15,12 +15,8 @@ import celtech.utils.PrinterListChangesListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import libertysystems.stenographer.Stenographer;
@@ -37,7 +33,6 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
 
     private ObservableList<Printer> connectedPrinters;
     private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
-    private ObjectProperty<Printer> selectedPrinter = new SimpleObjectProperty<>();
     private PrinterIDDialog printerIDDialog = null;
 
     public PrinterGridComponent()
@@ -61,11 +56,6 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         }
         printerIDDialog = new PrinterIDDialog();
         clearAndAddAllPrintersToGrid();
-    }
-
-    public ReadOnlyObjectProperty<Printer> getSelectedPrinter()
-    {
-        return selectedPrinter;
     }
 
     /**
@@ -165,9 +155,9 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
 
     private void selectPrinter(Printer printer)
     {
-        if (selectedPrinter.get() != null)
+        if (Lookup.getSelectedPrinterProperty().get() != null)
         {
-            PrinterComponent printerComponent = printerComponentsByPrinter.get(selectedPrinter.get());
+            PrinterComponent printerComponent = printerComponentsByPrinter.get(Lookup.getSelectedPrinterProperty().get());
             if (printerComponent != null)
             {
                 printerComponent.setSelected(false);
@@ -178,7 +168,7 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
             PrinterComponent printerComponent = printerComponentsByPrinter.get(printer);
             printerComponent.setSelected(true);
         }
-        selectedPrinter.set(printer);
+        Lookup.setSelectedPrinter(printer);
         actOnComponentInterruptible();
     }
 
@@ -290,16 +280,16 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
 
     private void actOnComponentInterruptible()
     {
-        if (selectedPrinter.get() != null)
+        if (Lookup.getSelectedPrinterProperty().get() != null)
         {
             for (Entry<Printer, PrinterComponent> componentEntry : printerComponentsByPrinter.entrySet())
             {
-                if (componentEntry.getKey() == selectedPrinter.get())
+                if (componentEntry.getKey() == Lookup.getSelectedPrinterProperty().get())
                 {
                     componentEntry.getValue().setDisable(false);
                 } else
                 {
-                    PrinterComponent componentToExamine = printerComponentsByPrinter.get(selectedPrinter.get());
+                    PrinterComponent componentToExamine = printerComponentsByPrinter.get(Lookup.getSelectedPrinterProperty().get());
                     if (componentToExamine != null && !componentToExamine.isInterruptible())
                     {
                         componentEntry.getValue().setDisable(true);

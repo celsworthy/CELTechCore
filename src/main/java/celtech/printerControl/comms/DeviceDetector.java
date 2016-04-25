@@ -1,6 +1,8 @@
 package celtech.printerControl.comms;
 
 import java.util.List;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  *
@@ -14,7 +16,7 @@ public interface DeviceDetector
      * @return
      */
     public List<DetectedPrinter> searchForDevices();
-    
+
     public void shutdownDetector();
 
     public enum PrinterConnectionType
@@ -54,18 +56,31 @@ public interface DeviceDetector
         }
 
         @Override
+        public int hashCode()
+        {
+            return new HashCodeBuilder(13, 37).
+                    append(connectionType).
+                    append(connectionHandle).
+                    toHashCode();
+        }
+
+        @Override
         public boolean equals(Object obj)
         {
-            boolean equal = false;
-            
-            if (obj instanceof DetectedPrinter
-                    && ((DetectedPrinter)obj).getConnectionHandle().equals(connectionHandle)
-                    && ((DetectedPrinter)obj).getConnectionType() == connectionType)
+            if (!(obj instanceof DetectedPrinter))
             {
-                equal = true;
+                return false;
             }
-            
-            return equal;
+            if (obj == this)
+            {
+                return true;
+            }
+
+            DetectedPrinter rhs = (DetectedPrinter) obj;
+            return new EqualsBuilder().
+                    append(connectionType, rhs.getConnectionType()).
+                    append(connectionHandle, rhs.getConnectionHandle()).
+                    isEquals();
         }
     }
 }

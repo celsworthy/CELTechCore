@@ -227,14 +227,14 @@ public class DummyPrinterCommandInterface extends CommandInterface
     }
 
     @Override
-    protected boolean connectToPrinter()
+    protected boolean connectToPrinterImpl()
     {
         steno.info("Dummy printer connected");
         return true;
     }
 
     @Override
-    protected void disconnectPrinter()
+    protected void disconnectPrinterImpl()
     {
         steno.info("Dummy printer disconnected");
     }
@@ -345,7 +345,7 @@ public class DummyPrinterCommandInterface extends CommandInterface
     }
 
     @Override
-    public RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite, boolean dontPublishResult) throws RoboxCommsException
+    public RoboxRxPacket writeToPrinterImpl(RoboxTxPacket messageToWrite, boolean dontPublishResult) throws RoboxCommsException
     {
         RoboxRxPacket response = null;
 

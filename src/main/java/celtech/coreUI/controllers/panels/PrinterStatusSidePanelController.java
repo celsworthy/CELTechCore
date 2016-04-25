@@ -187,8 +187,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     {
         chartManager = new ChartManager(temperatureChart);
 
-        selectedPrinter.bind(printerGridComponent.getSelectedPrinter());
-        selectedPrinter.addListener(
+        Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
                 {
                     whenPrinterSelected(newValue);

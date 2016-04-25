@@ -11,6 +11,7 @@ import celtech.printerControl.model.Printer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -31,6 +32,8 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
 
     private Stenographer steno = null;
     private final List<Printer> dummyPrinters = new ArrayList<>();
+    private static final int suppressPrinterForCycles = 5;
+    private HashMap<DeviceDetector.DetectedPrinter, Integer> suppressedPrinters = new HashMap<>();
     private final HashMap<DeviceDetector.DetectedPrinter, Printer> pendingPrinters = new HashMap<>();
     private final HashMap<DeviceDetector.DetectedPrinter, Printer> activePrinters = new HashMap<>();
     private boolean suppressPrinterIDChecks = false;
@@ -111,6 +114,20 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
         while (keepRunning)
         {
             List<DeviceDetector.DetectedPrinter> serialPrinters = usbSerialDeviceDetector.searchForDevices();
+
+            HashMap<DeviceDetector.DetectedPrinter, Integer> newSuppressedPrinters = new HashMap<>();
+
+            for (Entry<DeviceDetector.DetectedPrinter, Integer> suppressedPrinterEntry : suppressedPrinters.entrySet())
+            {
+                if (suppressedPrinterEntry.getValue() > 0)
+                {
+                    newSuppressedPrinters.put(suppressedPrinterEntry.getKey(), suppressedPrinterEntry.getValue() - 1);
+                    serialPrinters.remove(suppressedPrinterEntry.getKey());
+                }
+            }
+
+            suppressedPrinters = newSuppressedPrinters;
+
             assessCandidatePrinters(serialPrinters);
 
 //            List<DeviceDetector.DetectedPrinter> remotePrinters = roboxRemoteDeviceDetector.searchForDevices();
@@ -133,12 +150,15 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
             {
                 boolean noNeedToAddPrinter = false;
 
-                for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
+                if (!noNeedToAddPrinter)
                 {
-                    if (detectedPrinter.equals(pendingPrinterToCheck))
+                    for (DeviceDetector.DetectedPrinter pendingPrinterToCheck : pendingPrinters.keySet())
                     {
-                        noNeedToAddPrinter = true;
-                        break;
+                        if (detectedPrinter.equals(pendingPrinterToCheck))
+                        {
+                            noNeedToAddPrinter = true;
+                            break;
+                        }
                     }
                 }
 
@@ -271,6 +291,7 @@ public class RoboxCommsManager extends Thread implements PrinterStatusConsumer, 
     @Override
     public void disconnected(DeviceDetector.DetectedPrinter printerHandle)
     {
+        suppressedPrinters.put(printerHandle, suppressPrinterForCycles);
         pendingPrinters.remove(printerHandle);
 
         final Printer printerToRemove = activePrinters.get(printerHandle);

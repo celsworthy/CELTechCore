@@ -439,7 +439,7 @@ public class PrinterComponent extends Pane
     {
 
         int FONT_SIZE = 14;
-        int AVAILABLE_WIDTH = 115;
+        int AVAILABLE_WIDTH = 125;
         double stringWidth = getWidthOfString(name, styleClassForText, FONT_SIZE);
         int i = 0;
         while (stringWidth > AVAILABLE_WIDTH)

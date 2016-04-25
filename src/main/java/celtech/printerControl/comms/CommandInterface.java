@@ -58,6 +58,8 @@ public abstract class CommandInterface extends Thread
 
     private PrinterIDResponse lastPrinterIDResponse = null;
 
+    private boolean isConnected = false;
+
     /**
      *
      * @param controlInterface
@@ -284,18 +286,21 @@ public abstract class CommandInterface extends Thread
                     {
                         this.sleep(sleepBetweenStatusChecks);
 
-                        if (!suppressComms)
+                        if (!suppressComms && isConnected)
                         {
                             try
                             {
 //                        steno.debug("STATUS REQUEST: " + portName);
-                                writeToPrinter(RoboxTxPacketFactory.createPacket(
+                                CommandInterface.this.writeToPrinter(RoboxTxPacketFactory.createPacket(
                                         TxPacketTypeEnum.STATUS_REQUEST));
 
-                                writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
+                                CommandInterface.this.writeToPrinter(RoboxTxPacketFactory.createPacket(TxPacketTypeEnum.REPORT_ERRORS));
                             } catch (RoboxCommsException ex)
                             {
-                                steno.error("Failure during printer status request. " + ex.toString());
+                                if (isConnected)
+                                {
+                                    steno.exception("Failure during printer status request.", ex);
+                                }
                             }
                         }
                     } catch (InterruptedException ex)
@@ -365,10 +370,34 @@ public abstract class CommandInterface extends Thread
      */
     public final synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite) throws RoboxCommsException
     {
-        return writeToPrinter(messageToWrite, false);
+        if (isConnected)
+        {
+            return writeToPrinter(messageToWrite, false);
+        } else
+        {
+            return null;
+        }
     }
 
-    public abstract RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite,
+    /**
+     *
+     * @param messageToWrite
+     * @param dontPublishResult
+     * @return
+     * @throws RoboxCommsException
+     */
+    public final synchronized RoboxRxPacket writeToPrinter(RoboxTxPacket messageToWrite, boolean dontPublishResult) throws RoboxCommsException
+    {
+        if (isConnected)
+        {
+            return writeToPrinterImpl(messageToWrite, dontPublishResult);
+        } else
+        {
+            return null;
+        }
+    }
+
+    public abstract RoboxRxPacket writeToPrinterImpl(RoboxTxPacket messageToWrite,
             boolean dontPublishResult) throws RoboxCommsException;
 
     /**
@@ -384,12 +413,31 @@ public abstract class CommandInterface extends Thread
      *
      * @return
      */
-    protected abstract boolean connectToPrinter();
+    protected final boolean connectToPrinter()
+    {
+        isConnected = connectToPrinterImpl();
+        return isConnected;
+    }
+
+    /**
+     *
+     * @return
+     */
+    protected abstract boolean connectToPrinterImpl();
 
     /**
      *
      */
-    protected abstract void disconnectPrinter();
+    protected final void disconnectPrinter()
+    {
+        isConnected = false;
+        disconnectPrinterImpl();
+    }
+
+    /**
+     *
+     */
+    protected abstract void disconnectPrinterImpl();
 
     private void determinePrinterStatus(StatusResponse statusResponse)
     {
