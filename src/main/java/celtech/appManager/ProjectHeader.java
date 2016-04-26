@@ -2,7 +2,6 @@ package celtech.appManager;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.utils.SystemUtils;
 import java.io.IOException;
 import java.io.ObjectInputStream;
