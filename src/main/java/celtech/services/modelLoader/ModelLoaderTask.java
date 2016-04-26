@@ -63,7 +63,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
             if (modelFilePath.toUpperCase().endsWith("OBJ"))
             {
                 ObjImporter reader = new ObjImporter();
-                modelLoadResult = reader.loadFile(this, "file:///" + modelFilePath);
+                modelLoadResult = reader.loadFile(this, modelFilePath, percentProgress, false);
             } else if (modelFilePath.toUpperCase().endsWith("STL"))
             {
                 STLImporter reader = new STLImporter();
