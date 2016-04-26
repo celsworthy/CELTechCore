@@ -195,7 +195,7 @@ public class PrintEngine implements ControllableService
 
             if (result.isSuccess())
             {
-                steno.info(t.getSource().getTitle() + " has succeeded");
+                steno.info(t.getSource().getTitle() + " task has completed");
                 postProcessorService.reset();
                 postProcessorService.setPrintJobUUID(
                         result.getPrintJobUUID());
@@ -1215,6 +1215,7 @@ public class PrintEngine implements ControllableService
                     case PRINTING_PROJECT:
                     case RUNNING_MACRO_FILE:
                         associatedPrinter.setPrinterStatus(PrinterStatus.IDLE);
+                        steno.info("Print Job complete - " + associatedPrinter.getPrinterIdentity().printerFriendlyName.get() + "---------------------------------------<");
                         break;
                 }
                 macroBeingRun.set(null);
