@@ -78,14 +78,6 @@ public class AutoUpdate extends Thread
             switch (status)
             {
                 case UPGRADE_NOT_REQUIRED:
-                    Platform.runLater(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            Lookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotRequired") + applicationName);
-                        }
-                    });
                     keepRunning = false;
                     completionListener.autoUpdateComplete(false);
                     break;
