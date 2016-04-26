@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -103,6 +104,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
 
     private Printer selectedPrinter;
+
+    private final BooleanProperty canResetHeadProperty = new SimpleBooleanProperty(false);
 
     void whenResetToDefaultsPressed()
     {
@@ -358,6 +361,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateFieldsFromAttachedHead(head);
             updateHeadUniqueId();
             listenForHeadChanges(head);
+            canResetHeadProperty.set(true);
+        }
+        else
+        {
+            canResetHeadProperty.set(false);
         }
     }
 
@@ -395,6 +403,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateFieldsFromAttachedHead(head);
             listenForHeadChanges(head);
             updateHeadUniqueId();
+            canResetHeadProperty.set(true);
         }
     }
 
@@ -406,6 +415,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateFieldsForNoHead();
             updateHeadUniqueId();
             removeHeadChangeListeners(head);
+            canResetHeadProperty.set(false);
         }
     }
 
@@ -555,9 +565,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             }
 
             @Override
-            public BooleanProperty whenEnabled()
+            public ObservableBooleanValue whenEnabled()
             {
-                return new SimpleBooleanProperty(true);
+                return canResetHeadProperty;
             }
 
         };

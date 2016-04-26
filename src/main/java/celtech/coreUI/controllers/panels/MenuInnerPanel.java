@@ -4,7 +4,7 @@
 package celtech.coreUI.controllers.panels;
 
 import java.util.List;
-import javafx.beans.property.BooleanProperty;
+import javafx.beans.value.ObservableBooleanValue;
 
 /**
  * MenuInnerPanel defines the properties needed to instantiate an inner panel from
@@ -43,7 +43,7 @@ public interface MenuInnerPanel
         /**
          * This observable property governs when the button should be enabled.
          */
-        public BooleanProperty whenEnabled();
+        public ObservableBooleanValue whenEnabled();
     }
     
     /**

@@ -6,6 +6,7 @@ import celtech.configuration.EEPROMState;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
+import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterException;
@@ -32,31 +33,37 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ResetHeadController implements Initializable
 {
-    
+
     private final Stenographer steno = StenographerFactory.getStenographer(ResetHeadController.class.getName());
-    
+
     @FXML
     private FlowPane headHolder;
-    
+
     @FXML
     private ScrollPane scroller;
-    
+
     @FXML
     private void cancel()
     {
         Lookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
     }
-    
+
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
         List<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
-        
+
         headFiles.sort((HeadFile o1, HeadFile o2) -> o2.getName().compareTo(o1.getName()));
-        
+
         for (HeadFile headFile : headFiles)
         {
-            ImageView image = new ImageView(getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png").toExternalForm());
+            URL headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png");
+            if (headImageURL == null)
+            {
+                headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/Unknown.png");
+            }
+
+            ImageView image = new ImageView(headImageURL.toExternalForm());
             image.setFitHeight(300);
             image.setFitWidth(300);
             Button imageButton = new Button(headFile.getName(), image);
@@ -67,12 +74,12 @@ public class ResetHeadController implements Initializable
             {
                 Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
                 Head head = new Head(headFile);
-                
+
                 //Retain the last filament temperature and hours if they are available
                 if (currentPrinter.getHeadEEPROMStateProperty().get() == EEPROMState.PROGRAMMED)
                 {
                     head.headHoursProperty().set(currentPrinter.headProperty().get().headHoursProperty().get());
-                    
+
                     for (int nozzleHeaterCounter = 0; nozzleHeaterCounter < currentPrinter.headProperty().get().getNozzleHeaters().size(); nozzleHeaterCounter++)
                     {
                         if (head.getNozzleHeaters().size() > nozzleHeaterCounter)
@@ -83,20 +90,23 @@ public class ResetHeadController implements Initializable
                         }
                     }
                 }
-                
+
                 try
                 {
-                    currentPrinter.formatHeadEEPROM();
-                    currentPrinter.writeHeadEEPROM(head);
+                    AckResponse formatResponse = currentPrinter.formatHeadEEPROM();
+                    if (!formatResponse.isError())
+                    {
+                        currentPrinter.writeHeadEEPROM(head);
+                    }
                 } catch (PrinterException | RoboxCommsException ex)
                 {
                     steno.exception("Couldn't format and write head data", ex);
                 }
-                
+
                 Lookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
             });
             headHolder.getChildren().add(imageButton);
         }
     }
-    
+
 }
