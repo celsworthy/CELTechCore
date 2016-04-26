@@ -56,6 +56,8 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import javafx.beans.property.DoubleProperty;
+import celtech.roboxbase.utils.SystemUtils;
 
 /**
  * Obj file reader
@@ -85,14 +87,34 @@ public class ObjImporter
     private final Map<String, Integer> materialsForObjects = new HashMap<>();
     private Map<String, Integer> materialNameAgainstIndex = new HashMap<>();
     private String objFileUrl;
+    private int linesInFile = 0;
+    private DoubleProperty percentProgressProperty;
+
+    public ModelLoadResult loadURL(ModelLoaderTask parentTask, URL modelURLToLoad)
+    {
+        return loadFile(parentTask, modelURLToLoad.toExternalForm(), null, true);
+    }
 
     public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad)
     {
-        this.objFileUrl = modelFileToLoad;
+        return loadFile(parentTask, modelFileToLoad, null, false);
+    }
+
+    public ModelLoadResult loadFile(ModelLoaderTask parentTask, String modelFileToLoad,
+            DoubleProperty percentProgressProperty,
+            boolean isURL)
+    {
+        this.objFileUrl = (isURL == true) ? modelFileToLoad : "file:///" + modelFileToLoad;
+        this.percentProgressProperty = percentProgressProperty;
 
         ModelLoadResult modelLoadResult = null;
 
         File modelFile = new File(objFileUrl);
+
+        if (percentProgressProperty != null)
+        {
+            linesInFile = SystemUtils.countLinesInFile(new File(modelFileToLoad));
+        }
 
         try (InputStream fileInputStream = new URL(objFileUrl).openStream())
         {
@@ -183,9 +205,25 @@ public class ObjImporter
         String line;
         String key = "default";
         boolean pendingObject = false;
+        int lineNum = 0;
+        int progressPercent = 0;
 
         while ((line = br.readLine()) != null)
         {
+            if (percentProgressProperty != null && linesInFile > 0)
+            {
+                int progressUpdate = (int) (((double) lineNum / (double) linesInFile) * 100);
+                if (progressUpdate != progressPercent)
+                {
+                    progressPercent = progressUpdate;
+                    if (percentProgressProperty != null)
+                    {
+                        percentProgressProperty.set(progressPercent);
+                    }
+                }
+            }
+            lineNum++;
+
             try
             {
                 if (line.startsWith("v "))

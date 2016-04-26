@@ -31,6 +31,7 @@ import eu.mihosoft.vrl.v3d.CSG;
 import eu.mihosoft.vrl.v3d.MeshContainer;
 import eu.mihosoft.vrl.v3d.PlaneBisect;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -1104,15 +1105,14 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
     private Group buildBed()
     {
-        String bedOuterURL = CoreTest.class
-                .getResource(ApplicationConfiguration.modelResourcePath + "bedBase.obj").
-                toExternalForm();
+        URL bedOuterURL = CoreTest.class
+                .getResource(ApplicationConfiguration.modelResourcePath + "bedBase.obj");
 
-        String peiSheetURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
-                + "pei.obj").toExternalForm();
+        URL peiSheetURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
+                + "pei.obj");
 
-        String bedClipsURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
-                + "clips.obj").toExternalForm();
+        URL bedClipsURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
+                + "clips.obj");
 
         PhongMaterial bedOuterMaterial = new PhongMaterial(Color.web("#0a0a0a"));
 
@@ -1127,20 +1127,20 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         bed.setId("Bed");
 
         ObjImporter bedOuterImporter = new ObjImporter();
-        ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadFile(null, bedOuterURL);
+        ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadURL(null, bedOuterURL);
         MeshView outerMeshView = ((ModelContainer) bedOuterLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         outerMeshView.setMaterial(bedOuterMaterial);
         bed.getChildren().addAll(outerMeshView);
 
         ObjImporter peiSheetImporter = new ObjImporter();
-        ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadFile(null, peiSheetURL);
+        ModelLoadResult peiSheetLoadResult = peiSheetImporter.loadURL(null, peiSheetURL);
         MeshView peiMeshView = ((ModelContainer) peiSheetLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         peiMeshView.setMaterial(peiSheetMaterial);
 
         bed.getChildren().addAll(peiMeshView);
 
         ObjImporter bedClipsImporter = new ObjImporter();
-        ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadFile(null, bedClipsURL);
+        ModelLoadResult bedClipsLoadResult = bedClipsImporter.loadURL(null, bedClipsURL);
         MeshView bedClipsMeshView = ((ModelContainer) bedClipsLoadResult.getProjectifiableThings().iterator().next()).getMeshView();
         bedClipsMeshView.setMaterial(bedClipsMaterial);
         bed.getChildren().addAll(bedClipsMeshView);
