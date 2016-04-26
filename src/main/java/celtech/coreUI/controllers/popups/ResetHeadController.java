@@ -5,6 +5,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.exceptions.RoboxCommsException;
 import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.printerControl.comms.commands.rx.AckResponse;
 import celtech.roboxbase.configuration.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.printerControl.model.Head;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -51,12 +51,18 @@ public class ResetHeadController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
         List<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
-        
+
         headFiles.sort((HeadFile o1, HeadFile o2) -> o2.getName().compareTo(o1.getName()));
-        
+
         for (HeadFile headFile : headFiles)
         {
-            ImageView image = new ImageView(getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png").toExternalForm());
+            URL headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png");
+            if (headImageURL == null)
+            {
+                headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/Unknown.png");
+            }
+
+            ImageView image = new ImageView(headImageURL.toExternalForm());
             image.setFitHeight(300);
             image.setFitWidth(300);
             Button imageButton = new Button(headFile.getName(), image);
@@ -67,12 +73,12 @@ public class ResetHeadController implements Initializable
             {
                 Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
                 Head head = new Head(headFile);
-                
+
                 //Retain the last filament temperature and hours if they are available
                 if (currentPrinter.getHeadEEPROMStateProperty().get() == EEPROMState.PROGRAMMED)
                 {
                     head.headHoursProperty().set(currentPrinter.headProperty().get().headHoursProperty().get());
-                    
+
                     for (int nozzleHeaterCounter = 0; nozzleHeaterCounter < currentPrinter.headProperty().get().getNozzleHeaters().size(); nozzleHeaterCounter++)
                     {
                         if (head.getNozzleHeaters().size() > nozzleHeaterCounter)
@@ -83,16 +89,19 @@ public class ResetHeadController implements Initializable
                         }
                     }
                 }
-                
+
                 try
                 {
-                    currentPrinter.formatHeadEEPROM();
-                    currentPrinter.writeHeadEEPROM(head);
+                    AckResponse formatResponse = currentPrinter.formatHeadEEPROM();
+                    if (!formatResponse.isError())
+                    {
+                        currentPrinter.writeHeadEEPROM(head);
+                    }
                 } catch (PrinterException | RoboxCommsException ex)
                 {
                     steno.exception("Couldn't format and write head data", ex);
                 }
-                
+
                 BaseLookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
             });
             headHolder.getChildren().add(imageButton);

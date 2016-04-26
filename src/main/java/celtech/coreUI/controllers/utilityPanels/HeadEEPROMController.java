@@ -105,6 +105,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     private Printer selectedPrinter;
 
+    private final BooleanProperty canResetHeadProperty = new SimpleBooleanProperty(false);
+
     void whenResetToDefaultsPressed()
     {
         BaseLookup.getSystemNotificationHandler().showProgramInvalidHeadDialog(null);
@@ -359,7 +361,12 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateFieldsFromAttachedHead(head);
             updateHeadUniqueId();
             listenForHeadChanges(head);
+            canResetHeadProperty.set(true);
         }
+        else
+        {
+            canResetHeadProperty.set(false);
+    }
     }
 
     private void updateHeadUniqueId()
@@ -396,6 +403,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateFieldsFromAttachedHead(head);
             listenForHeadChanges(head);
             updateHeadUniqueId();
+            canResetHeadProperty.set(true);
         }
     }
 
@@ -407,6 +415,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateFieldsForNoHead();
             updateHeadUniqueId();
             removeHeadChangeListeners(head);
+            canResetHeadProperty.set(false);
         }
     }
 

@@ -4,6 +4,7 @@ import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.roboxbase.SystemErrorHandlerOptions;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.ChoiceLinkButton;
@@ -169,7 +170,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                 {
                                                     printer.pause();
                                                 }
-                                                printer.cancel(null);
+                                                if (printer.canCancelProperty().get())
+                                                {
+                                                    printer.cancel(null);
+                                                }
                                             } catch (PrinterException ex)
                                             {
                                                 steno.error(
@@ -797,9 +801,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     FXMLLoader resetDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
                     VBox resetDialog = (VBox) resetDialogLoader.load();
                     programInvalidHeadStage = new Stage(StageStyle.UNDECORATED);
-                    programInvalidHeadStage.setAlwaysOnTop(true);
                     programInvalidHeadStage.initModality(Modality.APPLICATION_MODAL);
                     programInvalidHeadStage.setScene(new Scene(resetDialog));
+                    programInvalidHeadStage.initOwner(DisplayManager.getMainStage());
                     programInvalidHeadStage.show();
                 } catch (Exception ex)
                 {

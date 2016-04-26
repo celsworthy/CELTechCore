@@ -6,7 +6,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.controllers.panels.MenuInnerPanel.OperationButton;
-import celtech.roboxbase.BaseLookup;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -55,7 +55,7 @@ public class ButtonBox extends HBox
                 {
                     operationButton.whenClicked();
                 });
-                button.disableProperty().bind(operationButton.whenEnabled().not());
+                button.disableProperty().bind(Bindings.not(operationButton.whenEnabled()));
 
                 getChildren().add(button);
             }
