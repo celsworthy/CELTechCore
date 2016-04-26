@@ -308,8 +308,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             baseReel1.setVisible(false);
             baseReel2.setVisible(false);
             baseReelBoth.setVisible(false);
-            extruder1Controls.setVisible(false);
-            extruder2Controls.setVisible(false);
             bed.setVisible(false);
             vBoxLeft.setVisible(false);
             vBoxRight.setVisible(false);
@@ -329,8 +327,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(true);
-                extruder1Controls.setVisible(true);
-                extruder2Controls.setVisible(true);
                 bed.setVisible(true);
             } else if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
                     || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
@@ -341,8 +337,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(true);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
-                extruder1Controls.setVisible(true);
-                extruder2Controls.setVisible(false);
                 bed.setVisible(true);
             } else if ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
                     || (printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT))
@@ -353,8 +347,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(true);
                 baseReelBoth.setVisible(false);
-                extruder1Controls.setVisible(false);
-                extruder2Controls.setVisible(true);
                 bed.setVisible(true);
             } else
             {
@@ -362,8 +354,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel1.setVisible(false);
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
-                extruder1Controls.setVisible(false);
-                extruder2Controls.setVisible(false);
                 bed.setVisible(true);
             }
         }
@@ -384,6 +374,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (printerToUse == null
                 || !printerToUse.effectiveFilamentsProperty().containsKey(0)
+                || printerToUse.effectiveFilamentsProperty().get(0) == null
                 || printerToUse.effectiveFilamentsProperty().get(0) == FilamentContainer.UNKNOWN_FILAMENT)
         {
             reel1Background.setVisible(false);
@@ -399,6 +390,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (printerToUse == null
                 || !printerToUse.effectiveFilamentsProperty().containsKey(1)
+                || printerToUse.effectiveFilamentsProperty().get(1) == null
                 || printerToUse.effectiveFilamentsProperty().get(1) == FilamentContainer.UNKNOWN_FILAMENT)
         {
             reel2Background.setVisible(false);
@@ -503,6 +495,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             node.setVisible(visible);
         }
+
+        extruder1Controls.setVisible(Lookup.getUserPreferences().advancedModeProperty().get()
+                && visible
+                && printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get());
+        extruder2Controls.setVisible(Lookup.getUserPreferences().advancedModeProperty().get()
+                && visible
+                && printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get());
     }
 
     /**
