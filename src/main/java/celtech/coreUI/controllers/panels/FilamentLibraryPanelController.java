@@ -243,6 +243,15 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         setupPrinterChangesListener();
 
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
+        
+        Lookup.getUserPreferences().advancedModeProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                setupFilamentCombo();
+    }
+        });
     }
 
     private void setupPrinterChangesListener()
@@ -325,19 +334,19 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 filament1OfDifferentID = !loadedFilamentID1.get().equals(currentFilamentID);
             }
 
-            if (((currentPrinter.get().reelsProperty().containsKey(0)
+            if ((currentPrinter.get().reelsProperty().containsKey(0)
+                    && (Lookup.getUserPreferences().isAdvancedMode() || state.get() == State.ROBOX)
                     && (filament0OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)
                     || !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED)))
                     || currentPrinter.get().getReelEEPROMStateProperty().get(0) == EEPROMState.NOT_PROGRAMMED)
-                    && state.get() == State.ROBOX)
             {
                 canWriteToReel1.set(true);
             }
-            if (((currentPrinter.get().reelsProperty().containsKey(1)
+            if ((currentPrinter.get().reelsProperty().containsKey(1)
+                    && (Lookup.getUserPreferences().isAdvancedMode() || state.get() == State.ROBOX)
                     && (filament1OfDifferentID || !currentFilament.equals(currentFilamentAsEdited)
                     || !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED)))
                     || currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
-                    && state.get() == State.ROBOX)
             {
                 canWriteToReel2.set(true);
             }
