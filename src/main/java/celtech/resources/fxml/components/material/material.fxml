@@ -9,7 +9,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
 <fx:root styleClass="statusPanelChild" stylesheets="@../../../css/JMetroDarkTheme.css" type="VBox" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <children>
         <AnchorPane id="MaterialComponentAnchorPane" fx:id="anchorPane" maxHeight="50.0" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="260.0" styleClass="statusPanelChild" VBox.vgrow="NEVER">
@@ -59,10 +58,14 @@
                                   <Insets />
                               </HBox.margin>
                           </Text>
-                          <Text fx:id="materialColour2" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="reelMaterialName" text="Royal Blue">
+                          <Text fx:id="materialColour2" fill="WHITE" fontSmoothingType="LCD" strokeType="OUTSIDE" strokeWidth="0.0" text="Royal Blue">
                               <HBox.margin>
                                   <Insets />
                               </HBox.margin>
+                     <styleClass>
+                        <String fx:value="reelMaterialName" />
+                        <String fx:value="lightText" />
+                     </styleClass>
                           </Text>
                       </children>
                       <padding>
