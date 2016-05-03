@@ -443,13 +443,16 @@ public class Project
             getUsedExtruders(loadedModel, usedExtruders, printer);
         }
 
+        // Don't add material 1 if there isn't a second extruder...
         if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
         {
             if (!usedExtruders.contains(0))
             {
                 usedExtruders.add(0);
             }
-        } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2)
+        } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
+                && printer != null
+                && printer.extrudersProperty().get(1).isFittedProperty().get())
         {
             if (!usedExtruders.contains(1))
             {
