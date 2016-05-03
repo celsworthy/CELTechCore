@@ -223,10 +223,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         reel1Background.setEffect(reel1BackgroundColourEffect);
         reel2Background.setEffect(reel2BackgroundColourEffect);
 
-        setupBaseDisplay();
-        setupAmbientLight();
-        setupHead();
-
         temperatureWarning.setVisible(false);
 
         advancedControls = new Node[]
@@ -236,7 +232,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             zAxisControls
         };
 
-        setAdvancedControlsVisibility();
+        setupBaseDisplay();
+        setupAmbientLight();
+        setupHead();
 
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setBottomAnchor(vBoxLeft, 30.0);
@@ -360,6 +358,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         setupReel1Colour();
         setupReel2Colour();
+        
+        setAdvancedControlsVisibility();
     }
 
     private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
@@ -498,10 +498,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         extruder1Controls.setVisible(Lookup.getUserPreferences().advancedModeProperty().get()
                 && visible
-                && printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get());
+                && printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+                && printerToUse.extrudersProperty().get(0).isFittedProperty().get());
         extruder2Controls.setVisible(Lookup.getUserPreferences().advancedModeProperty().get()
                 && visible
-                && printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get());
+                && printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+                && printerToUse.extrudersProperty().get(1).isFittedProperty().get());
     }
 
     /**
