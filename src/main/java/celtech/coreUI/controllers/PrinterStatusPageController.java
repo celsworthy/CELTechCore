@@ -318,9 +318,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             vBoxRight.setVisible(true);
             disconnectedText.setVisible(false);
 
-            if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+            if (((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(0).isFittedProperty().get())
                     || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
-                    && (printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+                    && ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(1).isFittedProperty().get())
                     || (printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT)))
             {
                 baseNoReels.setVisible(false);
@@ -328,9 +328,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(true);
                 bed.setVisible(true);
-            } else if ((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+            } else if (((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(0).isFittedProperty().get())
                     || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
-                    && (!printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+                    && (!(printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(1).isFittedProperty().get())
                     || (!printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT)))
             {
                 baseNoReels.setVisible(false);
@@ -338,9 +338,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 baseReel2.setVisible(false);
                 baseReelBoth.setVisible(false);
                 bed.setVisible(true);
-            } else if ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
+            } else if (((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(1).isFittedProperty().get())
                     || (printerToUse.effectiveFilamentsProperty().containsKey(1) && printerToUse.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT))
-                    && (!printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()
+                    && (!(printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(0).isFittedProperty().get())
                     || (!printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT)))
             {
                 baseNoReels.setVisible(false);
