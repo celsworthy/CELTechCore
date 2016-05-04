@@ -1,9 +1,9 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.Lookup;
-import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.controllers.PrinterSettings;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
@@ -14,6 +14,8 @@ import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
+import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
+import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
@@ -26,7 +28,6 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Head.HeadType;
-import celtech.printerControl.model.Printer;
 import celtech.utils.SystemUtils;
 import celtech.utils.Time.TimeUtils;
 import java.io.BufferedReader;
@@ -36,7 +37,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -68,11 +71,10 @@ public class PostProcessor
     private final String writeOutputTimerName = "WriteOutput";
     private final String countLinesTimerName = "CountLines";
 
-    private final Printer printer;
+    private final Set<Integer> usedExtruders;
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
     private final HeadFile headFile;
-    private final Project project;
     private final SlicerParametersFile slicerParametersFile;
     private final DoubleProperty taskProgress;
 
@@ -99,29 +101,38 @@ public class PostProcessor
     private static final double timeForPurgeAndLevelling_s = 40;
     private static final double timeForNozzleSelect_s = 1;
     private static final double zMoveRate_mms = 4;
+    private static final double nozzlePositionChange_s = 0.25;
     // Add a percentage to each movement to factor in acceleration across the whole print
     private static final double movementFudgeFactor = 1.1;
+    
+    private final String projectName;
+    private final PrinterSettings printerSettings;
 
-    public PostProcessor(Printer printer,
+    public PostProcessor(Set<Integer> usedExtruders,
             String gcodeFileToProcess,
             String gcodeOutputFile,
             HeadFile headFile,
-            Project project,
             SlicerParametersFile settings,
             PostProcessorFeatureSet postProcessorFeatureSet,
             String headType,
-            DoubleProperty taskProgress)
+            DoubleProperty taskProgress,
+            String projectName,
+            PrinterSettings printerSettings,
+            Map<Integer, Integer> objectToNozzleNumberMap)
     {
-        this.printer = printer;
+        this.usedExtruders = usedExtruders;
         this.gcodeFileToProcess = gcodeFileToProcess;
         this.gcodeOutputFile = gcodeOutputFile;
         this.headFile = headFile;
-        this.project = project;
         this.featureSet = postProcessorFeatureSet;
 
         this.slicerParametersFile = settings;
 
         this.taskProgress = taskProgress;
+        
+        this.projectName = projectName;
+        
+        this.printerSettings = printerSettings;
 
         nozzleProxies.clear();
 
@@ -136,7 +147,7 @@ public class PostProcessor
 
         if (headFile.getType() == HeadType.DUAL_MATERIAL_HEAD)
         {
-            switch (project.getPrinterSettings().getPrintSupportTypeOverride())
+            switch (printerSettings.getPrintSupportTypeOverride())
             {
                 case MATERIAL_1:
                     postProcessingMode = PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
@@ -150,12 +161,12 @@ public class PostProcessor
             postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
         }
 
-        postProcessorUtilityMethods = new UtilityMethods(featureSet, project, settings, headType);
+        postProcessorUtilityMethods = new UtilityMethods(featureSet, settings, headType);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
-        nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, project, postProcessingMode);
-        closeLogic = new CloseLogic(project, slicerParametersFile, featureSet, headType);
+        nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, postProcessingMode, objectToNozzleNumberMap);
+        closeLogic = new CloseLogic(slicerParametersFile, featureSet, headType);
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
-        utilities = new UtilityMethods(featureSet, project, settings, headType);
+        utilities = new UtilityMethods(featureSet, settings, headType);
     }
 
     public RoboxiserResult processInput()
@@ -206,12 +217,12 @@ public class PostProcessor
 
             if (headFile.getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                nozzle0HeatRequired = project.getUsedExtruders(printer).contains(1)
+                nozzle0HeatRequired = usedExtruders.contains(1)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
-                eRequired = project.getUsedExtruders(printer).contains(0);
-                nozzle1HeatRequired = project.getUsedExtruders(printer).contains(0)
+                eRequired = usedExtruders.contains(0);
+                nozzle1HeatRequired = usedExtruders.contains(0)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
-                dRequired = project.getUsedExtruders(printer).contains(1);
+                dRequired = usedExtruders.contains(1);
             } else
             {
                 nozzle0HeatRequired = false;
@@ -417,14 +428,14 @@ public class PostProcessor
             String statsProfileName = "";
             float statsLayerHeight = 0;
 
-            if (project.getPrinterSettings().getSettings(headFile.getTypeCode()) != null)
+            if (printerSettings.getSettings(headFile.getTypeCode()) != null)
             {
-                statsProfileName = project.getPrinterSettings().getSettings(headFile.getTypeCode()).getProfileName();
-                statsLayerHeight = project.getPrinterSettings().getSettings(headFile.getTypeCode()).getLayerHeight_mm();
+                statsProfileName = printerSettings.getSettings(headFile.getTypeCode()).getProfileName();
+                statsLayerHeight = printerSettings.getSettings(headFile.getTypeCode()).getLayerHeight_mm();
             }
 
             PrintJobStatistics roboxisedStatistics = new PrintJobStatistics(
-                    project.getProjectName(),
+                    projectName,
                     statsProfileName,
                     statsLayerHeight,
                     numLines,
@@ -657,10 +668,14 @@ public class PostProcessor
                 {
                     timeForLayer += heightChange / zMoveRate_mms;
                 }
+            } else if (foundNode instanceof NozzleValvePositionNode)
+            {
+                timeForLayer += nozzlePositionChange_s;
             } else if (!(foundNode instanceof FillSectionNode)
                     && !(foundNode instanceof InnerPerimeterSectionNode)
                     && !(foundNode instanceof SkinSectionNode)
-                    && !(foundNode instanceof OuterPerimeterSectionNode))
+                    && !(foundNode instanceof OuterPerimeterSectionNode)
+                    && !(foundNode instanceof MCodeNode))
             {
                 steno.info("Not possible to calculate time for: " + foundNode.getClass().getName() + " : " + foundNode.toString());
             }

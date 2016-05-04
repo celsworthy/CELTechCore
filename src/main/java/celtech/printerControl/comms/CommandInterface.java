@@ -413,7 +413,7 @@ public abstract class CommandInterface extends Thread
      *
      * @return
      */
-    protected final boolean connectToPrinter()
+    public final boolean connectToPrinter()
     {
         isConnected = connectToPrinterImpl();
         return isConnected;

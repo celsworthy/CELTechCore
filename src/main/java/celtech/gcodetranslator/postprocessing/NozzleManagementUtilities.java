@@ -154,34 +154,34 @@ public class NozzleManagementUtilities
         return nozzleProxy;
     }
 
-    protected Optional<NozzleProxy> chooseNozzleProxyByExtruderNumber(final int extruderNumber)
-    {
-        Optional<NozzleProxy> nozzleProxy = Optional.empty();
-
-        String extruderLetter = "";
-
-        switch (extruderNumber)
-        {
-            case 0:
-                extruderLetter = "E";
-                break;
-            case 1:
-                extruderLetter = "D";
-                break;
-        }
-
-        for (int nozzleIndex = 0; nozzleIndex < headFile.getNozzles().size(); nozzleIndex++)
-        {
-            NozzleData nozzleData = headFile.getNozzles().get(nozzleIndex);
-            if (nozzleData.getAssociatedExtruder().equals(extruderLetter))
-            {
-                nozzleProxy = Optional.of(nozzleProxies.get(nozzleIndex));
-                break;
-            }
-        }
-
-        return nozzleProxy;
-    }
+//    protected Optional<NozzleProxy> chooseNozzleProxyByExtruderNumber(final int extruderNumber)
+//    {
+//        Optional<NozzleProxy> nozzleProxy = Optional.empty();
+//
+//        String extruderLetter = "";
+//
+//        switch (extruderNumber)
+//        {
+//            case 0:
+//                extruderLetter = "E";
+//                break;
+//            case 1:
+//                extruderLetter = "D";
+//                break;
+//        }
+//
+//        for (int nozzleIndex = 0; nozzleIndex < headFile.getNozzles().size(); nozzleIndex++)
+//        {
+//            NozzleData nozzleData = headFile.getNozzles().get(nozzleIndex);
+//            if (nozzleData.getAssociatedExtruder().equals(extruderLetter))
+//            {
+//                nozzleProxy = Optional.of(nozzleProxies.get(nozzleIndex));
+//                break;
+//            }
+//        }
+//
+//        return nozzleProxy;
+//    }
 
     protected Optional<NozzleProxy> determineNozzleStateAtEndOfLayer(LayerNode layerNode)
     {

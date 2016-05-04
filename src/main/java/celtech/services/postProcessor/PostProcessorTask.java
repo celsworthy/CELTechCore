@@ -13,14 +13,19 @@ import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.PostProcessor;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeature;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeatureSet;
+import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.PrintJob;
 import celtech.printerControl.model.Printer;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
+import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -31,7 +36,7 @@ import libertysystems.stenographer.StenographerFactory;
 public class PostProcessorTask extends Task<GCodePostProcessingResult>
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
+    private static final Stenographer steno = StenographerFactory.getStenographer(
             PostProcessorTask.class.getName());
 
     private final String printJobUUID;
@@ -131,16 +136,39 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                 }
             }
 
+            Map<Integer, Integer> objectToNozzleNumberMap = new HashMap<>();
+            int objectIndex = 0;
+
+            headFileToUse.getNozzles().get(0).getAssociatedExtruder();
+            for (ModelContainer model : project.getTopLevelModels())
+            {
+                for (MeshView meshView : model.descendentMeshViews())
+                {
+                    int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
+                    Optional<Integer> nozzleForExtruder = headFileToUse.getNozzleNumberForExtruderNumber(extruderNumber);
+                    if (nozzleForExtruder.isPresent())
+                    {
+                        objectToNozzleNumberMap.put(objectIndex, nozzleForExtruder.get());
+                    } else
+                    {
+                        steno.warning("Couldn't get extruder number for object " + objectIndex);
+                    }
+                    objectIndex++;
+                }
+            }
+                        
             PostProcessor postProcessor = new PostProcessor(
-                    printer,
+                    project.getUsedExtruders(printer),
                     gcodeFileToProcess,
                     gcodeOutputFile,
                     headFileToUse,
-                    project,
                     settings,
                     ppFeatures,
                     headType,
-                    taskProgress);
+                    taskProgress,
+                    project.getProjectName(),
+                    project.getPrinterSettings(),
+                    objectToNozzleNumberMap);
 
             RoboxiserResult roboxiserResult = postProcessor.processInput();
             if (roboxiserResult.isSuccess())

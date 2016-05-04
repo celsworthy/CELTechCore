@@ -1,11 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
-import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.gcodetranslator.DidntFindEventException;
-import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
-import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.utils.Math.MathUtils;
 import java.util.Iterator;
@@ -21,15 +17,11 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  */
 public class CloseUtilities
 {
-
-    private final Project project;
-
     private final float maxDistanceFromEndPoint;
     private final int maxNumberOfIntersectionsToConsider;
 
-    public CloseUtilities(Project project, SlicerParametersFile settings, String headType)
+    public CloseUtilities(SlicerParametersFile settings, String headType)
     {
-        this.project = project;
         maxNumberOfIntersectionsToConsider = settings.getNumberOfPerimeters();
         maxDistanceFromEndPoint = settings.getPerimeterExtrusionWidth_mm()
                 * 1.01f * maxNumberOfIntersectionsToConsider;

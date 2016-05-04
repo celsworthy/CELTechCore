@@ -19,7 +19,9 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -146,13 +148,15 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
+        Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
+
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
                 testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 singleMaterialHead,
                 ppFeatures,
-                testProject,
-                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL,
+                objectToNozzleNumberMap);
 
         assertEquals(3, testLayer.getChildren().size());
 
@@ -303,13 +307,17 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
 
+        Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
+        objectToNozzleNumberMap.put(0, 0);
+        objectToNozzleNumberMap.put(1, 1);
+
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
                 testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 dualMaterialHead,
                 ppFeatures,
-                testProject,
-                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL,
+                objectToNozzleNumberMap);
 
         assertEquals(2, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());
@@ -342,7 +350,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertSame(inner2, tool2.getChildren().get(1));
         assertSame(outer2, tool2.getChildren().get(2));
     }
-    
+
     @Test
     public void testInsertNozzleControlSectionsByObject_SupportMaterial2()
     {
@@ -457,13 +465,18 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
 
+        Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
+        objectToNozzleNumberMap.put(0, 0);
+        objectToNozzleNumberMap.put(1, 1);
+        objectToNozzleNumberMap.put(2, 0);
+
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
                 testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 dualMaterialHead,
                 ppFeatures,
-                testProject,
-                PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL,
+                objectToNozzleNumberMap);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());
@@ -496,7 +509,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         assertSame(inner1, tool1.getChildren().get(0));
         assertSame(outer1, tool1.getChildren().get(1));
-        
+
         assertSame(support1, tool2.getChildren().get(0));
         assertSame(inner2, tool2.getChildren().get(1));
         assertSame(outer2, tool2.getChildren().get(2));
@@ -504,10 +517,10 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         assertSame(inner3, tool3.getChildren().get(0));
         assertSame(outer3, tool3.getChildren().get(1));
-        
+
         assertSame(support3, tool4.getChildren().get(0));
     }
-    
+
     @Test
     public void testInsertNozzleControlSectionsByObject_SupportMaterial1()
     {
@@ -622,13 +635,18 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
 
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
 
+        Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
+        objectToNozzleNumberMap.put(0, 1);
+        objectToNozzleNumberMap.put(1, 0);
+        objectToNozzleNumberMap.put(2, 1);
+
         NozzleAssignmentUtilities assignmentUtilities = new NozzleAssignmentUtilities(
                 nozzleProxies,
                 testProject.getPrinterSettings().getSettings("RBX01-SM"),
                 dualMaterialHead,
                 ppFeatures,
-                testProject,
-                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL);
+                PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL,
+                objectToNozzleNumberMap);
 
         assertEquals(3, testLayer.getChildren().size());
         assertEquals(3, object1.getChildren().size());
@@ -659,7 +677,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         assertSame(inner1, tool1.getChildren().get(0));
         assertSame(outer1, tool1.getChildren().get(1));
         assertSame(support1, tool1.getChildren().get(2));
-        
+
         assertSame(inner2, tool2.getChildren().get(0));
         assertSame(outer2, tool2.getChildren().get(1));
 

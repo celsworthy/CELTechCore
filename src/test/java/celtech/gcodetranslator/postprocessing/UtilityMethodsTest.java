@@ -679,7 +679,7 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
             nozzleProxies.add(proxy);
         }
 
-        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures, testProject,
+        UtilityMethods utilityMethods = new UtilityMethods(ppFeatures,
             testProject.getPrinterSettings().getSettings("RBX01-DM"), 
             "RBX01-DM");
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 10, null, null, null, 0, -1);

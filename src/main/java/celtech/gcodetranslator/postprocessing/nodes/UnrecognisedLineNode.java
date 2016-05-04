@@ -25,4 +25,10 @@ public class UnrecognisedLineNode extends GCodeEventNode implements Renderable
     {
         return "; " + discardedLine;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Unrecognised: " + discardedLine;
+    }
 }

@@ -1,6 +1,5 @@
 package celtech.gcodetranslator.postprocessing;
 
-import celtech.appManager.Project;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.NozzleProxy;
@@ -15,15 +14,12 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportInterfaceSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
-import celtech.modelcontrol.ModelContainer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -35,59 +31,30 @@ public class NozzleAssignmentUtilities
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(NozzleAssignmentUtilities.class.getName());
-    private final List<NozzleProxy> nozzleProxies;
     private final SlicerParametersFile slicerParametersFile;
     private final HeadFile headFile;
     private final PostProcessorFeatureSet featureSet;
-    private final Project project;
     private final PostProcessingMode postProcessingMode;
 
     private final NozzleManagementUtilities nozzleControlUtilities;
     private final Map<Integer, Integer> objectToNozzleNumberMap;
-    private final Map<Integer, Integer> extruderToNozzleMap;
-    private final Map<Integer, Integer> nozzleToExtruderMap;
 
     public NozzleAssignmentUtilities(List<NozzleProxy> nozzleProxies,
             SlicerParametersFile slicerParametersFile,
             HeadFile headFile,
             PostProcessorFeatureSet featureSet,
-            Project project,
-            PostProcessingMode postProcessingMode)
+            PostProcessingMode postProcessingMode,
+            Map<Integer, Integer> objectToNozzleNumberMap)
     {
-        this.nozzleProxies = nozzleProxies;
         this.slicerParametersFile = slicerParametersFile;
         this.headFile = headFile;
         this.featureSet = featureSet;
-        this.project = project;
         this.postProcessingMode = postProcessingMode;
+        this.objectToNozzleNumberMap = objectToNozzleNumberMap;
 
-        nozzleControlUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile,
+        nozzleControlUtilities = new NozzleManagementUtilities(nozzleProxies,
+                slicerParametersFile,
                 headFile);
-
-        extruderToNozzleMap = new HashMap<>();
-        nozzleToExtruderMap = new HashMap<>();
-        for (int extruderNumber = 0; extruderNumber < 2; extruderNumber++)
-        {
-            Optional<NozzleProxy> proxy = nozzleControlUtilities.chooseNozzleProxyByExtruderNumber(
-                    extruderNumber);
-            if (proxy.isPresent())
-            {
-                extruderToNozzleMap.put(extruderNumber, proxy.get().getNozzleReferenceNumber());
-                nozzleToExtruderMap.put(proxy.get().getNozzleReferenceNumber(), extruderNumber);
-            }
-        }
-
-        objectToNozzleNumberMap = new HashMap<>();
-        int objectIndex = 0;
-        for (ModelContainer model : project.getTopLevelModels())
-        {
-            for (MeshView meshView : model.descendentMeshViews())
-            {
-                int extruderNumber = ((ModelContainer) meshView.getParent()).getAssociateWithExtruderNumberProperty().get();
-                objectToNozzleNumberMap.put(objectIndex, extruderToNozzleMap.get(extruderNumber));
-                objectIndex++;
-            }
-        }
     }
 
     public class ExtrusionAssignmentResult

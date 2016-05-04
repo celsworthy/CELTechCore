@@ -1,7 +1,6 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.Lookup;
-import celtech.appManager.Project;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.gcodetranslator.CannotCloseFromPerimeterException;
@@ -51,14 +50,13 @@ public class UtilityMethods
     private final SlicerParametersFile settings;
 
     public UtilityMethods(final PostProcessorFeatureSet ppFeatureSet,
-            final Project project,
             SlicerParametersFile settings,
             String headType)
     {
         this.ppFeatureSet = ppFeatureSet;
         this.settings = settings;
         nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);
-        this.closeLogic = new CloseLogic(project, settings, ppFeatureSet, headType);
+        this.closeLogic = new CloseLogic(settings, ppFeatureSet, headType);
     }
 
     protected void insertCameraTriggersAndCloses(LayerNode layerNode,
@@ -258,12 +256,50 @@ public class UtilityMethods
 
             if (layerEvent instanceof ToolSelectNode)
             {
-                lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
-                opensInThisTool = 0;
+                if (lastToolNumber != ((ToolSelectNode) layerEvent).getToolNumber())
+                {
+                    lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
+                    opensInThisTool = 0;
+                }
             } else if (layerEvent instanceof NozzlePositionProvider
-                    && (((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen()
-                    || (((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0)))
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen())
+            {
+                nozzleOpen = true;
+                lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
+
+                //As a special case for partials, insert the elided extrusion here
+                double replenishEToUse = 0;
+                double replenishDToUse = 0;
+
+                switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
+                {
+                    case "E":
+                        replenishEToUse = replenishExtrusionE;
+                        replenishExtrusionE = 0;
+                        replenishDToUse = 0;
+                        break;
+                    case "D":
+                        replenishDToUse = replenishExtrusionD;
+                        replenishExtrusionD = 0;
+                        replenishEToUse = 0;
+                        break;
+                }
+
+                if (replenishDToUse == 0 && replenishEToUse == 0)
+                {
+                    String outputString = "No replenish on open in layer " + layerNode.getLayerNumber() + " before partial open " + ((NozzleValvePositionNode) layerEvent).renderForOutput();
+                    if (layerNode.getGCodeLineNumber().isPresent())
+                    {
+                        outputString += " on line " + layerNode.getGCodeLineNumber().get();
+                    }
+                    steno.warning(outputString);
+                }
+
+                ((NozzleValvePositionNode)layerEvent).setReplenishExtrusionE(replenishEToUse);
+                ((NozzleValvePositionNode)layerEvent).setReplenishExtrusionD(replenishDToUse);
+            } else if (layerEvent instanceof NozzlePositionProvider
+                    && (((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0))
             {
                 nozzleOpen = true;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
@@ -286,8 +322,7 @@ public class UtilityMethods
                 }
             } else if (layerEvent instanceof NozzlePositionProvider
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
-                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0
-                    && !((NozzlePositionProvider) layerEvent).getNozzlePosition().isPartialOpen())
+                    && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0)
             {
                 nozzleOpen = false;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
@@ -339,6 +374,17 @@ public class UtilityMethods
                         replenishEToUse = 0;
                         break;
                 }
+
+                if (replenishDToUse == 0 && replenishEToUse == 0)
+                {
+                    String outputString = "No replenish on open in layer " + layerNode.getLayerNumber() + " before extrusion " + ((ExtrusionNode) layerEvent).renderForOutput();
+                    if (layerNode.getGCodeLineNumber().isPresent())
+                    {
+                        outputString += " on line " + layerNode.getGCodeLineNumber().get();
+                    }
+                    steno.warning(outputString);
+                }
+
                 newNozzleValvePositionNode.setReplenishExtrusionE(replenishEToUse);
                 newNozzleValvePositionNode.setReplenishExtrusionD(replenishDToUse);
                 nodesToAdd.put((ExtrusionNode) layerEvent, newNozzleValvePositionNode);

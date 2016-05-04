@@ -29,6 +29,8 @@ public class DummyPrinterCommandInterfaceTest extends JavaFXConfiguredTest
         StatusConsumer statusConsumer = new StatusConsumer();
         DummyPrinterCommandInterface commandInterface = new DummyPrinterCommandInterface(
                 statusConsumer, printerHandle, false, 500);
+        commandInterface.connectToPrinter();
+        
         HardwarePrinter hardwarePrinter = new HardwarePrinter(statusConsumer, commandInterface);
         commandInterface.setPrinter(hardwarePrinter);
 

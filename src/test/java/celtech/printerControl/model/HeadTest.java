@@ -42,6 +42,7 @@ public class HeadTest extends JavaFXConfiguredTest
 
         DummyPrinterCommandInterface commandInterface
                 = new DummyPrinterCommandInterface(printerStatusConsumer, printerHandle, false, 500);
+        commandInterface.connectToPrinter();
 
         Printer printer = new HardwarePrinter(null, commandInterface);
 

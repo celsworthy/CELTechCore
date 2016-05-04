@@ -1,8 +1,11 @@
 package celtech.configuration.fileRepresentation;
 
+import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Head.HeadType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -83,5 +86,21 @@ public class HeadFile
     public String toString()
     {
         return name;
+    }
+
+    @JsonIgnore
+    public Optional<Integer> getNozzleNumberForExtruderNumber(int extruderNumber)
+    {
+        Optional returnVal = Optional.empty();
+
+        for (int nozzleIndex = 0; nozzleIndex < nozzles.size(); nozzleIndex++)
+        {
+            if (nozzles.get(nozzleIndex).getAssociatedExtruder().equalsIgnoreCase(Extruder.getExtruderLetterForNumber(extruderNumber)))
+            {
+                returnVal = Optional.of(nozzleIndex);
+                break;
+            }
+        }
+        return returnVal;
     }
 }
