@@ -8,6 +8,7 @@ import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import static celtech.coreUI.controllers.panels.FXMLUtilities.addColonsToLabels;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.comms.remote.EEPROMState;
 import celtech.roboxbase.comms.rx.HeadEEPROMDataResponse;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -353,8 +354,15 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         if (selectedPrinter != null && selectedPrinter.headProperty().get() != null)
         {
             removeHeadChangeListeners(selectedPrinter.headProperty().get());
+            selectedPrinter.getHeadEEPROMStateProperty().removeListener(headEEPROMStateChangeListener);
         }
         selectedPrinter = printer;
+
+        if (printer != null)
+        {
+            selectedPrinter.getHeadEEPROMStateProperty().addListener(headEEPROMStateChangeListener);
+        }
+
         if (printer != null && printer.headProperty().get() != null)
         {
             Head head = printer.headProperty().get();
@@ -362,11 +370,14 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             updateHeadUniqueId();
             listenForHeadChanges(head);
             canResetHeadProperty.set(true);
-        }
-        else
+        } else if (printer != null
+                && printer.getHeadEEPROMStateProperty().get() == EEPROMState.NOT_PROGRAMMED)
+        {
+            canResetHeadProperty.set(true);
+        } else
         {
             canResetHeadProperty.set(false);
-    }
+        }
     }
 
     private void updateHeadUniqueId()
@@ -443,6 +454,18 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
+
+    private ChangeListener<EEPROMState> headEEPROMStateChangeListener = new ChangeListener<EEPROMState>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends EEPROMState> ov, EEPROMState t, EEPROMState t1)
+        {
+            if (t1 == EEPROMState.NOT_PROGRAMMED)
+            {
+                canResetHeadProperty.set(true);
+            }
+        }
+    };
 
     private ChangeListener<Object> headChangeListener;
 
