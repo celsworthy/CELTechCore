@@ -455,7 +455,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     {
     }
 
-    private ChangeListener<EEPROMState> headEEPROMStateChangeListener = new ChangeListener<EEPROMState>()
+    private final ChangeListener<EEPROMState> headEEPROMStateChangeListener = new ChangeListener<EEPROMState>()
     {
         @Override
         public void changed(ObservableValue<? extends EEPROMState> ov, EEPROMState t, EEPROMState t1)
