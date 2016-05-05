@@ -34,6 +34,7 @@ import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -69,10 +70,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private ComboBox<SupportType> supportComboBox;
 
     @FXML
-    private RadioButton supportButton;
+    private CheckBox supportButton;
 
     @FXML
-    private RadioButton raftButton;
+    private CheckBox raftButton;
+
+    @FXML
+    private CheckBox spiralPrintCheckbox;
 
     @FXML
     private HBox customProfileBox;
@@ -187,6 +191,25 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
             {
                 fillDensitySlider.setValue(fillDensityPercentEntry.getAsDouble());
+            }
+        });
+
+        spiralPrintCheckbox.selectedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                if (t1.booleanValue())
+                {
+                    raftButton.setSelected(false);
+                    supportButton.setSelected(false);
+                    brimSlider.setValue(0);
+                }
+
+                raftButton.setDisable(t1);
+                supportButton.setDisable(t1);
+                supportComboBox.setDisable(t1);
+                brimSlider.setDisable(t1);
             }
         });
     }
@@ -333,6 +356,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 }
             }
         });
+
+        spiralPrintCheckbox.selectedProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
+                {
+                    if (populatingForProject)
+                    {
+                        return;
+                    }
+
+                    printerSettings.setSpiralPrintOverride(selected);
+                });
     }
 
     @FXML
@@ -432,6 +466,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         boolean autoSupport = printerSettings.getPrintSupportOverride();
         SupportType saveSupports = printerSettings.getPrintSupportTypeOverride();
         boolean savePrintRaft = printerSettings.getRaftOverride();
+        boolean saveSpiralPrint = printerSettings.getSpiralPrintOverride();
 
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
@@ -477,6 +512,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 customProfileChooser.getSelectionModel().select(chosenProfile);
             }
         }
+
+        spiralPrintCheckbox.setSelected(saveSpiralPrint);
+
         populatingForProject = false;
     }
 

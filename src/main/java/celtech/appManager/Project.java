@@ -314,6 +314,7 @@ public class Project
             printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
             printerSettings.setPrintSupportTypeOverride(projectFile.getPrintSupportTypeOverride());
             printerSettings.setRaftOverride(projectFile.getPrintRaft());
+            printerSettings.setSpiralPrintOverride(projectFile.getSpiralPrint());
 
             loadModels(basePath);
 

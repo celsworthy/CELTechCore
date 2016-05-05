@@ -12,7 +12,8 @@ import java.util.Set;
 
 public class ProjectFile
 {
-    private int version = 2;
+
+    private int version = 3;
     private String projectName;
     private Date lastModifiedDate;
     private int brimOverride = 0;
@@ -20,12 +21,13 @@ public class ProjectFile
     private boolean printSupportOverride = false;
     private SupportType printSupportTypeOverride = SupportType.MATERIAL_1;
     private boolean printRaft = false;
+    private boolean spiralPrint = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;
     private String lastPrintJobID = "";
     private String settingsName = ApplicationConfiguration.draftSettingsProfileName;
     private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
-    
+
     private Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
     private Map<Integer, State> groupState = new HashMap<>();
 
@@ -83,12 +85,12 @@ public class ProjectFile
     {
         return printSupportOverride;
     }
-    
+
     public void setPrintSupportOverride(boolean printSupportOverride)
     {
         this.printSupportOverride = printSupportOverride;
     }
-    
+
     public SupportType getPrintSupportTypeOverride()
     {
         return printSupportTypeOverride;
@@ -178,8 +180,19 @@ public class ProjectFile
     {
         this.groupState = groupState;
     }
-           
-    public void populateFromProject(Project project) {
+
+    public boolean getSpiralPrint()
+    {
+        return spiralPrint;
+    }
+
+    public void setSpiralPrint(boolean spiralPrint)
+    {
+        this.spiralPrint = spiralPrint;
+    }
+
+    public void populateFromProject(Project project)
+    {
         projectName = project.getProjectName();
         lastModifiedDate = project.getLastModifiedDate().get();
         lastPrintJobID = project.getLastPrintJobID();
@@ -194,5 +207,6 @@ public class ProjectFile
         printRaft = project.getPrinterSettings().getRaftOverride();
         groupStructure = project.getGroupStructure();
         groupState = project.getGroupState();
+        spiralPrint = project.getPrinterSettings().getSpiralPrintOverride();
     }
 }
