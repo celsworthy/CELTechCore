@@ -167,6 +167,7 @@ public class ModelContainerProject extends Project
                 printerSettings.setPrintSupportOverride(mcProjectFile.getPrintSupportOverride());
                 printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
                 printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
+                printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
 
                 loadModels(basePath);
 
@@ -306,7 +307,9 @@ public class ModelContainerProject extends Project
             {
                 usedExtruders.add(0);
             }
-        } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2)
+        } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
+                && printer != null
+                && printer.extrudersProperty().get(1).isFittedProperty().get())
         {
             if (!usedExtruders.contains(1))
             {

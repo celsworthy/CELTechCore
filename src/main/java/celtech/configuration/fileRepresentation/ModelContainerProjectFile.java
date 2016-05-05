@@ -13,12 +13,13 @@ import java.util.Set;
 public class ModelContainerProjectFile extends ProjectFile
 {
 
-    private int subVersion = 2;
+    private int subVersion = 3;
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
     private SupportType printSupportTypeOverride = SupportType.MATERIAL_1;
     private boolean printRaft = false;
+    private boolean spiralPrint = false;
     private String extruder0FilamentID;
     private String extruder1FilamentID;
     private String settingsName = BaseConfiguration.draftSettingsProfileName;
@@ -147,6 +148,16 @@ public class ModelContainerProjectFile extends ProjectFile
         this.groupState = groupState;
     }
 
+    public boolean getSpiralPrint()
+    {
+        return spiralPrint;
+    }
+
+    public void setSpiralPrint(boolean spiralPrint)
+    {
+        this.spiralPrint = spiralPrint;
+    }
+
     public void populateFromProject(ModelContainerProject project)
     {
     }
@@ -156,9 +167,9 @@ public class ModelContainerProjectFile extends ProjectFile
     {
         if (project instanceof ModelContainerProject)
         {
-            ModelContainerProject mcp = (ModelContainerProject)project;
+            ModelContainerProject mcp = (ModelContainerProject) project;
             extruder0FilamentID = mcp.getExtruder0FilamentProperty().get().getFilamentID();
-            extruder1FilamentID =  mcp.getExtruder1FilamentProperty().get().getFilamentID();
+            extruder1FilamentID = mcp.getExtruder1FilamentProperty().get().getFilamentID();
             settingsName = mcp.getPrinterSettings().getSettingsName();
             printQuality = mcp.getPrinterSettings().getPrintQuality();
             brimOverride = mcp.getPrinterSettings().getBrimOverride();
@@ -168,6 +179,7 @@ public class ModelContainerProjectFile extends ProjectFile
             printRaft = mcp.getPrinterSettings().getRaftOverride();
             groupStructure = mcp.getGroupStructure();
             groupState = mcp.getGroupState();
+            spiralPrint = mcp.getPrinterSettings().getSpiralPrintOverride();
         }
     }
 }
