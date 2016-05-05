@@ -285,13 +285,23 @@ public class CloseLogic
             {
                 InScopeEvents unprioritisedNoOuterPerimeterAllOfInner = extractAvailableMovements(startingNode, sectionsToConsider, true, false, true, false);
 
+                //Attempt to close over the inner only
                 if (unprioritisedNoOuterPerimeterAllOfInner.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
                 {
                     closeResult = overwriteClose(unprioritisedNoOuterPerimeterAllOfInner, nozzleInUse, false);
                 } else
                 {
                     InScopeEvents unprioritisedAllFromLastClose = extractAvailableMovements(startingNode, sectionsToConsider, true, true, true, false);
-                    closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
+
+                    //Close over the inner + outer if there is enough volume
+                    if (unprioritisedAllFromLastClose.getAvailableExtrusion() >= nozzleInUse.getNozzleParameters().getEjectionVolume())
+                    {
+                        closeResult = overwriteClose(unprioritisedAllFromLastClose, nozzleInUse, false);
+                    } else
+                    {
+                        //Not enough volume so partial open
+                        closeResult = partialOpenAndCloseAtEndOfExtrusion(unprioritisedAllFromLastClose, nozzleInUse);
+                    }
                 }
             } catch (NotEnoughAvailableExtrusionException ex)
             {
