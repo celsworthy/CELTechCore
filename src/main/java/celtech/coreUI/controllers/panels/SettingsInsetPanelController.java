@@ -212,6 +212,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 supportButton.setDisable(t1);
                 supportComboBox.setDisable(t1);
                 brimSlider.setDisable(t1);
+                fillDensityPercentEntry.setDisable(t1);
+                fillDensitySlider.setDisable(t1);
             }
         });
     }
