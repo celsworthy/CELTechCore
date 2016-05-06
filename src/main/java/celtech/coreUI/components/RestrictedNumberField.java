@@ -45,6 +45,7 @@ public class RestrictedNumberField extends TextField
     private final ObjectProperty<UnitType> units = new SimpleObjectProperty<>(UnitType.NONE);
     private Pattern restrictionPattern = Pattern.compile("[0-9]+");
     private BooleanProperty drivesUndoableOperation = new SimpleBooleanProperty(false);
+    private BooleanProperty immediateUpdateMode = new SimpleBooleanProperty(false);
 
     private boolean lastValueValid = false;
     private double lastValue = 0;
@@ -86,6 +87,21 @@ public class RestrictedNumberField extends TextField
     public BooleanProperty allowNegativeProperty()
     {
         return allowNegative;
+    }
+
+    public boolean getImmediateUpdateMode()
+    {
+        return immediateUpdateMode.get();
+    }
+
+    public void setImmediateUpdateMode(boolean immediateUpdateMode)
+    {
+        this.immediateUpdateMode.set(immediateUpdateMode);
+    }
+
+    public BooleanProperty immediateUpdateModeProperty()
+    {
+        return immediateUpdateMode;
     }
 
     public boolean getMaxValueSet()
@@ -265,7 +281,14 @@ public class RestrictedNumberField extends TextField
             {
                 if (event.getCode() == KeyCode.ESCAPE)
                 {
-                    setText(getNumberFormatter().format(currentValue));
+                    if (lastValueValid && immediateUpdateMode.get())
+                    {
+                        setText(getNumberFormatter().format(lastValue));
+                        updateNumberValuesFromText();
+                    } else
+                    {
+                        setText(getNumberFormatter().format(currentValue));
+                    }
                     event.consume();
                 } else if (event.getCode() == KeyCode.ENTER)
                 {
@@ -278,16 +301,6 @@ public class RestrictedNumberField extends TextField
                             && event.isShortcutDown())
                     {
                         DisplayManager.getInstance().handle(event);
-//                        if (lastValueValid)
-//                        {
-//                            System.out.println("Firing from last value");
-//                            setText(getNumberFormatter().format(lastValue));
-//                            updateNumberValuesFromText();
-//                            event.consume();
-//                        } else
-//                        {
-//                            System.out.println("Last value not valid");
-//                        }
                     }
                 }
             }
@@ -314,6 +327,9 @@ public class RestrictedNumberField extends TextField
         {
             this.setText(oldText);
             this.selectRange(oldSelectionRange.getStart(), oldSelectionRange.getEnd());
+        } else if (immediateUpdateMode.get())
+        {
+            updateNumberValuesFromText();
         }
     }
 
