@@ -16,7 +16,6 @@ import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head.HeadType;
 import celtech.services.slicer.PrintQualityEnumeration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -305,7 +304,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
 
         Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
         objectToNozzleNumberMap.put(0, 0);
@@ -463,7 +462,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
 
         Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
         objectToNozzleNumberMap.put(0, 0);
@@ -633,7 +632,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
 
         Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
         objectToNozzleNumberMap.put(0, 1);

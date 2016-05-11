@@ -10,13 +10,10 @@ import celtech.gcodetranslator.postprocessing.nodes.ObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OrphanObjectDelineationNode;
 import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.RetractNode;
-import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.services.slicer.PrintQualityEnumeration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -94,7 +91,7 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
         NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
 
         assertEquals(2, testLayer.getChildren().size());
         assertSame(outer, orphan1.getChildren().get(0));
@@ -157,7 +154,7 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 10, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 10, null, null, null, 0, -1);
 
         assertEquals(2, testLayer.getChildren().size());
         assertSame(outer, orphan1.getChildren().get(0));
