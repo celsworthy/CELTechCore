@@ -263,14 +263,14 @@ public class HeadEEPROMDataResponse extends RoboxRxPacket
                 steno.error("Couldn't parse hours used - " + hoursUsedString);
             }
 
-            if (uniqueID.length() == 23)
+            if (uniqueID.length() == 24)
             {
                 String inTheBeginning = uniqueID;
-                weekNumber = inTheBeginning.substring(7, 9);
-                yearNumber = inTheBeginning.substring(9, 11);
-                PONumber = inTheBeginning.substring(11, 18);
-                serialNumber = inTheBeginning.substring(18, 22);
-                checksum = inTheBeginning.substring(22, 23);
+                weekNumber = inTheBeginning.substring(8, 10);
+                yearNumber = inTheBeginning.substring(10, 12);
+                PONumber = inTheBeginning.substring(12, 19);
+                serialNumber = inTheBeginning.substring(19, 23);
+                checksum = inTheBeginning.substring(23, 24);
             }
             success = true;
         } catch (UnsupportedEncodingException ex)
