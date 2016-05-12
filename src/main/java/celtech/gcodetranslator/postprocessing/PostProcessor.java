@@ -29,6 +29,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import celtech.gcodetranslator.postprocessing.spiralPrint.CuraSpiralPrintFixer;
 import celtech.gcodetranslator.postprocessing.verifier.VerifierResult;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Head.HeadType;
@@ -298,6 +299,13 @@ public class PostProcessor
                 heaterSaver.saveHeaters(postProcessResults);
             }
             timeUtils.timerStop(this, heaterSaverTimerName);
+            
+            if (printerSettings.getSpiralPrintOverride())
+            {
+                //Run the Cura spiral print deshagger
+                CuraSpiralPrintFixer curaSpiralPrintFixer = new CuraSpiralPrintFixer();
+                curaSpiralPrintFixer.fixSpiralPrint(postProcessResults);
+            }
 
             for (LayerPostProcessResult resultToBeProcessed : postProcessResults)
             {
