@@ -1,7 +1,9 @@
 package celtech.gcodetranslator.postprocessing.filamentSaver;
 
-import celtech.gcodetranslator.postprocessing.filamentSaver.FilamentSaver;
 import celtech.gcodetranslator.postprocessing.LayerPostProcessResult;
+import celtech.gcodetranslator.postprocessing.helpers.LayerDefinition;
+import celtech.gcodetranslator.postprocessing.helpers.TestDataGenerator;
+import celtech.gcodetranslator.postprocessing.helpers.ToolDefinition;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
@@ -46,53 +48,6 @@ public class FilamentSaverTest
     {
     }
 
-    private class ToolDefinition
-    {
-
-        private final int toolNumber;
-        private final double duration;
-
-        public ToolDefinition(int toolNumber, double duration)
-        {
-            this.toolNumber = toolNumber;
-            this.duration = duration;
-        }
-
-        public int getToolNumber()
-        {
-            return toolNumber;
-        }
-
-        public double getDuration()
-        {
-            return duration;
-        }
-
-    }
-
-    private class LayerDefinition
-    {
-
-        private final int layerNumber;
-        private final ToolDefinition[] tools;
-
-        public LayerDefinition(int layerNumber, ToolDefinition[] tools)
-        {
-            this.layerNumber = layerNumber;
-            this.tools = tools;
-        }
-
-        public int getLayerNumber()
-        {
-            return layerNumber;
-        }
-
-        public ToolDefinition[] getTools()
-        {
-            return tools;
-        }
-    }
-
     /**
      * Test of saveHeaters method, of class FilamentSaver.
      */
@@ -107,7 +62,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 500)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
 
         assertEquals(1, allLayerPostProcessResults.size());
 
@@ -138,7 +93,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 500)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -170,7 +125,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -205,7 +160,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -241,7 +196,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -280,7 +235,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -327,7 +282,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -379,7 +334,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -441,7 +396,7 @@ public class FilamentSaverTest
             new ToolDefinition(1, 150)
         }));
 
-        List<LayerPostProcessResult> allLayerPostProcessResults = generateLayerResults(layers);
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver();
         instance.saveHeaters(allLayerPostProcessResults);
 
@@ -476,66 +431,5 @@ public class FilamentSaverTest
         assertEquals(0, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(2)).getSNumber());
     }
 
-    private List<LayerPostProcessResult> generateLayerResults(List<LayerDefinition> layerDefinitions)
-    {
-        List<LayerPostProcessResult> results = new ArrayList<>();
-        double startingTimeForLayer = 0;
-
-        for (LayerDefinition layerDefinition : layerDefinitions)
-        {
-            LayerNode layerNode = generateLayer(startingTimeForLayer, layerDefinition);
-            LayerPostProcessResult result = new LayerPostProcessResult(
-                    layerNode,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    null,
-                    null,
-                    null,
-                    0,
-                    0);
-            results.add(result);
-
-            startingTimeForLayer += layerNode.getFinishTimeFromStartOfPrint_secs().get();
-        }
-
-        return results;
-    }
-
-    private LayerNode generateLayer(double startingTimeForLayer, LayerDefinition layerDefinition)
-    {
-        LayerNode layerNode = new LayerNode(layerDefinition.getLayerNumber());
-
-        double currentLayerTime = startingTimeForLayer;
-
-        for (ToolDefinition tool : layerDefinition.getTools())
-        {
-            ToolSelectNode tsNode = new ToolSelectNode();
-            tsNode.setToolNumber(tool.getToolNumber());
-            tsNode.setEstimatedDuration(tool.getDuration());
-            tsNode.setFinishTimeFromStartOfPrint_secs(currentLayerTime + tool.getDuration());
-
-            double durationCountdown = tool.getDuration();
-            double decrementValue = 15.0;
-
-            do
-            {
-                ExtrusionNode exNode = new ExtrusionNode();
-                double durationToUse = (durationCountdown > 0) ? durationCountdown : durationCountdown + decrementValue;
-                exNode.setFinishTimeFromStartOfPrint_secs(durationToUse + currentLayerTime);
-                tsNode.addChildAtStart(exNode);
-                durationCountdown -= decrementValue;
-            } while (durationCountdown > 0);
-
-            layerNode.addChildAtEnd(tsNode);
-
-            currentLayerTime += tool.getDuration();
-        }
-
-        layerNode.setFinishTimeFromStartOfPrint_secs(currentLayerTime);
-
-        return layerNode;
-    }
+ 
 }

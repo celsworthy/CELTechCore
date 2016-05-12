@@ -72,8 +72,6 @@ public class FilamentSaver
                     {
                         double targetTimeAfterStart = Math.max(0, toolSelect.getFinishTimeFromStartOfPrint_secs().get() - toolSelect.getEstimatedDuration() - heatUpTime_secs);
 
-                        steno.info("Must switch on " + thisToolNumber);
-
                         FoundHeatUpNode foundNodeToHeatBefore = findNodeToHeatBefore(allLayerPostProcessResults, layerCounter, toolSelect, targetTimeAfterStart);
 
                         if (foundNodeToHeatBefore != null)
@@ -93,8 +91,6 @@ public class FilamentSaver
                     if ((toolSelect.getFinishTimeFromStartOfPrint_secs().get() - finishTimeForOtherTool + toolUseSinceLastClose[thisToolNumber] > switchOffTime_secs)
                             && nozzleHeaterOn[otherToolNumber])
                     {
-                        steno.info("Must switch off " + otherToolNumber);
-
                         if (lastToolSelects[otherToolNumber] == null)
                         {
                             //We need to switch off the other heater at the start of this layer
