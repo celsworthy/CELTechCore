@@ -39,7 +39,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
@@ -212,6 +211,22 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 brimSlider.setDisable(t1);
                 fillDensityPercentEntry.setDisable(t1);
                 fillDensitySlider.setDisable(t1);
+            }
+        });
+
+        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
+            {
+                if (t1 == ApplicationMode.SETTINGS)
+                {
+                    if (currentProject != null
+                            && currentPrinter != null)
+                    {
+                        dealWithSpiralness();
+                    }
+                }
             }
         });
     }
@@ -516,8 +531,19 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
 
         spiralPrintCheckbox.setSelected(saveSpiralPrint);
+        dealWithSpiralness();
 
         populatingForProject = false;
+    }
+
+    private void dealWithSpiralness()
+    {
+        spiralPrintCheckbox.disableProperty().set(currentProject.getAllModels().size() != 1
+                || currentProject.getUsedExtruders(currentPrinter).size() > 1);
+
+        spiralPrintCheckbox.setSelected(spiralPrintCheckbox.selectedProperty().get()
+                && currentProject.getAllModels().size() == 1
+                && currentProject.getUsedExtruders(currentPrinter).size() == 1);
     }
 
     private void selectCurrentCustomSettings()
