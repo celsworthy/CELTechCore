@@ -143,7 +143,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> speedMultiplier1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!speedMultiplier1Slider.isValueChanging() && !inhibitFeedrate1)
+                if (!inhibitFeedrate1
+                        && (!speedMultiplier1Slider.isValueChanging()
+                        || now.doubleValue() >= speedMultiplier1Slider.getMax()
+                        || now.doubleValue() <= speedMultiplier1Slider.getMin()))
                 {
                     try
                     {
@@ -159,7 +162,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> speedMultiplier2SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!speedMultiplier2Slider.isValueChanging() && !inhibitFeedrate2)
+                if (!inhibitFeedrate2
+                        && (!speedMultiplier2Slider.isValueChanging()
+                        || now.doubleValue() >= speedMultiplier2Slider.getMax()
+                        || now.doubleValue() <= speedMultiplier2Slider.getMin()))
                 {
                     try
                     {
@@ -185,7 +191,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> bedTempSliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!bedTemperatureSlider.isValueChanging() && !inhibitBed)
+                if (!inhibitBed
+                        && (!bedTemperatureSlider.isValueChanging()
+                        || now.doubleValue() >= bedTemperatureSlider.getMax()
+                        || now.doubleValue() <= bedTemperatureSlider.getMin()))
                 {
                     steno.info("Writing bed");
                     currentPrinter.setBedTargetTemperature(now.intValue());
@@ -205,7 +214,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> extrusionMultiplier1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!extrusionMultiplier1Slider.isValueChanging() && !inhibitExtrusion1)
+                if (!inhibitExtrusion1
+                        && (!extrusionMultiplier1Slider.isValueChanging()
+                        || now.doubleValue() >= extrusionMultiplier1Slider.getMax()
+                        || now.doubleValue() <= extrusionMultiplier1Slider.getMin()))
                 {
                     try
                     {
@@ -232,7 +244,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> extrusionMultiplier2SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!extrusionMultiplier2Slider.isValueChanging() && !inhibitExtrusion2)
+                if (!inhibitExtrusion2
+                        && (!extrusionMultiplier2Slider.isValueChanging()
+                        || now.doubleValue() >= extrusionMultiplier2Slider.getMax()
+                        || now.doubleValue() <= extrusionMultiplier2Slider.getMin()))
                 {
                     try
                     {
@@ -265,7 +280,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> nozzleTemp1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!nozzleTemperature1Slider.isValueChanging() && !inhibitNozzleTemp1)
+                if (!inhibitNozzleTemp1
+                        && (!nozzleTemperature1Slider.isValueChanging()
+                        || now.doubleValue() >= nozzleTemperature1Slider.getMax()
+                        || now.doubleValue() <= nozzleTemperature1Slider.getMin()))
                 {
                     //This is getting fired inappropriately
                     steno.info("Writing nozzle 1");
@@ -287,7 +305,10 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> nozzleTemp2SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!nozzleTemperature2Slider.isValueChanging() && !inhibitNozzleTemp2)
+                if (!inhibitNozzleTemp2
+                        && (!nozzleTemperature2Slider.isValueChanging()
+                        || now.doubleValue() >= nozzleTemperature2Slider.getMax()
+                        || now.doubleValue() <= nozzleTemperature2Slider.getMin()))
                 {
                     steno.info("Writing nozzle 2");
 
