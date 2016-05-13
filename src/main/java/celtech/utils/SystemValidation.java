@@ -3,14 +3,16 @@
  */
 package celtech.utils;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.MachineType;
+import celtech.coreUI.components.ChoiceLinkDialogBox;
+import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import java.util.ResourceBundle;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.dialog.Dialogs;
 
 /**
  * The SystemValidation class houses functions that validate the host system
@@ -27,32 +29,40 @@ public class SystemValidation
      * Check that the machine type is fully recognised and if not then exit the
      * application.
      */
-    public static void checkMachineTypeRecognised(ResourceBundle i18nBundle)
+    public static boolean checkMachineTypeRecognised(ResourceBundle i18nBundle)
     {
         MachineType machineType = ApplicationConfiguration.getMachineType();
         if (machineType.equals(MachineType.UNKNOWN))
         {
-            Dialogs.create()
-                    .owner(null)
-                    .title(i18nBundle.getString("dialogs.fatalErrorDetectingMachineType"))
-                    .masthead(null)
-                    .message(i18nBundle.getString("dialogs.automakerUnknownMachineType"))
-                    .showError();
+            ChoiceLinkDialogBox unknownMachineBox = new ChoiceLinkDialogBox(false);
+            unknownMachineBox.setTitle(i18nBundle.getString("dialogs.fatalErrorDetectingMachineType"));
+            unknownMachineBox.setMessage(i18nBundle.getString("dialogs.automakerUnknownMachineType"));
+            unknownMachineBox.addChoiceLink(i18nBundle.getString("dialogs.error.okAbortJob"));
+            try
+            {
+                unknownMachineBox.getUserInput();
+            } catch (PrinterDisconnectedException ex)
+            {
+            }
             steno.error("Closing down due to unrecognised machine type.");
             Platform.exit();
+            return false;
         }
+        
+        return true;
     }
 
     /**
      * Check that 3D is supported on this machine and if not then exit the
      * application.
+     *
      * @param i18nBundle
-     * @return 
+     * @return
      */
     public static boolean check3DSupported(ResourceBundle i18nBundle)
     {
         boolean threeDSupportOK = false;
-        
+
         steno.debug("Starting AutoMaker - check 3D support...");
         boolean checkForScene3D = true;
 
@@ -70,28 +80,27 @@ public class SystemValidation
         {
             if (!Platform.isSupported(ConditionalFeature.SCENE3D))
             {
-                Platform.runLater(new Runnable()
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
                 {
-                    @Override
-                    public void run()
+                    ChoiceLinkDialogBox threeDProblemBox = new ChoiceLinkDialogBox(false);
+                    threeDProblemBox.setTitle(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"));
+                    threeDProblemBox.setMessage(i18nBundle.getString("dialogs.automakerErrorNo3DSupport"));
+                    threeDProblemBox.addChoiceLink(i18nBundle.getString("dialogs.error.okAbortJob"));
+                    try
                     {
-                        Dialogs.create()
-                                .owner(null)
-                                .title(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"))
-                                .masthead(null)
-                                .message(i18nBundle.getString("dialogs.automakerErrorNo3DSupport"))
-                                .showError();
-                        steno.error("Closing down due to lack of required 3D support.");
-                        Platform.exit();
+                        threeDProblemBox.getUserInput();
+                    } catch (PrinterDisconnectedException ex)
+                    {
                     }
+                    steno.error("Closing down due to lack of required 3D support.");
+                    Platform.exit();
                 });
-            }
-            else
+            } else
             {
                 threeDSupportOK = true;
             }
         }
-        
+
         return threeDSupportOK;
     }
 
