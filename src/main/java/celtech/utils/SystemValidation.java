@@ -11,7 +11,6 @@ import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.dialog.Dialogs;
 
 /**
  * The SystemValidation class houses functions that validate the host system
@@ -33,20 +32,28 @@ public class SystemValidation
         MachineType machineType = BaseConfiguration.getMachineType();
         if (machineType.equals(MachineType.UNKNOWN))
         {
-            Dialogs.create()
-                    .owner(null)
-                    .title(i18nBundle.getString("dialogs.fatalErrorDetectingMachineType"))
-                    .masthead(null)
-                    .message(i18nBundle.getString("dialogs.automakerUnknownMachineType"))
-                    .showError();
+            ChoiceLinkDialogBox unknownMachineBox = new ChoiceLinkDialogBox(false);
+            unknownMachineBox.setTitle(i18nBundle.getString("dialogs.fatalErrorDetectingMachineType"));
+            unknownMachineBox.setMessage(i18nBundle.getString("dialogs.automakerUnknownMachineType"));
+            unknownMachineBox.addChoiceLink(i18nBundle.getString("dialogs.error.okAbortJob"));
+            try
+            {
+                unknownMachineBox.getUserInput();
+            } catch (PrinterDisconnectedException ex)
+            {
+            }
             steno.error("Closing down due to unrecognised machine type.");
             Platform.exit();
+            return false;
         }
+        
+        return true;
     }
 
     /**
      * Check that 3D is supported on this machine and if not then exit the
      * application.
+     *
      * @param i18nBundle
      * @return 
      */
@@ -71,23 +78,22 @@ public class SystemValidation
         {
             if (!Platform.isSupported(ConditionalFeature.SCENE3D))
             {
-                Platform.runLater(new Runnable()
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
                 {
-                    @Override
-                    public void run()
+                    ChoiceLinkDialogBox threeDProblemBox = new ChoiceLinkDialogBox(false);
+                    threeDProblemBox.setTitle(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"));
+                    threeDProblemBox.setMessage(i18nBundle.getString("dialogs.automakerErrorNo3DSupport"));
+                    threeDProblemBox.addChoiceLink(i18nBundle.getString("dialogs.error.okAbortJob"));
+                    try
                     {
-                        Dialogs.create()
-                                .owner(null)
-                                .title(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"))
-                                .masthead(null)
-                                .message(i18nBundle.getString("dialogs.automakerErrorNo3DSupport"))
-                                .showError();
+                        threeDProblemBox.getUserInput();
+                    } catch (PrinterDisconnectedException ex)
+                    {
+                    }
                         steno.error("Closing down due to lack of required 3D support.");
                         Platform.exit();
-                    }
                 });
-            }
-            else
+            } else
             {
                 threeDSupportOK = true;
             }

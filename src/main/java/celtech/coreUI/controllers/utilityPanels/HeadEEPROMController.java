@@ -151,7 +151,25 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             String uniqueId = headDataResponse.getUniqueID();
             if (uniqueId.length() == 0)
             {
-                uniqueId = headUniqueID.getText().replace("-", "");
+                boolean foundFirstDash = false;
+                StringBuilder conditionedString = new StringBuilder();
+                for (int location = 0; location < headUniqueID.getText().length(); location++)
+                {
+                    char currentChar = headUniqueID.getText().charAt(location);
+                    if (currentChar == '-')
+                    {
+                        if (!foundFirstDash)
+                        {
+                            conditionedString.append(currentChar);
+                            foundFirstDash = true;
+            }
+                    } else
+                    {
+                        conditionedString.append(currentChar);
+                    }
+                }
+
+                uniqueId = conditionedString.toString();
             }
 
             selectedPrinter.transmitWriteHeadEEPROM(
