@@ -422,10 +422,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
             if (!headTypeCode.equals(currentHeadType))
             {
-                currentProject.invalidate();
+                if (currentProject != null)
+                {
+                    currentProject.invalidate();
+                }
             }
             currentHeadType = headTypeCode;
-            
+
             populateCustomProfileChooser();
             updateSupportCombo(currentPrinter);
         }
