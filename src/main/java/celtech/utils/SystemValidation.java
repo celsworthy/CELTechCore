@@ -48,7 +48,7 @@ public class SystemValidation
             Platform.exit();
             return false;
         }
-        
+
         return true;
     }
 
@@ -73,6 +73,7 @@ public class SystemValidation
             if (forceGPU.equalsIgnoreCase("true"))
             {
                 checkForScene3D = false;
+                threeDSupportOK = true;
             }
         }
 

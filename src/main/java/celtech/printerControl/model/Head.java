@@ -39,7 +39,9 @@ public class Head implements Cloneable, RepairableComponent
     {
 
         SINGLE_MATERIAL_HEAD("singleMaterialHead"),
-        DUAL_MATERIAL_HEAD("dualMaterialHead");
+        SINGLE_MATERIAL_HEAD_NO_VALVES("singleMaterialHeadNoValves"),
+        DUAL_MATERIAL_HEAD("dualMaterialHead"),
+        DUAL_MATERIAL_HEAD_NO_VALVES("dualMaterialHeadNoValves");
 
         private final String helpText;
 
