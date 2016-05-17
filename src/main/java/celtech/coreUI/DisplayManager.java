@@ -970,4 +970,40 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         return displayScalingModeProperty;
     }
+
+    public void loadModelsIntoNewProject(String projectName, List<String> modelsWithPaths, boolean dontGroupModels)
+    {
+        if (modelsWithPaths != null
+                && modelsWithPaths.size() > 0)
+        {
+            List<File> listOfFiles = new ArrayList<>();
+
+            modelsWithPaths.forEach(modelRef ->
+            {
+                File fileRef = new File(modelRef);
+
+                if (fileRef.exists())
+                {
+                    listOfFiles.add(fileRef);
+                }
+            });
+
+            if (listOfFiles.size() > 0)
+            {
+                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    Project newProject = new Project();
+                    newProject.setProjectName(projectName);
+
+                    ModelLoader loader = new ModelLoader();
+                    loader.loadExternalModels(newProject, listOfFiles, false);
+
+                    ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
+                            tabDisplay.heightProperty());
+                    tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
+                    tabDisplay.getSelectionModel().select(projectTab);
+                });
+            }
+        }
+    }
 }
