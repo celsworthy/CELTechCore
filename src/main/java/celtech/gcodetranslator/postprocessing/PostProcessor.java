@@ -10,6 +10,7 @@ import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
+import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
@@ -30,6 +31,8 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.gcodetranslator.postprocessing.spiralPrint.CuraSpiralPrintFixer;
+import celtech.gcodetranslator.postprocessing.timeCalc.TimeAndVolumeCalc;
+import celtech.gcodetranslator.postprocessing.timeCalc.TimeAndVolumeCalcResult;
 import celtech.gcodetranslator.postprocessing.verifier.VerifierResult;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Head.HeadType;
@@ -71,6 +74,7 @@ public class PostProcessor
     private final String openTimerName = "Open";
     private final String assignExtrusionTimerName = "AssignExtrusion";
     private final String layerResultTimerName = "LayerResult";
+    private final String timeAndVolumeCalcTimerName = "TimeAndVolumeCalc";
     private final String heaterSaverTimerName = "HeaterSaver";
     private final String parseLayerTimerName = "ParseLayer";
     private final String writeOutputTimerName = "WriteOutput";
@@ -91,8 +95,6 @@ public class PostProcessor
     private PostProcessingMode postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
 
     protected List<Integer> layerNumberToLineNumber;
-    protected List<Double> layerNumberToPredictedDuration;
-    protected double predictedDuration = 0;
 
     private final UtilityMethods postProcessorUtilityMethods;
     private final NodeManagementUtilities nodeManagementUtilities;
@@ -104,14 +106,6 @@ public class PostProcessor
     private final OutputVerifier outputVerifier;
 
     private final TimeUtils timeUtils = new TimeUtils();
-
-    private static final double timeForInitialHoming_s = 20;
-    private static final double timeForPurgeAndLevelling_s = 40;
-    private static final double timeForNozzleSelect_s = 1;
-    private static final double zMoveRate_mms = 4;
-    private static final double nozzlePositionChange_s = 0.25;
-    // Add a percentage to each movement to factor in acceleration across the whole print
-    private static final double movementFudgeFactor = 1.1;
 
     private final String projectName;
     private final PrinterSettings printerSettings;
@@ -186,14 +180,7 @@ public class PostProcessor
         BufferedReader fileReader = null;
         GCodeOutputWriter writer = null;
 
-        float finalEVolume = 0;
-        float finalDVolume = 0;
-        double timeForPrint_secs = 0;
-
         layerNumberToLineNumber = new ArrayList<>();
-        layerNumberToPredictedDuration = new ArrayList<>();
-
-        predictedDuration = 0;
 
         int layerCounter = -1;
 
@@ -249,7 +236,7 @@ public class PostProcessor
             OpenResult lastOpenResult = null;
 
             List<LayerPostProcessResult> postProcessResults = new ArrayList<>();
-            LayerPostProcessResult lastPostProcessResult = new LayerPostProcessResult(null, 0, 0, 0, 0, defaultObjectNumber, null, null, null, 0, -1);
+            LayerPostProcessResult lastPostProcessResult = new LayerPostProcessResult(null, defaultObjectNumber, null, null, null, -1);
 
             for (String lineRead = fileReader.readLine(); lineRead != null; lineRead = fileReader.readLine())
             {
@@ -293,13 +280,6 @@ public class PostProcessor
             LayerPostProcessResult lastLayerParseResult = parseLayer(layerBuffer, lastPostProcessResult, writer, headFile.getType());
             postProcessResults.add(lastLayerParseResult);
 
-            timeUtils.timerStart(this, heaterSaverTimerName);
-            if (headFile.getType() == HeadType.DUAL_MATERIAL_HEAD)
-            {
-                heaterSaver.saveHeaters(postProcessResults);
-            }
-            timeUtils.timerStop(this, heaterSaverTimerName);
-            
             if (printerSettings.getSpiralPrintOverride())
             {
                 //Run the Cura spiral print deshagger
@@ -323,20 +303,32 @@ public class PostProcessor
                     lastOpenResult = postProcessorUtilityMethods.insertOpens(resultToBeProcessed.getLayerData(), lastOpenResult, nozzleProxies, headFile.getTypeCode());
                     timeUtils.timerStop(this, openTimerName);
                 }
+            }
 
+            TimeAndVolumeCalc timeAndVolumeCalc = new TimeAndVolumeCalc(headFile.getType());
+
+            timeUtils.timerStart(this, timeAndVolumeCalcTimerName);
+            TimeAndVolumeCalcResult timeAndVolumeCalcResult = timeAndVolumeCalc.calculateVolumeAndTime(postProcessResults);
+            timeUtils.timerStop(this, timeAndVolumeCalcTimerName);
+
+            timeUtils.timerStart(this, heaterSaverTimerName);
+            if (headFile.getType() == HeadType.DUAL_MATERIAL_HEAD)
+            {
+                heaterSaver.saveHeaters(postProcessResults);
+            }
+            timeUtils.timerStop(this, heaterSaverTimerName);
+
+            for (LayerPostProcessResult resultToBeProcessed : postProcessResults)
+            {
                 timeUtils.timerStart(this, writeOutputTimerName);
                 outputUtilities.writeLayerToFile(resultToBeProcessed.getLayerData(), writer);
                 timeUtils.timerStop(this, writeOutputTimerName);
                 postProcessorUtilityMethods.updateLayerToLineNumber(resultToBeProcessed, layerNumberToLineNumber, writer);
-                predictedDuration += postProcessorUtilityMethods.updateLayerToPredictedDuration(resultToBeProcessed, layerNumberToPredictedDuration, writer);
-
-                finalEVolume += assignmentResult.getEVolume();
-                finalDVolume += assignmentResult.getDVolume();
-                timeForPrint_secs += resultToBeProcessed.getTimeForLayer();
             }
 
             timeUtils.timerStart(this, writeOutputTimerName);
-            outputUtilities.appendPostPrintFooter(writer, finalEVolume, finalDVolume, timeForPrint_secs,
+            outputUtilities.appendPostPrintFooter(writer,
+                    timeAndVolumeCalcResult,
                     headFile.getTypeCode(),
                     nozzle0HeatRequired,
                     nozzle1HeatRequired);
@@ -366,12 +358,17 @@ public class PostProcessor
                     statsProfileName,
                     statsLayerHeight,
                     numLines,
-                    finalEVolume,
-                    finalDVolume,
+                    timeAndVolumeCalcResult.getExtruderEStats().getVolume(),
+                    timeAndVolumeCalcResult.getExtruderDStats().getVolume(),
                     0,
                     layerNumberToLineNumber,
-                    layerNumberToPredictedDuration,
-                    predictedDuration);
+                    timeAndVolumeCalcResult.getExtruderEStats().getDuration().getLayerNumberToPredictedDuration(),
+                    timeAndVolumeCalcResult.getExtruderDStats().getDuration().getLayerNumberToPredictedDuration(),
+                    timeAndVolumeCalcResult.getFeedrateIndependentDuration().getLayerNumberToPredictedDuration(),
+                    timeAndVolumeCalcResult.getExtruderEStats().getDuration().getTotal_duration()
+                    + timeAndVolumeCalcResult.getExtruderDStats().getDuration().getTotal_duration()
+                    + timeAndVolumeCalcResult.getFeedrateIndependentDuration().getTotal_duration()
+            );
 
             result.setRoboxisedStatistics(roboxisedStatistics);
 
@@ -544,103 +541,29 @@ public class PostProcessor
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
 
-        float eValue = 0;
-        float dValue = 0;
-        double timeForLayer = 0;
-        double cumulativeTime = 0;
-        double timeInThisTool = 0;
         int lastFeedrate = -1;
 
-        SupportsPrintTimeCalculation lastMovementProvider = null;
         SectionNode lastSectionNode = null;
         ToolSelectNode lastToolSelectNode = null;
         ToolSelectNode firstToolSelectNodeWithSameNumber = null;
-        double cumulativeTimeInLastTool = 0;
-
-        if (lastLayerPostProcessResult != null)
-        {
-            cumulativeTime = lastLayerPostProcessResult.getTimeForLayer_cumulative_secs();
-        }
-
-        if (layerNode.getLayerNumber() == 0)
-        {
-            timeForLayer += timeForInitialHoming_s + timeForPurgeAndLevelling_s;
-        }
 
         while (layerIterator.hasNext())
         {
             GCodeEventNode foundNode = layerIterator.next();
 
-            if (foundNode instanceof ExtrusionProvider)
+            if (foundNode instanceof FeedrateProvider)
             {
-                ExtrusionProvider extrusionProvider = (ExtrusionProvider) foundNode;
-                eValue += extrusionProvider.getExtrusion().getE();
-                dValue += extrusionProvider.getExtrusion().getD();
-            }
-
-            if (foundNode instanceof SupportsPrintTimeCalculation)
-            {
-                SupportsPrintTimeCalculation timeCalculationNode = (SupportsPrintTimeCalculation) foundNode;
-
-                if (lastMovementProvider != null)
+                if (((FeedrateProvider) foundNode).getFeedrate().getFeedRate_mmPerMin() < 0)
                 {
-                    try
+                    if (lastFeedrate < 0)
                     {
-                        double time = lastMovementProvider.timeToReach((MovementProvider) foundNode) * movementFudgeFactor;
-                        timeForLayer += time;
-                        timeInThisTool += time;
-                    } catch (DurationCalculationException ex)
+                        ((FeedrateProvider) foundNode).getFeedrate().setFeedRate_mmPerMin(lastLayerPostProcessResult.getLastFeedrateInForce());
+                    } else
                     {
-                        if (ex.getFromNode() instanceof Renderable
-                                && ex.getToNode() instanceof Renderable)
-                        {
-                            steno.error("Unable to calculate duration correctly for nodes source:"
-                                    + ((Renderable) ex.getFromNode()).renderForOutput()
-                                    + " destination:"
-                                    + ((Renderable) ex.getToNode()).renderForOutput());
-                        } else
-                        {
-                            steno.error("Unable to calculate duration correctly for nodes source:"
-                                    + ex.getFromNode().getMovement().renderForOutput()
-                                    + " destination:"
-                                    + ex.getToNode().getMovement().renderForOutput());
-                        }
-
-                        throw new RuntimeException("Unable to calculate duration correctly on layer "
-                                + layerNode.getLayerNumber(), ex);
+                        ((FeedrateProvider) foundNode).getFeedrate().setFeedRate_mmPerMin(lastFeedrate);
                     }
                 }
-                lastMovementProvider = timeCalculationNode;
-                if (((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin() < 0)
-                {
-                    ((FeedrateProvider) lastMovementProvider).getFeedrate().setFeedRate_mmPerMin(lastLayerPostProcessResult.getLastFeedrateInForce());
-                }
-                lastFeedrate = ((FeedrateProvider) lastMovementProvider).getFeedrate().getFeedRate_mmPerMin();
-            } else if (foundNode instanceof ToolSelectNode)
-            {
-                timeForLayer += timeForNozzleSelect_s;
-                timeInThisTool += timeForNozzleSelect_s;
-            } else if (foundNode instanceof LayerChangeDirectiveNode)
-            {
-                LayerChangeDirectiveNode lNode = (LayerChangeDirectiveNode) foundNode;
-                double heightChange = lNode.getMovement().getZ() - layerNode.getLayerHeight_mm();
-                if (heightChange > 0)
-                {
-                    timeForLayer += heightChange / zMoveRate_mms;
-                    timeInThisTool += heightChange / zMoveRate_mms;
-                }
-            } else if (foundNode instanceof NozzleValvePositionNode)
-            {
-                timeForLayer += nozzlePositionChange_s;
-                timeInThisTool += nozzlePositionChange_s;
-            } else if (!(foundNode instanceof FillSectionNode)
-                    && !(foundNode instanceof InnerPerimeterSectionNode)
-                    && !(foundNode instanceof SkinSectionNode)
-                    && !(foundNode instanceof OuterPerimeterSectionNode)
-                    && !(foundNode instanceof SkirtSectionNode)
-                    && !(foundNode instanceof MCodeNode))
-            {
-                steno.info("Not possible to calculate time for: " + foundNode.getClass().getName() + " : " + foundNode.toString());
+                lastFeedrate = ((FeedrateProvider) foundNode).getFeedrate().getFeedRate_mmPerMin();
             }
 
             if (foundNode instanceof ToolSelectNode)
@@ -649,48 +572,20 @@ public class PostProcessor
 
                 if (lastToolSelectNode != null)
                 {
-                    lastToolSelectNode.setEstimatedDuration(timeInThisTool);
-
                     if (newToolSelectNode.getToolNumber() != lastToolSelectNode.getToolNumber())
                     {
-                        cumulativeTimeInLastTool = 0;
                         firstToolSelectNodeWithSameNumber = newToolSelectNode;
                     }
-
-                    cumulativeTimeInLastTool += timeInThisTool;
                 } else
                 {
                     firstToolSelectNodeWithSameNumber = newToolSelectNode;
                 }
 
                 lastToolSelectNode = newToolSelectNode;
-                timeInThisTool = 0;
             } else if (foundNode instanceof SectionNode)
             {
                 lastSectionNode = (SectionNode) foundNode;
-            } else if (foundNode instanceof GCodeDirectiveNode
-                    && ((GCodeDirectiveNode) foundNode).getGValue() == 4)
-            {
-                GCodeDirectiveNode directive = (GCodeDirectiveNode) foundNode;
-                if (directive.getGValue() == 4)
-                {
-                    //Found a dwell
-                    Optional<Integer> sValue = directive.getSValue();
-                    if (sValue.isPresent())
-                    {
-                        //Seconds
-                        timeForLayer += sValue.get();
-                    }
-                    Optional<Integer> pValue = directive.getPValue();
-                    if (pValue.isPresent())
-                    {
-                        //Microseconds
-                        timeForLayer += pValue.get() / 1000.0;
-                    }
-                }
             }
-
-            foundNode.setFinishTimeFromStartOfPrint_secs(cumulativeTime + timeForLayer);
         }
 
         if (lastSectionNode == null)
@@ -701,18 +596,10 @@ public class PostProcessor
         if (lastToolSelectNode == null)
         {
             lastToolSelectNode = lastLayerPostProcessResult.getLastToolSelectInForce();
-            cumulativeTimeInLastTool = lastLayerPostProcessResult.getTimeUsingLastTool();
-        } else
-        {
-            lastToolSelectNode.setEstimatedDuration(timeInThisTool);
-            cumulativeTimeInLastTool += timeInThisTool;
         }
 
-        cumulativeTime += timeForLayer;
-        layerNode.setFinishTimeFromStartOfPrint_secs(cumulativeTime);
-
-        return new LayerPostProcessResult(layerNode, eValue, dValue, timeForLayer, cumulativeTime, -1,
-                lastSectionNode, lastToolSelectNode, firstToolSelectNodeWithSameNumber, cumulativeTimeInLastTool, lastFeedrate);
+        return new LayerPostProcessResult(layerNode, -1,
+                lastSectionNode, lastToolSelectNode, firstToolSelectNodeWithSameNumber, lastFeedrate);
     }
 
     private void outputPostProcessingTimerReport()
@@ -733,6 +620,7 @@ public class PostProcessor
         steno.debug(assignExtrusionTimerName + " " + timeUtils.timeTimeSoFar_ms(this, assignExtrusionTimerName));
         steno.debug(layerResultTimerName + " " + timeUtils.timeTimeSoFar_ms(this, layerResultTimerName));
         steno.debug(parseLayerTimerName + " " + timeUtils.timeTimeSoFar_ms(this, parseLayerTimerName));
+        steno.info(timeAndVolumeCalcTimerName + " " + timeUtils.timeTimeSoFar_ms(this, timeAndVolumeCalcTimerName));
         steno.info(heaterSaverTimerName + " " + timeUtils.timeTimeSoFar_ms(this, heaterSaverTimerName));
         steno.info(outputVerifierTimerName + " " + timeUtils.timeTimeSoFar_ms(this, outputVerifierTimerName));
         steno.debug(writeOutputTimerName + " " + timeUtils.timeTimeSoFar_ms(this, writeOutputTimerName));

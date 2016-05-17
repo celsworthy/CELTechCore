@@ -11,7 +11,7 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
 
     private int toolNumber = -1;
     private boolean outputSuppressed = false;
-    private double estimatedDuration = 0;
+    private double estimatedDuration_ignoresFeedrate = 0;
 
     public int getToolNumber()
     {
@@ -35,12 +35,12 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
 
     public void setEstimatedDuration(double estimatedDuration)
     {
-        this.estimatedDuration = estimatedDuration;
+        this.estimatedDuration_ignoresFeedrate = estimatedDuration;
     }
 
     public double getEstimatedDuration()
     {
-        return estimatedDuration;
+        return estimatedDuration_ignoresFeedrate;
     }
 
     @Override

@@ -5,6 +5,9 @@ package celtech.printerControl.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 /**
  * ETCCalculator calculates the ETC (estimated time to complete) of print jobs
@@ -20,7 +23,9 @@ public class ETCCalculator
      * have a value of 0.
      */
     private final List<Integer> layerNumberToLineNumber;
-    private final List<Double> layerNumberToPredictedDuration;
+    private final Map<Integer, Double> layerNumberToPredictedDuration_E;
+    private final Map<Integer, Double> layerNumberToPredictedDuration_D;
+    private final Map<Integer, Double> layerNumberToPredictedDuration_feedrateIndependent;
     /**
      * The time taken to get to the start of the given layer. The first element
      * should have a value of 0.
@@ -31,6 +36,9 @@ public class ETCCalculator
      */
     double totalPredictedDurationAllLayers;
 
+    private double currentFeedrateMultiplierE = 1.0;
+    private double currentFeedrateMultiplierD = 1.0;
+
     /**
      * The estimated number of seconds it takes to heat the bed up by one degree
      */
@@ -38,20 +46,55 @@ public class ETCCalculator
     private final Printer printer;
 
     public ETCCalculator(Printer printer,
-            List<Double> layerNumberToPredictedDuration,
+            Map<Integer, Double> layerNumberToPredictedDuration_E,
+            Map<Integer, Double> layerNumberToPredictedDuration_D,
+            Map<Integer, Double> layerNumberToPredictedDuration_feedrateIndependent,
             List<Integer> layerNumberToLineNumber)
     {
         this.printer = printer;
         this.layerNumberToLineNumber = layerNumberToLineNumber;
-        this.layerNumberToPredictedDuration = layerNumberToPredictedDuration;
+        this.layerNumberToPredictedDuration_E = layerNumberToPredictedDuration_E;
+        this.layerNumberToPredictedDuration_D = layerNumberToPredictedDuration_D;
+        this.layerNumberToPredictedDuration_feedrateIndependent = layerNumberToPredictedDuration_feedrateIndependent;
 
-        assert (layerNumberToPredictedDuration.get(0) == 0);
+        assert (layerNumberToPredictedDuration_E.get(0) == 0);
+        assert (layerNumberToPredictedDuration_D.get(0) == 0);
+        assert (layerNumberToPredictedDuration_feedrateIndependent.get(0) == 0);
         assert (layerNumberToLineNumber.get(0) == 0);
 
-        double totalPredictedDuration = 0;
-        for (int i = 0; i < layerNumberToPredictedDuration.size(); i++)
+        updateFromFeedrateChange();
+
+        printer.getPrinterAncillarySystems().feedRateEMultiplier.addListener(new ChangeListener<Number>()
         {
-            totalPredictedDuration += layerNumberToPredictedDuration.get(i);
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                updateFromFeedrateChange();
+            }
+        });
+
+        printer.getPrinterAncillarySystems().feedRateDMultiplier.addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                updateFromFeedrateChange();
+            }
+        });
+    }
+
+    private void updateFromFeedrateChange()
+    {
+        double totalPredictedDuration = 0;
+
+        currentFeedrateMultiplierE = 1 / printer.getPrinterAncillarySystems().feedRateEMultiplier.doubleValue();
+        currentFeedrateMultiplierD = 1 / printer.getPrinterAncillarySystems().feedRateDMultiplier.doubleValue();
+
+        for (int i = 0; i < layerNumberToPredictedDuration_E.size(); i++)
+        {
+            totalPredictedDuration += layerNumberToPredictedDuration_E.get(i) * currentFeedrateMultiplierE;
+            totalPredictedDuration += layerNumberToPredictedDuration_D.get(i) * currentFeedrateMultiplierD;
+            totalPredictedDuration += layerNumberToPredictedDuration_feedrateIndependent.get(i);
             layerNumberToTotalPredictedDuration.add(i, totalPredictedDuration);
         }
         totalPredictedDurationAllLayers = totalPredictedDuration;
@@ -144,7 +187,10 @@ public class ETCCalculator
         }
 
         double numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber - 1);
-        double durationInLayer = layerNumberToPredictedDuration.get(layerNumber - 1);
+        //TODO add multiplier for feedrate
+        double durationInLayer = layerNumberToPredictedDuration_E.get(layerNumber - 1) * currentFeedrateMultiplierE;
+        durationInLayer += layerNumberToPredictedDuration_D.get(layerNumber - 1) * currentFeedrateMultiplierD;
+        durationInLayer += layerNumberToPredictedDuration_feedrateIndependent.get(layerNumber - 1);
         double totalLinesInNextLayer = numLinesAtEndOfLayer
                 - numLinesAtStartOfLayer;
         return (progressInThisLayer / totalLinesInNextLayer)

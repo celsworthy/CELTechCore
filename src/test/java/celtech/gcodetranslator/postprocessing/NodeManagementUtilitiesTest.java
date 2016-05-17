@@ -91,7 +91,7 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
         NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         assertEquals(2, testLayer.getChildren().size());
         assertSame(outer, orphan1.getChildren().get(0));
@@ -154,7 +154,7 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
 
         NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 10, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         assertEquals(2, testLayer.getChildren().size());
         assertSame(outer, orphan1.getChildren().get(0));

@@ -13,7 +13,8 @@ import java.util.List;
  */
 public class TestDataGenerator
 {
-   public static List<LayerPostProcessResult> generateLayerResults(List<LayerDefinition> layerDefinitions)
+
+    public static List<LayerPostProcessResult> generateLayerResults(List<LayerDefinition> layerDefinitions)
     {
         List<LayerPostProcessResult> results = new ArrayList<>();
         double startingTimeForLayer = 0;
@@ -21,17 +22,13 @@ public class TestDataGenerator
         for (LayerDefinition layerDefinition : layerDefinitions)
         {
             LayerNode layerNode = generateLayer(startingTimeForLayer, layerDefinition);
+
             LayerPostProcessResult result = new LayerPostProcessResult(
                     layerNode,
                     0,
-                    0,
-                    0,
-                    0,
-                    0,
                     null,
                     null,
                     null,
-                    0,
                     0);
             results.add(result);
 
@@ -54,13 +51,17 @@ public class TestDataGenerator
             tsNode.setEstimatedDuration(tool.getDuration());
             tsNode.setFinishTimeFromStartOfPrint_secs(currentLayerTime + tool.getDuration());
 
-            double durationCountdown = tool.getDuration();
             double decrementValue = 15.0;
+
+            int numberOfIntervals = (int)(tool.getDuration() / decrementValue);
+            float extrusionPerInterval = (numberOfIntervals > 1)?tool.getExtrusion() / numberOfIntervals:tool.getExtrusion();
+
+            double durationCountdown = tool.getDuration();
 
             do
             {
                 ExtrusionNode exNode = new ExtrusionNode();
-                exNode.getExtrusion().setE(1);
+                exNode.getExtrusion().setE(extrusionPerInterval);
                 double durationToUse = (durationCountdown > 0) ? durationCountdown : durationCountdown + decrementValue;
                 exNode.setFinishTimeFromStartOfPrint_secs(durationToUse + currentLayerTime);
                 tsNode.addChildAtStart(exNode);
@@ -75,5 +76,5 @@ public class TestDataGenerator
         layerNode.setFinishTimeFromStartOfPrint_secs(currentLayerTime);
 
         return layerNode;
-    }    
+    }
 }

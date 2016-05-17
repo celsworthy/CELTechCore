@@ -2,11 +2,11 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.gcodetranslator.GCodeOutputWriter;
-import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import celtech.gcodetranslator.postprocessing.timeCalc.TimeAndVolumeCalcResult;
 import celtech.printerControl.comms.commands.GCodeMacros;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import java.io.IOException;
@@ -47,7 +47,8 @@ public class OutputUtilities
         }
     }
 
-    protected void appendPostPrintFooter(GCodeOutputWriter writer, final float totalEVolume, final float totalDVolume, final double totalTimeInSecs,
+    protected void appendPostPrintFooter(GCodeOutputWriter writer,
+            TimeAndVolumeCalcResult timeAndVolumeCalcResult,
             String headType, boolean useNozzle0, boolean useNozzle1)
     {
         try
@@ -60,9 +61,23 @@ public class OutputUtilities
             }
             writer.writeOutput("; End of Post print gcode\n");
             writer.writeOutput(";\n");
-            writer.writeOutput("; Volume of material - Extruder E - " + totalEVolume + "\n");
-            writer.writeOutput("; Volume of material - Extruder D - " + totalDVolume + "\n");
-            writer.writeOutput("; Total print time estimate - " + totalTimeInSecs + " seconds\n");
+            writer.writeOutput("; Extruder E\n");
+            writer.writeOutput("; ----------\n");
+            writer.writeOutput("; Volume of material - " + timeAndVolumeCalcResult.getExtruderEStats().getVolume() + "\n");
+            writer.writeOutput("; Feedrate dependent time - " + timeAndVolumeCalcResult.getExtruderEStats().getDuration().getTotal_duration() + " seconds\n");
+            writer.writeOutput("; Extruder D\n");
+            writer.writeOutput("; ----------\n");
+            writer.writeOutput("; Volume of material - " + timeAndVolumeCalcResult.getExtruderDStats().getVolume() + "\n");
+            writer.writeOutput("; Feedrate dependent time - " + timeAndVolumeCalcResult.getExtruderDStats().getDuration().getTotal_duration() + " seconds\n");
+            writer.writeOutput("; Activities independent of feedrate\n");
+            writer.writeOutput("; ----------------------------------\n");
+            writer.writeOutput("; Time - " + timeAndVolumeCalcResult.getFeedrateIndependentDuration().getTotal_duration() + " seconds\n");
+            writer.writeOutput("; =======================================================\n");
+            writer.writeOutput("; Total print time estimate - "
+                    + timeAndVolumeCalcResult.getExtruderEStats().getDuration().getTotal_duration()
+                    + timeAndVolumeCalcResult.getExtruderDStats().getDuration().getTotal_duration()
+                    + timeAndVolumeCalcResult.getFeedrateIndependentDuration().getTotal_duration()
+                    + " seconds\n");
             writer.writeOutput(";\n");
         } catch (IOException | MacroLoadException ex)
         {

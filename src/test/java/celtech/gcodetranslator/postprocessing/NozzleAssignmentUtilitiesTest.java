@@ -304,7 +304,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
         objectToNozzleNumberMap.put(0, 0);
@@ -462,7 +462,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
         objectToNozzleNumberMap.put(0, 0);
@@ -632,7 +632,7 @@ public class NozzleAssignmentUtilitiesTest extends JavaFXConfiguredTest
         ModelContainer modelContainer2 = utils.makeModelContainer(false);
         testProject.addModel(modelContainer2);
 
-        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, 0, 0, 0, 0, null, null, null, 0, -1);
+        LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         Map<Integer, Integer> objectToNozzleNumberMap = new HashMap();
         objectToNozzleNumberMap.put(0, 1);

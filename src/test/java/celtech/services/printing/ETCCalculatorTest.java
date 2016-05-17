@@ -11,7 +11,9 @@ import celtech.printerControl.model.HardwarePrinter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -26,7 +28,9 @@ public class ETCCalculatorTest
     private DeviceDetector.DetectedPrinter printerHandle = new DeviceDetector.DetectedPrinter(DeviceDetector.PrinterConnectionType.SERIAL, "Test Printer");
 
     List<Double> layerNumberToDistanceTravelled;
-    List<Double> layerNumberToPredictedDuration;
+    Map<Integer,Double> layerNumberToPredictedDuration_E;
+    Map<Integer,Double> layerNumberToPredictedDuration_D;
+    Map<Integer,Double> layerNumberToPredictedDuration_feedrateIndependent;
     List<Integer> layerNumberToLineNumber;
     ETCCalculator etcCalculator;
     HardwarePrinter testPrinter;
@@ -36,18 +40,20 @@ public class ETCCalculatorTest
     {
 
         layerNumberToDistanceTravelled = new ArrayList<>();
-        layerNumberToPredictedDuration = new ArrayList<>();
+        layerNumberToPredictedDuration_E = new HashMap<>();
+        layerNumberToPredictedDuration_D = new HashMap<>();
+        layerNumberToPredictedDuration_feedrateIndependent = new HashMap<>();
         layerNumberToLineNumber = new ArrayList<>();
 
         // total duration = 100.0s
-        layerNumberToPredictedDuration.add(0, 0d);
-        layerNumberToPredictedDuration.add(1, 10d);
-        layerNumberToPredictedDuration.add(2, 10d);
-        layerNumberToPredictedDuration.add(3, 20d);
-        layerNumberToPredictedDuration.add(4, 10d);
-        layerNumberToPredictedDuration.add(5, 30d);
-        layerNumberToPredictedDuration.add(6, 15d);
-        layerNumberToPredictedDuration.add(7, 5d);
+        layerNumberToPredictedDuration_E.put(0, 0d);
+        layerNumberToPredictedDuration_E.put(1, 10d);
+        layerNumberToPredictedDuration_E.put(2, 10d);
+        layerNumberToPredictedDuration_E.put(3, 20d);
+        layerNumberToPredictedDuration_E.put(4, 10d);
+        layerNumberToPredictedDuration_E.put(5, 30d);
+        layerNumberToPredictedDuration_E.put(6, 15d);
+        layerNumberToPredictedDuration_E.put(7, 5d);
 
         // model has 100 lines
         layerNumberToLineNumber.add(0, 0);
@@ -65,7 +71,9 @@ public class ETCCalculatorTest
         testPrinter.setBedTargetTemperature(120);
 
         etcCalculator = new ETCCalculator(testPrinter,
-                                          layerNumberToPredictedDuration,
+                                          layerNumberToPredictedDuration_E,
+                                          layerNumberToPredictedDuration_D,
+                                          layerNumberToPredictedDuration_feedrateIndependent,
                                           layerNumberToLineNumber);
     }
 

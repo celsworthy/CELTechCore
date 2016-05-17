@@ -7,8 +7,6 @@ import celtech.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.gcodetranslator.GCodeRoboxiser;
-import celtech.gcodetranslator.GCodeRoboxisingEngine;
 import celtech.gcodetranslator.RoboxiserResult;
 import celtech.gcodetranslator.postprocessing.PostProcessor;
 import celtech.gcodetranslator.postprocessing.PostProcessorFeature;
@@ -35,17 +33,17 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PostProcessorTask extends Task<GCodePostProcessingResult>
 {
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(
             PostProcessorTask.class.getName());
-
+    
     private final String printJobUUID;
     private String printJobDirectory;
     private final Printer printerToUse;
     private final Project project;
     private DoubleProperty taskProgress = new SimpleDoubleProperty(0);
     private final SlicerParametersFile settings;
-
+    
     public PostProcessorTask(String printJobUUID,
             Printer printerToUse,
             Project project,
@@ -59,12 +57,12 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         updateTitle("Post Processor");
         updateProgress(0.0, 100.0);
     }
-
+    
     @Override
     protected GCodePostProcessingResult call() throws Exception
     {
         GCodePostProcessingResult postProcessingResult = null;
-
+        
         try
         {
             updateMessage("");
@@ -83,7 +81,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         }
         return postProcessingResult;
     }
-
+    
     public static GCodePostProcessingResult doPostProcessing(String printJobUUID,
             String printJobDirectory,
             Printer printer,
@@ -107,17 +105,17 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
         {
             selectedSlicer = Lookup.getUserPreferences().getSlicerType();
         }
-
+        
         PrintJob printJob = PrintJob.readJobFromDirectory(printJobUUID, printJobDirectory);
         String gcodeFileToProcess = printJob.getGCodeFileLocation();
         String gcodeOutputFile = printJob.getRoboxisedFileLocation();
-
+        
         GCodePostProcessingResult postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, new RoboxiserResult());
-
+        
         if (selectedSlicer == SlicerType.Cura)
         {
             PostProcessorFeatureSet ppFeatures = new PostProcessorFeatureSet();
-
+            
             HeadFile headFileToUse = null;
             if (printer == null
                     || printer.headProperty().get() == null)
@@ -135,10 +133,10 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     ppFeatures.enableFeature(PostProcessorFeature.REPLENISH_BEFORE_OPEN);
                 }
             }
-
+            
             Map<Integer, Integer> objectToNozzleNumberMap = new HashMap<>();
             int objectIndex = 0;
-
+            
             headFileToUse.getNozzles().get(0).getAssociatedExtruder();
             for (ModelContainer model : project.getTopLevelModels())
             {
@@ -156,7 +154,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     objectIndex++;
                 }
             }
-                        
+            
             PostProcessor postProcessor = new PostProcessor(
                     project.getUsedExtruders(printer),
                     gcodeFileToProcess,
@@ -169,7 +167,7 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     project.getProjectName(),
                     project.getPrinterSettings(),
                     objectToNozzleNumberMap);
-
+            
             RoboxiserResult roboxiserResult = postProcessor.processInput();
             if (roboxiserResult.isSuccess())
             {
@@ -178,14 +176,10 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
             }
         } else
         {
-            GCodeRoboxisingEngine roboxiser = new GCodeRoboxiser();
-            RoboxiserResult roboxiserResult = roboxiser.roboxiseFile(
-                    gcodeFileToProcess, gcodeOutputFile, project.getPrinterSettings().getSettings(headType), taskProgress);
-            roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
-            postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, roboxiserResult);
+            steno.error("Asked to post-process for a slicer we don't support");
         }
-
+        
         return postProcessingResult;
     }
-
+    
 }

@@ -43,6 +43,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private Label printSpeed2Display;
 
     @FXML
+    private VBox printSpeed1Box;
+
+    @FXML
     private VBox printSpeed2Box;
 
     @FXML
@@ -150,7 +153,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 {
                     try
                     {
-                        steno.info("Writing feedrate");
                         currentPrinter.changeEFeedRateMultiplier(now.doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -169,7 +171,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 {
                     try
                     {
-                        steno.info("Writing feedrate D");
                         currentPrinter.changeDFeedRateMultiplier(now.doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -196,7 +197,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                         || now.doubleValue() >= bedTemperatureSlider.getMax()
                         || now.doubleValue() <= bedTemperatureSlider.getMin()))
                 {
-                    steno.info("Writing bed");
                     currentPrinter.setBedTargetTemperature(now.intValue());
                 }
             };
@@ -221,8 +221,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 {
                     try
                     {
-                        steno.info("Writing extrusion 1");
-
                         currentPrinter.changeFilamentInfo("E", currentPrinter.extrudersProperty().get(0).filamentDiameterProperty().get(), extrusionMultiplier1Slider.valueProperty().doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -251,8 +249,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 {
                     try
                     {
-                        steno.info("Writing extrusion 2");
-
                         currentPrinter.changeFilamentInfo("D", currentPrinter.extrudersProperty().get(1).filamentDiameterProperty().get(), extrusionMultiplier2Slider.valueProperty().doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -285,9 +281,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                         || now.doubleValue() >= nozzleTemperature1Slider.getMax()
                         || now.doubleValue() <= nozzleTemperature1Slider.getMin()))
                 {
-                    //This is getting fired inappropriately
-                    steno.info("Writing nozzle 1");
-
                     currentPrinter.setNozzleHeaterTargetTemperature(0, now.intValue());
                 }
             };
@@ -310,8 +303,6 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                         || now.doubleValue() >= nozzleTemperature2Slider.getMax()
                         || now.doubleValue() <= nozzleTemperature2Slider.getMin()))
                 {
-                    steno.info("Writing nozzle 2");
-
                     currentPrinter.setNozzleHeaterTargetTemperature(1, nozzleTemperature2Slider.valueProperty().intValue());
                 }
             };
@@ -428,20 +419,35 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         currentPrinter.getPrinterAncillarySystems().bedTargetTemperatureProperty().addListener(
                 bedTargetTemperatureChangeListener);
 
-        if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get())
+        if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get() && eUsedForThisPrintJob())
         {
+            //Both sets are visible
             extrusionMultiplier1Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0)));
             extrusionMultiplier1Slider.setValue(currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0);
             extrusionMultiplier1Slider.valueProperty().addListener(extrusionMultiplier1SliderListener);
             currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().addListener(extrusionMultiplier1ChangeListener);
+            extrusionMultiplier1Box.setVisible(true);
+            extrusionMultiplier1Box.setMaxHeight(1000);
+            extrusionMultiplier1Box.setMinHeight(0);
 
+            printSpeed1Box.setVisible(true);
+            printSpeed1Box.setMaxHeight(1000);
+            printSpeed1Box.setMinHeight(0);
             printSpeed1Display.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().get() * 100.0)));
             speedMultiplier1Slider.setValue(currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().get() * 100.0);
             speedMultiplier1Slider.valueProperty().addListener(speedMultiplier1SliderListener);
             currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().addListener(
                     feedRate1ChangeListener);
+        }else
+        {
+            extrusionMultiplier1Box.setVisible(false);
+            extrusionMultiplier1Box.setMaxHeight(0);
+            extrusionMultiplier1Box.setMinHeight(0);
+            printSpeed1Box.setVisible(false);
+            printSpeed1Box.setMaxHeight(0);
+            printSpeed1Box.setMinHeight(0);
         }
-
+        
         if (currentPrinter.extrudersProperty().get(1).isFittedProperty().get() && dUsedForThisPrintJob())
         {
             extrusionMultiplier2Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().doubleValue() * 100.0)));
@@ -455,6 +461,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             printSpeed2Box.setVisible(true);
             printSpeed2Box.setMaxHeight(1000);
             printSpeed2Box.setMinHeight(0);
+            
             printSpeed2Display.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().get() * 100.0)));
             speedMultiplier2Slider.setValue(currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().get() * 100.0);
             speedMultiplier2Slider.valueProperty().addListener(speedMultiplier2SliderListener);
