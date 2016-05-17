@@ -412,13 +412,20 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         if (printer != null)
         {
             updateSupportCombo(printer);
+            String headTypeCode;
             if (printer.headProperty().get() != null)
             {
-                currentHeadType = printer.headProperty().get().typeCodeProperty().get();
+                headTypeCode = printer.headProperty().get().typeCodeProperty().get();
             } else
             {
-                currentHeadType = HeadContainer.defaultHeadID;
+                headTypeCode = HeadContainer.defaultHeadID;
             }
+            if (!headTypeCode.equals(currentHeadType))
+            {
+                currentProject.invalidate();
+            }
+            currentHeadType = headTypeCode;
+            
             populateCustomProfileChooser();
             updateSupportCombo(currentPrinter);
         }

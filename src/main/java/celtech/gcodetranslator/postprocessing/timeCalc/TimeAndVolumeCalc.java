@@ -90,7 +90,7 @@ public class TimeAndVolumeCalc
             extruderEStats.getDuration().incrementDuration(layerCounter, 0);
             extruderDStats.getDuration().incrementDuration(layerCounter, 0);
             feedrateIndependentDuration.incrementDuration(layerCounter, 0);
-            
+
             if (layerCounter == 0)
             {
                 //Insert some data for the pre-print preamble
@@ -121,6 +121,7 @@ public class TimeAndVolumeCalc
                     if (lastToolSelectNode != null)
                     {
                         lastToolSelectNode.setEstimatedDuration(timeInThisTool);
+                        lastToolSelectNode.setFinishTimeFromStartOfPrint_secs(timeFromStart);
                     }
 
                     lastToolSelectNode = (ToolSelectNode) node;
@@ -274,12 +275,16 @@ public class TimeAndVolumeCalc
                             steno.warning("Event duration was not allocated");
                             break;
                     }
+
+                    //Store the finish time for this node
+                    timeFromStart += eventDuration;
+                    timeInThisTool += eventDuration;
                 }
 
-                //Store the finish time for this node
-                timeFromStart += eventDuration;
-                timeInThisTool += eventDuration;
-                node.setFinishTimeFromStartOfPrint_secs(timeFromStart);
+                if (timeFromStart > 0)
+                {
+                    node.setFinishTimeFromStartOfPrint_secs(timeFromStart);
+                }
             }
 
             if (lastLayerNode != null)

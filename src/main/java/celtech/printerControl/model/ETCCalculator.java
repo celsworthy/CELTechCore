@@ -139,12 +139,12 @@ public class ETCCalculator
     private int getPredictedRemainingPrintTime(int lineNumber)
     {
         int layerNumber = getCurrentLayerNumberForLineNumber(lineNumber);
-        double totalPredictedDurationForCurrentLayer = layerNumberToTotalPredictedDuration.get(
-                layerNumber - 1);
-        double predictedDurationInNextLayer = getPartialDurationInLayer(
+        double totalPredictedDurationAtEndOfPreviousLayer = (layerNumber == 1)?0:layerNumberToTotalPredictedDuration.get(
+                layerNumber - 2);
+        double elapsedTimeInThisLayer = getPartialDurationInLayer(
                 layerNumber, lineNumber);
-        double totalDurationSoFar = totalPredictedDurationForCurrentLayer
-                + predictedDurationInNextLayer;
+        double totalDurationSoFar = totalPredictedDurationAtEndOfPreviousLayer
+                + elapsedTimeInThisLayer;
         int remainingTimeSeconds = (int) ((totalPredictedDurationAllLayers
                 - totalDurationSoFar));
         return remainingTimeSeconds;
@@ -187,7 +187,6 @@ public class ETCCalculator
         }
 
         double numLinesAtEndOfLayer = layerNumberToLineNumber.get(layerNumber - 1);
-        //TODO add multiplier for feedrate
         double durationInLayer = layerNumberToPredictedDuration_E.get(layerNumber - 1) * currentFeedrateMultiplierE;
         durationInLayer += layerNumberToPredictedDuration_D.get(layerNumber - 1) * currentFeedrateMultiplierD;
         durationInLayer += layerNumberToPredictedDuration_feedrateIndependent.get(layerNumber - 1);

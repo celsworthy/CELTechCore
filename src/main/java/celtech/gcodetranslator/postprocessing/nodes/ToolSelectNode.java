@@ -9,6 +9,9 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 public class ToolSelectNode extends GCodeEventNode implements Renderable
 {
 
+    //For DM head
+    //Tool 0 is extruder D
+    //Tool 1 is extruder E
     private int toolNumber = -1;
     private boolean outputSuppressed = false;
     private double estimatedDuration_ignoresFeedrate = 0;
@@ -27,7 +30,7 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
     {
         outputSuppressed = suppress;
     }
-    
+
     public boolean isNodeOutputSuppressed()
     {
         return outputSuppressed;
@@ -52,8 +55,15 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
         {
             stringToReturn += "T" + getToolNumber();
             stringToReturn += getCommentText();
-            stringToReturn += " ; Tool Node duration: " + getEstimatedDuration();
+        } else
+        {
+            stringToReturn += "; Suppressed Tool Node -";
+            if (getFinishTimeFromStartOfPrint_secs().isPresent())
+            {
+                stringToReturn += "T" + getFinishTimeFromStartOfPrint_secs().get();
+            }
         }
+        stringToReturn += " ; Tool Node duration: " + getEstimatedDuration();
 
         return stringToReturn;
     }

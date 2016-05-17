@@ -51,6 +51,7 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -1336,4 +1337,11 @@ public class Project
         projectModified();
         fireWhenModelsTransformed(modelContainers);
     }
+
+    @JsonIgnore
+    public void invalidate()
+    {
+        projectModified();
+    }
+
 }
