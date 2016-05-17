@@ -68,9 +68,7 @@ public class OutputVerifierTest
         OutputVerifier instance = new OutputVerifier();
         List<VerifierResult> verifierResults = instance.verifyAllLayers(allLayerPostProcessResults, HeadType.DUAL_MATERIAL_HEAD);
 
-        assertEquals(2, verifierResults.size());
-        assertEquals(VerifierResult.ResultType.EXTRUDE_NOT_FULLY_OPEN, verifierResults.get(0).getResultType());
-        assertEquals(VerifierResult.ResultType.EXTRUDE_NOT_FULLY_OPEN, verifierResults.get(1).getResultType());
+        assertEquals(0, verifierResults.size());
     }
 
     /**
