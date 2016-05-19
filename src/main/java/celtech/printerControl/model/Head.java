@@ -6,6 +6,7 @@ import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.NozzleData;
 import celtech.configuration.fileRepresentation.NozzleHeaterData;
 import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
+import celtech.utils.InvalidChecksumException;
 import celtech.utils.Math.MathUtils;
 import celtech.utils.SystemUtils;
 import java.util.ArrayList;
@@ -39,9 +40,7 @@ public class Head implements Cloneable, RepairableComponent
     {
 
         SINGLE_MATERIAL_HEAD("singleMaterialHead"),
-        SINGLE_MATERIAL_HEAD_NO_VALVES("singleMaterialHeadNoValves"),
-        DUAL_MATERIAL_HEAD("dualMaterialHead"),
-        DUAL_MATERIAL_HEAD_NO_VALVES("dualMaterialHeadNoValves");
+        DUAL_MATERIAL_HEAD("dualMaterialHead");
 
         private final String helpText;
 
@@ -58,11 +57,20 @@ public class Head implements Cloneable, RepairableComponent
 
     }
 
+    public enum ValveType
+    {
+
+        FITTED,
+        NOT_FITTED;
+    }
+
     private static final Stenographer steno = StenographerFactory.getStenographer(Head.class.
             getName());
 
     protected ObjectProperty<HeadType> headType = new SimpleObjectProperty<>(
             HeadType.SINGLE_MATERIAL_HEAD);
+    protected ObjectProperty<ValveType> valveType = new SimpleObjectProperty<>(
+            ValveType.FITTED);
 
     protected final FloatProperty headXPosition = new SimpleFloatProperty(0);
     protected final FloatProperty headYPosition = new SimpleFloatProperty(0);
@@ -128,7 +136,6 @@ public class Head implements Cloneable, RepairableComponent
     private void updateFromHeadFileData(HeadFile headData, boolean flagDataChanged)
     {
         setTypeCode(headData.getTypeCode());
-        this.name.set(headData.getName());
 
         nozzleHeaters.clear();
         headData.getNozzleHeaters().stream().
@@ -241,9 +248,19 @@ public class Head implements Cloneable, RepairableComponent
         return weekNumber.get();
     }
 
+    public void setWeekNumber(String value)
+    {
+        weekNumber.set(value);
+    }
+
     public String getYearNumber()
     {
         return yearNumber.get();
+    }
+
+    public void setYearNumber(String value)
+    {
+        yearNumber.set(value);
     }
 
     public String getPONumber()
@@ -251,14 +268,29 @@ public class Head implements Cloneable, RepairableComponent
         return PONumber.get();
     }
 
+    public void setPONumber(String value)
+    {
+        PONumber.set(value);
+    }
+
     public String getSerialNumber()
     {
         return serialNumber.get();
     }
 
+    public void setSerialNumber(String value)
+    {
+        serialNumber.set(value);
+    }
+
     public String getChecksum()
     {
         return checksum.get();
+    }
+
+    public void setChecksum(String value)
+    {
+        checksum.set(value);
     }
 
     @Override
@@ -484,7 +516,6 @@ public class Head implements Cloneable, RepairableComponent
         if (referenceHeadData != null)
         {
             typeCode.set(referenceHeadData.getTypeCode());
-            name.set(referenceHeadData.getName());
 
             int nozzleHeaterIndex = 0;
             for (NozzleHeater heater : nozzleHeaters)
@@ -564,21 +595,118 @@ public class Head implements Cloneable, RepairableComponent
 
         dataChanged.set(!dataChanged.get());
     }
+    
+    public void setUniqueID(String typeCodeInput,
+            String weekNumberInput,
+            String yearNumberInput,
+            String poNumberInput,
+            String serialNumberInput,
+            String checksumInput)
+    {
+        typeCode.set(typeCodeInput);
+        weekNumber.set(weekNumberInput);
+        yearNumber.set(yearNumberInput);
+        PONumber.set(poNumberInput);
+        serialNumber.set(serialNumberInput);
+        checksum.set(checksumInput);
+        
+        uniqueID.set(typeCodeInput + weekNumberInput + yearNumberInput + poNumberInput + serialNumberInput + checksumInput);
+        
+        dataChanged.set(!dataChanged.get());
+    }
+
+    public static String getFormattedSerial(String typeCode,
+            String weekNumber,
+            String yearNumber,
+            String poNumber,
+            String serialNumber,
+            String checksum)
+    {
+        StringBuilder formattedHeadSerial = new StringBuilder();
+        formattedHeadSerial.append(typeCode);
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(weekNumber);
+        formattedHeadSerial.append(yearNumber);
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(poNumber);
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(serialNumber);
+        formattedHeadSerial.append("-");
+        formattedHeadSerial.append(checksum);
+
+        return formattedHeadSerial.toString();
+    }
 
     public String getFormattedSerial()
     {
-        StringBuilder formattedHeadSerial = new StringBuilder();
-        formattedHeadSerial.append(typeCodeProperty().get());
-        formattedHeadSerial.append("-");
-        formattedHeadSerial.append(getWeekNumber());
-        formattedHeadSerial.append(getYearNumber());
-        formattedHeadSerial.append("-");
-        formattedHeadSerial.append(getPONumber());
-        formattedHeadSerial.append("-");
-        formattedHeadSerial.append(getSerialNumber());
-        formattedHeadSerial.append("-");
-        formattedHeadSerial.append(getChecksum());
-        
-        return formattedHeadSerial.toString();
+        return getFormattedSerial(typeCodeProperty().get(),
+                getWeekNumber(),
+                getYearNumber(),
+                getPONumber(),
+                getSerialNumber(),
+                getChecksum());
+    }
+
+    public static boolean validateSerial(String typeCodeInput,
+            String weekNumberInput,
+            String yearNumberInput,
+            String poNumberInput,
+            String serialNumberInput,
+            String checksumInput)
+    {
+        boolean everythingIsGroovy = true;
+
+        if (typeCodeInput != null
+                && weekNumberInput != null
+                && yearNumberInput != null
+                && poNumberInput != null
+                && serialNumberInput != null
+                && checksumInput != null)
+        {
+            everythingIsGroovy &= typeCodeInput.startsWith("RBX");
+            everythingIsGroovy &= typeCodeInput.length() == 8;
+            everythingIsGroovy &= isTypeCodeValid(typeCodeInput);
+
+            try
+            {
+                everythingIsGroovy &= weekNumberInput.length() == 2;
+                int weekVal = Integer.valueOf(weekNumberInput);
+
+                everythingIsGroovy &= yearNumberInput.length() == 2;
+                int yearVal = Integer.valueOf(yearNumberInput);
+
+                everythingIsGroovy &= poNumberInput.length() == 7;
+                int poVal = Integer.valueOf(poNumberInput);
+
+                everythingIsGroovy &= serialNumberInput.length() == 4;
+                int serialVal = Integer.valueOf(serialNumberInput);
+
+                everythingIsGroovy &= checksumInput.length() == 1;
+                int checksumVal = Integer.valueOf(checksumInput);
+
+                String stringToChecksum = typeCodeInput
+                        + weekNumberInput
+                        + yearNumberInput
+                        + poNumberInput
+                        + serialNumberInput;
+                try
+                {
+                    char checkDigit = SystemUtils.generateUPSModulo10Checksum(stringToChecksum.replaceAll("-", ""));
+                    everythingIsGroovy &= checksumInput.charAt(0) == checkDigit;
+                } catch (InvalidChecksumException ex)
+                {
+                    everythingIsGroovy = false;
+                }
+
+            } catch (NumberFormatException ex)
+            {
+                everythingIsGroovy = false;
+            }
+        } else
+        {
+            everythingIsGroovy = false;
+        }
+
+        return everythingIsGroovy;
     }
 }

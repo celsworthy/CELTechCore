@@ -682,7 +682,7 @@ public abstract class GCodeEventNode
     {
         if (getFinishTimeFromStartOfPrint_secs().isPresent())
         {
-            return comment.renderComments() + " : T" + getFinishTimeFromStartOfPrint_secs().get();
+            return comment.renderComments() + " ; Time " + getFinishTimeFromStartOfPrint_secs().get();
         } else
         {
             return comment.renderComments();

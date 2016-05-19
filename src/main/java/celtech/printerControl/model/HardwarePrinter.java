@@ -3817,7 +3817,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                 chosenHead.allocateRandomID();
                                                 head.set(chosenHead);
                                                 steno.info("Reprogrammed head as " + chosenHeadFile.
-                                                        getName()
+                                                        getTypeCode()
                                                         + " with ID " + head.get().uniqueID.get());
                                                 try
                                                 {

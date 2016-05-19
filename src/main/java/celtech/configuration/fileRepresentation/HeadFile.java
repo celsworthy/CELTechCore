@@ -2,6 +2,7 @@ package celtech.configuration.fileRepresentation;
 
 import celtech.printerControl.model.Extruder;
 import celtech.printerControl.model.Head.HeadType;
+import celtech.printerControl.model.Head.ValveType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,10 +15,10 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 public class HeadFile
 {
 
-    private int version = 1;
-    private String name;
+    private int version = 2;
     private String typeCode;
     private HeadType type;
+    private ValveType valves;
 
     private List<NozzleHeaterData> nozzleHeaters = new ArrayList<>();
     private List<NozzleData> nozzles = new ArrayList<>();
@@ -32,6 +33,16 @@ public class HeadFile
         this.type = type;
     }
 
+    public void setValves(ValveType valves)
+    {
+        this.valves = valves;
+    }
+
+    public ValveType getValves()
+    {
+        return valves;
+    }
+
     public int getVersion()
     {
         return version;
@@ -40,16 +51,6 @@ public class HeadFile
     public void setVersion(int version)
     {
         this.version = version;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
     }
 
     public String getTypeCode()
@@ -85,7 +86,7 @@ public class HeadFile
     @Override
     public String toString()
     {
-        return name;
+        return typeCode;
     }
 
     @JsonIgnore

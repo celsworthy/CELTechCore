@@ -228,7 +228,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 {
                     undoableProject.setUseExtruder0Filament(descendentModelContainer, !(descendentModelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
                 }
-            } else
+            }
+            else
             {
                 undoableProject.setUseExtruder0Filament(modelContainer, !(modelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
             }

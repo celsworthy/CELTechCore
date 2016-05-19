@@ -19,13 +19,9 @@ import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
-import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithStartPoint;
-import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
-import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
-import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.CameraTriggerManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -238,7 +234,10 @@ public class UtilityMethods
         double replenishExtrusionD = 0;
         int opensInThisTool = 0;
 
-        Map<ExtrusionNode, NozzleValvePositionNode> nodesToAdd = new HashMap<>();
+        ExtrusionNode lastNozzleClose = null;
+        final float outOfUseNozzleRelief = 5;
+
+        Map<ExtrusionNode, NozzleValvePositionNode> nozzleOpensToAdd = new HashMap<>();
         Map<ExtrusionNode, Integer> toolReselectsToAdd = new HashMap<>();
 
         if (lastOpenResult != null)
@@ -248,6 +247,7 @@ public class UtilityMethods
             replenishExtrusionD = lastOpenResult.getOutstandingDReplenish();
             lastToolNumber = lastOpenResult.getLastToolNumber();
             opensInThisTool = lastOpenResult.getOpensInLastTool();
+            lastNozzleClose = lastOpenResult.getLastNozzleClose();
         }
 
         while (layerIterator.hasNext())
@@ -258,6 +258,25 @@ public class UtilityMethods
             {
                 if (lastToolNumber != ((ToolSelectNode) layerEvent).getToolNumber())
                 {
+                    if (lastNozzleClose != null)
+                    {
+                        if (ppFeatureSet.isEnabled(PostProcessorFeature.RETRACT_AT_TOOLCHANGE))
+                        {
+                            lastNozzleClose.appendCommentText("Adding retract at tool change");
+                            switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
+                            {
+                                case "E":
+                                    lastNozzleClose.getExtrusion().setE(-outOfUseNozzleRelief);
+                                    break;
+                                case "D":
+                                    lastNozzleClose.getExtrusion().setD(-outOfUseNozzleRelief);
+                                    break;
+                            }
+                        }
+
+                        lastNozzleClose = null;
+                    }
+
                     lastToolNumber = ((ToolSelectNode) layerEvent).getToolNumber();
                     opensInThisTool = 0;
                 }
@@ -295,12 +314,14 @@ public class UtilityMethods
                     steno.warning(outputString);
                 }
 
-                ((NozzleValvePositionNode)layerEvent).setReplenishExtrusionE(replenishEToUse);
-                ((NozzleValvePositionNode)layerEvent).setReplenishExtrusionD(replenishDToUse);
+                ((NozzleValvePositionNode) layerEvent).setReplenishExtrusionE(replenishEToUse);
+                ((NozzleValvePositionNode) layerEvent).setReplenishExtrusionD(replenishDToUse);
             } else if (layerEvent instanceof NozzlePositionProvider
                     && (((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() == 1.0))
             {
+                lastNozzleClose = null;
+
                 nozzleOpen = true;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
                 switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
@@ -324,6 +345,11 @@ public class UtilityMethods
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().isBSet()
                     && ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB() < 1.0)
             {
+                if (layerEvent instanceof ExtrusionNode)
+                {
+                    lastNozzleClose = (ExtrusionNode) layerEvent;
+                }
+
                 nozzleOpen = false;
                 lastNozzleValue = ((NozzlePositionProvider) layerEvent).getNozzlePosition().getB();
                 if (layerEvent instanceof ExtrusionNode)
@@ -356,6 +382,11 @@ public class UtilityMethods
                     steno.warning(outputString);
                 }
                 NozzleValvePositionNode newNozzleValvePositionNode = new NozzleValvePositionNode();
+                if (ppFeatureSet.isEnabled(PostProcessorFeature.RETRACT_AT_TOOLCHANGE)
+                        && opensInThisTool == 0)
+                {
+                    newNozzleValvePositionNode.appendCommentText("Extra replenish - first use after toolchange");
+                }
                 newNozzleValvePositionNode.getNozzlePosition().setB(1);
 
                 double replenishEToUse = 0;
@@ -364,11 +395,21 @@ public class UtilityMethods
                 switch (HeadContainer.getHeadByID(headTypeCode).getNozzles().get(lastToolNumber).getAssociatedExtruder())
                 {
                     case "E":
+                        if (ppFeatureSet.isEnabled(PostProcessorFeature.RETRACT_AT_TOOLCHANGE)
+                                && opensInThisTool == 0)
+                        {
+                            replenishExtrusionE += outOfUseNozzleRelief;
+                        }
                         replenishEToUse = replenishExtrusionE;
                         replenishExtrusionE = 0;
                         replenishDToUse = 0;
                         break;
                     case "D":
+                        if (ppFeatureSet.isEnabled(PostProcessorFeature.RETRACT_AT_TOOLCHANGE)
+                                && opensInThisTool == 0)
+                        {
+                            replenishExtrusionD += outOfUseNozzleRelief;
+                        }
                         replenishDToUse = replenishExtrusionD;
                         replenishExtrusionD = 0;
                         replenishEToUse = 0;
@@ -387,7 +428,7 @@ public class UtilityMethods
 
                 newNozzleValvePositionNode.setReplenishExtrusionE(replenishEToUse);
                 newNozzleValvePositionNode.setReplenishExtrusionD(replenishDToUse);
-                nodesToAdd.put((ExtrusionNode) layerEvent, newNozzleValvePositionNode);
+                nozzleOpensToAdd.put((ExtrusionNode) layerEvent, newNozzleValvePositionNode);
                 nozzleOpen = true;
 
                 opensInThisTool++;
@@ -421,7 +462,7 @@ public class UtilityMethods
 //            }
         }
 
-        nodesToAdd.entrySet().stream().forEach((entryToUpdate) ->
+        nozzleOpensToAdd.entrySet().stream().forEach((entryToUpdate) ->
         {
             if (toolReselectsToAdd.containsKey(entryToUpdate.getKey()))
             {
@@ -438,7 +479,7 @@ public class UtilityMethods
             entryToUpdate.getKey().addSiblingBefore(entryToUpdate.getValue());
         });
 
-        return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen, lastToolNumber, opensInThisTool);
+        return new OpenResult(replenishExtrusionE, replenishExtrusionD, nozzleOpen, lastToolNumber, opensInThisTool, lastNozzleClose);
     }
 
     protected void updateLayerToLineNumber(LayerPostProcessResult lastLayerParseResult,

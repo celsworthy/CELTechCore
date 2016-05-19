@@ -1,8 +1,9 @@
 package celtech.coreUI.controllers.utilityPanels;
 
+import celtech.CoreTest;
 import celtech.Lookup;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.EEPROMState;
-import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.panels.MenuInnerPanel;
@@ -15,6 +16,7 @@ import celtech.printerControl.model.PrinterException;
 import celtech.printerControl.model.Reel;
 import celtech.utils.PrinterListChangesListener;
 import celtech.utils.PrinterUtils;
+import celtech.utils.SystemUtils;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -28,10 +30,14 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.controlsfx.validation.ValidationSupport;
 
 /**
  *
@@ -83,7 +89,31 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private RestrictedTextField nozzle2BOffset;
 
     @FXML
-    private RestrictedTextField headUniqueID;
+    private HBox enterSerialNumberHBox;
+
+    @FXML
+    private ImageView serialValidImage;
+
+    @FXML
+    private ImageView serialInvalidImage;
+
+    @FXML
+    private RestrictedTextField headTypeCodeEntry;
+
+    @FXML
+    private RestrictedTextField printerWeek;
+
+    @FXML
+    private RestrictedTextField printerYear;
+
+    @FXML
+    private RestrictedTextField printerPONumber;
+
+    @FXML
+    private RestrictedTextField printerSerialNumber;
+
+    @FXML
+    private RestrictedTextField printerChecksum;
 
     @FXML
     private RestrictedTextField headTypeCode;
@@ -103,10 +133,15 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private ModalDialog eepromCommsError = null;
 
     private final BooleanProperty offsetFieldsDirty = new SimpleBooleanProperty();
+    private final BooleanProperty canSave = new SimpleBooleanProperty();
 
     private Printer selectedPrinter;
 
     private final BooleanProperty canResetHeadProperty = new SimpleBooleanProperty(false);
+
+    private ValidationSupport serialNumberValidation = new ValidationSupport();
+    private BooleanProperty serialValidProperty = new SimpleBooleanProperty(false);
+    private BooleanProperty ignoreSerialValidationProperty = new SimpleBooleanProperty(false);
 
     void whenResetToDefaultsPressed()
     {
@@ -148,32 +183,16 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             // reading the head eeprom results in the fields being updated with current head
             // data (i.e. fields will lose edited values)
             HeadEEPROMDataResponse headDataResponse = selectedPrinter.readHeadEEPROM(true);
-            String uniqueId = headDataResponse.getUniqueID();
-            if (uniqueId.length() == 0)
-            {
-                boolean foundFirstDash = false;
-                StringBuilder conditionedString = new StringBuilder();
-                for (int location = 0; location < headUniqueID.getText().length(); location++)
-                {
-                    char currentChar = headUniqueID.getText().charAt(location);
-                    if (currentChar == '-')
-                    {
-                        if (!foundFirstDash)
-                        {
-                            conditionedString.append(currentChar);
-                            foundFirstDash = true;
-                        }
-                    } else
-                    {
-                        conditionedString.append(currentChar);
-                    }
-                }
 
-                uniqueId = conditionedString.toString();
-            }
+            String idToCreate = headTypeCodeEntry.getText()
+                    + printerWeek.getText()
+                    + printerYear.getText()
+                    + printerPONumber.getText()
+                    + printerSerialNumber.getText()
+                    + printerChecksum.getText();
 
             selectedPrinter.transmitWriteHeadEEPROM(
-                    headTypeCodeText, uniqueId, headMaxTemperatureVal, headThermistorBetaVal,
+                    headTypeCodeText, idToCreate, headMaxTemperatureVal, headThermistorBetaVal,
                     headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
                     nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
                     "", "",
@@ -181,9 +200,10 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                     nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
                     lastFilamentTemperatureVal0, lastFilamentTemperatureVal1, headHourCounterVal);
 
-            updateHeadUniqueId();
-
             offsetFieldsDirty.set(false);
+                    
+            enterSerialNumberHBox.setDisable(true);
+            ignoreSerialValidationProperty.set(true);
 
             try
             {
@@ -227,7 +247,50 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             eepromCommsError.setTitle(Lookup.i18n("eeprom.error"));
             eepromCommsError.addButton(Lookup.i18n("dialogs.OK"));
 
-            setUpWriteEnabledAfterEdits();
+            ChangeListener offsetsChangedListener = (ChangeListener<String>) (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+            {
+                offsetFieldsDirty.set(true);
+            };
+
+            nozzle1BOffset.textProperty().addListener(offsetsChangedListener);
+            nozzle1XOffset.textProperty().addListener(offsetsChangedListener);
+            nozzle1YOffset.textProperty().addListener(offsetsChangedListener);
+            nozzle1ZOverrun.textProperty().addListener(offsetsChangedListener);
+            nozzle2BOffset.textProperty().addListener(offsetsChangedListener);
+            nozzle2XOffset.textProperty().addListener(offsetsChangedListener);
+            nozzle2YOffset.textProperty().addListener(offsetsChangedListener);
+            nozzle2ZOverrun.textProperty().addListener(offsetsChangedListener);
+
+            serialInvalidImage.setImage(new Image(CoreTest.class.getResource(
+                    ApplicationConfiguration.imageResourcePath + "CrossIcon.png").toExternalForm()));
+            serialValidImage.setImage(new Image(CoreTest.class.getResource(
+                    ApplicationConfiguration.imageResourcePath + "TickIcon.png").toExternalForm()));
+
+            serialValidProperty.addListener(new ChangeListener<Boolean>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+                {
+                    serialValidImage.setVisible(t1);
+                    serialInvalidImage.setVisible(!t1);
+                }
+            });
+
+            ChangeListener serialPartChangeListener = (ChangeListener<String>) (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+            {
+                validateHeadSerial();
+                offsetFieldsDirty.set(true);
+            };
+
+            headTypeCodeEntry.textProperty().addListener(serialPartChangeListener);
+            printerWeek.textProperty().addListener(serialPartChangeListener);
+            printerYear.textProperty().addListener(serialPartChangeListener);
+            printerPONumber.textProperty().addListener(serialPartChangeListener);
+            printerSerialNumber.textProperty().addListener(serialPartChangeListener);
+            printerChecksum.textProperty().addListener(serialPartChangeListener);
+            validateHeadSerial();
+
+            canSave.bind(offsetFieldsDirty.and(ignoreSerialValidationProperty.or(serialValidProperty)));
 
             Lookup.getSelectedPrinterProperty().addListener(
                     (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
@@ -256,30 +319,39 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     }
 
-    private void setUpWriteEnabledAfterEdits()
+    private void validateHeadSerial()
     {
-        ChangeListener offsetsChangedListener = (ChangeListener<String>) (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-        {
-            offsetFieldsDirty.set(true);
-        };
-
-        nozzle1BOffset.textProperty().addListener(offsetsChangedListener);
-        nozzle1XOffset.textProperty().addListener(offsetsChangedListener);
-        nozzle1YOffset.textProperty().addListener(offsetsChangedListener);
-        nozzle1ZOverrun.textProperty().addListener(offsetsChangedListener);
-        nozzle2BOffset.textProperty().addListener(offsetsChangedListener);
-        nozzle2XOffset.textProperty().addListener(offsetsChangedListener);
-        nozzle2YOffset.textProperty().addListener(offsetsChangedListener);
-        nozzle2ZOverrun.textProperty().addListener(offsetsChangedListener);
-
-        headUniqueID.textProperty().addListener(offsetsChangedListener);
+        boolean serialValid = Head.validateSerial(headTypeCodeEntry.getText(),
+                printerWeek.getText(),
+                printerYear.getText(),
+                printerPONumber.getText(),
+                printerSerialNumber.getText(),
+                printerChecksum.getText());
+        serialValidProperty.set(serialValid);
     }
 
     private void updateFieldsFromAttachedHead(Head head)
     {
         headTypeCode.setText(head.typeCodeProperty().get().trim());
         headType.setText(head.nameProperty().get().trim());
-        headUniqueID.setText(head.getFormattedSerial());
+
+        headTypeCodeEntry.setText(head.typeCodeProperty().get().trim());
+        printerWeek.setText(head.getWeekNumber());
+        printerYear.setText(head.getYearNumber());
+        printerPONumber.setText(head.getPONumber());
+        printerSerialNumber.setText(head.getSerialNumber());
+        printerChecksum.setText(head.getChecksum());
+
+        if (head.uniqueIDProperty().get().length() > 8)
+        {
+            enterSerialNumberHBox.setDisable(true);
+            ignoreSerialValidationProperty.set(true);
+        } else
+        {
+            enterSerialNumberHBox.setDisable(false);
+            ignoreSerialValidationProperty.set(false);
+        }
+
         lastFilamentTemperature0.setText(String.format("%.0f",
                 head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
         headMaxTemperature.setText(String.format("%.0f",
@@ -343,16 +415,21 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     {
         headTypeCode.setText("");
         headType.setText("");
-        headUniqueID.setText("");
-        //TODO modify to work with multiple heaters
+
+        headTypeCodeEntry.setText("");
+        printerWeek.setText("");
+        printerYear.setText("");
+        printerPONumber.setText("");
+        printerSerialNumber.setText("");
+        printerChecksum.setText("");
+
+        enterSerialNumberHBox.setDisable(true);
+
         lastFilamentTemperature0.setText("");
         lastFilamentTemperature1.setText("");
         headHourCounter.setText("");
-        //TODO modify to work with multiple heaters
         headMaxTemperature.setText("");
-        //TODO modify to work with multiple heaters
         headThermistorBeta.setText("");
-        //TODO modify to work with multiple heaters
         headThermistorTCal.setText("");
         nozzle1BOffset.setText("");
         nozzle1XOffset.setText("");
@@ -385,7 +462,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             Head head = printer.headProperty().get();
             updateFieldsFromAttachedHead(head);
-            updateHeadUniqueId();
             listenForHeadChanges(head);
             canResetHeadProperty.set(true);
         } else if (printer != null
@@ -395,18 +471,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         } else
         {
             canResetHeadProperty.set(false);
-        }
-    }
-
-    private void updateHeadUniqueId()
-    {
-        if (headUniqueID.getText().length() == 0
-                || headUniqueID.getText().length() != 28)
-        {
-            headUniqueID.setDisable(false);
-        } else
-        {
-            headUniqueID.setDisable(true);
         }
     }
 
@@ -431,7 +495,6 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             Head head = printer.headProperty().get();
             updateFieldsFromAttachedHead(head);
             listenForHeadChanges(head);
-            updateHeadUniqueId();
             canResetHeadProperty.set(true);
         }
     }
@@ -442,9 +505,9 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         if (printer == selectedPrinter)
         {
             updateFieldsForNoHead();
-            updateHeadUniqueId();
             removeHeadChangeListeners(head);
             canResetHeadProperty.set(false);
+            ignoreSerialValidationProperty.set(false);
         }
     }
 
@@ -573,7 +636,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             @Override
             public BooleanProperty whenEnabled()
             {
-                return offsetFieldsDirty;
+                return canSave;
             }
 
         };
