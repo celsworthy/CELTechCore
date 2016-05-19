@@ -4,6 +4,9 @@
 package celtech.utils;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.components.ChoiceLinkDialogBox;
+import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.MachineType;
 import java.util.ResourceBundle;
@@ -27,7 +30,7 @@ public class SystemValidation
      * Check that the machine type is fully recognised and if not then exit the
      * application.
      */
-    public static void checkMachineTypeRecognised(ResourceBundle i18nBundle)
+    public static boolean checkMachineTypeRecognised(ResourceBundle i18nBundle)
     {
         MachineType machineType = BaseConfiguration.getMachineType();
         if (machineType.equals(MachineType.UNKNOWN))
@@ -45,9 +48,10 @@ public class SystemValidation
             steno.error("Closing down due to unrecognised machine type.");
             Platform.exit();
             return false;
+        } else
+        {
+            return true;
         }
-        
-        return true;
     }
 
     /**
@@ -55,12 +59,12 @@ public class SystemValidation
      * application.
      *
      * @param i18nBundle
-     * @return 
+     * @return
      */
     public static boolean check3DSupported(ResourceBundle i18nBundle)
     {
         boolean threeDSupportOK = false;
-        
+
         steno.debug("Starting AutoMaker - check 3D support...");
         boolean checkForScene3D = true;
 
@@ -71,6 +75,7 @@ public class SystemValidation
             if (forceGPU.equalsIgnoreCase("true"))
             {
                 checkForScene3D = false;
+                threeDSupportOK = true;
             }
         }
 
@@ -78,7 +83,7 @@ public class SystemValidation
         {
             if (!Platform.isSupported(ConditionalFeature.SCENE3D))
             {
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
                     ChoiceLinkDialogBox threeDProblemBox = new ChoiceLinkDialogBox(false);
                     threeDProblemBox.setTitle(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"));
@@ -90,15 +95,15 @@ public class SystemValidation
                     } catch (PrinterDisconnectedException ex)
                     {
                     }
-                        steno.error("Closing down due to lack of required 3D support.");
-                        Platform.exit();
+                    steno.error("Closing down due to lack of required 3D support.");
+                    Platform.exit();
                 });
             } else
             {
                 threeDSupportOK = true;
             }
         }
-        
+
         return threeDSupportOK;
     }
 

@@ -5,10 +5,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import celtech.coreUI.components.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
 
 <VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="30.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <GridPane fx:id="headEEPROMControls" maxWidth="-Infinity" prefWidth="490.0" vgap="2.0">
+        <GridPane fx:id="headEEPROMControls" maxWidth="-Infinity" prefWidth="550" vgap="2.0">
             <columnConstraints>
                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -29,7 +31,26 @@
             <children>
                 <RestrictedTextField fx:id="headType" disable="true" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.columnSpan="2" />
                 <RestrictedTextField fx:id="headTypeCode" disable="true" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RestrictedTextField id="uniqueID" fx:id="headUniqueID" disable="true" forceUpperCase="true" maxLength="28" prefColumnCount="28" prefHeight="25.0" restrict="A-Z0-9-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                <HBox fx:id="enterSerialNumberHBox" alignment="CENTER_LEFT" disable="false" prefHeight="-1.0" prefWidth="-1.0" spacing="1.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2">
+                    <children>
+                        <RestrictedTextField fx:id="headTypeCodeEntry" maxLength="8" prefWidth="70" restrict="0-9A-Z" forceUpperCase="true" />
+                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <RestrictedTextField fx:id="printerWeek" maxLength="2" prefWidth="25" restrict="0-9" />
+                        <RestrictedTextField fx:id="printerYear" maxLength="2" prefWidth="25" restrict="0-9" />
+                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <RestrictedTextField fx:id="printerPONumber" maxLength="7" prefWidth="65.0" restrict="[0-9]" />
+                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <RestrictedTextField fx:id="printerSerialNumber" maxLength="4" prefWidth="40.0" restrict="[0-9]" />
+                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <RestrictedTextField fx:id="printerChecksum" maxLength="1" prefWidth="15" restrict="[0-9]" />
+                        <StackPane>
+                            <children>
+                                <ImageView fx:id="serialValidImage" />
+                                <ImageView fx:id="serialInvalidImage" />
+                            </children>
+                        </StackPane>
+                    </children>
+                </HBox>
                 <RestrictedTextField fx:id="headHourCounter" disable="true" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                 <RestrictedTextField fx:id="headMaxTemperature" disable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="5" />
                 <RestrictedTextField fx:id="lastFilamentTemperature0" disable="true" editable="true" maxLength="8" restrict="0-9." styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="6">
@@ -56,12 +77,14 @@
                <styleClass>
                   <String fx:value="filamentLibTitle" />
                   <String fx:value="preferenceLabel" />
-               </styleClass></Label>
+                    </styleClass>
+                </Label>
                 <Label text="Heater 2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="4">
                <styleClass>
                   <String fx:value="filamentLibTitle" />
                   <String fx:value="preferenceLabel" />
-               </styleClass></Label>
+                    </styleClass>
+                </Label>
             </children>
         </GridPane>
         <GridPane fx:id="headEEPROMOffsets" styleClass="borderFrame" vgap="2.0">
@@ -110,22 +133,26 @@
                <styleClass>
                   <String fx:value="colon" />
                   <String fx:value="preferenceLabel" />
-               </styleClass></Label>
+                    </styleClass>
+                </Label>
                 <Label text=" Y" GridPane.halignment="LEFT" GridPane.rowIndex="2">
                <styleClass>
                   <String fx:value="colon" />
                   <String fx:value="preferenceLabel" />
-               </styleClass></Label>
+                    </styleClass>
+                </Label>
                 <Label text=" Z" GridPane.halignment="LEFT" GridPane.rowIndex="3">
                <styleClass>
                   <String fx:value="colon" />
                   <String fx:value="preferenceLabel" />
-               </styleClass></Label>
+                    </styleClass>
+                </Label>
                 <Label text=" B" GridPane.halignment="LEFT" GridPane.rowIndex="4">
                <styleClass>
                   <String fx:value="colon" />
                   <String fx:value="preferenceLabel" />
-               </styleClass></Label>
+                    </styleClass>
+                </Label>
             </children>
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />

@@ -52,7 +52,7 @@ public class ResetHeadController implements Initializable
     {
         List<HeadFile> headFiles = new ArrayList(HeadContainer.getCompleteHeadList());
 
-        headFiles.sort((HeadFile o1, HeadFile o2) -> o2.getName().compareTo(o1.getName()));
+        headFiles.sort((HeadFile o1, HeadFile o2) -> o2.getTypeCode().compareTo(o1.getTypeCode()));
 
         for (HeadFile headFile : headFiles)
         {
@@ -65,7 +65,15 @@ public class ResetHeadController implements Initializable
             ImageView image = new ImageView(headImageURL.toExternalForm());
             image.setFitHeight(300);
             image.setFitWidth(300);
-            Button imageButton = new Button(headFile.getName(), image);
+            String headNamePrefix = "headPanel." + headFile.getTypeCode();
+            String headNameBold = headNamePrefix + ".titleBold";
+            String headNameLight = headNamePrefix + ".titleLight";
+            String buttonText = "Unknown";
+            if (Lookup.i18n(headNameBold) != null && Lookup.i18n(headNameLight) != null)
+            {
+                buttonText = Lookup.i18n(headNameBold) + Lookup.i18n(headNameLight);
+            }
+            Button imageButton = new Button(buttonText, image);
             imageButton.setPrefWidth(350);
             imageButton.setPrefHeight(350);
             imageButton.setContentDisplay(ContentDisplay.TOP);
@@ -87,6 +95,18 @@ public class ResetHeadController implements Initializable
                                     .lastFilamentTemperatureProperty().set(currentPrinter.headProperty().get()
                                             .getNozzleHeaters().get(nozzleHeaterCounter).lastFilamentTemperatureProperty().get());
                         }
+                    }
+
+                    if (currentPrinter.headProperty().get().typeCodeProperty().get().equals(head.typeCodeProperty().get())
+                            && currentPrinter.headProperty().get().getChecksum() != null
+                            && !currentPrinter.headProperty().get().getChecksum().equals(""))
+                    {
+                        head.setUniqueID(currentPrinter.headProperty().get().typeCodeProperty().get(),
+                                currentPrinter.headProperty().get().getWeekNumber(),
+                                currentPrinter.headProperty().get().getYearNumber(),
+                                currentPrinter.headProperty().get().getPONumber(),
+                                currentPrinter.headProperty().get().getSerialNumber(),
+                                currentPrinter.headProperty().get().getChecksum());
                     }
                 }
 

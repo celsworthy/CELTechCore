@@ -18,6 +18,7 @@ import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableThreeD;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
@@ -591,7 +592,7 @@ public abstract class Project
     public ModelGroup createNewGroup(Set<Groupable> modelContainers, int groupModelId)
     {
         checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup((Set)modelContainers, groupModelId);
+        ModelGroup modelGroup = new ModelGroup((Set) modelContainers, groupModelId);
         modelGroup.checkOffBed();
         return modelGroup;
     }
@@ -627,7 +628,7 @@ public abstract class Project
     {
         checkNotAlreadyInGroup(modelContainers);
 
-        ModelGroup modelGroup = new ModelGroup((Set)modelContainers);
+        ModelGroup modelGroup = new ModelGroup((Set) modelContainers);
         modelGroup.checkOffBed();
         modelGroup.notifyScreenExtentsChange();
         return modelGroup;
@@ -644,4 +645,9 @@ public abstract class Project
      */
     public abstract ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers);
 
+    @JsonIgnore
+    public void invalidate()
+    {
+        projectModified();
+    }
 }

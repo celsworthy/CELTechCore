@@ -44,6 +44,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private Label printSpeed2Display;
 
     @FXML
+    private VBox printSpeed1Box;
+
+    @FXML
     private VBox printSpeed2Box;
 
     @FXML
@@ -144,11 +147,13 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> speedMultiplier1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!speedMultiplier1Slider.isValueChanging() && !inhibitFeedrate1)
+                if (!inhibitFeedrate1
+                        && (!speedMultiplier1Slider.isValueChanging()
+                        || now.doubleValue() >= speedMultiplier1Slider.getMax()
+                        || now.doubleValue() <= speedMultiplier1Slider.getMin()))
                 {
                     try
                     {
-                        steno.info("Writing feedrate");
                         currentPrinter.changeEFeedRateMultiplier(now.doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -160,11 +165,13 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> speedMultiplier2SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!speedMultiplier2Slider.isValueChanging() && !inhibitFeedrate2)
+                if (!inhibitFeedrate2
+                        && (!speedMultiplier2Slider.isValueChanging()
+                        || now.doubleValue() >= speedMultiplier2Slider.getMax()
+                        || now.doubleValue() <= speedMultiplier2Slider.getMin()))
                 {
                     try
                     {
-                        steno.info("Writing feedrate D");
                         currentPrinter.changeDFeedRateMultiplier(now.doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -186,9 +193,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> bedTempSliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!bedTemperatureSlider.isValueChanging() && !inhibitBed)
+                if (!inhibitBed
+                        && (!bedTemperatureSlider.isValueChanging()
+                        || now.doubleValue() >= bedTemperatureSlider.getMax()
+                        || now.doubleValue() <= bedTemperatureSlider.getMin()))
                 {
-                    steno.info("Writing bed");
                     currentPrinter.setBedTargetTemperature(now.intValue());
                 }
             };
@@ -206,12 +215,13 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> extrusionMultiplier1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!extrusionMultiplier1Slider.isValueChanging() && !inhibitExtrusion1)
+                if (!inhibitExtrusion1
+                        && (!extrusionMultiplier1Slider.isValueChanging()
+                        || now.doubleValue() >= extrusionMultiplier1Slider.getMax()
+                        || now.doubleValue() <= extrusionMultiplier1Slider.getMin()))
                 {
                     try
                     {
-                        steno.info("Writing extrusion 1");
-
                         currentPrinter.changeFilamentInfo("E", currentPrinter.extrudersProperty().get(0).filamentDiameterProperty().get(), extrusionMultiplier1Slider.valueProperty().doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -233,12 +243,13 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> extrusionMultiplier2SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!extrusionMultiplier2Slider.isValueChanging() && !inhibitExtrusion2)
+                if (!inhibitExtrusion2
+                        && (!extrusionMultiplier2Slider.isValueChanging()
+                        || now.doubleValue() >= extrusionMultiplier2Slider.getMax()
+                        || now.doubleValue() <= extrusionMultiplier2Slider.getMin()))
                 {
                     try
                     {
-                        steno.info("Writing extrusion 2");
-
                         currentPrinter.changeFilamentInfo("D", currentPrinter.extrudersProperty().get(1).filamentDiameterProperty().get(), extrusionMultiplier2Slider.valueProperty().doubleValue() / 100.0);
                     } catch (PrinterException ex)
                     {
@@ -266,11 +277,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> nozzleTemp1SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!nozzleTemperature1Slider.isValueChanging() && !inhibitNozzleTemp1)
+                if (!inhibitNozzleTemp1
+                        && (!nozzleTemperature1Slider.isValueChanging()
+                        || now.doubleValue() >= nozzleTemperature1Slider.getMax()
+                        || now.doubleValue() <= nozzleTemperature1Slider.getMin()))
                 {
-                    //This is getting fired inappropriately
-                    steno.info("Writing nozzle 1");
-
                     currentPrinter.setNozzleHeaterTargetTemperature(0, now.intValue());
                 }
             };
@@ -288,10 +299,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private final ChangeListener<Number> nozzleTemp2SliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!nozzleTemperature2Slider.isValueChanging() && !inhibitNozzleTemp2)
+                if (!inhibitNozzleTemp2
+                        && (!nozzleTemperature2Slider.isValueChanging()
+                        || now.doubleValue() >= nozzleTemperature2Slider.getMax()
+                        || now.doubleValue() <= nozzleTemperature2Slider.getMin()))
                 {
-                    steno.info("Writing nozzle 2");
-
                     currentPrinter.setNozzleHeaterTargetTemperature(1, nozzleTemperature2Slider.valueProperty().intValue());
                 }
             };
@@ -408,18 +420,32 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         currentPrinter.getPrinterAncillarySystems().bedTargetTemperatureProperty().addListener(
                 bedTargetTemperatureChangeListener);
 
-        if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get())
+        if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get() && eUsedForThisPrintJob())
         {
             extrusionMultiplier1Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0)));
             extrusionMultiplier1Slider.setValue(currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0);
             extrusionMultiplier1Slider.valueProperty().addListener(extrusionMultiplier1SliderListener);
             currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().addListener(extrusionMultiplier1ChangeListener);
+            extrusionMultiplier1Box.setVisible(true);
+            extrusionMultiplier1Box.setMaxHeight(1000);
+            extrusionMultiplier1Box.setMinHeight(0);
 
+            printSpeed1Box.setVisible(true);
+            printSpeed1Box.setMaxHeight(1000);
+            printSpeed1Box.setMinHeight(0);
             printSpeed1Display.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().get() * 100.0)));
             speedMultiplier1Slider.setValue(currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().get() * 100.0);
             speedMultiplier1Slider.valueProperty().addListener(speedMultiplier1SliderListener);
             currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().addListener(
                     feedRate1ChangeListener);
+        }else
+        {
+            extrusionMultiplier1Box.setVisible(false);
+            extrusionMultiplier1Box.setMaxHeight(0);
+            extrusionMultiplier1Box.setMinHeight(0);
+            printSpeed1Box.setVisible(false);
+            printSpeed1Box.setMaxHeight(0);
+            printSpeed1Box.setMinHeight(0);
         }
 
         if (currentPrinter.extrudersProperty().get(1).isFittedProperty().get() && dUsedForThisPrintJob())

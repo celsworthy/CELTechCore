@@ -119,6 +119,7 @@ public class ObjImporter
         try (InputStream fileInputStream = new URL(objFileUrl).openStream())
         {
             String filePath = modelFile.getParent();
+            filePath = filePath.replaceAll("\\\\", "/");
             read(fileInputStream, filePath);
 
             ArrayList<MeshView> meshes_ = new ArrayList<>();

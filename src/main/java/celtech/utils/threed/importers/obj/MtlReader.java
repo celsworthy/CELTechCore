@@ -69,7 +69,7 @@ public class MtlReader
      */
     public MtlReader(final String filename, final String filePath)
     {
-        String fileUrl = filePath + File.separator + filename;
+        String fileUrl = filePath + "/" + filename;
         try
         {
             URL mtlUrl = new URL(fileUrl);
