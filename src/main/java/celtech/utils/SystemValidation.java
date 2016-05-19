@@ -3,7 +3,6 @@
  */
 package celtech.utils;
 
-import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.roboxbase.BaseLookup;
