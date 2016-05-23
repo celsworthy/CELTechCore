@@ -169,7 +169,7 @@ public class PostProcessor
         closeLogic = new CloseLogic(slicerParametersFile, featureSet, headType);
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
         utilities = new UtilityMethods(featureSet, settings, headType);
-        heaterSaver = new FilamentSaver();
+        heaterSaver = new FilamentSaver(100, 120);
         outputVerifier = new OutputVerifier();
     }
 

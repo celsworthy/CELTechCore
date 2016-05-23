@@ -20,8 +20,16 @@ public class FilamentSaver
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(FilamentSaver.class.getName());
-    int layer0MValue = 103;
-    int otherLayerMValue = 104;
+    private final int layer0MValue = 103;
+    private final int otherLayerMValue = 104;
+    private final double heatUpTime_secs;
+    private final double switchOffTime_secs;
+
+    public FilamentSaver(double heatUpTime_secs, double switchOffTime_secs)
+    {
+        this.heatUpTime_secs = heatUpTime_secs;
+        this.switchOffTime_secs = switchOffTime_secs;
+    }
 
     public void saveHeaters(List<LayerPostProcessResult> allLayerPostProcessResults)
     {
@@ -36,9 +44,6 @@ public class FilamentSaver
         {
             true, true
         };
-
-        final double heatUpTime_secs = 100;
-        final double switchOffTime_secs = 120;
 
         for (int layerCounter = 0; layerCounter < allLayerPostProcessResults.size(); layerCounter++)
         {
@@ -95,7 +100,7 @@ public class FilamentSaver
                         } else
                         {
                             //We need to switch off the other heater after the last tool select for the other tool...
-                            MCodeNode heaterOffNode = generateHeaterOffNode(((LayerNode)lastToolSelects[otherToolNumber].getParent().get()).getLayerNumber(), otherToolNumber);
+                            MCodeNode heaterOffNode = generateHeaterOffNode(((LayerNode) lastToolSelects[otherToolNumber].getParent().get()).getLayerNumber(), otherToolNumber);
                             nodesToAdd.add(new NodeAddStore(lastToolSelects[otherToolNumber], heaterOffNode, true));
                         }
                         nozzleHeaterOn[otherToolNumber] = false;
