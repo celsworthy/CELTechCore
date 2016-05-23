@@ -18,6 +18,7 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.utils.Math.MathUtils;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -196,44 +197,50 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private ObjectProperty<LayoutSubmode> layoutSubmode;
 
     @FXML
-    private void setMaterial0(ActionEvent event)
-    {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            undoableProject.setUseExtruder0Filament(modelContainer, true);
-        }
-    }
-
-    @FXML
-    private void setMaterial1(ActionEvent event)
-    {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            undoableProject.setUseExtruder0Filament(modelContainer, false);
-        }
-    }
-
-    @FXML
     private void flipMaterials(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        for (ModelContainer modelContainer : modelContainers)
+        Set<ModelContainer> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainersToFlipToFilament0 = new HashSet<>();
+        Set<ModelContainer> modelContainersToFlipToFilament1 = new HashSet<>();
+
+        for (ModelContainer modelContainer : selectedModelContainers)
         {
             if (modelContainer instanceof ModelGroup)
             {
                 Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
                 for (ModelContainer descendentModelContainer : descendentModels)
                 {
-                    undoableProject.setUseExtruder0Filament(descendentModelContainer, !(descendentModelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
+                    // getDescendentModelContainers give us all children - including group nodes
+                    if (!(descendentModelContainer instanceof ModelGroup))
+                    {
+                        if (descendentModelContainer.getAssociateWithExtruderNumberProperty().get() == 1)
+                        {
+                            modelContainersToFlipToFilament0.add(descendentModelContainer);
+                        } else
+                        {
+                            modelContainersToFlipToFilament1.add(descendentModelContainer);
+                        }
+                    }
+                }
+            } else
+            {
+                steno.info("Changing " + modelContainer.getId()
+                        + " from "
+                        + modelContainer.getAssociateWithExtruderNumberProperty().get()
+                        + " to extruder 0 = "
+                        + (modelContainer.getAssociateWithExtruderNumberProperty().get() == 1));
+                if (modelContainer.getAssociateWithExtruderNumberProperty().get() == 1)
+                {
+                    modelContainersToFlipToFilament0.add(modelContainer);
+                } else
+                {
+                    modelContainersToFlipToFilament1.add(modelContainer);
                 }
             }
-            else
-            {
-                undoableProject.setUseExtruder0Filament(modelContainer, !(modelContainer.getAssociateWithExtruderNumberProperty().get() == 0));
-            }
         }
+
+        undoableProject.assignModelsToExtruders(modelContainersToFlipToFilament0, modelContainersToFlipToFilament1);
+
         updateDisplay();
     }
 
@@ -534,24 +541,65 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     }
 
     @FXML
-    void doApplyMaterial0(ActionEvent event)
+    void setMaterial0(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        for (ModelContainer modelContainer : modelContainers)
+        Set<ModelContainer> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainersToFlipToFilament0 = new HashSet<>();
+        Set<ModelContainer> modelContainersToFlipToFilament1 = null;
+
+        for (ModelContainer modelContainer : selectedModelContainers)
         {
-            undoableProject.setUseExtruder0Filament(modelContainer, true);
+            if (modelContainer instanceof ModelGroup)
+            {
+                Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
+                for (ModelContainer descendentModelContainer : descendentModels)
+                {
+                    // getDescendentModelContainers give us all children - including group nodes
+                    if (!(descendentModelContainer instanceof ModelGroup))
+                    {
+                        modelContainersToFlipToFilament0.add(descendentModelContainer);
+                    }
+                }
+            } else
+            {
+                modelContainersToFlipToFilament0.add(modelContainer);
+            }
         }
 
+        undoableProject.assignModelsToExtruders(modelContainersToFlipToFilament0, modelContainersToFlipToFilament1);
+
+        updateDisplay();
     }
 
     @FXML
-    void doApplyMaterial1(ActionEvent event)
+    void setMaterial1(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-        for (ModelContainer modelContainer : modelContainers)
+        Set<ModelContainer> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainersToFlipToFilament0 = null;
+        Set<ModelContainer> modelContainersToFlipToFilament1 = new HashSet<>();
+
+        for (ModelContainer modelContainer : selectedModelContainers)
         {
-            undoableProject.setUseExtruder0Filament(modelContainer, false);
+            if (modelContainer instanceof ModelGroup)
+            {
+                Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
+                for (ModelContainer descendentModelContainer : descendentModels)
+                {
+                    // getDescendentModelContainers give us all children - including group nodes
+                    if (!(descendentModelContainer instanceof ModelGroup))
+                    {
+                        modelContainersToFlipToFilament1.add(descendentModelContainer);
+                    }
+                }
+            } else
+            {
+                modelContainersToFlipToFilament1.add(modelContainer);
+            }
         }
+
+        undoableProject.assignModelsToExtruders(modelContainersToFlipToFilament0, modelContainersToFlipToFilament1);
+
+        updateDisplay();
     }
 
     @FXML

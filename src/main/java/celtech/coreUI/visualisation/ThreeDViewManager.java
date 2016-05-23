@@ -1395,82 +1395,99 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
      * SETTINGS mode the filament colours should reflect the project print
      * settings filament colours, taking into account the support type.
      */
-    private void updateModelColours()
+    private void updateModelColours(ModelContainer modelContainer)
     {
-        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
-        Filament filament0 = null;
-        Filament filament1 = null;
-
-        if (selectedPrinter != null)
+        if (modelContainer instanceof ModelGroup)
         {
-            filament0 = selectedPrinter.effectiveFilamentsProperty().get(0);
-            filament1 = selectedPrinter.effectiveFilamentsProperty().get(1);
-        }
-        PhongMaterial materialToUseForExtruder0 = null;
-        PhongMaterial materialToUseForExtruder1 = null;
-
-        if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
-        {
-            if (selectedPrinter != null
-                    && selectedPrinter.headProperty().get() != null)
+            for (ModelContainer childModel : ((ModelGroup) modelContainer).getDescendentModelContainers())
             {
-                if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
+                if (!(childModel instanceof ModelGroup))
                 {
-                    materialToUseForExtruder0 = loaded1Material;
-                    Color dispColour = filament0.getDisplayColour();
-                    if (dispColour.getBlue() == 0
-                            && dispColour.getRed() == 0
-                            && dispColour.getGreen() == 0)
-                    {
-                        dispColour = dispColour.brighter().brighter();
-                    }
-
-                    loaded1Material.setDiffuseColor(dispColour);
-                } else
-                {
-                    materialToUseForExtruder0 = greyExcludedMaterial;
+                    updateModelColours(childModel);
                 }
+            }
+        } else
+        {
+            Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
+            Filament filament0 = null;
+            Filament filament1 = null;
 
-                //Single material heads can only use 1 material
-                if (selectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+            if (selectedPrinter != null)
+            {
+                filament0 = selectedPrinter.effectiveFilamentsProperty().get(0);
+                filament1 = selectedPrinter.effectiveFilamentsProperty().get(1);
+            }
+            PhongMaterial materialToUseForExtruder0 = null;
+            PhongMaterial materialToUseForExtruder1 = null;
+
+            if (applicationStatus.getMode() == ApplicationMode.SETTINGS)
+            {
+                if (selectedPrinter != null
+                        && selectedPrinter.headProperty().get() != null)
                 {
-                    materialToUseForExtruder1 = materialToUseForExtruder0;
-                } else if (selectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                {
-                    if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
+                    if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)
                     {
-                        materialToUseForExtruder1 = loaded2Material;
-                        Color dispColour = filament1.getDisplayColour();
+                        materialToUseForExtruder0 = loaded1Material;
+                        Color dispColour = filament0.getDisplayColour();
                         if (dispColour.getBlue() == 0
                                 && dispColour.getRed() == 0
                                 && dispColour.getGreen() == 0)
                         {
                             dispColour = dispColour.brighter().brighter();
                         }
-                        loaded2Material.setDiffuseColor(dispColour);
+
+                        loaded1Material.setDiffuseColor(dispColour);
                     } else
                     {
-                        materialToUseForExtruder1 = greyExcludedMaterial;
+                        materialToUseForExtruder0 = greyExcludedMaterial;
                     }
-                }
-            }
-        } else
-        {
-            materialToUseForExtruder0 = extruder1Material;
-            materialToUseForExtruder1 = extruder2Material;
-        }
-        for (ModelContainer model : loadedModels)
-        {
-            if (model instanceof ModelGroup)
-            {
-                for (ModelContainer childModel : ((ModelGroup) model).getDescendentModelContainers())
-                {
-                    updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, childModel);
+
+                    //Single material heads can only use 1 material
+                    if (selectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+                    {
+                        materialToUseForExtruder1 = materialToUseForExtruder0;
+                    } else if (selectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                    {
+                        if (filament1 != FilamentContainer.UNKNOWN_FILAMENT)
+                        {
+                            materialToUseForExtruder1 = loaded2Material;
+                            Color dispColour = filament1.getDisplayColour();
+                            if (dispColour.getBlue() == 0
+                                    && dispColour.getRed() == 0
+                                    && dispColour.getGreen() == 0)
+                            {
+                                dispColour = dispColour.brighter().brighter();
+                            }
+                            loaded2Material.setDiffuseColor(dispColour);
+                        } else
+                        {
+                            materialToUseForExtruder1 = greyExcludedMaterial;
+                        }
+                    }
                 }
             } else
             {
-                updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, model);
+                materialToUseForExtruder0 = extruder1Material;
+                materialToUseForExtruder1 = extruder2Material;
             }
+
+            updateModelColour(materialToUseForExtruder0, materialToUseForExtruder1, modelContainer);
+        }
+    }
+
+    /**
+     * If either the chosen filaments, x/y/z position , application mode or
+     * printer changes then this must be called. In LAYOUT mode the filament
+     * colours should reflect the project filament colours except if the
+     * position is off the bed then that overrides the project colours. In
+     * SETTINGS mode the filament colours should reflect the project print
+     * settings filament colours, taking into account the support type.
+     */
+    private void updateModelColours()
+    {
+        for (ModelContainer model : loadedModels)
+        {
+            updateModelColours(model);
         }
     }
 
@@ -1568,7 +1585,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     @Override
     public void whenModelChanged(ModelContainer modelContainer, String propertyName)
     {
-        updateModelColours();
+        updateModelColours(modelContainer);
     }
 
     @Override

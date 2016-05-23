@@ -28,10 +28,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -654,25 +656,35 @@ public class Project
         return lastModifiedDate;
     }
 
-    private ChangeListener<Number> modelExtruderNumberListener;
+    private Map<ModelContainer, ChangeListener<Number>> modelExtruderNumberListener = new HashMap<>();
 
     private void addModelListeners(ModelContainer modelContainer)
     {
-        // XXX this is a bug, modelExtruderNumberListener is being overridden for each model
-        modelExtruderNumberListener
-                = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        if (!(modelContainer instanceof ModelGroup)
+                && !modelExtruderNumberListener.containsKey(modelContainer))
+        {
+            ChangeListener<Number> changeListener = new ChangeListener()
+            {
+                @Override
+                public void changed(ObservableValue ov, Object t, Object t1)
                 {
                     fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
                     modelColourChanged.set(!modelColourChanged.get());
-                };
-        modelContainer.getAssociateWithExtruderNumberProperty().addListener(
-                modelExtruderNumberListener);
+                }
+            };
+
+            modelExtruderNumberListener.put(modelContainer, changeListener);
+            modelContainer.getAssociateWithExtruderNumberProperty().addListener(changeListener);
+        }
     }
 
-    private void removeModelListeners(ModelContainer modelContainer)
+    public void removeModelListeners(ModelContainer modelContainer)
     {
-        modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
-                modelExtruderNumberListener);
+//        if (!(modelContainer instanceof ModelGroup))
+//        {
+//            modelContainer.getAssociateWithExtruderNumberProperty().removeListener(modelExtruderNumberListener.get(modelContainer));
+//            modelExtruderNumberListener.remove(modelContainer);
+//        }
     }
 
     public BooleanProperty canPrintProperty()
@@ -1280,9 +1292,12 @@ public class Project
         fireWhenModelsTransformed(modelContainers);
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    public void setAssociatedExtruder(Set<ModelContainer> modelContainers, boolean useExtruder0)
     {
-        modelContainer.setUseExtruder0(useExtruder0);
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            modelContainer.setUseExtruder0(useExtruder0);
+        }
 
         boolean usingDifferentExtruders = false;
         int lastExtruder = -1;
@@ -1301,7 +1316,7 @@ public class Project
         if (!usingDifferentExtruders)
         {
             printerSettings.getPrintSupportTypeOverrideProperty().set(
-                    (modelContainer.getAssociateWithExtruderNumberProperty().get() == 0)
+                    (useExtruder0 == true)
                             ? SlicerParametersFile.SupportType.MATERIAL_1
                             : SlicerParametersFile.SupportType.MATERIAL_2);
             fireWhenPrinterSettingsChanged(printerSettings);

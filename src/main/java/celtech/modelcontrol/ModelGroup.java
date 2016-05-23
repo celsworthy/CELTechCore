@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.PhongMaterial;
@@ -19,8 +18,6 @@ import javafx.scene.shape.MeshView;
 import javafx.scene.transform.Rotate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  * ModelGroup is a ModelContainer that is a group of child ModelContainers or
@@ -80,6 +77,8 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
 
     /**
      * Return all descendent ModelContainers of this ModelGroup.
+     * NOTE - this includes every node - e.g. if a group node is present then so are all of its children
+     * @return 
      */
     @Override
     public Set<ModelContainer> getDescendentModelContainers()
@@ -224,16 +223,6 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
         {
             modelContainer.updateColour(extruder1Colour, extruder2Colour,
                     showMisplacedColour);
-        }
-    }
-
-    @Override
-    public void setUseExtruder0(boolean useExtruder0)
-    {
-        associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
-        for (ModelContainer modelContainer : childModelContainers)
-        {
-            modelContainer.setUseExtruder0(useExtruder0);
         }
     }
 

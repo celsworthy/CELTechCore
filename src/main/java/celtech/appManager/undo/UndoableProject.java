@@ -213,34 +213,21 @@ public class UndoableProject
         commandStack.do_(copyModelsCommand);
     }
 
-    public void setExtruder0Filament(Filament filament)
+    public void assignModelToExtruder(ModelContainer modelContainer,
+            boolean assignToExtruder0)
     {
-        if (filament != project.getExtruder0FilamentProperty().get())
-        {
-            SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
-                    filament,
-                    0);
-            commandStack.do_(setExtruderCommand);
-        }
-    }
-
-    public void setExtruder1Filament(Filament filament)
-    {
-        if (filament != project.getExtruder1FilamentProperty().get())
-        {
-            SetExtruderFilamentCommand setExtruderCommand = new SetExtruderFilamentCommand(project,
-                    filament,
-                    1);
-            commandStack.do_(setExtruderCommand);
-        }
-
-    }
-
-    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
-    {
-        Command setUserExtruder0Command = new SetUserExtruder0Command(project,
+        Command setUserExtruder0Command = new AssignModelToExtruderCommand(project,
                 modelContainer,
-                useExtruder0);
+                assignToExtruder0);
+        commandStack.do_(setUserExtruder0Command);
+    }
+
+    public void assignModelsToExtruders(Set<ModelContainer> modelContainersToAssignToExtruder0,
+            Set<ModelContainer> modelContainersToAssignToExtruder1)
+    {
+        Command setUserExtruder0Command = new AssignModelToExtruderCommand(project,
+                modelContainersToAssignToExtruder0,
+                modelContainersToAssignToExtruder1);
         commandStack.do_(setUserExtruder0Command);
     }
 

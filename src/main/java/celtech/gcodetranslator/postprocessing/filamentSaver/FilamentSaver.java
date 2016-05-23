@@ -37,8 +37,8 @@ public class FilamentSaver
             true, true
         };
 
-        final double heatUpTime_secs = 200;
-        final double switchOffTime_secs = 250;
+        final double heatUpTime_secs = 100;
+        final double switchOffTime_secs = 120;
 
         for (int layerCounter = 0; layerCounter < allLayerPostProcessResults.size(); layerCounter++)
         {
