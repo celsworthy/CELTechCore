@@ -586,13 +586,15 @@ public class Project
     public void addModel(ModelContainer modelContainer)
     {
         topLevelModels.add(modelContainer);
-        projectModified();
-        fireWhenModelAdded(modelContainer);
+
         addModelListeners(modelContainer);
         for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
         {
             addModelListeners(childModelContainer);
         }
+        
+        projectModified();
+        fireWhenModelAdded(modelContainer);
     }
 
     private void fireWhenModelAdded(ModelContainer modelContainer)
@@ -613,7 +615,6 @@ public class Project
 
     public void removeModels(Set<ModelContainer> modelContainers)
     {
-
         for (ModelContainer modelContainer : modelContainers)
         {
             assert modelContainer != null;
@@ -624,10 +625,6 @@ public class Project
         for (ModelContainer modelContainer : modelContainers)
         {
             removeModelListeners(modelContainer);
-            for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
-            {
-                removeModelListeners(childModelContainer);
-            }
         }
         projectModified();
         fireWhenModelsRemoved(modelContainers);
@@ -680,11 +677,11 @@ public class Project
 
     public void removeModelListeners(ModelContainer modelContainer)
     {
-//        if (!(modelContainer instanceof ModelGroup))
-//        {
-//            modelContainer.getAssociateWithExtruderNumberProperty().removeListener(modelExtruderNumberListener.get(modelContainer));
-//            modelExtruderNumberListener.remove(modelContainer);
-//        }
+        if (!(modelContainer instanceof ModelGroup))
+        {
+            modelContainer.getAssociateWithExtruderNumberProperty().removeListener(modelExtruderNumberListener.get(modelContainer));
+            modelExtruderNumberListener.remove(modelContainer);
+        }
     }
 
     public BooleanProperty canPrintProperty()
