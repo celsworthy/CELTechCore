@@ -118,11 +118,11 @@ public class HiddenKey
 
         }
 
-        if (!wasConsumed)
+        if (!wasConsumed
+                && unhandledKeyListener != null)
         {
             unhandledKeyListener.unhandledKeyEvent(event);
-        }
-        else
+        } else
         {
             event.consume();
         }
@@ -253,7 +253,7 @@ public class HiddenKey
     {
         parameterCaptureSequences.add(commandPrefix);
     }
-    
+
     public void addUnhandledKeyListener(UnhandledKeyListener listener)
     {
         unhandledKeyListener = listener;

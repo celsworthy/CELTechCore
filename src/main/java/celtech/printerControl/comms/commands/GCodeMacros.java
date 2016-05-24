@@ -151,10 +151,10 @@ public class GCodeMacros
         {
             nozzleUse = NozzleUseIndicator.DONT_CARE;
             specifiedHeadType = HeadContainer.defaultHeadID;
-        }else
+        } else
         {
             specifiedHeadType = headTypeCode;
-            
+
             if (!requireNozzle0 && !requireNozzle1)
             {
                 nozzleUse = NozzleUseIndicator.DONT_CARE;
@@ -274,9 +274,9 @@ public class GCodeMacros
 
     /**
      * Macros are stored in a single directory They are named as follows:
-     * baseMacroName_[S|U]_headType_[nozzle0Used|nozzle1Used]
-     * e.g. macroA_S_RBX01-SM - is a macro that should be used for safe mode
-     * when using head RBX01-SM
+     * baseMacroName_[S|U]_headType_[nozzle0Used|nozzle1Used] e.g.
+     * macroA_S_RBX01-SM - is a macro that should be used for safe mode when
+     * using head RBX01-SM
      *
      * @param macroName
      * @param headTypeCode
@@ -383,94 +383,65 @@ public class GCodeMacros
                     if (HeadContainer.getHeadByID(namePart) != null)
                     {
                         fileHeadFile = HeadContainer.getHeadByID(namePart);
-                    }
-                    else if (NozzleUseIndicator.getEnumForFilenameCode(namePart) != null)
+                    } else if (NozzleUseIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileNozzleUseIndicator = NozzleUseIndicator.getEnumForFilenameCode(namePart);
-                    }
-                    else if (SafetyIndicator.getEnumForFilenameCode(namePart) != null)
+                    } else if (SafetyIndicator.getEnumForFilenameCode(namePart) != null)
                     {
                         fileSafetyIndicator = SafetyIndicator.getEnumForFilenameCode(namePart);
-                    }                    
+                    }
                 }
                 namePartCounter++;
             }
 
-            //Was it present?
-            if (fileHeadFile != null)
+            // Not specified and not present -- 2 points
+            // Specified and equal -- 2 points
+            // Specified, not equal but file is DC -- 1 points
+            // Otherwise -2 points
+            if ((specifiedHeadFile == null
+                    && fileHeadFile == null)
+                    || (specifiedHeadFile != null
+                    && specifiedHeadFile == fileHeadFile))
             {
-                if (specifiedHeadFile == null)
-                {
-                    //Present but not specified
-                    score -= 1;
-                } else
-                {
-                    if (specifiedHeadFile != fileHeadFile)
-                    {
-                        //Specified but not equal
-                        score -= 1;
-                    } else
-                    {
-                        //Specified and equal
-                        score += 1;
-                    }
-                }
-            } else if (specifiedHeadFile != null && !specifiedHeadFile.getTypeCode().equals(HeadContainer.defaultHeadID))
+                score += 2;
+            } else if (specifiedHeadFile != null
+                    && fileHeadFile == null)
             {
-                //Specified but not present but only if the specified file was not RBX01-SM - this is the default...
-                score -= 1;
+                score += 1;
+            } else
+            {
+                score -= 2;
             }
 
-            //Was it present?
-            if (fileNozzleUseIndicator != null)
+            if ((specifiedNozzleUseIndicator == NozzleUseIndicator.DONT_CARE
+                    && fileNozzleUseIndicator == null)
+                    || (specifiedNozzleUseIndicator != NozzleUseIndicator.DONT_CARE
+                    && specifiedNozzleUseIndicator == fileNozzleUseIndicator))
             {
-                if (specifiedNozzleUseIndicator == NozzleUseIndicator.DONT_CARE)
-                {
-                    //Present but not specified
-                    score -= 1;
-                } else
-                {
-                    if (specifiedNozzleUseIndicator != fileNozzleUseIndicator)
-                    {
-                        //Specified but not equal
-                        score -= 1;
-                    } else
-                    {
-                        //Specified and equal
-                        score += 1;
-                    }
-                }
-            } else if (specifiedNozzleUseIndicator != NozzleUseIndicator.DONT_CARE)
+                score += 2;
+            } else if (specifiedNozzleUseIndicator != NozzleUseIndicator.DONT_CARE
+                    && fileNozzleUseIndicator == null)
             {
-                //Specified but not present
-                score -= 1;
+                score += 1;
+            } else
+            {
+                score -= 2;
             }
 
-            //Was it present?
-            if (fileSafetyIndicator != null)
+            if ((specifiedSafetyIndicator == SafetyIndicator.DONT_CARE
+                    && fileSafetyIndicator == null)
+                    || (specifiedSafetyIndicator != SafetyIndicator.DONT_CARE
+                    && specifiedSafetyIndicator == fileSafetyIndicator))
             {
-                if (specifiedSafetyIndicator == SafetyIndicator.DONT_CARE)
-                {
-                    //Present but not specified
-                    score -= 1;
-                } else
-                {
-                    if (specifiedSafetyIndicator != fileSafetyIndicator)
-                    {
-                        //Specified but not equal
-                        score -= 1;
-                    } else
-                    {
-                        //Specified and equal
-                        score += 1;
-                    }
-                }
-            } else if (specifiedSafetyIndicator != SafetyIndicator.DONT_CARE)
+                score += 2;
+            } else if (specifiedSafetyIndicator != SafetyIndicator.DONT_CARE
+                    && fileSafetyIndicator == null)
             {
-                //Specified but not present
-                score -= 1;
+                score += 1;
+            } else
+            {
+                score -= 2;
             }
-
         } else
         {
             steno.warning("Couldn't score macro file: " + filename);
