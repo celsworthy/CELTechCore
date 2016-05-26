@@ -67,6 +67,7 @@ import celtech.printerControl.comms.commands.tx.WritePrinterID;
 import celtech.printerControl.comms.commands.tx.WriteReel0EEPROM;
 import celtech.printerControl.comms.commands.tx.WriteReel1EEPROM;
 import celtech.printerControl.comms.events.ErrorConsumer;
+import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.calibration.NozzleHeightStateTransitionManager;
 import celtech.printerControl.model.calibration.NozzleOpeningStateTransitionManager;
 import celtech.printerControl.model.calibration.XAndYStateTransitionManager;
@@ -107,6 +108,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -293,6 +296,47 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         commandInterface.setPrinter(this);
 
         registerErrorConsumerAllErrors(this);
+
+        head.addListener(new ChangeListener<Head>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Head> ov, Head oldHeadValue, Head newHeadValue)
+            {
+                canCalibrateNozzleOpening.unbind();
+                canCalibrateNozzleOpening.set(false);
+                canCalibrateNozzleHeight.unbind();
+                canCalibrateNozzleHeight.set(false);
+                canCalibrateXYAlignment.unbind();
+                canCalibrateXYAlignment.set(false);
+
+                if (newHeadValue != null)
+                {
+
+                    canCalibrateNozzleOpening.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
+                            .and(extrudersProperty().get(0).filamentLoadedProperty())
+                            .and(Bindings.valueAt(effectiveFilaments, 0).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT))
+                            .and(head.get().headTypeProperty().isEqualTo(HeadType.SINGLE_MATERIAL_HEAD)
+                                    .or(extrudersProperty().get(1).filamentLoadedProperty()
+                                            .and(Bindings.valueAt(effectiveFilaments, 1).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
+                    );
+                    canCalibrateNozzleHeight.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
+                            .and(extrudersProperty().get(0).filamentLoadedProperty())
+                            .and(Bindings.valueAt(effectiveFilaments, 0).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT))
+                            .and(head.get().headTypeProperty().isEqualTo(HeadType.SINGLE_MATERIAL_HEAD)
+                                    .or(extrudersProperty().get(1).filamentLoadedProperty()
+                                            .and(Bindings.valueAt(effectiveFilaments, 1).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
+                    );
+                    canCalibrateXYAlignment.bind(printerStatus.isEqualTo(PrinterStatus.IDLE)
+                            .and(extrudersProperty().get(0).filamentLoadedProperty())
+                            .and(Bindings.valueAt(effectiveFilaments, 0).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT))
+                            .and(head.get().headTypeProperty().isEqualTo(HeadType.SINGLE_MATERIAL_HEAD)
+                                    .or(extrudersProperty().get(1).filamentLoadedProperty()
+                                            .and(Bindings.valueAt(effectiveFilaments, 1).isNotEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
+                    );
+                }
+
+            }
+        });
     }
 
     private void setupBindings()
@@ -310,13 +354,9 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         canOpenCloseNozzle.bind(head.isNotNull()
                 .and(printerStatus.isEqualTo(PrinterStatus.IDLE)
                         .or(pauseStatus.isEqualTo(PauseStatus.PAUSED))));
-        canCalibrateNozzleOpening.bind(head.isNotNull()
-                .and(printerStatus.isEqualTo(PrinterStatus.IDLE).and(extrudersProperty().get(0).
-                                filamentLoadedProperty()).and(Bindings.isNotEmpty(reels))));
-        canCalibrateNozzleHeight.bind(head.isNotNull()
-                .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
-        canCalibrateXYAlignment.bind(head.isNotNull()
-                .and(printerStatus.isEqualTo(PrinterStatus.IDLE)));
+        canCalibrateNozzleOpening.set(false);
+        canCalibrateNozzleHeight.set(false);
+        canCalibrateXYAlignment.set(false);
 
         canInitiateNewState.bind(printerStatus.isEqualTo(PrinterStatus.IDLE));
 
@@ -2646,7 +2686,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         WriteHeadEEPROM writeHeadEEPROM = (WriteHeadEEPROM) RoboxTxPacketFactory.createPacket(
                 TxPacketTypeEnum.WRITE_HEAD_EEPROM);
         writeHeadEEPROM.populateEEPROM(headToWrite);
-        AckResponse response = (AckResponse)commandInterface.writeToPrinter(writeHeadEEPROM);
+        AckResponse response = (AckResponse) commandInterface.writeToPrinter(writeHeadEEPROM);
 
         if (readback && !response.isError())
         {
