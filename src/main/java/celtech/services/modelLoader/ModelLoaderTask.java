@@ -1,14 +1,12 @@
 package celtech.services.modelLoader;
 
 import celtech.Lookup;
-import celtech.appManager.Project;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.utils.threed.importers.stl.STLImporter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;

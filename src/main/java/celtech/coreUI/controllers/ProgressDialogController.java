@@ -27,7 +27,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProgressDialogController implements Initializable
 {
-    
+
     private Stenographer steno = StenographerFactory.getStenographer(ProgressDialogController.class.getName());
     @FXML
     private StackPane progressDialog;
@@ -47,7 +47,9 @@ public class ProgressDialogController implements Initializable
      */
     private ControllableService serviceBeingMonitored = null;
     private ChangeListener<Boolean> registeredListener = null;
-    
+
+    private Stage stage;
+
     /**
      *
      * @param event
@@ -57,7 +59,7 @@ public class ProgressDialogController implements Initializable
     {
         serviceBeingMonitored.cancelRun();
     }
-    
+
     /**
      *
      * @param service
@@ -65,7 +67,9 @@ public class ProgressDialogController implements Initializable
      */
     public void configure(ControllableService service, final Stage stage)
     {
-        serviceBeingMonitored = service;
+        this.serviceBeingMonitored = service;
+        this.stage = stage;
+
         progressTitle.textProperty().unbind();
         progressTitle.textProperty().bind(serviceBeingMonitored.titleProperty());
         progressMessage.textProperty().unbind();
@@ -74,13 +78,13 @@ public class ProgressDialogController implements Initializable
         progressBar.progressProperty().bind(serviceBeingMonitored.progressProperty());
         progressPercent.textProperty().unbind();
         progressPercent.textProperty().bind(serviceBeingMonitored.progressProperty().multiply(100f).asString("%.0f%%"));
-        
+
         if (registeredListener != null)
         {
             serviceBeingMonitored.runningProperty().removeListener(registeredListener);
             registeredListener = null;
         }
-        
+
         ChangeListener<Boolean> serviceRunningListener = new ChangeListener<Boolean>()
         {
             @Override
@@ -89,6 +93,7 @@ public class ProgressDialogController implements Initializable
                 if (newValue == true)
                 {
                     stage.show();
+                    stage.toFront();
 //                    rebind();
                 } else
                 {
@@ -96,12 +101,26 @@ public class ProgressDialogController implements Initializable
                 }
             }
         };
-        
+
         serviceBeingMonitored.runningProperty().addListener(serviceRunningListener);
-        
+
+        serviceBeingMonitored.progressProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                if (stage != null
+                        && t1.doubleValue() >= 0
+                        && t.doubleValue() < 0)
+                {
+                    stage.toFront();
+                }
+            }
+        });
+
         registeredListener = serviceRunningListener;
     }
-    
+
     private void rebind()
     {
         /*
@@ -123,6 +142,7 @@ public class ProgressDialogController implements Initializable
 
     /**
      * Initializes the controller class.
+     *
      * @param url
      * @param rb
      */
@@ -134,6 +154,6 @@ public class ProgressDialogController implements Initializable
         progressTitle.setText("");
         progressMessage.setText("");
         progressBar.setProgress(0f);
-        
+
     }
 }
