@@ -40,9 +40,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.PopupWindow;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -135,7 +133,6 @@ public class ProjectTab extends Tab
         setupDragHandlers();
 
         bedAxes = new BedAxes(viewManager);
-        bedAxes.visibleProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
         VBox dimensionContainer = new VBox();
         dimensionContainer.setMouseTransparent(true);

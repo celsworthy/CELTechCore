@@ -144,16 +144,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         AnchorPane.setRightAnchor(projectTabPaneHolder, 0.0);
         this.rhPanel = new AnchorPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
-//        switch (ApplicationConfiguration.getMachineType())
-//        {
-//            case LINUX_X64:
-//            case LINUX_X86:
-//                System.setProperty("prism.lcdtext", "false");
-//                break;
-//            default:
-//                System.setProperty("prism.lcdtext", "true");
-//                break;
-//        }
         steno.debug("Starting AutoMaker - machine type is " + ApplicationConfiguration.
                 getMachineType());
     }
@@ -312,7 +302,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         spinner.stopSpinning();
     }
 
-    public void configureDisplayManager(Stage mainStage, String applicationName)
+    public void configureDisplayManager(Stage mainStage, String applicationName,
+            String modelsToLoadAtStartup_projectName,
+            List<String> modelsToLoadAtStartup,
+            boolean dontGroupStartupModels)
     {
         steno.debug("start configure display manager");
         this.mainStage = mainStage;
@@ -557,13 +550,16 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         mainStage.setScene(scene);
 
-        steno.debug("load projects");
-        loadProjectsAtStartup();
-
         addPageTab = new Tab();
         addPageTab.setText("+");
         addPageTab.setClosable(false);
         tabDisplay.getTabs().add(addPageTab);
+
+        steno.debug("load projects");
+        loadProjectsAtStartup();
+        loadModelsIntoNewProject(modelsToLoadAtStartup_projectName,
+                modelsToLoadAtStartup,
+                dontGroupStartupModels);
 
         rootAnchorPane.layout();
 

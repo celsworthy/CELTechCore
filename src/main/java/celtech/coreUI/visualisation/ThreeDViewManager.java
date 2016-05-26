@@ -337,6 +337,14 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 //        refreshCameraPosition();
     }
 
+    private void notifyListenersOfCameraViewChange()
+    {
+        for (CameraViewChangeListener listener : cameraViewChangeListeners)
+        {
+            listener.cameraViewOfYouHasChanged(cameraDistance.get());
+        }
+    }
+
     private void notifyModelsOfCameraViewChange()
     {
         for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
@@ -344,10 +352,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
         }
 
-        for (CameraViewChangeListener listener : cameraViewChangeListeners)
-        {
-            listener.cameraViewOfYouHasChanged(cameraDistance.get());
-        }
+        notifyListenersOfCameraViewChange();
     }
 
     private void rotateCameraAroundAxesTo(double xangle, double yangle)
@@ -1557,6 +1562,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         collisionManager.addModel(modelContainer);
 
         modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
+        notifyListenersOfCameraViewChange();
     }
 
     @Override
