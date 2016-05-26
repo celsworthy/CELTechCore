@@ -208,7 +208,15 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                         largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
                     } else
                     {
-                        largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle") + " " + (nozzleNumber + 1));
+                        switch (nozzleNumber)
+                        {
+                            case 0:
+                                largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
+                                break;
+                            case 1:
+                                largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle2ControlLabel"));
+                                break;
+                        }
                     }
 
                     largeTargetLegend.textProperty().set(Lookup.i18n("progressBar.targetTemperature"));
