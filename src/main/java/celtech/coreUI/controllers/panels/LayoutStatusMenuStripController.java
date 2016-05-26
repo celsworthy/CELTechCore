@@ -492,6 +492,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             MenuItem cmItem1 = new MenuItem(cm1Text);
             MenuItem cmItem2 = new MenuItem(cm2Text);
+            MenuItem bothItem = new MenuItem(Lookup.i18n("misc.Both"));
             cmItem1.setOnAction((ActionEvent e) ->
             {
                 ejectFilament(0);
@@ -500,9 +501,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 ejectFilament(1);
             });
+            bothItem.setOnAction((ActionEvent e) ->
+            {
+                ejectFilament(1);
+                ejectFilament(0);
+            });
 
             contextMenu.getItems().add(cmItem1);
             contextMenu.getItems().add(cmItem2);
+            contextMenu.getItems().add(bothItem);
 
             double cm1Width = getWidthOfString(cm1Text, "lightText", 14);
             double cm2Width = getWidthOfString(cm2Text, "lightText", 14);
