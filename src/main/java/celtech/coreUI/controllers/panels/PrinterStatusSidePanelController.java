@@ -383,18 +383,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().addListener(
                 graphDataPointChangeListener);
 
-        for (int i = 0; i < head.getNozzleHeaters().size(); i++)
-        {
-            NozzleHeater nozzleHeater = head.getNozzleHeaters().get(i);
-            chartManager.addNozzle(i,
-                    nozzleHeater.getNozzleTemperatureHistory(),
-                    nozzleHeater.heaterModeProperty(),
-                    nozzleHeater.nozzleTargetTemperatureProperty(),
-                    nozzleHeater.nozzleFirstLayerTargetTemperatureProperty(),
-                    nozzleHeater.nozzleTemperatureProperty());
-
-        }
-
         if (head.getNozzleHeaters().size() > 0)
         {
             graphAlternativeN1Temp.setVisible(true);
@@ -404,7 +392,24 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                             .greaterThanOrEqualTo(ApplicationConfiguration.minTempToDisplayOnGraph))
                     .then(head.getNozzleHeaters().get(0).nozzleTemperatureProperty().asString("%d°C"))
                     .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
+
+            if (head.headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+            {
+                legendNozzleS.setText(Lookup.i18n("sidePanel_printerStatus.nozzleLabel"));
+            } else
+            {
+                legendNozzleS.setText(Lookup.i18n("printerStatus.temperatureGraphNozzleLabel0"));
+            }
+
+            NozzleHeater nozzleHeater = head.getNozzleHeaters().get(0);
+            chartManager.addNozzle(0,
+                    nozzleHeater.getNozzleTemperatureHistory(),
+                    nozzleHeater.heaterModeProperty(),
+                    nozzleHeater.nozzleTargetTemperatureProperty(),
+                    nozzleHeater.nozzleFirstLayerTargetTemperatureProperty(),
+                    nozzleHeater.nozzleTemperatureProperty());
         }
+
         if (head.getNozzleHeaters().size() > 1)
         {
             graphAlternativeN2Legend.setVisible(true);
@@ -414,6 +419,18 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                             .greaterThanOrEqualTo(ApplicationConfiguration.minTempToDisplayOnGraph))
                     .then(head.getNozzleHeaters().get(1).nozzleTemperatureProperty().asString("%d°C"))
                     .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
+            graphAlternativeN1Legend.setText(Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
+            legendNozzleT.setText(Lookup.i18n("printerStatus.temperatureGraphNozzleLabel1"));
+            NozzleHeater nozzleHeater = head.getNozzleHeaters().get(1);
+            chartManager.addNozzle(1,
+                    nozzleHeater.getNozzleTemperatureHistory(),
+                    nozzleHeater.heaterModeProperty(),
+                    nozzleHeater.nozzleTargetTemperatureProperty(),
+                    nozzleHeater.nozzleFirstLayerTargetTemperatureProperty(),
+                    nozzleHeater.nozzleTemperatureProperty());
+        } else
+        {
+            graphAlternativeN1Legend.setText(Lookup.i18n("sidePanel_printerStatus.nozzleLabel"));
         }
 
         headTitleBold.setText(Lookup.i18n("headPanel." + head.typeCodeProperty().get() + ".titleBold"));

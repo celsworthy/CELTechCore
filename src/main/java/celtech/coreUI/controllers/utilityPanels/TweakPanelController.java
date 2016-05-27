@@ -147,9 +147,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitFeedrate1
-                        && (!speedMultiplier1Slider.isValueChanging()
-                        || now.doubleValue() >= speedMultiplier1Slider.getMax()
-                        || now.doubleValue() <= speedMultiplier1Slider.getMin()))
+                && (!speedMultiplier1Slider.isValueChanging()
+                || now.doubleValue() >= speedMultiplier1Slider.getMax()
+                || now.doubleValue() <= speedMultiplier1Slider.getMin()))
                 {
                     try
                     {
@@ -165,9 +165,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitFeedrate2
-                        && (!speedMultiplier2Slider.isValueChanging()
-                        || now.doubleValue() >= speedMultiplier2Slider.getMax()
-                        || now.doubleValue() <= speedMultiplier2Slider.getMin()))
+                && (!speedMultiplier2Slider.isValueChanging()
+                || now.doubleValue() >= speedMultiplier2Slider.getMax()
+                || now.doubleValue() <= speedMultiplier2Slider.getMin()))
                 {
                     try
                     {
@@ -193,9 +193,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitBed
-                        && (!bedTemperatureSlider.isValueChanging()
-                        || now.doubleValue() >= bedTemperatureSlider.getMax()
-                        || now.doubleValue() <= bedTemperatureSlider.getMin()))
+                && (!bedTemperatureSlider.isValueChanging()
+                || now.doubleValue() >= bedTemperatureSlider.getMax()
+                || now.doubleValue() <= bedTemperatureSlider.getMin()))
                 {
                     currentPrinter.setBedTargetTemperature(now.intValue());
                 }
@@ -215,9 +215,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitExtrusion1
-                        && (!extrusionMultiplier1Slider.isValueChanging()
-                        || now.doubleValue() >= extrusionMultiplier1Slider.getMax()
-                        || now.doubleValue() <= extrusionMultiplier1Slider.getMin()))
+                && (!extrusionMultiplier1Slider.isValueChanging()
+                || now.doubleValue() >= extrusionMultiplier1Slider.getMax()
+                || now.doubleValue() <= extrusionMultiplier1Slider.getMin()))
                 {
                     try
                     {
@@ -243,9 +243,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitExtrusion2
-                        && (!extrusionMultiplier2Slider.isValueChanging()
-                        || now.doubleValue() >= extrusionMultiplier2Slider.getMax()
-                        || now.doubleValue() <= extrusionMultiplier2Slider.getMin()))
+                && (!extrusionMultiplier2Slider.isValueChanging()
+                || now.doubleValue() >= extrusionMultiplier2Slider.getMax()
+                || now.doubleValue() <= extrusionMultiplier2Slider.getMin()))
                 {
                     try
                     {
@@ -277,9 +277,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitNozzleTemp1
-                        && (!nozzleTemperature1Slider.isValueChanging()
-                        || now.doubleValue() >= nozzleTemperature1Slider.getMax()
-                        || now.doubleValue() <= nozzleTemperature1Slider.getMin()))
+                && (!nozzleTemperature1Slider.isValueChanging()
+                || now.doubleValue() >= nozzleTemperature1Slider.getMax()
+                || now.doubleValue() <= nozzleTemperature1Slider.getMin()))
                 {
                     currentPrinter.setNozzleHeaterTargetTemperature(0, now.intValue());
                 }
@@ -299,9 +299,9 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
                 if (!inhibitNozzleTemp2
-                        && (!nozzleTemperature2Slider.isValueChanging()
-                        || now.doubleValue() >= nozzleTemperature2Slider.getMax()
-                        || now.doubleValue() <= nozzleTemperature2Slider.getMin()))
+                && (!nozzleTemperature2Slider.isValueChanging()
+                || now.doubleValue() >= nozzleTemperature2Slider.getMax()
+                || now.doubleValue() <= nozzleTemperature2Slider.getMin()))
                 {
                     currentPrinter.setNozzleHeaterTargetTemperature(1, nozzleTemperature2Slider.valueProperty().intValue());
                 }
@@ -438,7 +438,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             speedMultiplier1Slider.valueProperty().addListener(speedMultiplier1SliderListener);
             currentPrinter.getPrinterAncillarySystems().feedRateEMultiplierProperty().addListener(
                     feedRate1ChangeListener);
-        }else
+        } else
         {
             extrusionMultiplier1Box.setVisible(false);
             extrusionMultiplier1Box.setMaxHeight(0);
@@ -447,7 +447,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             printSpeed1Box.setMaxHeight(0);
             printSpeed1Box.setMinHeight(0);
         }
-        
+
         if (currentPrinter.extrudersProperty().get(1).isFittedProperty().get() && dUsedForThisPrintJob())
         {
             extrusionMultiplier2Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(1).extrusionMultiplierProperty().doubleValue() * 100.0)));
@@ -461,7 +461,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             printSpeed2Box.setVisible(true);
             printSpeed2Box.setMaxHeight(1000);
             printSpeed2Box.setMinHeight(0);
-            
+
             printSpeed2Display.setText(String.format("%d%%", (int) (currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().get() * 100.0)));
             speedMultiplier2Slider.setValue(currentPrinter.getPrinterAncillarySystems().feedRateDMultiplierProperty().get() * 100.0);
             speedMultiplier2Slider.valueProperty().addListener(speedMultiplier2SliderListener);
@@ -479,7 +479,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
         bindNozzleTemperatureDisplay();
         updateNozzleTemperatureDisplay();
-        container.setVisible(true);        
+        container.setVisible(true);
     }
 
     private void unbind()
@@ -619,11 +619,15 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
             if (currentPrinter.headProperty().get().getNozzleHeaters().size() > 1)
             {
+                nozzle1Text.setText(Lookup.i18n("printAdjustments.nozzleTemperature1"));
                 nozzleTemperature2Slider.valueProperty().addListener(nozzleTemp2SliderListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().addListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().addListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().addListener(heaterModeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(nozzleLastFilamentTempChangeListener);
+            } else
+            {
+                nozzle1Text.setText(Lookup.i18n("printAdjustments.nozzleTemperature"));
             }
         }
     }
