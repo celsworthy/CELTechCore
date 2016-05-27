@@ -1,5 +1,7 @@
 package celtech.coreUI.visualisation;
 
+import celtech.appManager.ApplicationMode;
+import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.StandardColours;
 import celtech.roboxbase.utils.Math.MathUtils;
 import javafx.geometry.Point2D;
@@ -47,7 +49,7 @@ public class BedAxes extends Pane implements CameraViewChangeListener
     private final double arrowWidth = 10;
     private final double lineLength = 20;
     private final double lineWidth = 3;
-    private final double textOffsetFromOrigin = 5;
+    private final double textOffsetFromOrigin = 8;
 
     private final ScreenCoordinateConverter screenCoordinateConverter;
 
@@ -59,6 +61,7 @@ public class BedAxes extends Pane implements CameraViewChangeListener
 
     private void initialise()
     {
+        setVisible(false);
         xText.getTransforms().add(xTextTranslate);
         xText.getStyleClass().add("bed-axis-label");
         xText.setText("X");
@@ -191,6 +194,8 @@ public class BedAxes extends Pane implements CameraViewChangeListener
                 zArrowTranslate.setY(zAxisLocalEnd.getY());
                 double zAngle = calculateAngle(originLocal, zAxisLocalEnd);
                 zArrowRotate.setAngle(zAngle);
+
+                visibleProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
             }
         }
     }

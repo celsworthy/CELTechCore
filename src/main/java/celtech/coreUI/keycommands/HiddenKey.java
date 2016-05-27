@@ -118,11 +118,11 @@ public class HiddenKey
 
         }
 
-        if (!wasConsumed)
+        if (!wasConsumed
+                && unhandledKeyListener != null)
         {
             unhandledKeyListener.unhandledKeyEvent(event);
-        }
-        else
+        } else
         {
             event.consume();
         }

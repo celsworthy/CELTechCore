@@ -244,7 +244,6 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         zCutEntryBox = new ZCutEntryBox(overlayPane, layoutSubmode, viewManager, (ModelContainerProject) project);
         bedAxes = new BedAxes(viewManager);
-        bedAxes.visibleProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
         viewManager.addCameraViewChangeListener(bedAxes);
 
         basePane.getChildren().add(0, viewManager.getSubScene());

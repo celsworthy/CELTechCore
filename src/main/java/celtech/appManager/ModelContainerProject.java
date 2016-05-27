@@ -410,13 +410,13 @@ public class ModelContainerProject extends Project
         {
             ModelContainer modelContainer = (ModelContainer) projectifiableThing;
             topLevelThings.add(modelContainer);
-            projectModified();
-            fireWhenModelAdded(modelContainer);
             addModelListeners(modelContainer);
             for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
             {
                 addModelListeners(childModelContainer);
             }
+            projectModified();
+            fireWhenModelAdded(modelContainer);
         }
     }
 
@@ -452,10 +452,6 @@ public class ModelContainerProject extends Project
         for (ModelContainer modelContainer : modelContainers)
         {
             removeModelListeners(modelContainer);
-            for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
-            {
-                removeModelListeners(childModelContainer);
-            }
         }
         projectModified();
         fireWhenModelsRemoved(projectifiableThings);
@@ -469,25 +465,35 @@ public class ModelContainerProject extends Project
         }
     }
 
-    private ChangeListener<Number> modelExtruderNumberListener;
+    private Map<ModelContainer, ChangeListener<Number>> modelExtruderNumberListener = new HashMap<>();
 
     private void addModelListeners(ModelContainer modelContainer)
     {
-        //TODO XXX this is a bug, modelExtruderNumberListener is being overridden for each model
-        modelExtruderNumberListener
-                = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+        if (!(modelContainer instanceof ModelGroup)
+                && !modelExtruderNumberListener.containsKey(modelContainer))
+        {
+            ChangeListener<Number> changeListener = new ChangeListener()
+            {
+                @Override
+                public void changed(ObservableValue ov, Object t, Object t1)
                 {
                     fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
                     modelColourChanged.set(!modelColourChanged.get());
-                };
-        modelContainer.getAssociateWithExtruderNumberProperty().addListener(
-                modelExtruderNumberListener);
+                }
+            };
+
+            modelExtruderNumberListener.put(modelContainer, changeListener);
+            modelContainer.getAssociateWithExtruderNumberProperty().addListener(changeListener);
+        }
     }
 
-    private void removeModelListeners(ModelContainer modelContainer)
+    public void removeModelListeners(ModelContainer modelContainer)
     {
-        modelContainer.getAssociateWithExtruderNumberProperty().removeListener(
-                modelExtruderNumberListener);
+        if (!(modelContainer instanceof ModelGroup))
+        {
+            modelContainer.getAssociateWithExtruderNumberProperty().removeListener(modelExtruderNumberListener.get(modelContainer));
+            modelExtruderNumberListener.remove(modelContainer);
+        }
     }
 
     private Set<ModelContainer> getModelsHoldingMeshViews()
@@ -807,9 +813,12 @@ public class ModelContainerProject extends Project
         }
     }
 
-    public void setUseExtruder0Filament(ModelContainer modelContainer, boolean useExtruder0)
+    public void setAssociatedExtruder(Set<ModelContainer> modelContainers, boolean useExtruder0)
     {
-        modelContainer.setUseExtruder0(useExtruder0);
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            modelContainer.setUseExtruder0(useExtruder0);
+        }
 
         boolean usingDifferentExtruders = false;
         int lastExtruder = -1;
@@ -829,7 +838,7 @@ public class ModelContainerProject extends Project
         if (!usingDifferentExtruders)
         {
             printerSettings.getPrintSupportTypeOverrideProperty().set(
-                    (modelContainer.getAssociateWithExtruderNumberProperty().get() == 0)
+                    (useExtruder0 == true)
                             ? SlicerParametersFile.SupportType.MATERIAL_1
                             : SlicerParametersFile.SupportType.MATERIAL_2);
             fireWhenPrinterSettingsChanged(printerSettings);
@@ -862,7 +871,7 @@ public class ModelContainerProject extends Project
     public ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers)
     {
         checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup((Set)modelContainers);
+        ModelGroup modelGroup = new ModelGroup((Set) modelContainers);
         addModelListeners(modelGroup);
         for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
         {

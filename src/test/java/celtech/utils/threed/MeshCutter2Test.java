@@ -23,7 +23,8 @@ import org.junit.Test;
  *
  * @author tony
  */
-public class MeshCutter2Test {
+public class MeshCutter2Test
+{
 
 //    @Test
 //    public void testCutSimpleCube() {
@@ -38,9 +39,9 @@ public class MeshCutter2Test {
 //        Assert.assertNotNull(meshes.get(1));
 //
 //    }
-
     @Test
-    public void testMakeSplitMeshSimpleCubeBottom() {
+    public void testMakeSplitMeshSimpleCubeBottom()
+    {
         TriangleMesh mesh = TriangleCutterTest.createSimpleCube();
         assertEquals(12, mesh.getFaces().size() / 6);
 
@@ -53,7 +54,8 @@ public class MeshCutter2Test {
     }
 
     @Test
-    public void testMakeSplitMeshSimpleCubeTop() {
+    public void testMakeSplitMeshSimpleCubeTop()
+    {
         TriangleMesh mesh = TriangleCutterTest.createSimpleCube();
         assertEquals(12, mesh.getFaces().size() / 6);
 
@@ -64,7 +66,7 @@ public class MeshCutter2Test {
 
         assertEquals(14, childMesh.getFaces().size() / 6);
     }
-    
+
     @Test
     public void testCutCubeAlongMeshingLineReturnsTwoMeshes() throws STLFileParsingException
     {
@@ -78,8 +80,8 @@ public class MeshCutter2Test {
         List<TriangleMesh> meshes = MeshCutter2.cut(mesh, -20, nullBedToLocalConverter);
         Assert.assertNotNull(meshes.get(0));
         Assert.assertNotNull(meshes.get(1));
-    }    
-    
+    }
+
     @Test
     public void testMeshWithPointsOnCutPlane()
     {
@@ -134,10 +136,10 @@ public class MeshCutter2Test {
         mesh.getFaces().addAll(8, 0, 9, 0, 10, 0);
         return mesh;
     }
-    
 
     @Test
-    public void testEnricoSTLAt1() throws STLFileParsingException {
+    public void testEnricoSTLAt1() throws STLFileParsingException
+    {
 
         URL stlURL = this.getClass().getResource("/enrico.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
@@ -153,7 +155,8 @@ public class MeshCutter2Test {
     }
 
     @Test
-    public void testEnricoSTLAt3p8() throws STLFileParsingException {
+    public void testEnricoSTLAt3p8() throws STLFileParsingException
+    {
 
         URL stlURL = this.getClass().getResource("/enrico.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
@@ -169,7 +172,8 @@ public class MeshCutter2Test {
     }
 
     @Test
-    public void testEnricoSTLAt2() throws STLFileParsingException {
+    public void testEnricoSTLAt2() throws STLFileParsingException
+    {
 
         URL stlURL = this.getClass().getResource("/enrico.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
@@ -199,9 +203,9 @@ public class MeshCutter2Test {
 //        Assert.assertNotNull(meshes.get(0));
 //        Assert.assertNotNull(meshes.get(1));
 //    }
-
     @Test
-    public void testEnricoSTLAt3() throws STLFileParsingException {
+    public void testEnricoSTLAt3() throws STLFileParsingException
+    {
 
         URL stlURL = this.getClass().getResource("/enrico.stl");
         File singleObjectSTLFile = new File(stlURL.getFile());
@@ -217,16 +221,17 @@ public class MeshCutter2Test {
     }
 
     @Test
-    public void testConvertEdgesToPolygonIndices() {
-        
-        ManifoldEdge edge0 = new ManifoldEdge(9, 8, null, null, 3); 
-        ManifoldEdge edge1 = new ManifoldEdge(10, 9, null, null, 3); 
-        ManifoldEdge edge2 = new ManifoldEdge(11, 10, null, null, 3); 
-        ManifoldEdge edge3 = new ManifoldEdge(11, 12, null, null, 3); 
-        ManifoldEdge edge4 = new ManifoldEdge(12, 13, null, null, 3); 
-        ManifoldEdge edge5 = new ManifoldEdge(14, 13, null, null, 3); 
-        ManifoldEdge edge6 = new ManifoldEdge(15, 14, null, null, 3); 
-        ManifoldEdge edge7 = new ManifoldEdge(15, 16, null, null, 3); 
+    public void testConvertEdgesToPolygonIndices()
+    {
+
+        ManifoldEdge edge0 = new ManifoldEdge(9, 8, null, null, 3);
+        ManifoldEdge edge1 = new ManifoldEdge(10, 9, null, null, 3);
+        ManifoldEdge edge2 = new ManifoldEdge(11, 10, null, null, 3);
+        ManifoldEdge edge3 = new ManifoldEdge(11, 12, null, null, 3);
+        ManifoldEdge edge4 = new ManifoldEdge(12, 13, null, null, 3);
+        ManifoldEdge edge5 = new ManifoldEdge(14, 13, null, null, 3);
+        ManifoldEdge edge6 = new ManifoldEdge(15, 14, null, null, 3);
+        ManifoldEdge edge7 = new ManifoldEdge(15, 16, null, null, 3);
         List<ManifoldEdge> loop = new ArrayList<>();
         loop.add(edge0);
         loop.add(edge1);
@@ -236,9 +241,9 @@ public class MeshCutter2Test {
         loop.add(edge5);
         loop.add(edge6);
         loop.add(edge7);
-        
+
         PolygonIndices polygonIndices = MeshCutter2.convertEdgesToPolygonIndices(loop).getFirst();
-        System.out.println(polygonIndices) ;
+        System.out.println(polygonIndices);
         PolygonIndices expectedPolygonIndices = new PolygonIndices();
         expectedPolygonIndices.add(8);
         expectedPolygonIndices.add(9);
@@ -249,10 +254,9 @@ public class MeshCutter2Test {
         expectedPolygonIndices.add(14);
         expectedPolygonIndices.add(15);
         expectedPolygonIndices.add(16);
-        
+
         assertEquals(expectedPolygonIndices, polygonIndices);
-        
-                
+
     }
 
 }

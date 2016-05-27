@@ -77,6 +77,8 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProviderT
 
     /**
      * Return all descendent ModelContainers of this ModelGroup.
+     * NOTE - this includes every node - e.g. if a group node is present then so are all of its children
+     * @return 
      */
     @Override
     public Set<ModelContainer> getDescendentModelContainers()
@@ -221,16 +223,6 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProviderT
         {
             modelContainer.updateColour(extruder1Colour, extruder2Colour,
                     showMisplacedColour);
-        }
-    }
-
-    @Override
-    public void setUseExtruder0(boolean useExtruder0)
-    {
-        associateWithExtruderNumber.set(useExtruder0 ? 0 : 1);
-        for (ModelContainer modelContainer : childModelContainers)
-        {
-            modelContainer.setUseExtruder0(useExtruder0);
         }
     }
 

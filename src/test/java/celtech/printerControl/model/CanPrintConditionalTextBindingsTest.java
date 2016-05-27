@@ -5,7 +5,6 @@ package celtech.printerControl.model;
 
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.JavaFXConfiguredTest;
-import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.HeadContainer;
@@ -87,13 +86,13 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
 
         return project;
     }
-    
+
     private ModelContainerProject makeTwoModelProject(Filament projectFil0, Filament projectFil1)
     {
         ModelContainerProject project = new ModelContainerProject();
         ModelContainer modelContainer = makeModelContainer(true);
         project.addModel(modelContainer);
-        
+
         ModelContainer modelContainer2 = makeModelContainer(false);
         project.addModel(modelContainer2);
 
@@ -101,10 +100,11 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         project.setExtruder1Filament(projectFil1);
 
         return project;
-    }    
+    }
 
     /**
-     * One printer extruder, PURPLE. One model on extruder 0. Project setting PURPLE, WHITE.
+     * One printer extruder, PURPLE. One model on extruder 0. Project setting
+     * PURPLE, WHITE.
      */
     @Test
     public void testOneExtruderOneModelExtruder0_1()
@@ -113,7 +113,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeOneModelProject(PURPLE, WHITE);
         Printer printer = makeOneExtruderSMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
@@ -122,7 +122,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     }
 
     /**
-     * One printer extruder, PURPLE. One model on extruder 0. Project setting GREEN, WHITE.
+     * One printer extruder, PURPLE. One model on extruder 0. Project setting
+     * GREEN, WHITE.
      */
     @Test
     public void testOneExtruderOneModelExtruder0_2()
@@ -131,7 +132,7 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeOneModelProject(GREEN, WHITE);
         Printer printer = makeOneExtruderSMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
@@ -141,7 +142,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     }
 
     /**
-     * One printer extruder, PURPLE. One model on extruder 1. Project setting PURPLE, WHITE.
+     * One printer extruder, PURPLE. One model on extruder 1. Project setting
+     * PURPLE, WHITE.
      */
     @Test
     public void testOneExtruderOneModelExtruder1_1()
@@ -150,9 +152,9 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeOneModelProject(PURPLE, WHITE);
         Printer printer = makeOneExtruderSMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
-        ((ModelContainer)project.getTopLevelThings().get(0)).setUseExtruder0(true);
+        ((ModelContainer) project.getTopLevelThings().get(0)).setUseExtruder0(true);
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         assertTrue(filament0Reqd.get());
@@ -160,7 +162,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     }
 
     /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 1. Project setting PURPLE, WHITE.
+     * Two printer extruders, PURPLE, WHITE. One model on extruder 1. Project
+     * setting PURPLE, WHITE.
      */
     @Test
     public void testTwoExtruderOneModelExtruder1_1()
@@ -169,10 +172,10 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeOneModelProject(PURPLE, WHITE);
         Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
         project.getPrinterSettings().setPrintSupportTypeOverride(SlicerParametersFile.SupportType.MATERIAL_2);
 
-        ((ModelContainer)project.getTopLevelThings().get(0)).setUseExtruder0(false);
+        ((ModelContainer) project.getTopLevelThings().get(0)).setUseExtruder0(false);
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         // filament 0 not required because model is not on extruder 0
@@ -181,7 +184,8 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
     }
 
     /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0. Project setting PURPLE, WHITE.
+     * Two printer extruders, PURPLE, WHITE. One model on extruder 0. Project
+     * setting PURPLE, WHITE.
      */
     @Test
     public void testTwoExtruderOneModelExtruder0_1()
@@ -190,17 +194,17 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeOneModelProject(PURPLE, WHITE);
         Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         assertTrue(filament0Reqd.get());
         assertFalse(filament1Reqd.get());
     }
-    
+
     /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
-     * Project setting PURPLE, WHITE.
+     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on
+     * extruder 1. Project setting PURPLE, WHITE.
      */
     @Test
     public void testTwoExtruderTwoModels_1()
@@ -209,17 +213,17 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeTwoModelProject(PURPLE, WHITE);
         Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         assertTrue(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
-    }    
-    
+    }
+
     /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
-     * Project setting GREEN, WHITE.
+     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on
+     * extruder 1. Project setting GREEN, WHITE.
      */
     @Test
     public void testTwoExtruderTwoModels_2()
@@ -228,17 +232,17 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeTwoModelProject(GREEN, WHITE);
         Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         assertTrue(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
-    }      
-    
+    }
+
     /**
-     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on extruder 1.
-     * Project setting PURPLE, GREEN.
+     * Two printer extruders, PURPLE, WHITE. One model on extruder 0, one on
+     * extruder 1. Project setting PURPLE, GREEN.
      */
     @Test
     public void testTwoExtruderTwoModels_3()
@@ -247,13 +251,13 @@ public class CanPrintConditionalTextBindingsTest extends JavaFXConfiguredTest
         ModelContainerProject project = makeTwoModelProject(PURPLE, GREEN);
         Printer printer = makeTwoExtruderDMHeadPrinter();
         CanPrintConditionalTextBindings conditionalTextBindings
-            = new CanPrintConditionalTextBindings(project, printer);
+                = new CanPrintConditionalTextBindings(project, printer);
 
         BooleanBinding filament0Reqd = conditionalTextBindings.getFilament0Required();
         BooleanBinding filament1Reqd = conditionalTextBindings.getFilament1Required();
         assertTrue(filament0Reqd.get());
         assertTrue(filament1Reqd.get());
-    }     
+    }
 
     class Shape3DRectangle extends TriangleMesh
     {

@@ -77,6 +77,7 @@ public class ProgressDialog
             dialogStage.setScene(dialogScene);
             dialogStage.initOwner(DisplayManager.getMainStage());
             dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.toFront();
         } catch (IOException ex)
         {
             steno.exception("Couldn't load dialog box FXML", ex);
