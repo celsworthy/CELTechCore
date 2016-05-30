@@ -618,11 +618,15 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
             if (currentPrinter.headProperty().get().getNozzleHeaters().size() > 1)
             {
+                nozzle1Text.setText(Lookup.i18n("printAdjustments.nozzleTemperature1"));
                 nozzleTemperature2Slider.valueProperty().addListener(nozzleTemp2SliderListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().addListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().addListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().addListener(heaterModeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(nozzleLastFilamentTempChangeListener);
+            } else
+            {
+                nozzle1Text.setText(Lookup.i18n("printAdjustments.nozzleTemperature"));
             }
         }
     }
