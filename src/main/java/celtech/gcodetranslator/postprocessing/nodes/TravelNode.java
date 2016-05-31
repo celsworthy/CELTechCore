@@ -7,6 +7,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
@@ -15,6 +16,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
  */
 public class TravelNode extends GCodeEventNode implements MovementProvider, FeedrateProvider, SupportsPrintTimeCalculation, Renderable, MergeableWithToolchange
 {
+
     private Movement movement = new Movement();
     private Feedrate feedrate = new Feedrate();
 
@@ -93,4 +95,5 @@ public class TravelNode extends GCodeEventNode implements MovementProvider, Feed
 
         return returnedNode;
     }
+
 }

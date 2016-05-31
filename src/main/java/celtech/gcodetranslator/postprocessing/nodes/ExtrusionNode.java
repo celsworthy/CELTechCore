@@ -11,6 +11,7 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePosition;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
@@ -81,23 +82,23 @@ public class ExtrusionNode extends GCodeEventNode implements ExtrusionProvider, 
         {
             stringToOutput.append(' ');
         }
-        
+
         String extrusionString = extrusion.renderForOutput();
         stringToOutput.append(extrusionString);
         if (extrusionString.length() > 0)
         {
             stringToOutput.append(' ');
         }
-        
+
         String nozzlePositionString = nozzlePosition.renderForOutput();
         stringToOutput.append(nozzlePositionString);
         if (nozzlePositionString.length() > 0)
         {
             stringToOutput.append(' ');
         }
-        
+
         stringToOutput.append(getCommentText());
-        
+
         return stringToOutput.toString().trim();
     }
 
