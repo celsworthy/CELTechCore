@@ -47,12 +47,13 @@ public class UtilityMethods
 
     public UtilityMethods(final PostProcessorFeatureSet ppFeatureSet,
             SlicerParametersFile settings,
-            String headType)
+            String headType,
+            NodeManagementUtilities nodeManagementUtilities)
     {
         this.ppFeatureSet = ppFeatureSet;
         this.settings = settings;
-        nodeManagementUtilities = new NodeManagementUtilities(ppFeatureSet);
-        this.closeLogic = new CloseLogic(settings, ppFeatureSet, headType);
+        this.nodeManagementUtilities = nodeManagementUtilities;
+        this.closeLogic = new CloseLogic(settings, ppFeatureSet, headType, nodeManagementUtilities);
     }
 
     protected void insertCameraTriggersAndCloses(LayerNode layerNode,

@@ -674,10 +674,12 @@ public class UtilityMethodsTest extends JavaFXConfiguredTest
             proxy.setNozzleReferenceNumber(nozzleIndex);
             nozzleProxies.add(proxy);
         }
+        
+        NodeManagementUtilities nmu = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         UtilityMethods utilityMethods = new UtilityMethods(ppFeatures,
             testProject.getPrinterSettings().getSettings("RBX01-DM"), 
-            "RBX01-DM");
+            "RBX01-DM", nmu);
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         OutputUtilities opUtils = new OutputUtilities();

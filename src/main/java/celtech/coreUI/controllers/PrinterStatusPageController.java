@@ -692,7 +692,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         });
 
         vBoxRight.setSpacing(20);
-        projectPanel = loadInsetPanel("ProjectPanel.fxml", "projectDisplay.project", null, selectedPrinterIsPrinting, vBoxRight, 0);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", "projectPanel.title", null, selectedPrinterIsPrinting, vBoxRight, 0);
         projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);

@@ -2,6 +2,7 @@ package celtech.gcodetranslator.postprocessing;
 
 import celtech.JavaFXConfiguredTest;
 import celtech.appManager.Project;
+import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
@@ -14,6 +15,8 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.services.slicer.PrintQualityEnumeration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -42,11 +45,25 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         assertEquals(3, testLayer.getChildren().size());
 
-        nodeManagementUtilities.removeUnretractNodes(testLayer);
+        nodeManagementUtilities.rehabilitateUnretractNodes(testLayer);
 
         assertEquals(0, testLayer.getChildren().size());
     }
@@ -90,7 +107,23 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.getPrinterSettings().setSettingsName("Draft");
+        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
+
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         assertEquals(2, testLayer.getChildren().size());
@@ -150,10 +183,21 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
         Project testProject = new Project();
-        testProject.getPrinterSettings().setSettingsName("BothNozzles");
-        testProject.setPrintQuality(PrintQualityEnumeration.CUSTOM);
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
+
         LayerPostProcessResult lastLayerParseResult = new LayerPostProcessResult(testLayer, 0, null, null, null, -1);
 
         assertEquals(2, testLayer.getChildren().size());
@@ -362,7 +406,6 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
 //            fail("Got exception during test " + ex);
 //        }
 //    }
-
     @Test
     public void testNextExtrusion()
     {
@@ -429,7 +472,21 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         try
         {
@@ -512,7 +569,21 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         try
         {
@@ -595,7 +666,21 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         try
         {
@@ -676,7 +761,21 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         try
         {
@@ -757,6 +856,7 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ToolSelectNode ts1 = new ToolSelectNode();
         ts1.addChildAtEnd(fill1);
         ts1.addChildAtEnd(fill2);
+        ts1.setToolNumber(0);
 
         LayerNode layer = new LayerNode(0);
         layer.addChildAtEnd(ts1);
@@ -766,7 +866,21 @@ public class NodeManagementUtilitiesTest extends JavaFXConfiguredTest
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_NOZZLE_FULLY_AT_START);
         ppFeatures.enableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
 
-        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures);
+        Project testProject = new Project();
+        testProject.setPrintQuality(PrintQualityEnumeration.DRAFT);
+
+        List<NozzleProxy> nozzleProxies = new ArrayList<>();
+
+        for (int nozzleIndex = 0;
+                nozzleIndex < testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters()
+                .size(); nozzleIndex++)
+        {
+            NozzleProxy proxy = new NozzleProxy(testProject.getPrinterSettings().getSettings("RBX01-SM").getNozzleParameters().get(nozzleIndex));
+            proxy.setNozzleReferenceNumber(nozzleIndex);
+            nozzleProxies.add(proxy);
+        }
+
+        NodeManagementUtilities nodeManagementUtilities = new NodeManagementUtilities(ppFeatures, nozzleProxies);
 
         nodeManagementUtilities.calculatePerRetractExtrusionAndNode(layer);
 

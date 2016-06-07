@@ -154,12 +154,12 @@ public class PostProcessor
             featureSet.disableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
         }
 
-        postProcessorUtilityMethods = new UtilityMethods(featureSet, settings, headType);
-        nodeManagementUtilities = new NodeManagementUtilities(featureSet);
+        nodeManagementUtilities = new NodeManagementUtilities(featureSet, nozzleProxies);
+        postProcessorUtilityMethods = new UtilityMethods(featureSet, slicerParametersFile, headType, nodeManagementUtilities);
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, postProcessingMode, objectToNozzleNumberMap);
-        closeLogic = new CloseLogic(slicerParametersFile, featureSet, headType);
+        closeLogic = new CloseLogic(slicerParametersFile, featureSet, headType, nodeManagementUtilities);
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
-        utilities = new UtilityMethods(featureSet, settings, headType);
+        utilities = new UtilityMethods(featureSet, settings, headType, nodeManagementUtilities);
         heaterSaver = new FilamentSaver(100, 120);
         outputVerifier = new OutputVerifier(featureSet);
     }
@@ -494,9 +494,8 @@ public class PostProcessor
     private LayerPostProcessResult postProcess(LayerNode layerNode,
             LayerPostProcessResult lastLayerParseResult)
     {
-        // We never want unretracts
         timeUtils.timerStart(this, unretractTimerName);
-        nodeManagementUtilities.removeUnretractNodes(layerNode);
+        nodeManagementUtilities.rehabilitateUnretractNodes(layerNode);
         timeUtils.timerStop(this, unretractTimerName);
 
         timeUtils.timerStart(this, orphanTimerName);

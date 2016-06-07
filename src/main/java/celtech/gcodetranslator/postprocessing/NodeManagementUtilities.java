@@ -1,5 +1,7 @@
 package celtech.gcodetranslator.postprocessing;
 
+import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
@@ -28,30 +30,37 @@ public class NodeManagementUtilities
 {
 
     private final PostProcessorFeatureSet featureSet;
+    private final List<NozzleProxy> nozzleProxies;
 
-    public NodeManagementUtilities(PostProcessorFeatureSet featureSet)
+    public NodeManagementUtilities(PostProcessorFeatureSet featureSet,
+            List<NozzleProxy> nozzleProxies)
     {
         this.featureSet = featureSet;
+        this.nozzleProxies = nozzleProxies;
     }
 
-    protected void removeUnretractNodes(LayerNode layerNode)
+    protected void rehabilitateUnretractNodes(LayerNode layerNode)
     {
         Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
         List<UnretractNode> nodesToDelete = new ArrayList<>();
+        NozzleProxy nozzleInUse = nozzleProxies.get(0);
 
         while (layerIterator.hasNext())
         {
             GCodeEventNode node = layerIterator.next();
-            if (node instanceof UnretractNode)
+
+            if (node instanceof ToolSelectNode)
+            {
+                nozzleInUse = nozzleProxies.get(((ToolSelectNode) node).getToolNumber());
+            } else if (node instanceof UnretractNode)
             {
                 if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
                 {
                     nodesToDelete.add((UnretractNode) node);
                 } else
                 {
-                    //We need to put the right value into the unretract
-                    // Fix at 0.5 for the moment
-                    ((UnretractNode)node).getExtrusion().setE(0.5f);
+                    //We need to put the appropriate value in for the unretract
+                    ((UnretractNode) node).getExtrusion().setE(nozzleInUse.getNozzleParameters().getEjectionVolume());
                 }
             }
         }
@@ -128,6 +137,8 @@ public class NodeManagementUtilities
         List<SectionNode> sectionNodes = new ArrayList<>();
         SectionNode lastSectionNode = null;
 
+        NozzleProxy nozzleInUse = nozzleProxies.get(0);
+
         while (layerIterator.hasNext())
         {
             GCodeEventNode node = layerIterator.next();
@@ -137,6 +148,8 @@ public class NodeManagementUtilities
                 sectionNodes.clear();
                 lastSectionNode = null;
                 lastExtrusionNode = null;
+
+                nozzleInUse = nozzleProxies.get(((ToolSelectNode) node).getToolNumber());
             } else if (node instanceof ExtrusionNode)
             {
                 Optional<SectionNode> parentSection = lookForParentSectionNode(node);
@@ -158,6 +171,13 @@ public class NodeManagementUtilities
                 RetractNode retractNode = (RetractNode) node;
                 retractNode.setExtrusionSinceLastRetract(extrusionInRetract);
                 retractNode.setSectionsToConsider(sectionNodes);
+
+                if (!featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
+                {
+                    //We need to put the appropriate value in for the retract
+                    retractNode.getExtrusion().setE(-nozzleInUse.getNozzleParameters().getEjectionVolume());
+                }
+
                 List<SectionNode> newSectionNodes = new ArrayList<>();
                 newSectionNodes.addAll(sectionNodes);
                 sectionNodes = newSectionNodes;
