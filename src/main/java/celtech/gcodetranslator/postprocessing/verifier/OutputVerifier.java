@@ -1,6 +1,8 @@
 package celtech.gcodetranslator.postprocessing.verifier;
 
 import celtech.gcodetranslator.postprocessing.LayerPostProcessResult;
+import celtech.gcodetranslator.postprocessing.PostProcessorFeature;
+import celtech.gcodetranslator.postprocessing.PostProcessorFeatureSet;
 import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
@@ -21,6 +23,13 @@ import java.util.Set;
  */
 public class OutputVerifier
 {
+
+    private final PostProcessorFeatureSet featureSet;
+
+    public OutputVerifier(PostProcessorFeatureSet featureSet)
+    {
+        this.featureSet = featureSet;
+    }
 
     public List<VerifierResult> verifyAllLayers(final List<LayerPostProcessResult> allLayerPostProcessResults, final HeadType headType)
     {
@@ -113,7 +122,8 @@ public class OutputVerifier
                         }
                     }
 
-                    if (nozzlePosition < 1
+                    if (featureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES)
+                            && nozzlePosition < 1
                             && ((((ExtrusionNode) node).getExtrusion().isDInUse() && ((ExtrusionNode) node).getExtrusion().getD() > 0)
                             || (((ExtrusionNode) node).getExtrusion().isEInUse() && ((ExtrusionNode) node).getExtrusion().getE() > 0))
                             && !resultTypes.contains(ResultType.EXTRUDE_NOT_FULLY_OPEN))

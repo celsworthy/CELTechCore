@@ -12,7 +12,6 @@ import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnretractNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
-import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import java.util.ArrayList;
@@ -20,8 +19,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.math3.geometry.euclidean.twod.Segment;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  *
@@ -39,24 +36,29 @@ public class NodeManagementUtilities
 
     protected void removeUnretractNodes(LayerNode layerNode)
     {
-        if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
-        {
-            Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
-            List<UnretractNode> nodesToDelete = new ArrayList<>();
+        Iterator<GCodeEventNode> layerIterator = layerNode.treeSpanningIterator(null);
+        List<UnretractNode> nodesToDelete = new ArrayList<>();
 
-            while (layerIterator.hasNext())
+        while (layerIterator.hasNext())
+        {
+            GCodeEventNode node = layerIterator.next();
+            if (node instanceof UnretractNode)
             {
-                GCodeEventNode node = layerIterator.next();
-                if (node instanceof UnretractNode)
+                if (featureSet.isEnabled(PostProcessorFeature.REMOVE_ALL_UNRETRACTS))
                 {
                     nodesToDelete.add((UnretractNode) node);
+                } else
+                {
+                    //We need to put the right value into the unretract
+                    // Fix at 0.5 for the moment
+                    ((UnretractNode)node).getExtrusion().setE(0.5f);
                 }
             }
+        }
 
-            for (UnretractNode unretractNode : nodesToDelete)
-            {
-                unretractNode.removeFromParent();
-            }
+        for (UnretractNode unretractNode : nodesToDelete)
+        {
+            unretractNode.removeFromParent();
         }
     }
 
@@ -469,7 +471,7 @@ public class NodeManagementUtilities
             this.availableExtrusion = availableExtrusion;
             this.lastNodeExamined = lastNodeExamined;
         }
-        
+
         public double getAvailableExtrusion()
         {
             return availableExtrusion;

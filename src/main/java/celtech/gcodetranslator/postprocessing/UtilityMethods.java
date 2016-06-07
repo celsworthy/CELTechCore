@@ -75,13 +75,16 @@ public class UtilityMethods
 
             Iterator<GCodeEventNode> layerBackwards = layerNode.childBackwardsIterator();
 
-            while (layerBackwards.hasNext())
+            if (ppFeatureSet.isEnabled(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES))
             {
-                GCodeEventNode layerChild = layerBackwards.next();
-                if (layerChild instanceof ToolSelectNode)
+                while (layerBackwards.hasNext())
                 {
-                    closeAtEndOfToolSelectIfNecessary((ToolSelectNode) layerChild, nozzleProxies);
-                    break;
+                    GCodeEventNode layerChild = layerBackwards.next();
+                    if (layerChild instanceof ToolSelectNode)
+                    {
+                        closeAtEndOfToolSelectIfNecessary((ToolSelectNode) layerChild, nozzleProxies);
+                        break;
+                    }
                 }
             }
         }

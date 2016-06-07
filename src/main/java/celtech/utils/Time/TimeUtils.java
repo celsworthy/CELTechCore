@@ -145,13 +145,6 @@ public class TimeUtils
             }
         }
 
-        if (!foundTimer)
-        {
-            throw new TimerNotFoundException("Attempted to get time so far for a non-existent timer for object:" + objectName
-                    + " class:" + referenceObject.getClass().getCanonicalName()
-                    + " timerTitle: " + timerTitle);
-        }
-
         return timeSoFar_ms;
     }
 

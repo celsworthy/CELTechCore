@@ -100,7 +100,7 @@ public class PostProcessor
             String gcodeOutputFile,
             HeadFile headFile,
             SlicerParametersFile settings,
-            PostProcessorFeatureSet postProcessorFeatureSet,
+            final PostProcessorFeatureSet postProcessorFeatureSet,
             String headType,
             DoubleProperty taskProgress,
             String projectName,
@@ -148,6 +148,12 @@ public class PostProcessor
             postProcessingMode = PostProcessingMode.TASK_BASED_NOZZLE_SELECTION;
         }
 
+        if (headFile.getValves() == Head.ValveType.NOT_FITTED)
+        {
+            featureSet.disableFeature(PostProcessorFeature.REMOVE_ALL_UNRETRACTS);
+            featureSet.disableFeature(PostProcessorFeature.OPEN_AND_CLOSE_NOZZLES);
+        }
+
         postProcessorUtilityMethods = new UtilityMethods(featureSet, settings, headType);
         nodeManagementUtilities = new NodeManagementUtilities(featureSet);
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, postProcessingMode, objectToNozzleNumberMap);
@@ -155,7 +161,7 @@ public class PostProcessor
         nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
         utilities = new UtilityMethods(featureSet, settings, headType);
         heaterSaver = new FilamentSaver(100, 120);
-        outputVerifier = new OutputVerifier();
+        outputVerifier = new OutputVerifier(featureSet);
     }
 
     public RoboxiserResult processInput()
@@ -242,7 +248,7 @@ public class PostProcessor
                     if (layerCounter >= 0)
                     {
                         //Parse the layer!
-                        LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastPostProcessResult, writer, headFile.getType());
+                        LayerPostProcessResult parseResult = parseLayer(layerBuffer, lastPostProcessResult);
                         postProcessResults.add(parseResult);
                         lastPostProcessResult = parseResult;
                     }
@@ -262,7 +268,7 @@ public class PostProcessor
             }
 
             //This catches the last layer - if we had no data it won't do anything
-            LayerPostProcessResult lastLayerParseResult = parseLayer(layerBuffer, lastPostProcessResult, writer, headFile.getType());
+            LayerPostProcessResult lastLayerParseResult = parseLayer(layerBuffer, lastPostProcessResult);
             postProcessResults.add(lastLayerParseResult);
 
             if (printerSettings.getSpiralPrintOverride())
@@ -442,7 +448,8 @@ public class PostProcessor
         return result;
     }
 
-    private LayerPostProcessResult parseLayer(StringBuilder layerBuffer, LayerPostProcessResult lastLayerParseResult, GCodeOutputWriter writer, HeadType headType)
+    private LayerPostProcessResult parseLayer(StringBuilder layerBuffer,
+            LayerPostProcessResult lastLayerParseResult)
     {
         LayerPostProcessResult parseResultAtEndOfThisLayer = null;
 
@@ -473,7 +480,7 @@ public class PostProcessor
             {
                 LayerNode layerNode = gcodeParser.getLayerNode();
                 int lastFeedrate = gcodeParser.getFeedrateInForce();
-                parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult, headType);
+                parseResultAtEndOfThisLayer = postProcess(layerNode, lastLayerParseResult);
                 parseResultAtEndOfThisLayer.setLastFeedrateInForce(lastFeedrate);
             }
         } else
@@ -484,7 +491,8 @@ public class PostProcessor
         return parseResultAtEndOfThisLayer;
     }
 
-    private LayerPostProcessResult postProcess(LayerNode layerNode, LayerPostProcessResult lastLayerParseResult, HeadType headType)
+    private LayerPostProcessResult postProcess(LayerNode layerNode,
+            LayerPostProcessResult lastLayerParseResult)
     {
         // We never want unretracts
         timeUtils.timerStart(this, unretractTimerName);
