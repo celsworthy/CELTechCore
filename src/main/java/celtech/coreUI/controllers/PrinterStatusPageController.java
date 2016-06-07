@@ -361,7 +361,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         setupReel1Colour();
         setupReel2Colour();
-        
+
         setAdvancedControlsVisibility();
     }
 
@@ -609,10 +609,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             if (title != null)
             {
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
-                wrappedPanel.visibleProperty().bind(appearanceConditions);
+                if (appearanceConditions != null)
+                {
+                    wrappedPanel.visibleProperty().bind(appearanceConditions);
+                }
 
                 final VBox panelToChangeHeightOf = wrappedPanel;
-                panelVisibilityAction(visibleProperty.getValue(), panelToChangeHeightOf, parentPanel, position);
+                panelVisibilityAction((visibleProperty != null) ? visibleProperty.getValue() : false, panelToChangeHeightOf, parentPanel, position);
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
                 {
                     @Override
@@ -689,7 +692,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         });
 
         vBoxRight.setSpacing(20);
-        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null, null, vBoxRight, 0);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", "projectDisplay.project", null, selectedPrinterIsPrinting, vBoxRight, 0);
         projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
