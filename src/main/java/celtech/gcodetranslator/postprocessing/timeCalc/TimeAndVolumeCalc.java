@@ -16,6 +16,7 @@ import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
+import celtech.gcodetranslator.postprocessing.nodes.UnrecognisedLineNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
 import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
@@ -25,13 +26,11 @@ import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.NozzlePositionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.printerControl.model.Head.HeadType;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
@@ -350,7 +349,8 @@ public class TimeAndVolumeCalc
         double timeInThisTool = 0;
 
         ToolSelectNode lastToolSelectNode = null;
-        int lastFeedrateInForce = 0;
+        //Default the feedrate to 200mm/s
+        double feedrateInForce_mm_sec = 200;
         double lastB = 0;
         double lastZ = 0;
         TMove lastTMove = null;
@@ -392,6 +392,8 @@ public class TimeAndVolumeCalc
                 //If the tool is selected (or reselected) stash the current elapsed time in tool
                 if (node instanceof ToolSelectNode)
                 {
+                    ((ToolSelectNode)node).setStartTimeFromStartOfPrint_secs(timeFromStart);
+                    
                     if (lastToolSelectNode != null)
                     {
                         lastToolSelectNode.setEstimatedDuration(timeInThisTool);
@@ -404,9 +406,19 @@ public class TimeAndVolumeCalc
 
                 double eventDuration = -1;
 
+                if (node instanceof FeedrateProvider)
+                {
+                    if (((FeedrateProvider) node).getFeedrate().isFeedrateSet())
+                    {
+                        feedrateInForce_mm_sec = ((FeedrateProvider) node).getFeedrate().getFeedRate_mmPerSec();
+                    }
+                }
+
                 if (node instanceof MovementProvider)
                 {
                     Movement sourceMovement = null;
+                    feedrateInForce_mm_sec = ((FeedrateProvider) node).getFeedrate().getFeedRate_mmPerSec();
+
                     if (lastNodeContainingMovement != null)
                     {
                         sourceMovement = ((MovementProvider) lastNodeContainingMovement).getMovement();
@@ -417,7 +429,6 @@ public class TimeAndVolumeCalc
                         tNode.getMovement().setY(0);
                         tNode.getMovement().setZ(0);
                         sourceMovement = tNode.getMovement();
-                        lastFeedrateInForce = ((FeedrateProvider) node).getFeedrate().getFeedRate_mmPerSec();
                     }
 
 //                            eventDuration = lastNodeSupportingPrintTimeCalcs.timeToReach((MovementProvider) node) * movementFudgeFactor;
@@ -469,7 +480,7 @@ public class TimeAndVolumeCalc
                         moves[5] = relB;
                     }
 
-                    TMoveResult result = calculate_run_time(lastTMove, lastFeedrateInForce, moves);
+                    TMoveResult result = calculate_run_time(lastTMove, feedrateInForce_mm_sec, moves);
                     lastTMove = result.tMove;
                     eventDuration = result.duration;
 
@@ -511,18 +522,6 @@ public class TimeAndVolumeCalc
 //                                    + layerNode.getLayerNumber(), ex);
 //                        }
                     lastNodeContainingMovement = node;
-
-                    if (((FeedrateProvider) lastNodeContainingMovement).getFeedrate().getFeedRate_mmPerSec() < 0)
-                    {
-                        if (lastFeedrateInForce > 0)
-                        {
-                            ((FeedrateProvider) lastNodeContainingMovement).getFeedrate().setFeedRate_mmPerSec(lastFeedrateInForce);
-                        } else
-                        {
-                            steno.warning("Couldn't set feedrate during time calculation");
-                        }
-                    }
-                    lastFeedrateInForce = ((FeedrateProvider) lastNodeContainingMovement).getFeedrate().getFeedRate_mmPerSec();
                 } else if (node instanceof ToolSelectNode)
                 {
                     eventDuration = timeForNozzleSelect_s;
@@ -576,7 +575,7 @@ public class TimeAndVolumeCalc
                             moves[5] = relB;
                         }
 
-                        TMoveResult result = calculate_run_time(lastTMove, lastFeedrateInForce, moves);
+                        TMoveResult result = calculate_run_time(lastTMove, feedrateInForce_mm_sec, moves);
                         lastTMove = result.tMove;
                         eventDuration = result.duration;
                     }
@@ -595,7 +594,7 @@ public class TimeAndVolumeCalc
                     lastB = newVal;
                     moves[5] = relB;
 
-                    TMoveResult result = calculate_run_time(lastTMove, lastFeedrateInForce, moves);
+                    TMoveResult result = calculate_run_time(lastTMove, feedrateInForce_mm_sec, moves);
                     lastTMove = result.tMove;
                     eventDuration = result.duration;
 
@@ -628,6 +627,7 @@ public class TimeAndVolumeCalc
                         && !(node instanceof OuterPerimeterSectionNode)
                         && !(node instanceof SkirtSectionNode)
                         && !(node instanceof SupportSectionNode)
+                        && !(node instanceof UnrecognisedLineNode)
                         && !(node instanceof MCodeNode))
                 {
                     steno.info("Not possible to calculate time for: " + node.getClass().getName() + " : " + node.toString());

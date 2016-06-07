@@ -1,22 +1,9 @@
 package celtech.gcodetranslator.postprocessing;
 
 import celtech.JavaFXConfiguredTest;
-import static celtech.Lookup.setPostProcessorOutputWriterFactory;
-import celtech.TestUtils;
-import celtech.appManager.Project;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.gcodetranslator.LiveGCodeOutputWriter;
-import celtech.gcodetranslator.RoboxiserResult;
-import celtech.modelcontrol.ModelContainer;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.printerControl.model.TestPrinter;
-import java.net.URL;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *

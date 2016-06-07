@@ -313,7 +313,6 @@ public class RestrictedNumberField extends TextField
             {
                 if (!newValue && oldValue)
                 {
-                    System.out.println("Updating due to focus");
                     updateNumberValuesFromText();
                 }
             }

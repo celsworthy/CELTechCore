@@ -10,25 +10,11 @@ import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
 import celtech.gcodetranslator.PrintJobStatistics;
 import celtech.gcodetranslator.RoboxiserResult;
-import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
-import celtech.gcodetranslator.postprocessing.nodes.FillSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
-import celtech.gcodetranslator.postprocessing.nodes.InnerPerimeterSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
-import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
-import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
-import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
-import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
-import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.DurationCalculationException;
-import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.SupportsPrintTimeCalculation;
-import celtech.gcodetranslator.postprocessing.nodes.providers.ExtrusionProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.FeedrateProvider;
-import celtech.gcodetranslator.postprocessing.nodes.providers.MovementProvider;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
 import celtech.gcodetranslator.postprocessing.spiralPrint.CuraSpiralPrintFixer;
 import celtech.gcodetranslator.postprocessing.timeCalc.TimeAndVolumeCalc;
@@ -46,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import libertysystems.stenographer.Stenographer;
@@ -321,6 +306,11 @@ public class PostProcessor
             for (LayerPostProcessResult resultToBeProcessed : postProcessResults)
             {
                 timeUtils.timerStart(this, writeOutputTimerName);
+                if (resultToBeProcessed.getLayerData().getLayerNumber() == 1
+                        && headFile.getType() == HeadType.SINGLE_MATERIAL_HEAD)
+                {
+                    outputUtilities.outputTemperatureCommands(writer, nozzle0HeatRequired, nozzle1HeatRequired, eRequired, dRequired);
+                }
                 outputUtilities.writeLayerToFile(resultToBeProcessed.getLayerData(), writer);
                 timeUtils.timerStop(this, writeOutputTimerName);
                 postProcessorUtilityMethods.updateLayerToLineNumber(resultToBeProcessed, layerNumberToLineNumber, writer);

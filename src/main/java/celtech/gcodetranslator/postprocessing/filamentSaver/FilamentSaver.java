@@ -1,10 +1,12 @@
 package celtech.gcodetranslator.postprocessing.filamentSaver;
 
 import celtech.gcodetranslator.postprocessing.LayerPostProcessResult;
+import celtech.gcodetranslator.postprocessing.nodes.ExtrusionNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeEventNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.MCodeNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
+import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithOrigin;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,6 +33,12 @@ public class FilamentSaver
         this.switchOffTime_secs = switchOffTime_secs;
     }
 
+    private enum HeaterState
+    {
+
+        OFF, ON_FIRST_LAYER, ON
+    }
+
     public void saveHeaters(List<LayerPostProcessResult> allLayerPostProcessResults)
     {
 
@@ -39,10 +47,10 @@ public class FilamentSaver
             null, null
         };
 
-        // We assume that both heaters were on at the start
-        boolean[] nozzleHeaterOn =
+        // We assume that both heaters were on at the start using M103
+        HeaterState[] nozzleHeaterState =
         {
-            true, true
+            HeaterState.ON_FIRST_LAYER, HeaterState.ON_FIRST_LAYER
         };
 
         for (int layerCounter = 0; layerCounter < allLayerPostProcessResults.size(); layerCounter++)
@@ -68,28 +76,37 @@ public class FilamentSaver
                     int otherToolNumber = (thisToolNumber == 0) ? 1 : 0;
 
                     //Do we need to switch the heater on for this tool?
-                    if (nozzleHeaterOn[thisToolNumber] == false)
+                    if (nozzleHeaterState[thisToolNumber] == HeaterState.OFF)
                     {
-                        double targetTimeAfterStart = Math.max(0, toolSelect.getFinishTimeFromStartOfPrint_secs().get() - heatUpTime_secs);
+                        double targetTimeAfterStart = Math.max(0, toolSelect.getStartTimeFromStartOfPrint_secs().get() - heatUpTime_secs);
 
                         FoundHeatUpNode foundNodeToHeatBefore = findNodeToHeatBefore(allLayerPostProcessResults, layerCounter, toolSelect, targetTimeAfterStart);
 
                         if (foundNodeToHeatBefore != null)
                         {
-                            MCodeNode heaterOnNode = generateHeaterOnNode(foundNodeToHeatBefore.getFoundInLayer(), thisToolNumber);
+                            int mValue = (foundNodeToHeatBefore.getFoundInLayer() == 0) ? layer0MValue : otherLayerMValue;
+                            MCodeNode heaterOnNode = generateHeaterOnNode(thisToolNumber, mValue);
                             heaterOnNode.appendCommentText("Switch on in " + heatUpTime_secs + " seconds");
                             nodesToAdd.add(new NodeAddStore(foundNodeToHeatBefore.getFoundNode(), heaterOnNode, false));
-                            nozzleHeaterOn[thisToolNumber] = true;
+                            nozzleHeaterState[thisToolNumber] = (foundNodeToHeatBefore.getFoundInLayer() == 0) ? HeaterState.ON_FIRST_LAYER : HeaterState.ON;
                         } else
                         {
                             steno.error("Failed to find place to heat nozzle");
                         }
+                    } else if (layerCounter == 1
+                            && nozzleHeaterState[thisToolNumber] == HeaterState.ON_FIRST_LAYER)
+                    {
+                        int mValue = otherLayerMValue;
+                        MCodeNode heaterOnNode = generateHeaterOnNode(thisToolNumber, mValue);
+                        heaterOnNode.appendCommentText("Switch to subsequent layer temperature");
+                        nodesToAdd.add(new NodeAddStore(toolSelect, heaterOnNode, false));
+                        nozzleHeaterState[thisToolNumber] = HeaterState.ON;
                     }
 
                     //Do we need to switch the other tool heater off?
                     double finishTimeForOtherTool = (lastToolSelects[otherToolNumber] != null) ? lastToolSelects[otherToolNumber].getFinishTimeFromStartOfPrint_secs().get() : 0;
                     if ((toolSelect.getFinishTimeFromStartOfPrint_secs().get() - finishTimeForOtherTool > switchOffTime_secs)
-                            && nozzleHeaterOn[otherToolNumber])
+                            && nozzleHeaterState[otherToolNumber] != HeaterState.OFF)
                     {
                         if (lastToolSelects[otherToolNumber] == null)
                         {
@@ -103,7 +120,7 @@ public class FilamentSaver
                             MCodeNode heaterOffNode = generateHeaterOffNode(((LayerNode) lastToolSelects[otherToolNumber].getParent().get()).getLayerNumber(), otherToolNumber);
                             nodesToAdd.add(new NodeAddStore(lastToolSelects[otherToolNumber], heaterOffNode, true));
                         }
-                        nozzleHeaterOn[otherToolNumber] = false;
+                        nozzleHeaterState[otherToolNumber] = HeaterState.OFF;
                     }
 
                     //Remember things for next iteration...
@@ -145,10 +162,10 @@ public class FilamentSaver
         return heaterOffNode;
     }
 
-    private MCodeNode generateHeaterOnNode(int layerNumber, int heaterNumber)
+    private MCodeNode generateHeaterOnNode(int heaterNumber, int mValue)
     {
         MCodeNode heaterOnNode = new MCodeNode();
-        heaterOnNode.setMNumber((layerNumber == 0) ? layer0MValue : otherLayerMValue);
+        heaterOnNode.setMNumber(mValue);
         switch (heaterNumber)
         {
             case 0:
@@ -201,7 +218,8 @@ public class FilamentSaver
                     steno.info("Warning - came across MCodeNode");
                 }
 
-                if (nodeUnderConsideration.getFinishTimeFromStartOfPrint_secs().isPresent()
+                if ((nodeUnderConsideration instanceof ExtrusionNode || nodeUnderConsideration instanceof TravelNode)
+                        && nodeUnderConsideration.getFinishTimeFromStartOfPrint_secs().isPresent()
                         && nodeUnderConsideration.getFinishTimeFromStartOfPrint_secs().get() < targetTimeAfterStart)
                 {
                     foundNode = new FoundHeatUpNode(layerCounter, nodeUnderConsideration);

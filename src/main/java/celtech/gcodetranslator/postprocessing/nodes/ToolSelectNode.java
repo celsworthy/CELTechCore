@@ -1,6 +1,7 @@
 package celtech.gcodetranslator.postprocessing.nodes;
 
 import celtech.gcodetranslator.postprocessing.nodes.providers.Renderable;
+import java.util.Optional;
 
 /**
  *
@@ -15,6 +16,7 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
     private int toolNumber = -1;
     private boolean outputSuppressed = false;
     private double estimatedDuration_ignoresFeedrate = 0;
+    private Optional<Double> startTimeFromStartOfPrint_secs = Optional.empty();
 
     public int getToolNumber()
     {
@@ -46,6 +48,16 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
         return estimatedDuration_ignoresFeedrate;
     }
 
+    public Optional<Double> getStartTimeFromStartOfPrint_secs()
+    {
+        return startTimeFromStartOfPrint_secs;
+    }
+
+    public void setStartTimeFromStartOfPrint_secs(double value)
+    {
+        startTimeFromStartOfPrint_secs = Optional.of(value);
+    }
+
     @Override
     public String renderForOutput()
     {
@@ -60,7 +72,8 @@ public class ToolSelectNode extends GCodeEventNode implements Renderable
             stringToReturn += "; Suppressed Tool Node -";
             if (getFinishTimeFromStartOfPrint_secs().isPresent())
             {
-                stringToReturn += "T" + getFinishTimeFromStartOfPrint_secs().get();
+                stringToReturn += "T start " + getStartTimeFromStartOfPrint_secs().get();
+                stringToReturn += " T finish " + getFinishTimeFromStartOfPrint_secs().get();
             }
         }
         stringToReturn += " ; Tool Node duration: " + getEstimatedDuration();
