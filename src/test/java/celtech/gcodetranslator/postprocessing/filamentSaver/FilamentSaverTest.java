@@ -247,9 +247,9 @@ public class FilamentSaverTest
         assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(0)).isTAndNumber());
 
         //M103 because this is layer 0
-        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3) instanceof MCodeNode);
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).isTOnly());
+        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4) instanceof MCodeNode);
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).isTOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(4) instanceof MCodeNode);
@@ -296,8 +296,8 @@ public class FilamentSaverTest
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1) instanceof ToolSelectNode);
         assertEquals(19, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().size());
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).isTOnly());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).isTOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(4) instanceof MCodeNode);
@@ -348,8 +348,8 @@ public class FilamentSaverTest
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1) instanceof ToolSelectNode);
         assertEquals(15, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().size());
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(6)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(6)).isTOnly());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(7)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(7)).isTOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(2) instanceof MCodeNode);
@@ -359,8 +359,8 @@ public class FilamentSaverTest
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3) instanceof ToolSelectNode);
         assertEquals(15, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().size());
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().get(6)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().get(6)).isSOnly());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().get(7)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().get(7)).isSOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(4) instanceof MCodeNode);
@@ -370,8 +370,8 @@ public class FilamentSaverTest
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5) instanceof ToolSelectNode);
         assertEquals(15, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().size());
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(6)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(6)).isTOnly());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(7)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(7)).isTOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(6) instanceof MCodeNode);
@@ -421,8 +421,8 @@ public class FilamentSaverTest
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1) instanceof ToolSelectNode);
         assertEquals(19, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().size());
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).isTOnly());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).isTOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(4) instanceof MCodeNode);
@@ -430,9 +430,9 @@ public class FilamentSaverTest
         assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(4)).isSAndNumber());
 
         //M103 because this is layer 0
-        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(18) instanceof MCodeNode);
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(18)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(18)).isSOnly());
+        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(19) instanceof MCodeNode);
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(19)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(5).getChildren().get(19)).isSOnly());
 
         assertEquals(6, allLayerPostProcessResults.get(1).getLayerData().getChildren().size());
 
@@ -487,8 +487,8 @@ public class FilamentSaverTest
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1) instanceof ToolSelectNode);
         assertEquals(19, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().size());
-        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(3)).isTOnly());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(4)).isTOnly());
 
         //M103 because this is layer 0
         assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(4) instanceof MCodeNode);
@@ -501,9 +501,9 @@ public class FilamentSaverTest
         assertEquals(104, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(0)).getMNumber());
         assertTrue(((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(0)).isTOnly());
 
-        assertTrue(allLayerPostProcessResults.get(1).getLayerData().getChildren().get(1).getChildren().get(9) instanceof MCodeNode);
-        assertEquals(104, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(1).getChildren().get(9)).getMNumber());
-        assertTrue(((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(1).getChildren().get(9)).isSOnly());
+        assertTrue(allLayerPostProcessResults.get(1).getLayerData().getChildren().get(1).getChildren().get(10) instanceof MCodeNode);
+        assertEquals(104, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(1).getChildren().get(10)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(1).getChildren().get(10)).isSOnly());
 
         assertTrue(allLayerPostProcessResults.get(1).getLayerData().getChildren().get(3) instanceof MCodeNode);
         assertEquals(104, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(3)).getMNumber());
@@ -511,4 +511,60 @@ public class FilamentSaverTest
         assertEquals(0, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(3)).getSNumber());
     }
 
+    @Test
+    public void testSaveHeaters_fault_heater_off_on_overlap()
+    {
+        System.out.println("testSaveHeaters_fault_heater_off_on_overlap");
+        List<LayerDefinition> layers = new ArrayList<>();
+        layers.add(new LayerDefinition(0, new ToolDefinition[]
+        {
+            //Inserts M103 S0 at start
+            new ToolDefinition(1, 306),
+            new ToolDefinition(0, 152)
+        }));
+        layers.add(new LayerDefinition(1, new ToolDefinition[]
+        {
+            new ToolDefinition(0, 28),
+            new ToolDefinition(1, 64),
+            new ToolDefinition(0, 42)
+        }));
+
+        List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
+        FilamentSaver instance = new FilamentSaver(100, 120);
+        instance.saveHeaters(allLayerPostProcessResults);
+
+        assertEquals(2, allLayerPostProcessResults.size());
+
+        assertEquals(4, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
+
+        //Switch off heater 0 at the start
+        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(0) instanceof MCodeNode);
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(0)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(0)).isSAndNumber());
+
+        //Switch on heater 0 within T1 section
+        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1) instanceof ToolSelectNode);
+        assertEquals(22, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().size());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(14)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(1).getChildren().get(14)).isSOnly());
+
+        //Switch off heater 1 after use
+        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(2) instanceof MCodeNode);
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(2)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(2)).isTAndNumber());
+
+        //Switch on heater 1 within T0 section
+        assertTrue(allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3) instanceof ToolSelectNode);
+        assertEquals(12, allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().size());
+        assertEquals(103, ((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().get(6)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(0).getLayerData().getChildren().get(3).getChildren().get(6)).isTOnly());
+
+        assertEquals(4, allLayerPostProcessResults.get(1).getLayerData().getChildren().size());
+
+        //M104 because this is layer 1
+        assertTrue(allLayerPostProcessResults.get(1).getLayerData().getChildren().get(0) instanceof MCodeNode);
+        assertEquals(104, ((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(0)).getMNumber());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(0)).isTOnly());
+        assertTrue(((MCodeNode) allLayerPostProcessResults.get(1).getLayerData().getChildren().get(0)).isSOnly());
+    }
 }

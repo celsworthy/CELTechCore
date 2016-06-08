@@ -14,6 +14,7 @@ import celtech.gcodetranslator.postprocessing.nodes.OuterPerimeterSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkinSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SkirtSectionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SupportSectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolReselectNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
 import celtech.gcodetranslator.postprocessing.nodes.UnrecognisedLineNode;
@@ -628,7 +629,8 @@ public class TimeAndVolumeCalc
                         && !(node instanceof SkirtSectionNode)
                         && !(node instanceof SupportSectionNode)
                         && !(node instanceof UnrecognisedLineNode)
-                        && !(node instanceof MCodeNode))
+                        && !(node instanceof MCodeNode)
+                        && !(node instanceof ToolReselectNode))
                 {
                     steno.info("Not possible to calculate time for: " + node.getClass().getName() + " : " + node.toString());
                 }

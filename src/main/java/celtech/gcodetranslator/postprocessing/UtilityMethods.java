@@ -18,6 +18,7 @@ import celtech.gcodetranslator.postprocessing.nodes.MergeableWithToolchange;
 import celtech.gcodetranslator.postprocessing.nodes.NodeProcessingException;
 import celtech.gcodetranslator.postprocessing.nodes.NozzleValvePositionNode;
 import celtech.gcodetranslator.postprocessing.nodes.SectionNode;
+import celtech.gcodetranslator.postprocessing.nodes.ToolReselectNode;
 import celtech.gcodetranslator.postprocessing.nodes.ToolSelectNode;
 import celtech.gcodetranslator.postprocessing.nodes.nodeFunctions.IteratorWithStartPoint;
 import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
@@ -471,7 +472,7 @@ public class UtilityMethods
             if (toolReselectsToAdd.containsKey(entryToUpdate.getKey()))
             {
                 int toolToReselect = toolReselectsToAdd.get(entryToUpdate.getKey());
-                ToolSelectNode reselect = new ToolSelectNode();
+                ToolReselectNode reselect = new ToolReselectNode();
                 reselect.setToolNumber(toolToReselect);
                 reselect.appendCommentText("Reselect nozzle");
                 entryToUpdate.getKey().addSiblingBefore(reselect);

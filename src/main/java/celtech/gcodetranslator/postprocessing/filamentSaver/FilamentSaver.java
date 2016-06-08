@@ -80,27 +80,19 @@ public class FilamentSaver
                     {
                         double targetTimeAfterStart = Math.max(0, toolSelect.getStartTimeFromStartOfPrint_secs().get() - heatUpTime_secs);
 
-                        FoundHeatUpNode foundNodeToHeatBefore = findNodeToHeatBefore(allLayerPostProcessResults, layerCounter, toolSelect, targetTimeAfterStart);
+                        FoundHeatUpNode foundNodeToHeatAfter = findNodeToHeatAfter(allLayerPostProcessResults, layerCounter, toolSelect, targetTimeAfterStart);
 
-                        if (foundNodeToHeatBefore != null)
+                        if (foundNodeToHeatAfter != null)
                         {
-                            int mValue = (foundNodeToHeatBefore.getFoundInLayer() == 0) ? layer0MValue : otherLayerMValue;
+                            int mValue = (foundNodeToHeatAfter.getFoundInLayer() == 0) ? layer0MValue : otherLayerMValue;
                             MCodeNode heaterOnNode = generateHeaterOnNode(thisToolNumber, mValue);
                             heaterOnNode.appendCommentText("Switch on in " + heatUpTime_secs + " seconds");
-                            nodesToAdd.add(new NodeAddStore(foundNodeToHeatBefore.getFoundNode(), heaterOnNode, false));
-                            nozzleHeaterState[thisToolNumber] = (foundNodeToHeatBefore.getFoundInLayer() == 0) ? HeaterState.ON_FIRST_LAYER : HeaterState.ON;
+                            nodesToAdd.add(new NodeAddStore(foundNodeToHeatAfter.getFoundNode(), heaterOnNode, true));
+                            nozzleHeaterState[thisToolNumber] = (foundNodeToHeatAfter.getFoundInLayer() == 0) ? HeaterState.ON_FIRST_LAYER : HeaterState.ON;
                         } else
                         {
                             steno.error("Failed to find place to heat nozzle");
                         }
-                    } else if (layerCounter == 1
-                            && nozzleHeaterState[thisToolNumber] == HeaterState.ON_FIRST_LAYER)
-                    {
-                        int mValue = otherLayerMValue;
-                        MCodeNode heaterOnNode = generateHeaterOnNode(thisToolNumber, mValue);
-                        heaterOnNode.appendCommentText("Switch to subsequent layer temperature");
-                        nodesToAdd.add(new NodeAddStore(toolSelect, heaterOnNode, false));
-                        nozzleHeaterState[thisToolNumber] = HeaterState.ON;
                     }
 
                     //Do we need to switch the other tool heater off?
@@ -126,6 +118,27 @@ public class FilamentSaver
                     //Remember things for next iteration...
                     lastToolSelects[thisToolNumber] = toolSelect;
                 }
+            }
+
+            if (layerCounter == 1
+                    && (nozzleHeaterState[0] == HeaterState.ON_FIRST_LAYER || nozzleHeaterState[1] == HeaterState.ON_FIRST_LAYER))
+            {
+                MCodeNode heaterOnNode = new MCodeNode();
+                heaterOnNode.setMNumber(104);
+                heaterOnNode.appendCommentText("Switch heater(s) to subsequent layer temperature");
+
+                if (nozzleHeaterState[0] == HeaterState.ON_FIRST_LAYER)
+                {
+                    heaterOnNode.setSOnly(true);
+                    nozzleHeaterState[0] = HeaterState.ON;
+                }
+
+                if (nozzleHeaterState[1] == HeaterState.ON_FIRST_LAYER)
+                {
+                    heaterOnNode.setTOnly(true);
+                    nozzleHeaterState[1] = HeaterState.ON;
+                }
+                nodesToAdd.add(new NodeAddStore(allLayerPostProcessResults.get(layerCounter).getLayerData().getChildren().getFirst(), heaterOnNode, false));
             }
 
             for (NodeAddStore addStore : nodesToAdd)
@@ -183,7 +196,7 @@ public class FilamentSaver
         return heaterOnNode;
     }
 
-    private FoundHeatUpNode findNodeToHeatBefore(
+    private FoundHeatUpNode findNodeToHeatAfter(
             List<LayerPostProcessResult> allLayerPostProcessResults,
             final int startingLayer,
             ToolSelectNode toolSelect,
