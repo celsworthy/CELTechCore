@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -37,7 +36,6 @@ import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -145,6 +143,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private VBox gcodePanel = null;
     private VBox diagnosticPanel = null;
     private VBox projectPanel = null;
+    private VBox printAdjustmentsPanel = null;
     private VBox parentPanel = null;
 
     private BooleanProperty selectedPrinterIsPrinting = new SimpleBooleanProperty(false);
@@ -292,8 +291,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             });
                         }
 
-                        setAdvancedControlsVisibility();
-
                         lastSelectedPrinter = selectedPrinter;
                     }
                 });
@@ -363,6 +360,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         setupReel2Colour();
 
         setAdvancedControlsVisibility();
+
+        resizePrinterDisplay(parentPanel);
     }
 
     private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
@@ -523,7 +522,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
-                resizePrinterDisplay(parent);
+                resizePrinterDisplay(parentPanel);
             }
         });
         parent.heightProperty().addListener(new ChangeListener<Number>()
@@ -532,41 +531,47 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
-                resizePrinterDisplay(parent);
+                resizePrinterDisplay(parentPanel);
             }
         });
     }
 
     private void resizePrinterDisplay(VBox parent)
     {
-        final double beginWidth = 1500;
-        final double beginHeight = 1106;
-        final double aspect = beginWidth / beginHeight;
-        double gcodePanelWidthToSubtract = (gcodePanel.isVisible() == true) ? vBoxLeft.getWidth() : 0.0;
-        double parentWidth = parent.getWidth() - gcodePanelWidthToSubtract - vBoxRight.getWidth();
-        double parentHeight = parent.getHeight();
-        double displayAspect = parentWidth / parentHeight;
-
-        double newWidth = 0;
-        double newHeight = 0;
-
-        if (displayAspect >= aspect)
+        if (parent != null)
         {
-            // Drive from height
-            newWidth = parentHeight * aspect;
-            newHeight = parentHeight;
-        } else
-        {
-            //Drive from width
-            newHeight = parentWidth / aspect;
-            newWidth = parentWidth;
+            final double beginWidth = 1500;
+            final double beginHeight = 1106;
+            final double aspect = beginWidth / beginHeight;
+            boolean lhPanelVisible = gcodePanel.isVisible() || diagnosticPanel.isVisible();
+            boolean rhPanelVisible = projectPanel.isVisible() || printAdjustmentsPanel.isVisible();
+            double fudgeFactor = (baseReel2.isVisible() || baseReelBoth.isVisible()) ? 600 : 300;
+            double lefthandPanelWidthToSubtract = (lhPanelVisible || rhPanelVisible) ? fudgeFactor : 0.0;
+            double parentWidth = parent.getWidth() - lefthandPanelWidthToSubtract;
+            double parentHeight = parent.getHeight();
+            double displayAspect = parentWidth / parentHeight;
+
+            double newWidth = 0;
+            double newHeight = 0;
+
+            if (displayAspect >= aspect)
+            {
+                // Drive from height
+                newWidth = parentHeight * aspect;
+                newHeight = parentHeight;
+            } else
+            {
+                //Drive from width
+                newHeight = parentWidth / aspect;
+                newWidth = parentWidth;
+            }
+
+            double xScale = Double.max((newWidth / beginWidth), 0.4);
+            double yScale = Double.max((newHeight / beginHeight), 0.4);
+
+            statusPane.setScaleX(xScale);
+            statusPane.setScaleY(yScale);
         }
-
-        double xScale = Double.max((newWidth / beginWidth), 0.4);
-        double yScale = Double.max((newHeight / beginHeight), 0.4);
-
-        statusPane.setScaleX(xScale);
-        statusPane.setScaleY(yScale);
     }
 
     private void unbindFromSelectedPrinter()
@@ -698,9 +703,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             resizePrinterDisplay(parentPanel);
         });
 
-        Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
+        printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
                 Lookup.getUserPreferences().showAdjustmentsProperty(),
                 Lookup.getUserPreferences().showAdjustmentsProperty().and(selectedPrinterIsPrinting), vBoxRight, 1);
+        printAdjustmentsPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
 
         container.getChildren().add(vBoxLeft);
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);

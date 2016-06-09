@@ -14,7 +14,6 @@ import celtech.configuration.PrinterEdition;
 import celtech.configuration.PrinterModel;
 import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.controllers.PrinterSettings;
 import celtech.printerControl.PrintActionUnavailableException;
 import celtech.printerControl.PrintJobRejectedException;
 import celtech.printerControl.PrinterStatus;
@@ -50,7 +49,6 @@ import celtech.printerControl.comms.commands.tx.QueryFirmwareVersion;
 import celtech.printerControl.comms.commands.tx.ReadHeadEEPROM;
 import celtech.printerControl.comms.commands.tx.ReadPrinterID;
 import celtech.printerControl.comms.commands.tx.ReadSendFileReport;
-import celtech.printerControl.comms.commands.tx.ReportErrors;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacket;
 import celtech.printerControl.comms.commands.tx.RoboxTxPacketFactory;
 import celtech.printerControl.comms.commands.tx.SetAmbientLEDColour;
@@ -1827,7 +1825,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
         double bedTarget = 0;
         double ambientTarget = 0;
 
-        Set<Integer> usedExtruders = project.getUsedExtruders(this);
+        ObservableList<Boolean> usedExtruders = project.getUsedExtruders(this);
 
         boolean needToOverrideTempsForReel0 = false;
         if (filament0 != FilamentContainer.UNKNOWN_FILAMENT)

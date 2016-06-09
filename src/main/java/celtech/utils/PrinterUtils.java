@@ -18,6 +18,7 @@ import celtech.printerControl.comms.commands.rx.StatusResponse;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.utils.tasks.Cancellable;
+import java.util.List;
 import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -26,6 +27,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WeakChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.concurrent.Task;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -266,17 +269,21 @@ public class PrinterUtils
     /**
      * For each head chamber/heater check if a purge is necessary. Return true
      * if one or more nozzle heaters require a purge.
+     *
      * @param printer
      * @param usedExtruders
-     * @return 
+     * @return
      */
-    public static boolean isPurgeNecessary(Printer printer, Set<Integer> usedExtruders)
+    public static boolean isPurgeNecessary(Printer printer, List<Boolean> usedExtruders)
     {
         boolean purgeIsNecessary = false;
 
-        for (Integer extruderNumber : usedExtruders)
+        for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
         {
-            purgeIsNecessary |= isPurgeNecessaryForExtruder(printer, extruderNumber);
+            if (usedExtruders.get(extruderNumber))
+            {
+                purgeIsNecessary |= isPurgeNecessaryForExtruder(printer, extruderNumber);
+            }
         };
 
         return purgeIsNecessary;
@@ -346,7 +353,7 @@ public class PrinterUtils
      * @param printer
      * @return
      */
-    public PurgeResponse offerPurgeIfNecessary(Printer printer, Set<Integer> usedExtruders)
+    public PurgeResponse offerPurgeIfNecessary(Printer printer, ObservableList<Boolean> usedExtruders)
     {
         PurgeResponse purgeConsent = PurgeResponse.NOT_NECESSARY;
         if (isPurgeNecessary(printer, usedExtruders) && purgeDialogVisible == false)

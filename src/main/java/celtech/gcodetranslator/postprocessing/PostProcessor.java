@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.parboiled.Parboiled;
@@ -66,7 +68,7 @@ public class PostProcessor
     private final String countLinesTimerName = "CountLines";
     private final String outputVerifierTimerName = "OutputVerifier";
 
-    private final Set<Integer> usedExtruders;
+    private final List<Boolean> usedExtruders;
     private final String gcodeFileToProcess;
     private final String gcodeOutputFile;
     private final HeadFile headFile;
@@ -95,7 +97,7 @@ public class PostProcessor
     private final String projectName;
     private final PrinterSettings printerSettings;
 
-    public PostProcessor(Set<Integer> usedExtruders,
+    public PostProcessor(ObservableList<Boolean> usedExtruders,
             String gcodeFileToProcess,
             String gcodeOutputFile,
             HeadFile headFile,

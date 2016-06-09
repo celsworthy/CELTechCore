@@ -88,12 +88,14 @@ public class ProgressDisplay extends VBox
         if (nozzle1TemperatureDisplayBar != null)
         {
             nozzle1TemperatureDisplayBar.unbindAll();
+            getChildren().remove(nozzle1TemperatureDisplayBar);
             nozzle1TemperatureDisplayBar = null;
         }
 
         if (nozzle2TemperatureDisplayBar != null)
         {
             nozzle2TemperatureDisplayBar.unbindAll();
+            getChildren().remove(nozzle2TemperatureDisplayBar);
             nozzle2TemperatureDisplayBar = null;
         }
     }
@@ -131,17 +133,6 @@ public class ProgressDisplay extends VBox
             printPreparationDisplayBar.unbindAll();
             bedTemperatureDisplayBar.unbindAll();
 
-            if (nozzle1TemperatureDisplayBar != null)
-            {
-                nozzle1TemperatureDisplayBar.unbindAll();
-                nozzle1TemperatureDisplayBar = null;
-            }
-
-            if (nozzle2TemperatureDisplayBar != null)
-            {
-                nozzle2TemperatureDisplayBar.unbindAll();
-                nozzle2TemperatureDisplayBar = null;
-            }
             getChildren().clear();
         }
         printerInUse = null;
