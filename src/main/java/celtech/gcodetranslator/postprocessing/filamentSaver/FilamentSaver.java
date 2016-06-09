@@ -59,6 +59,23 @@ public class FilamentSaver
 
             List<NodeAddStore> nodesToAdd = new ArrayList<>();
 
+            boolean needToSwitchToSubsequentLayerTemps[] =
+            {
+                false, false
+            };
+
+            if (layerCounter == 1)
+            {
+                for (int i = 0; i < needToSwitchToSubsequentLayerTemps.length; i++)
+                {
+                    if (nozzleHeaterState[i] == HeaterState.ON_FIRST_LAYER)
+                    {
+                        needToSwitchToSubsequentLayerTemps[i] = true;
+                        nozzleHeaterState[i] = HeaterState.ON;
+                    }
+                }
+            }
+
             //Make sure that each heater is switched off if not required for specified time
             //Use tool selects to determine which is required...
             // We know that tool selects come directly under a layer node...        
@@ -81,6 +98,12 @@ public class FilamentSaver
                         double targetTimeAfterStart = Math.max(0, toolSelect.getStartTimeFromStartOfPrint_secs().get() - heatUpTime_secs);
 
                         FoundHeatUpNode foundNodeToHeatAfter = findNodeToHeatAfter(allLayerPostProcessResults, layerCounter, toolSelect, targetTimeAfterStart);
+
+                        if (layerCounter == 1
+                                && foundNodeToHeatAfter.foundInLayer == 0)
+                        {
+                            needToSwitchToSubsequentLayerTemps[thisToolNumber] = true;
+                        }
 
                         if (foundNodeToHeatAfter != null)
                         {
@@ -120,23 +143,20 @@ public class FilamentSaver
                 }
             }
 
-            if (layerCounter == 1
-                    && (nozzleHeaterState[0] == HeaterState.ON_FIRST_LAYER || nozzleHeaterState[1] == HeaterState.ON_FIRST_LAYER))
+            if (needToSwitchToSubsequentLayerTemps[0] || needToSwitchToSubsequentLayerTemps[1])
             {
                 MCodeNode heaterOnNode = new MCodeNode();
                 heaterOnNode.setMNumber(104);
                 heaterOnNode.appendCommentText("Switch heater(s) to subsequent layer temperature");
 
-                if (nozzleHeaterState[0] == HeaterState.ON_FIRST_LAYER)
+                if (needToSwitchToSubsequentLayerTemps[0])
                 {
                     heaterOnNode.setSOnly(true);
-                    nozzleHeaterState[0] = HeaterState.ON;
                 }
 
-                if (nozzleHeaterState[1] == HeaterState.ON_FIRST_LAYER)
+                if (needToSwitchToSubsequentLayerTemps[1])
                 {
                     heaterOnNode.setTOnly(true);
-                    nozzleHeaterState[1] = HeaterState.ON;
                 }
                 nodesToAdd.add(new NodeAddStore(allLayerPostProcessResults.get(layerCounter).getLayerData().getChildren().getFirst(), heaterOnNode, false));
             }
