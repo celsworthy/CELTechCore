@@ -47,6 +47,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
@@ -75,6 +77,9 @@ public class ModelContainerProject extends Project
 
     private FilamentContainer filamentContainer;
 
+    //Changed to make this list always include both extruders
+    private ObservableList<Boolean> lastCalculatedUsedExtruders;
+
     public ModelContainerProject()
     {
         super();
@@ -83,6 +88,10 @@ public class ModelContainerProject extends Project
     @Override
     protected void initialise()
     {
+        lastCalculatedUsedExtruders = FXCollections.observableArrayList();
+        lastCalculatedUsedExtruders.add(0, false);
+        lastCalculatedUsedExtruders.add(1, false);
+
         hasInvalidMeshes = new BooleanBinding()
         {
             {
@@ -258,7 +267,7 @@ public class ModelContainerProject extends Project
         return getUsedExtruders(printer).size() < 2;
     }
 
-    private void getUsedExtruders(ModelContainer modelContainer, Set<Integer> usedExtruders, Printer printer)
+    private void getUsedExtruders(ModelContainer modelContainer, List<Boolean> usedExtruders, Printer printer)
     {
         if (modelContainer instanceof ModelGroup)
         {
@@ -274,14 +283,14 @@ public class ModelContainerProject extends Project
                 //Single material heads can only use 1 material
                 if (printer.headProperty().get().headTypeProperty().get() == HeadType.SINGLE_MATERIAL_HEAD)
                 {
-                    usedExtruders.add(0);
+                    usedExtruders.set(0, true);
                 } else if (printer.headProperty().get().headTypeProperty().get() == HeadType.DUAL_MATERIAL_HEAD)
                 {
-                    usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+                    usedExtruders.set(modelContainer.getAssociateWithExtruderNumberProperty().get(), true);
                 }
             } else
             {
-                usedExtruders.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+                usedExtruders.set(modelContainer.getAssociateWithExtruderNumberProperty().get(), true);
             }
         }
     }
@@ -290,33 +299,42 @@ public class ModelContainerProject extends Project
      * Return which extruders are used by the project, as a set of the extruder
      * numbers.
      *
-     * @param printer
      * @return
      */
-    public Set<Integer> getUsedExtruders(Printer printer)
+    public ObservableList<Boolean> getUsedExtruders(Printer printer)
     {
-        Set<Integer> usedExtruders = new HashSet<>();
+
+        List<Boolean> localUsedExtruders = new ArrayList<>();
+        localUsedExtruders.add(false);
+        localUsedExtruders.add(false);
+
         for (ProjectifiableThing loadedModel : topLevelThings)
         {
-            getUsedExtruders((ModelContainer) loadedModel, usedExtruders, printer);
+            getUsedExtruders((ModelContainer) loadedModel, localUsedExtruders, printer);
         }
 
-        if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
+        // Don't add material 1 if there isn't a second extruder...
+        if (printerSettings.getPrintSupportOverride())
         {
-            if (!usedExtruders.contains(0))
+            if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
             {
-                usedExtruders.add(0);
-            }
-        } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
-                && printer != null
-                && printer.extrudersProperty().get(1).isFittedProperty().get())
-        {
-            if (!usedExtruders.contains(1))
+                if (!localUsedExtruders.contains(0))
+                {
+                    localUsedExtruders.set(0, true);
+                }
+            } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
+                    && printer != null
+                    && printer.extrudersProperty().get(1).isFittedProperty().get())
             {
-                usedExtruders.add(1);
+                if (!localUsedExtruders.contains(1))
+                {
+                    localUsedExtruders.set(1, true);
+                }
             }
         }
-        return usedExtruders;
+
+        lastCalculatedUsedExtruders.setAll(localUsedExtruders);
+        return lastCalculatedUsedExtruders;
     }
 
     /**

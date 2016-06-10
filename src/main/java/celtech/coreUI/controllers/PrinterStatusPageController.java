@@ -145,6 +145,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private VBox gcodePanel = null;
     private VBox diagnosticPanel = null;
     private VBox projectPanel = null;
+    private VBox printAdjustmentsPanel = null;
     private VBox parentPanel = null;
 
     private BooleanProperty selectedPrinterIsPrinting = new SimpleBooleanProperty(false);
@@ -289,8 +290,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             });
                         }
 
-                        setAdvancedControlsVisibility();
-
                         lastSelectedPrinter = selectedPrinter;
                     }
                 });
@@ -360,6 +359,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         setupReel2Colour();
         
         setAdvancedControlsVisibility();
+
+        resizePrinterDisplay(parentPanel);
     }
 
     private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
@@ -520,7 +521,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
-                resizePrinterDisplay(parent);
+                resizePrinterDisplay(parentPanel);
             }
         });
         parent.heightProperty().addListener(new ChangeListener<Number>()
@@ -529,18 +530,23 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             public void changed(ObservableValue<? extends Number> observable,
                     Number oldValue, Number newValue)
             {
-                resizePrinterDisplay(parent);
+                resizePrinterDisplay(parentPanel);
             }
         });
     }
 
     private void resizePrinterDisplay(VBox parent)
     {
+        if (parent != null)
+        {
         final double beginWidth = 1500;
         final double beginHeight = 1106;
         final double aspect = beginWidth / beginHeight;
-        double gcodePanelWidthToSubtract = (gcodePanel.isVisible() == true) ? vBoxLeft.getWidth() : 0.0;
-        double parentWidth = parent.getWidth() - gcodePanelWidthToSubtract - vBoxRight.getWidth();
+            boolean lhPanelVisible = gcodePanel.isVisible() || diagnosticPanel.isVisible();
+            boolean rhPanelVisible = projectPanel.isVisible() || printAdjustmentsPanel.isVisible();
+            double fudgeFactor = (baseReel2.isVisible() || baseReelBoth.isVisible()) ? 600 : 300;
+            double lefthandPanelWidthToSubtract = (lhPanelVisible || rhPanelVisible) ? fudgeFactor : 0.0;
+            double parentWidth = parent.getWidth() - lefthandPanelWidthToSubtract;
         double parentHeight = parent.getHeight();
         double displayAspect = parentWidth / parentHeight;
 
@@ -564,6 +570,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         statusPane.setScaleX(xScale);
         statusPane.setScaleY(yScale);
+    }
     }
 
     private void unbindFromSelectedPrinter()
@@ -606,10 +613,13 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             if (title != null)
             {
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
+                if (appearanceConditions != null)
+                {
                 wrappedPanel.visibleProperty().bind(appearanceConditions);
+                }
 
                 final VBox panelToChangeHeightOf = wrappedPanel;
-                panelVisibilityAction(visibleProperty.getValue(), panelToChangeHeightOf, parentPanel, position);
+                panelVisibilityAction((visibleProperty != null) ? visibleProperty.getValue() : false, panelToChangeHeightOf, parentPanel, position);
                 wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
                 {
                     @Override
@@ -686,15 +696,19 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         });
 
         vBoxRight.setSpacing(20);
-        projectPanel = loadInsetPanel("ProjectPanel.fxml", null, null, null, vBoxRight, 0);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", "projectPanel.title", null, selectedPrinterIsPrinting, vBoxRight, 0);
         projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
         });
 
-        Node printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
+        printAdjustmentsPanel = loadInsetPanel("tweakPanel.fxml", "printAdjustmentsPanel.title",
                 Lookup.getUserPreferences().showAdjustmentsProperty(),
                 Lookup.getUserPreferences().showAdjustmentsProperty().and(selectedPrinterIsPrinting), vBoxRight, 1);
+        printAdjustmentsPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
 
         container.getChildren().add(vBoxLeft);
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);

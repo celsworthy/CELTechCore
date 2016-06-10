@@ -29,7 +29,7 @@ public class OuterPanelController implements Initializable
     @FXML
     private Pane crossButton;
     private BooleanProperty visibilityProperty;
-    
+
     /**
      * Initialises the controller class.
      */
@@ -37,15 +37,22 @@ public class OuterPanelController implements Initializable
     public void initialize(URL url, ResourceBundle rb)
     {
     }
-    
-    public void setPreferredVisibility(BooleanProperty visibilityProperty) {
-        this.visibilityProperty = visibilityProperty;
-         crossButton.setOnMouseClicked((MouseEvent event) ->
+
+    public void setPreferredVisibility(BooleanProperty visibilityProperty)
+    {
+        if (visibilityProperty == null)
         {
-            this.visibilityProperty.set(false);
-        });
+            crossButton.setVisible(false);
+        } else
+        {
+            this.visibilityProperty = visibilityProperty;
+            crossButton.setOnMouseClicked((MouseEvent event) ->
+            {
+                this.visibilityProperty.set(false);
+            });
+        }
     }
-    
+
     public void setInnerPanel(Node insetPanel)
     {
         rootPane.getChildren().add(insetPanel);

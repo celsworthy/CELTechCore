@@ -64,7 +64,8 @@ public class SVGImporter
         {
             String parser = XMLResourceDescriptor.getXMLParserClassName();
             SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
-            Document doc = f.createDocument("file://" + modelFile.getAbsolutePath());
+            String modelURL = modelFile.toURI().toString();
+            Document doc = f.createDocument(modelURL);
 
             UserAgent userAgent = new UserAgentAdapter();
             DocumentLoader loader = new DocumentLoader(userAgent);
@@ -84,6 +85,11 @@ public class SVGImporter
             String heightString = svgAttributes.getNamedItem("height").getNodeValue();
             float documentHeight = Float.valueOf(heightString.replaceAll("[a-zA-Z]+", ""));
 
+            float viewBoxOriginX = 0;
+            float viewBoxOriginY = 0;
+            float viewBoxWidth = 0;
+            float viewBoxHeight = 0;
+
             Node viewBoxNode = svgAttributes.getNamedItem("viewBox");
             if (viewBoxNode != null
                     && viewBoxNode.getNodeValue() != null)
@@ -92,10 +98,10 @@ public class SVGImporter
                 String[] viewBoxParts = viewBoxString.split(" ");
                 if (viewBoxParts.length == 4)
                 {
-                    float viewBoxOriginX = Float.valueOf(viewBoxParts[0]);
-                    float viewBoxOriginY = Float.valueOf(viewBoxParts[1]);
-                    float viewBoxWidth = Float.valueOf(viewBoxParts[2]);
-                    float viewBoxHeight = Float.valueOf(viewBoxParts[3]);
+                    viewBoxOriginX = Float.valueOf(viewBoxParts[0]);
+                    viewBoxOriginY = Float.valueOf(viewBoxParts[1]);
+                    viewBoxWidth = Float.valueOf(viewBoxParts[2]);
+                    viewBoxHeight = Float.valueOf(viewBoxParts[3]);
 
                     converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
                     converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
@@ -122,6 +128,9 @@ public class SVGImporter
                 System.out.println(dNode.getNodeValue());
                 pathParser.parse(dNode.getNodeValue());
                 SVGPath displayablePath = new SVGPath();
+                displayablePath.scaleXProperty().set(converterConfiguration.getxPointCoefficient());
+                displayablePath.scaleYProperty().set(converterConfiguration.getyPointCoefficient());
+//                displayablePath.
                 displayablePath.setContent(dNode.getNodeValue());
                 renderableSVG.getChildren().add(displayablePath);
             }
@@ -139,10 +148,10 @@ public class SVGImporter
                 Node wNode = nodeMap.getNamedItem("width");
                 Node hNode = nodeMap.getNamedItem("height");
 
-                float xValue = Float.valueOf(xNode.getNodeValue());
-                float yValue = Float.valueOf(yNode.getNodeValue());
-                float wValue = Float.valueOf(wNode.getNodeValue());
-                float hValue = Float.valueOf(hNode.getNodeValue());
+                float xValue = Float.valueOf(xNode.getNodeValue()) * converterConfiguration.getxPointCoefficient();
+                float yValue = (viewBoxHeight - Float.valueOf(yNode.getNodeValue())) * converterConfiguration.getyPointCoefficient();
+                float wValue = Float.valueOf(wNode.getNodeValue()) * converterConfiguration.getxPointCoefficient();
+                float hValue = Float.valueOf(hNode.getNodeValue()) * converterConfiguration.getyPointCoefficient();
 
                 String synthPath = 'm'
                         + threeDPformatter.format(xValue) + ','
