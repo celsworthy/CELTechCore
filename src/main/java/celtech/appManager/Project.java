@@ -463,7 +463,7 @@ public class Project
         {
             if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
             {
-                if (!localUsedExtruders.contains(0))
+                if (!localUsedExtruders.get(0))
                 {
                     localUsedExtruders.set(0, true);
                 }
@@ -471,7 +471,7 @@ public class Project
                     && printer != null
                     && printer.extrudersProperty().get(1).isFittedProperty().get())
             {
-                if (!localUsedExtruders.contains(1))
+                if (!localUsedExtruders.get(1))
                 {
                     localUsedExtruders.set(1, true);
                 }
