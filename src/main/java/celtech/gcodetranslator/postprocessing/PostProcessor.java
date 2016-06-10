@@ -87,8 +87,6 @@ public class PostProcessor
     private final NodeManagementUtilities nodeManagementUtilities;
     private final NozzleAssignmentUtilities nozzleControlUtilities;
     private final CloseLogic closeLogic;
-    private final NozzleManagementUtilities nozzleUtilities;
-    private final UtilityMethods utilities;
     private final FilamentSaver heaterSaver;
     private final OutputVerifier outputVerifier;
 
@@ -160,8 +158,6 @@ public class PostProcessor
         postProcessorUtilityMethods = new UtilityMethods(featureSet, slicerParametersFile, headType, nodeManagementUtilities);
         nozzleControlUtilities = new NozzleAssignmentUtilities(nozzleProxies, slicerParametersFile, headFile, featureSet, postProcessingMode, objectToNozzleNumberMap);
         closeLogic = new CloseLogic(slicerParametersFile, featureSet, headType, nodeManagementUtilities);
-        nozzleUtilities = new NozzleManagementUtilities(nozzleProxies, slicerParametersFile, headFile);
-        utilities = new UtilityMethods(featureSet, settings, headType, nodeManagementUtilities);
         heaterSaver = new FilamentSaver(100, 120);
         outputVerifier = new OutputVerifier(featureSet);
     }
@@ -207,12 +203,12 @@ public class PostProcessor
 
             if (headFile.getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                nozzle0HeatRequired = usedExtruders.contains(1)
+                nozzle0HeatRequired = usedExtruders.get(1)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_SECOND_MATERIAL;
-                eRequired = usedExtruders.contains(0);
-                nozzle1HeatRequired = usedExtruders.contains(0)
+                eRequired = usedExtruders.get(0);
+                nozzle1HeatRequired = usedExtruders.get(0)
                         || postProcessingMode == PostProcessingMode.SUPPORT_IN_FIRST_MATERIAL;
-                dRequired = usedExtruders.contains(1);
+                dRequired = usedExtruders.get(1);
             } else
             {
                 nozzle0HeatRequired = false;
@@ -307,7 +303,7 @@ public class PostProcessor
             timeUtils.timerStart(this, heaterSaverTimerName);
             if (headFile.getType() == HeadType.DUAL_MATERIAL_HEAD)
             {
-                heaterSaver.saveHeaters(postProcessResults);
+                heaterSaver.saveHeaters(postProcessResults, nozzle0HeatRequired, nozzle1HeatRequired);
             }
             timeUtils.timerStop(this, heaterSaverTimerName);
 

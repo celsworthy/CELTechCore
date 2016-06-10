@@ -39,7 +39,9 @@ public class FilamentSaver
         OFF, ON_FIRST_LAYER, ON
     }
 
-    public void saveHeaters(List<LayerPostProcessResult> allLayerPostProcessResults)
+    public void saveHeaters(List<LayerPostProcessResult> allLayerPostProcessResults,
+             boolean nozzleHeaterOnAtStart_0,
+             boolean nozzleHeaterOnAtStart_1)
     {
 
         ToolSelectNode[] lastToolSelects =
@@ -47,10 +49,11 @@ public class FilamentSaver
             null, null
         };
 
-        // We assume that both heaters were on at the start using M103
+        // Pick up the initial nozzle state
         HeaterState[] nozzleHeaterState =
         {
-            HeaterState.ON_FIRST_LAYER, HeaterState.ON_FIRST_LAYER
+            (nozzleHeaterOnAtStart_0)?HeaterState.ON_FIRST_LAYER:HeaterState.OFF,
+            (nozzleHeaterOnAtStart_1)?HeaterState.ON_FIRST_LAYER:HeaterState.OFF
         };
 
         for (int layerCounter = 0; layerCounter < allLayerPostProcessResults.size(); layerCounter++)
@@ -262,7 +265,7 @@ public class FilamentSaver
 
             layerCounter--;
         }
-
+        
         return foundNode;
     }
 

@@ -93,7 +93,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(1, allLayerPostProcessResults.size());
         assertEquals(3, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -125,7 +125,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(1, allLayerPostProcessResults.size());
         assertEquals(7, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -160,7 +160,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
         assertEquals(4, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -196,7 +196,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
         assertEquals(5, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -235,7 +235,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
 
@@ -283,7 +283,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
         assertEquals(6, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -335,7 +335,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(100, 120);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(1, allLayerPostProcessResults.size());
         assertEquals(8, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -408,7 +408,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
         assertEquals(6, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -474,7 +474,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(200, 250);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
         assertEquals(6, allLayerPostProcessResults.get(0).getLayerData().getChildren().size());
@@ -531,7 +531,7 @@ public class FilamentSaverTest
 
         List<LayerPostProcessResult> allLayerPostProcessResults = TestDataGenerator.generateLayerResults(layers);
         FilamentSaver instance = new FilamentSaver(100, 120);
-        instance.saveHeaters(allLayerPostProcessResults);
+        instance.saveHeaters(allLayerPostProcessResults, true, true);
 
         assertEquals(2, allLayerPostProcessResults.size());
 
