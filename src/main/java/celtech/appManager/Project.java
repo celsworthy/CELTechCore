@@ -409,7 +409,8 @@ public class Project
      */
     public boolean allModelsOnSameExtruder(Printer printer)
     {
-        return getUsedExtruders(printer).size() < 2;
+        ObservableList<Boolean> extruders = getUsedExtruders(printer);
+        return !(extruders.get(0) && extruders.get(1));
     }
 
     private void getUsedExtruders(ModelContainer modelContainer, List<Boolean> usedExtruders, Printer printer)

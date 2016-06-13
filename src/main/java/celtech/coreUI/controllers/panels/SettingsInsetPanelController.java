@@ -549,11 +549,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void dealWithSpiralness()
     {
         spiralPrintCheckbox.disableProperty().set(currentProject.getAllModels().size() != 1
-                || currentProject.getUsedExtruders(currentPrinter).size() > 1);
+                || !currentProject.allModelsOnSameExtruder(currentPrinter));
 
         spiralPrintCheckbox.setSelected(spiralPrintCheckbox.selectedProperty().get()
                 && currentProject.getAllModels().size() == 1
-                && currentProject.getUsedExtruders(currentPrinter).size() == 1);
+                && currentProject.allModelsOnSameExtruder(currentPrinter));
     }
 
     private void selectCurrentCustomSettings()
