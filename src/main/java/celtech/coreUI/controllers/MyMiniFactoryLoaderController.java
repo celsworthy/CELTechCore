@@ -185,8 +185,7 @@ public class MyMiniFactoryLoaderController implements Initializable
                 MyMiniFactoryLoadResult result = (MyMiniFactoryLoadResult) event.getSource().getValue();
                 if (result.isSuccess())
                 {
-                    modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
-                            result.getFilesToLoad(), null);
+                    modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), result.getFilesToLoad(), true, DisplayManager.getInstance(), false);
                 }
                 finishedWithEngines();
                 ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);

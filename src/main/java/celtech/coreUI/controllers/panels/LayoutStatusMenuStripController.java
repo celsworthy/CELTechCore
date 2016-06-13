@@ -1175,6 +1175,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (selectedProject != null)
         {
             unbindProject(selectedProject);
+            selectedProject = null;
         }
 
         if (project != null)

@@ -553,11 +553,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         if (currentProject instanceof ModelContainerProject)
         {
             spiralPrintCheckbox.disableProperty().set(currentProject.getAllModels().size() != 1
-                    || ((ModelContainerProject) currentProject).getUsedExtruders(currentPrinter).size() > 1);
+                || !((ModelContainerProject)currentProject).allModelsOnSameExtruder(currentPrinter));
 
             spiralPrintCheckbox.setSelected(spiralPrintCheckbox.selectedProperty().get()
                     && currentProject.getAllModels().size() == 1
-                    && ((ModelContainerProject) currentProject).getUsedExtruders(currentPrinter).size() == 1);
+                && ((ModelContainerProject)currentProject).allModelsOnSameExtruder(currentPrinter));
         }
     }
 

@@ -78,27 +78,43 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                 FileUtilities.writeStreamToFile(webInputStream, tempFilename);
                 ZipFile zipFile = new ZipFile(tempFilename);
 
-                try
+                final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                final List<File> filesToLoad = new ArrayList<>();
+                while (entries.hasMoreElements())
                 {
-                    final Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                    final List<File> filesToLoad = new ArrayList<>();
-                    while (entries.hasMoreElements())
+                    final ZipEntry entry = entries.nextElement();
+                    final String tempTargetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + entry.getName();
+                    try
                     {
-                        final ZipEntry entry = entries.nextElement();
-                        final String tempTargetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + entry.getName();
                         FileUtilities.writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
-                        filesToLoad.add(new File(tempTargetname));
+                        if (entry.getName().toLowerCase().endsWith("stl")
+                                || entry.getName().toLowerCase().endsWith("obj"))
+                        {
+                            boolean loadModel = true;
+                            for (File fileToCheck : filesToLoad)
+                            {
+                                if (fileToCheck.getName().equals(entry.getName()))
+                                {
+                                    loadModel = false;
+                                    break;
+                                }
+                            }
+
+                            if (loadModel)
+                            {
+                                filesToLoad.add(new File(tempTargetname));
+                            }
+                        }
+                    } catch (IOException ex)
+                    {
+                        steno.error("Error unwrapping zip - " + ex.getMessage());
                     }
-                    result.setFilesToLoad(filesToLoad);
-                    result.setSuccess(true);
-                } catch (IOException ex)
-                {
-                    steno.error("Error unwrapping zip - " + ex.getMessage());
-                } finally
-                {
-                    zipFile.close();
-                    FileUtils.deleteQuietly(new File(tempFilename));
                 }
+                result.setFilesToLoad(filesToLoad);
+                result.setSuccess(true);
+
+                zipFile.close();
+                FileUtils.deleteQuietly(new File(tempFilename));
             } else if (extension.equalsIgnoreCase("rar"))
             {
                 steno.info("Got rar file from My Mini Factory");
@@ -126,8 +142,8 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                         try
                         {
                             File out = new File(ApplicationConfiguration.getMyMiniFactoryDownloadDirectory()
-                                + File.separator
-                                + fh.getFileNameString().trim());
+                                    + File.separator
+                                    + fh.getFileNameString().trim());
                             FileOutputStream os = new FileOutputStream(out);
                             archive.extractFile(fh, os);
                             os.close();

@@ -173,9 +173,12 @@ public abstract class Project
 
     public static final void saveProject(Project project)
     {
-        String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-                + project.getProjectName();
-        project.save(basePath);
+        if (project != null)
+        {
+            String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
+                    + project.getProjectName();
+            project.save(basePath);
+        }
     }
 
     @Override
