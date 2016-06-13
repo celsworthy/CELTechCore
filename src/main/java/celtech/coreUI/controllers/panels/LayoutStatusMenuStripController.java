@@ -968,6 +968,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 purgeButton.disableProperty()
                         .bind(newValue.canPurgeHeadProperty().not());
 
+                if (newValue.headProperty().get() != null)
+                {
+                    bindNozzleControls(newValue);
+                }
+
                 currentPrinter = newValue;
 
             } else
@@ -1241,15 +1246,20 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         if (printer == currentPrinter)
         {
-            openNozzleButton.visibleProperty().bind(
-                    printer.headProperty().get().bPositionProperty().lessThan(0.5));
-            closeNozzleButton.visibleProperty().bind(printer.headProperty().get().
-                    bPositionProperty().greaterThan(0.5));
-            fineNozzleButton.visibleProperty().bind(printer.headProperty().get().
-                    nozzleInUseProperty().isEqualTo(1));
-            fillNozzleButton.visibleProperty().bind(printer.headProperty().get().
-                    nozzleInUseProperty().isEqualTo(0));
+            bindNozzleControls(printer);
         }
+    }
+
+    private void bindNozzleControls(Printer printer)
+    {
+        openNozzleButton.visibleProperty().bind(
+                printer.headProperty().get().bPositionProperty().lessThan(0.5));
+        closeNozzleButton.visibleProperty().bind(printer.headProperty().get().
+                bPositionProperty().greaterThan(0.5));
+        fineNozzleButton.visibleProperty().bind(printer.headProperty().get().
+                nozzleInUseProperty().isEqualTo(1));
+        fillNozzleButton.visibleProperty().bind(printer.headProperty().get().
+                nozzleInUseProperty().isEqualTo(0));
     }
 
     @Override
