@@ -27,10 +27,6 @@ import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.MathUtils;
 import celtech.roboxbase.utils.Math.PolarCoordinate;
 import celtech.roboxbase.utils.TimeUtils;
-import eu.mihosoft.vrl.v3d.CSG;
-import eu.mihosoft.vrl.v3d.MeshContainer;
-import eu.mihosoft.vrl.v3d.PlaneBisect;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -79,7 +75,6 @@ import javafx.scene.shape.TriangleMesh;
 import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.fxyz.utils.MeshUtils;
 
 /**
  *
@@ -1663,77 +1658,77 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     public List<ModelContainer> cutModelAt(ModelContainer modelContainer, double height)
     {
         List<ModelContainer> generatedMCs = new ArrayList<>();
-        try
-        {
-            csgTimer.timerStart(this, "toCSG");
-            CSG modelAsCSG = MeshUtils.mesh2CSG(modelContainer.getMeshView());
-
-//            Bounds modelBounds = modelAsCSG.getBounds();
-//            steno.info("Bounds of model " + modelBounds);
-//            CSG copyOfmodelAsCSG = modelAsCSG.clone();
-            csgTimer.timerStop(this, "toCSG");
-            steno.info("Time to CSG " + csgTimer.timeTimeSoFar_ms(this, "toCSG"));
-
-//            csgTimer.timerStart(this, "cut");
-//            Vector3d boxWHD = new Vector3d(modelContainer.getTransformedWidth(), 5, modelContainer.getTransformedDepth());
-//            Vector3d boxCentreTop = new Vector3d(0, -cutHeight.get(), 0);
-////            Vector3d boxCentreBottom = new Vector3d(modelContainer.getTransformedCentreX(), -modelContainer.getTransformedHeight() * 0.25, modelContainer.getTransformedCentreZ());
-//            csgTimer.timerStop(this, "cut");
-//            steno.info("Time to cut " + csgTimer.timeTimeSoFar_ms(this, "cut"));
+//        try
+//        {
+//            csgTimer.timerStart(this, "toCSG");
+//            CSG modelAsCSG = MeshUtils.mesh2CSG(modelContainer.getMeshView());
 //
-//            csgTimer.timerStart(this, "createCube");
-//            CSG topCutbox = new Cube(boxCentreTop, boxWHD).toCSG();
-////            CSG topCutbox = new Cube(60).toCSG();
-//            Bounds boxBounds = topCutbox.getBounds();
-//            steno.info("Bounds of cutbox " + boxBounds);
-////            CSG bottomCutbox = new Cube(boxCentreBottom, boxWHD).toCSG();
-//            csgTimer.timerStop(this, "createCube");
-//            steno.info("Time to createCube " + csgTimer.timeTimeSoFar_ms(this, "createCube"));
-            csgTimer.timerStart(this, "split");
-            modelAsCSG.setOptType(CSG.OptType.NONE);
-            PlaneBisect bisector = new PlaneBisect();
-            PlaneBisect.TopBottomCutPair topAndBottom = bisector.clipAtHeight(modelAsCSG, height);
-            csgTimer.timerStop(this, "split");
-            steno.info("Time to split " + csgTimer.timeTimeSoFar_ms(this, "split"));
-
-            csgTimer.timerStart(this, "toMesh");
-            MeshContainer topPartContainer = topAndBottom.getTopPart().toJavaFXMeshSimple(null);
-            List<Mesh> topPartMeshes = topPartContainer.getMeshes();
-            MeshContainer bottomPartContainer = topAndBottom.getBottomPart().toJavaFXMeshSimple(null);
-            List<Mesh> bottomPartMeshes = bottomPartContainer.getMeshes();
-            csgTimer.timerStop(this, "toMesh");
-            steno.info("Time to extract mesh " + csgTimer.timeTimeSoFar_ms(this, "toMesh"));
-
-            steno.info("There are " + topPartMeshes.size() + " meshes");
-
-//            csgTimer.timerStart(this, "Split");
-//            List<TriangleMesh> subMeshes = MeshSeparator.separate((TriangleMesh) topPartMeshes.get(0));
-//            csgTimer.timerStop(this, "Split");
-//            System.out.println("Split " + csgTimer.timeTimeSoFar_ms(this, "Split"));
-            csgTimer.timerStart(this, "CreateModels");
-            int index = 1;
-//            for (TriangleMesh mesh : (TriangleMesh)topPartMeshes.get(0))
-//            {
-            TriangleMesh newMesh = (TriangleMesh) topPartMeshes.get(0);
-            celtech.utils.threed.MeshUtils.removeUnusedAndDuplicateVertices(newMesh);
-
-            MeshView newMeshView = new MeshView(newMesh);
-            ModelContainer mc = new ModelContainer(modelContainer.getModelFile(), newMeshView);
-            mc.setModelName(modelContainer.getModelName() + " " + index);
-            mc.setState(modelContainer.getState());
-            mc.getAssociateWithExtruderNumberProperty().set(
-                    modelContainer.getAssociateWithExtruderNumberProperty().get());
-            mc.dropToBed();
-            mc.checkOffBed();
-            generatedMCs.add(mc);
-            index++;
-//            }
-            csgTimer.timerStop(this, "CreateModels");
-            System.out.println("CreateModels " + csgTimer.timeTimeSoFar_ms(this, "CreateModels"));
-        } catch (IOException ex)
-        {
-
-        }
+////            Bounds modelBounds = modelAsCSG.getBounds();
+////            steno.info("Bounds of model " + modelBounds);
+////            CSG copyOfmodelAsCSG = modelAsCSG.clone();
+//            csgTimer.timerStop(this, "toCSG");
+//            steno.info("Time to CSG " + csgTimer.timeTimeSoFar_ms(this, "toCSG"));
+//
+////            csgTimer.timerStart(this, "cut");
+////            Vector3d boxWHD = new Vector3d(modelContainer.getTransformedWidth(), 5, modelContainer.getTransformedDepth());
+////            Vector3d boxCentreTop = new Vector3d(0, -cutHeight.get(), 0);
+//////            Vector3d boxCentreBottom = new Vector3d(modelContainer.getTransformedCentreX(), -modelContainer.getTransformedHeight() * 0.25, modelContainer.getTransformedCentreZ());
+////            csgTimer.timerStop(this, "cut");
+////            steno.info("Time to cut " + csgTimer.timeTimeSoFar_ms(this, "cut"));
+////
+////            csgTimer.timerStart(this, "createCube");
+////            CSG topCutbox = new Cube(boxCentreTop, boxWHD).toCSG();
+//////            CSG topCutbox = new Cube(60).toCSG();
+////            Bounds boxBounds = topCutbox.getBounds();
+////            steno.info("Bounds of cutbox " + boxBounds);
+//////            CSG bottomCutbox = new Cube(boxCentreBottom, boxWHD).toCSG();
+////            csgTimer.timerStop(this, "createCube");
+////            steno.info("Time to createCube " + csgTimer.timeTimeSoFar_ms(this, "createCube"));
+//            csgTimer.timerStart(this, "split");
+//            modelAsCSG.setOptType(CSG.OptType.NONE);
+//            PlaneBisect bisector = new PlaneBisect();
+//            PlaneBisect.TopBottomCutPair topAndBottom = bisector.clipAtHeight(modelAsCSG, height);
+//            csgTimer.timerStop(this, "split");
+//            steno.info("Time to split " + csgTimer.timeTimeSoFar_ms(this, "split"));
+//
+//            csgTimer.timerStart(this, "toMesh");
+//            MeshContainer topPartContainer = topAndBottom.getTopPart().toJavaFXMeshSimple(null);
+//            List<Mesh> topPartMeshes = topPartContainer.getMeshes();
+//            MeshContainer bottomPartContainer = topAndBottom.getBottomPart().toJavaFXMeshSimple(null);
+//            List<Mesh> bottomPartMeshes = bottomPartContainer.getMeshes();
+//            csgTimer.timerStop(this, "toMesh");
+//            steno.info("Time to extract mesh " + csgTimer.timeTimeSoFar_ms(this, "toMesh"));
+//
+//            steno.info("There are " + topPartMeshes.size() + " meshes");
+//
+////            csgTimer.timerStart(this, "Split");
+////            List<TriangleMesh> subMeshes = MeshSeparator.separate((TriangleMesh) topPartMeshes.get(0));
+////            csgTimer.timerStop(this, "Split");
+////            System.out.println("Split " + csgTimer.timeTimeSoFar_ms(this, "Split"));
+//            csgTimer.timerStart(this, "CreateModels");
+//            int index = 1;
+////            for (TriangleMesh mesh : (TriangleMesh)topPartMeshes.get(0))
+////            {
+//            TriangleMesh newMesh = (TriangleMesh) topPartMeshes.get(0);
+//            celtech.utils.threed.MeshUtils.removeUnusedAndDuplicateVertices(newMesh);
+//
+//            MeshView newMeshView = new MeshView(newMesh);
+//            ModelContainer mc = new ModelContainer(modelContainer.getModelFile(), newMeshView);
+//            mc.setModelName(modelContainer.getModelName() + " " + index);
+//            mc.setState(modelContainer.getState());
+//            mc.getAssociateWithExtruderNumberProperty().set(
+//                    modelContainer.getAssociateWithExtruderNumberProperty().get());
+//            mc.dropToBed();
+//            mc.checkOffBed();
+//            generatedMCs.add(mc);
+//            index++;
+////            }
+//            csgTimer.timerStop(this, "CreateModels");
+//            System.out.println("CreateModels " + csgTimer.timeTimeSoFar_ms(this, "CreateModels"));
+//        } catch (IOException ex)
+//        {
+//
+//        }
 
         return generatedMCs;
     }
