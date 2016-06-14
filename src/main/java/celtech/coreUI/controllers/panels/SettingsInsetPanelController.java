@@ -355,22 +355,20 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         (ObservableValue<? extends Number> observable, Number was, Number now) ->
                         {
                             if (!fillDensitySlider.isValueChanging()
-                            || now.doubleValue() >= 100.0
-                            || now.doubleValue() <= 0.0)
+                            || now.doubleValue() >= fillDensitySlider.getMax()
+                            || now.doubleValue() <= fillDensitySlider.getMin())
                             {
                                 printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
                             }
                         });
 
-        brimSlider.valueProperty().addListener(new ChangeListener<Number>()
+        brimSlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            if (!brimSlider.isValueChanging()
+                    || newValue.doubleValue() >= brimSlider.getMax()
+                    || newValue.doubleValue() <= brimSlider.getMin())
             {
-                if (!brimSlider.isValueChanging())
-                {
-                    printerSettings.setBrimOverride(newValue.intValue());
-                }
+                printerSettings.setBrimOverride(newValue.intValue());
             }
         });
 
