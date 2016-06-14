@@ -693,7 +693,7 @@ public class TimeAndVolumeCalc
             }
             lastLayerNode = layerNode;
         }
-
+        
         return new TimeAndVolumeCalcResult(extruderEStats, extruderDStats, feedrateIndependentDuration);
     }
 
