@@ -24,7 +24,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExtentsListener
+class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsListener
 {
 
     private Stenographer steno = StenographerFactory.getStenographer(DimensionLine.class.getName());
@@ -120,12 +120,23 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
     }
 
     @Override
-    public void screenExtentsChanged(ScreenExtentsProviderTwoD screenExtentsProvider)
+    public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
     {
         updateArrowAndTextPosition(screenExtentsProvider);
     }
 
-    private void updateArrowAndTextPosition(ScreenExtentsProviderTwoD extentsProvider)
+    private void updateArrowAndTextPosition(ScreenExtentsProvider extentsProvider)
+    {
+        if (extentsProvider instanceof ScreenExtentsProviderThreeD)
+        {
+            updateArrowAndTextPosition_3D((ScreenExtentsProviderThreeD) extentsProvider);
+        } else if (extentsProvider instanceof ScreenExtentsProviderTwoD)
+        {
+            updateArrowAndTextPosition_2D((ScreenExtentsProviderTwoD) extentsProvider);
+        }
+    }
+
+    private void updateArrowAndTextPosition_2D(ScreenExtentsProviderTwoD extentsProvider)
     {
         ScreenExtents extents = extentsProvider.getScreenExtents();
         double transformedWidth = extentsProvider.getTransformedWidth();
@@ -268,9 +279,9 @@ class DimensionLine extends Pane implements ScreenExtentsProviderTwoD.ScreenExte
         }
     }
 
-    private void updateArrowAndTextPosition(ScreenExtentsProviderThreeD extentsProvider)
+    private void updateArrowAndTextPosition_3D(ScreenExtentsProviderThreeD extentsProvider)
     {
-        updateArrowAndTextPosition((ScreenExtentsProviderTwoD) extentsProvider);
+        updateArrowAndTextPosition_2D((ScreenExtentsProviderTwoD) extentsProvider);
 
         ScreenExtents extents = extentsProvider.getScreenExtents();
         double transformedDepth = extentsProvider.getTransformedDepth();

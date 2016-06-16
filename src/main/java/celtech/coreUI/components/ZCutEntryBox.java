@@ -5,8 +5,9 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.visualisation.ScreenExtents;
+import celtech.coreUI.visualisation.ScreenExtentsProvider;
+import celtech.coreUI.visualisation.ScreenExtentsProvider.ScreenExtentsListener;
 import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
-import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD.ScreenExtentsListener;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -186,7 +187,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
     }
 
     @Override
-    public void screenExtentsChanged(ScreenExtentsProviderTwoD screenExtentsProvider)
+    public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
     {
         System.out.println("New extents " + screenExtentsProvider.getScreenExtents());
 

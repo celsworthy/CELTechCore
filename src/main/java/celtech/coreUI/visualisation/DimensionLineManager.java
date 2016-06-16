@@ -5,7 +5,6 @@ import celtech.appManager.Project;
 import celtech.coreUI.visualisation.DimensionLine.LineDirection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
-import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,7 @@ public class DimensionLineManager
         {
             for (DimensionLine dimensionLine : dimensionLineList)
             {
-                dimensionLine.getDimensionLabel().setVisible(newValue == true);
+                dimensionLine.getDimensionLabel().setVisible(newValue == false);
             }
         }
     };
@@ -52,22 +51,19 @@ public class DimensionLineManager
                         DimensionLine verticalDimension = new DimensionLine();
                         DimensionLine frontBackDimension = new DimensionLine();
                         DimensionLine horizontalDimension = new DimensionLine();
-                        ScreenExtentsProviderTwoD screenExtentsProviderTwoD = null;
-                        ScreenExtentsProviderThreeD screenExtentsProviderThreeD = null;
 
                         if (projectifiableThing instanceof ScreenExtentsProviderTwoD)
                         {
-                            screenExtentsProviderTwoD = (ScreenExtentsProviderTwoD) projectifiableThing;
-                            screenExtentsProviderTwoD.addScreenExtentsChangeListener(verticalDimension);
+                            projectifiableThing.addScreenExtentsChangeListener(verticalDimension);
                             paneToAddDimensionsTo.getChildren().add(verticalDimension);
                             verticalDimension.initialise(project,
-                                    screenExtentsProviderTwoD,
+                                    projectifiableThing,
                                     LineDirection.VERTICAL);
                             lineList.add(verticalDimension);
 
-                            screenExtentsProviderTwoD.addScreenExtentsChangeListener(horizontalDimension);
+                            projectifiableThing.addScreenExtentsChangeListener(horizontalDimension);
                             paneToAddDimensionsTo.getChildren().add(horizontalDimension);
-                            horizontalDimension.initialise(project, screenExtentsProviderTwoD, LineDirection.HORIZONTAL);
+                            horizontalDimension.initialise(project, projectifiableThing, LineDirection.HORIZONTAL);
                             lineList.add(horizontalDimension);
 
                             paneToAddDimensionsTo.getChildren().add(verticalDimension.getDimensionLabel());
@@ -78,11 +74,9 @@ public class DimensionLineManager
                         if (projectifiableThing instanceof ScreenExtentsProviderThreeD)
                         {
 
-                            screenExtentsProviderThreeD = (ScreenExtentsProviderThreeD) projectifiableThing;
-
-                            screenExtentsProviderThreeD.addScreenExtentsChangeListener(frontBackDimension);
+                            projectifiableThing.addScreenExtentsChangeListener(frontBackDimension);
                             paneToAddDimensionsTo.getChildren().add(frontBackDimension);
-                            frontBackDimension.initialise(project, screenExtentsProviderThreeD, LineDirection.FORWARD_BACK);
+                            frontBackDimension.initialise(project, projectifiableThing, LineDirection.FORWARD_BACK);
                             lineList.add(frontBackDimension);
 
                             paneToAddDimensionsTo.getChildren().add(frontBackDimension.getDimensionLabel());
@@ -92,16 +86,13 @@ public class DimensionLineManager
                         {
                             dimensionLines.put(projectifiableThing, lineList);
 
-                            ScreenExtentsProviderTwoD finalScreenExtentsProviderTwoD = screenExtentsProviderTwoD;
-                            ScreenExtentsProviderThreeD finalScreenExtentsProviderThreeD = screenExtentsProviderThreeD;
-
                             Platform.runLater(() ->
                                     {
-                                        verticalDimension.screenExtentsChanged(finalScreenExtentsProviderTwoD);
-                                        horizontalDimension.screenExtentsChanged(finalScreenExtentsProviderTwoD);
+                                        verticalDimension.screenExtentsChanged(projectifiableThing);
+                                        horizontalDimension.screenExtentsChanged(projectifiableThing);
                                         if (projectifiableThing instanceof ModelContainer)
                                         {
-                                            frontBackDimension.screenExtentsChanged(finalScreenExtentsProviderThreeD);
+                                            frontBackDimension.screenExtentsChanged(projectifiableThing);
                                         }
                             });
                         }

@@ -2,6 +2,8 @@ package celtech.modelcontrol;
 
 import celtech.Lookup;
 import celtech.coreUI.visualisation.ScreenExtents;
+import celtech.coreUI.visualisation.ScreenExtentsProvider;
+import celtech.coreUI.visualisation.ScreenExtentsProviderThreeD;
 import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.coreUI.visualisation.ShapeProviderTwoD;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
@@ -155,7 +157,7 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     }
 
     @Override
-    public final void addScreenExtentsChangeListener(ScreenExtentsProviderTwoD.ScreenExtentsListener listener)
+    public final void addScreenExtentsChangeListener(ScreenExtentsProvider.ScreenExtentsListener listener)
     {
         recalculateScreenExtents();
         screenExtentsChangeListeners.add(listener);
@@ -163,16 +165,16 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
 
     @Override
     public final void removeScreenExtentsChangeListener(
-            ScreenExtentsProviderTwoD.ScreenExtentsListener listener)
+            ScreenExtentsProvider.ScreenExtentsListener listener)
     {
         screenExtentsChangeListeners.remove(listener);
     }
-
+    
     public final void notifyScreenExtentsChange()
     {
         if (recalculateScreenExtents())
         {
-            for (ScreenExtentsProviderTwoD.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
+            for (ScreenExtentsProvider.ScreenExtentsListener screenExtentsListener : screenExtentsChangeListeners)
             {
                 screenExtentsListener.screenExtentsChanged(this);
             }
