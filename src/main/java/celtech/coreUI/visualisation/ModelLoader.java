@@ -10,7 +10,6 @@ import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectMode;
 import celtech.appManager.SVGProject;
 import celtech.appManager.undo.UndoableProject;
-import celtech.roboxbase.configuration.PrintBed;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.modelcontrol.Groupable;
@@ -50,7 +49,8 @@ public class ModelLoader
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
 
     private void offerShrinkAndAddToProject(Project project, boolean relayout, ProjectCallback callMeBack,
-            boolean dontGroupModelsOverride)
+            boolean dontGroupModelsOverride,
+            Printer printer)
     {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
@@ -132,7 +132,7 @@ public class ModelLoader
             }
             Set<ProjectifiableThing> allProjectifiableThings = (Set) allModelContainers;
 
-            addToProject(project, allProjectifiableThings, shouldCentre, dontGroupModelsOverride);
+            addToProject(project, allProjectifiableThings, shouldCentre, dontGroupModelsOverride, printer);
             if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
             {
 //            project.autoLayout();
@@ -146,7 +146,7 @@ public class ModelLoader
                 allProjectifiableThings.addAll(result.getProjectifiableThings());
             }
 
-            addToProject(project, allProjectifiableThings, false, dontGroupModelsOverride);
+            addToProject(project, allProjectifiableThings, false, dontGroupModelsOverride, printer);
 
             project.setMode(ProjectMode.SVG);
         }
@@ -213,7 +213,7 @@ public class ModelLoader
             {
                 projectToUse = project;
             }
-            offerShrinkAndAddToProject(projectToUse, relayout, callMeBack, dontGroupModelsOverride);
+            offerShrinkAndAddToProject(projectToUse, relayout, callMeBack, dontGroupModelsOverride, Lookup.getSelectedPrinterProperty().get());
         });
         modelLoaderService.start();
     }
@@ -225,7 +225,8 @@ public class ModelLoader
      */
     private void addToProject(Project project, Set<ProjectifiableThing> modelContainers,
             boolean shouldCentre,
-            boolean dontGroupModelsOverride)
+            boolean dontGroupModelsOverride,
+            Printer printer)
     {
         UndoableProject undoableProject = new UndoableProject(project);
 
@@ -236,17 +237,17 @@ public class ModelLoader
             if (modelContainers.size() == 1)
             {
                 modelContainer = (ModelContainer) modelContainers.iterator().next();
-                addModelSequence(undoableProject, modelContainer, shouldCentre);
+                addModelSequence(undoableProject, modelContainer, shouldCentre, printer);
             } else if (!dontGroupModelsOverride)
             {
                 Set<Groupable> thingsToGroup = (Set) modelContainers;
                 modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(thingsToGroup);
-                addModelSequence(undoableProject, modelContainer, shouldCentre);
+                addModelSequence(undoableProject, modelContainer, shouldCentre, printer);
             } else
             {
                 modelContainers.iterator().forEachRemaining(mc ->
                 {
-                    addModelSequence(undoableProject, (ModelContainer)mc, shouldCentre);
+                    addModelSequence(undoableProject, (ModelContainer)mc, shouldCentre, printer);
                 });
             }
         } else
@@ -257,23 +258,24 @@ public class ModelLoader
 
     private void addModelSequence(UndoableProject undoableProject,
             ModelContainer modelContainer,
-            boolean shouldCentre)
+            boolean shouldCentre,
+            Printer printer)
     {
         if (shouldCentre)
         {
             modelContainer.moveToCentre();
             modelContainer.dropToBed();
         }
-        shrinkIfRequested(modelContainer);
+        shrinkIfRequested(modelContainer, printer);
         modelContainer.checkOffBed();
         undoableProject.addModel(modelContainer);
     }
 
-    private void shrinkIfRequested(ModelContainer modelContainer)
+    private void shrinkIfRequested(ModelContainer modelContainer, Printer printer)
     {
         boolean shrinkModel = false;
         RectangularBounds originalBounds = modelContainer.getOriginalModelBounds();
-        boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
+        boolean modelIsTooLarge = printer.isBiggerThanPrintVolume(originalBounds);
         if (modelIsTooLarge)
         {
             shrinkModel = BaseLookup.getSystemNotificationHandler().

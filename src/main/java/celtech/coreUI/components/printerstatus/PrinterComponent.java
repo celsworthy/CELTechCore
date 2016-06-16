@@ -4,6 +4,7 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.Lookup;
+import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
@@ -22,6 +23,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -121,9 +124,15 @@ public class PrinterComponent extends Pane
 
     @FXML
     private PrinterSVGComponent printerSVG;
+
+    @FXML
+    private ImageView printerImage;
+
+    private double imageAspectRatio;
+
     private final Printer printer;
     private final ComponentIsolationInterface isolationInterface;
-    
+
     private String styleClassForText = "regularText";
 
     private ChangeListener<String> nameListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
@@ -185,7 +194,7 @@ public class PrinterComponent extends Pane
 
         name.getStyleClass().add(styleClassForText);
         name.setFill(Color.WHITE);
-        
+
         String nameText;
 
         if (printer != null)
@@ -217,6 +226,17 @@ public class PrinterComponent extends Pane
             });
 
             updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
+
+            URL printerImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "printers/" + printer.printerConfigurationProperty().get().getTypeCode() + ".png");
+            if (printerImageURL != null)
+            {
+                Image newImage = new Image(printerImageURL.toExternalForm());
+                imageAspectRatio = newImage.getWidth() / newImage.getHeight();
+                printerImage.setImage(newImage);
+            } else
+            {
+                printerImage.setVisible(false);
+            }
         } else
         {
             nameText = Lookup.i18n("sidePanel_printerStatus.notConnected");
@@ -378,6 +398,16 @@ public class PrinterComponent extends Pane
         progressBar.setLayoutY(progressBarY);
         progressBar.setControlWidth(progressBarWidth);
         progressBar.setControlHeight(progressBarHeight);
+
+        if (printerImage.isVisible())
+        {
+            double fitHeight = sizePixels / 2;
+            double fitWidth = (sizePixels / 2) * imageAspectRatio;
+            printerImage.setFitHeight(fitHeight);
+            printerImage.setFitWidth(fitWidth);
+            printerImage.setLayoutX(sizePixels - fitWidth);
+            printerImage.setLayoutY(sizePixels - fitHeight);
+        }
 
         for (Node child : innerPane.getChildren())
         {

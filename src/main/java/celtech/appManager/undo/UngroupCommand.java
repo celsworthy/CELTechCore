@@ -3,13 +3,16 @@
  */
 package celtech.appManager.undo;
 
+import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
-import celtech.roboxbase.configuration.PrintBed;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
+import celtech.roboxbase.printerControl.model.Printer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,7 +45,7 @@ public class UngroupCommand extends Command
             if (modelContainer instanceof ModelGroup)
             {
                 containersToRecentre.addAll(modelContainer.getChildModelContainers());
-                groupIds.put(modelContainer.getModelId(), (Set)((ModelGroup) modelContainer).getChildModelContainers());
+                groupIds.put(modelContainer.getModelId(), (Set) ((ModelGroup) modelContainer).getChildModelContainers());
             }
         }
     }
@@ -76,8 +79,19 @@ public class UngroupCommand extends Command
             {
                 steno.exception("Could not ungroup", ex);
             }
-            Set<TranslateableTwoD> recentreThese = (Set)containersToRecentre;
-            project.translateModelsTo(recentreThese, PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
+            Set<TranslateableTwoD> recentreThese = (Set) containersToRecentre;
+            Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
+            if (selectedPrinter != null
+                    && selectedPrinter.printerConfigurationProperty().get() != null)
+            {
+                project.translateModelsTo(recentreThese, Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeWidth(),
+                        Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeDepth());
+            } else
+            {
+                PrinterDefinitionFile defaultPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
+                project.translateModelsTo(recentreThese, defaultPrinterConfiguration.getPrintVolumeWidth(),
+                        defaultPrinterConfiguration.getPrintVolumeDepth());
+            }
             newStates = project.getModelStates();
         } catch (Exception ex)
         {

@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.CoreTest;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.configuration.HeadContainer;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.panels.MenuInnerPanel;

@@ -230,4 +230,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         return getBoundsInParent().getMinY() + getBoundsInParent().getHeight()/ 2.0;
     }
+
+    @Override
+    protected void printVolumeBoundsUpdated()
+    {
+    }
 }

@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.PrintBed;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.modelcontrol.Groupable;
@@ -17,6 +16,8 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.packing.PackableItem;
@@ -737,8 +738,23 @@ public class ModelContainerProject extends Project
             sortedPackables.add((PackableItem) model);
         });
 
-        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
-                (int) PrintBed.maxPrintableZSize);
+        double printVolumeWidth = 0;
+        double printVolumeDepth = 0;
+
+        if (Lookup.getSelectedPrinterProperty().get() != null
+                && Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get() != null)
+        {
+            printVolumeWidth = Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeWidth();
+            printVolumeDepth = Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeDepth();
+        } else
+        {
+            PrinterDefinitionFile defaultPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
+            printVolumeWidth = defaultPrinterConfiguration.getPrintVolumeWidth();
+            printVolumeDepth = defaultPrinterConfiguration.getPrintVolumeDepth();
+        }
+
+        PackingThing thing = new PackingThing((int) printVolumeWidth,
+                (int) printVolumeDepth);
 
         thing.reference(sortedPackables, 10);
         thing.pack();

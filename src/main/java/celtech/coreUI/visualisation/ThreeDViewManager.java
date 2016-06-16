@@ -8,7 +8,6 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.PrintBed;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
@@ -22,6 +21,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.MathUtils;
@@ -69,9 +69,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
 import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -89,7 +87,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     private ObservableList<ProjectifiableThing> loadedModels;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
-    private final PrintBed printBedData = PrintBed.getInstance();
     private final Group root3D = new Group();
     private SubScene subScene;
     private final SimpleObjectProperty<SubScene> subSceneProperty = new SimpleObjectProperty<>();
@@ -130,18 +127,17 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     private final Xform cameraTranslateXform = new Xform(Xform.RotateOrder.XYZ, "CameraTranslateXForm");
     private final Xform cameraRotateXform = new Xform(Xform.RotateOrder.XYZ, "CameraRotateXForm");
     private final Group bed;
+    private Node printVolumeBoundingBox = null;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
     private final static double initialCameraDistance = 350;
+    private double defaultXTranslate = 0;
+    private double defaultYTranslate = 0;
+    private double defaultDistance = initialCameraDistance;
+
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
-    private double cameraLookAtCentreX = PrintBed.getPrintVolumeCentre().getX();
-    private double cameraLookAtCentreY = 0;
-    private double cameraLookAtCentreZ = PrintBed.getPrintVolumeCentre().getZ();
-//    private double cameraLookAtCentreX = 0;
-//    private double cameraLookAtCentreY = 0;
-//    private double cameraLookAtCentreZ = 0;
     private List<CameraViewChangeListener> cameraViewChangeListeners = new ArrayList<>();
 
     private double mousePosX;
@@ -149,9 +145,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     private double mouseOldX;
     private double mouseOldY;
 
-//    private final double bedXOffsetFromCameraZero;
-//    private final double bedZOffsetFromCameraZero;
-//    
     private final ProjectSelection projectSelection;
 
     private long lastAnimationTrigger = 0;
@@ -189,107 +182,28 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
 
     private CollisionManager collisionManager = new CollisionManager();
 
-    private Point2D processPoint(Point3D inputPoint)
+    private PrinterDefinitionFile currentPrinterConfiguration = null;
+
+    public void transitionCameraTo(double milliseconds,
+            double xTranslate,
+            double yTranslate,
+            double xAngle,
+            double yAngle,
+            double distance)
     {
-//        Point2D screenPoint = bed.localToScreen(inputPoint);
-        Point2D screenPoint = null;
-//        try
-//        {
-        Point3D unrotateY = cameraRotateXform.ry.transform(inputPoint);
-        Point3D unrotateX = cameraRotateXform.rx.transform(unrotateY);
-        Point3D untranslate = cameraTranslateXform.t.transform(unrotateX);
-//            screenPoint = CameraHelper.project(camera, untranslate);
-        screenPoint = camera.localToScreen(inputPoint);
-//            screenPoint = bed.localToScreen(inputPoint);
-
-//                        Point3D translatedOrigin = cameraTranslateXform.t.inverseTransform(origin);
-//            Point3D rotatedOrigin = cameraRotateXform.rx.inverseTransform(cameraRotateXform.ry.inverseTransform(translatedOrigin));
-//        } catch (NonInvertibleTransformException ex)
-//        {
-//            steno.error("error");
-//        }
-        return screenPoint;
-    }
-
-    private void refreshCameraPosition()
-    {
-        PolarCoordinate demand = new PolarCoordinate(MathUtils.DEG_TO_RAD * demandedCameraRotationX.get(), MathUtils.DEG_TO_RAD * demandedCameraRotationY.get(), cameraDistance.get());
-        steno.info("X:" + demandedCameraRotationX.get() + " Y:" + demandedCameraRotationY.get() + " Z:" + cameraDistance.get());
-        Point3D resultant = MathUtils.sphericalToCartesianLocalSpaceAdjusted(demand);
-        steno.info("Result X:" + resultant.getX() + " Y:" + resultant.getY() + " Z:" + resultant.getZ());
-        cameraTranslateXform.setTranslate(cameraLookAtCentreX + resultant.getX(), cameraLookAtCentreY + resultant.getY(), cameraLookAtCentreZ + resultant.getZ());
-//        cameraTranslateXform.setTranslate(resultant.getX(), resultant.getY(), resultant.getZ());
-
-        cameraRotateXform.setRotateX(-demandedCameraRotationX.get());
-        cameraRotateXform.setRotateY(-demandedCameraRotationY.get());
-
-        for (ProjectifiableThing modelContainer : projectSelection.getSelectedModelsSnapshot())
+        final Timeline timeline = new Timeline();
+        timeline.getKeyFrames().addAll(new KeyFrame[]
         {
-            ((ModelContainer) modelContainer).cameraViewOfYouHasChanged(cameraDistance.get());
-        }
-
-        //Output the bed co-ordinates in screen terms
-        Point3D origin = Point3D.ZERO;
-        Point3D point2 = new Point3D(0, -100, 0);
-        Point3D point3 = new Point3D(210, 0, 0);
-        Point3D point4 = new Point3D(210, -100, 0);
-//        
-//        Point2D bedLocalToScreen = bedTranslateXform.localToScreen(0,0,0);
-//        Point2D sub2Screen = root3D.localToScreen(0,0,0);
-//        Point3D bedLocalToScene = root3D.localToScene(0,0,0);
-//        Point3D sceneToCameraLocal = cameraTranslateXform.sceneToLocal(bedLocalToScene);
-//        Point2D cameraLocalToScreen = cameraTranslateXform.localToScreen(sceneToCameraLocal);
-//        Point2D camera2Screen = camera.localToScreen(cameraProject);
-
-        Point2D cameraProject1 = processPoint(origin);
-        Point2D cameraProject2 = processPoint(point2);
-        Point2D cameraProject3 = processPoint(point3);
-        Point2D cameraProject4 = processPoint(point4);
-
-        steno.info("CameraProject1: " + cameraProject1);
-        steno.info("CameraProject2: " + cameraProject2);
-        steno.info("CameraProject3: " + cameraProject3);
-        steno.info("CameraProject4: " + cameraProject4);
-
-//            steno.info("Translated origin: " + translatedOrigin);
-//            steno.info("Rotated origin: " + rotatedOrigin);
-//            steno.info("To screen: " + bed.localToScreen(Point3D.ZERO));
-//        steno.info("Camera rot is: " + cameraRotateXform);
-//        steno.info("Camera tx is: " + cameraTranslateXform);
-//        steno.info("Sub2Scr: " + sub2Screen);
-//        steno.info("Bed LTScr: " + bedLocalToScreen);
-//        steno.info("root to screen: " + camera.localToScreen(Point3D.ZERO));
-//        steno.info("Camera L: " + sceneToCameraLocal);
-//        steno.info("Camera Scr: " + cameraLocalToScreen);
-        steno.info("----------------------");
-        if (circle00 == null && subScene.getParent() != null)
-        {
-            circle00 = new Circle(10.0);
-            circle00.setFill(Color.GREEN);
-            circle01 = new Circle(10.0);
-            circle01.setFill(Color.RED);
-            circle02 = new Circle(10.0);
-            circle02.setFill(Color.BLUE);
-            circle03 = new Circle(10.0);
-            circle03.setFill(Color.PURPLE);
-            ((AnchorPane) subScene.getParent()).getChildren().add(circle00);
-            ((AnchorPane) subScene.getParent()).getChildren().add(circle01);
-            ((AnchorPane) subScene.getParent()).getChildren().add(circle02);
-            ((AnchorPane) subScene.getParent()).getChildren().add(circle03);
-        }
-
-        if (circle00 != null)
-        {
-            circle00.setTranslateX(cameraProject1.getX());
-            circle00.setTranslateY(cameraProject1.getY());
-            circle01.setTranslateX(cameraProject2.getX());
-            circle01.setTranslateY(cameraProject2.getY());
-            circle02.setTranslateX(cameraProject3.getX());
-            circle02.setTranslateY(cameraProject3.getY());
-            circle03.setTranslateX(cameraProject4.getX());
-            circle03.setTranslateY(cameraProject4.getY());
-        }
-
+            new KeyFrame(Duration.millis(milliseconds), new KeyValue[]
+            {
+                new KeyValue(bedTranslateXform.t.xProperty(), xTranslate, Interpolator.EASE_BOTH),
+                new KeyValue(bedTranslateXform.t.yProperty(), yTranslate, Interpolator.EASE_BOTH),
+                new KeyValue(demandedCameraRotationX, xAngle, Interpolator.EASE_BOTH),
+                new KeyValue(demandedCameraRotationY, yAngle, Interpolator.EASE_BOTH),
+                new KeyValue(cameraDistance, distance, Interpolator.EASE_BOTH)
+            })
+        });
+        timeline.playFromStart();
     }
 
     public void transitionCameraTo(double milliseconds, double xAngle, double yAngle, double distance)
@@ -493,29 +407,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         }
     }
 
-    private void primeCameraDragPlane(Node intersectedNode, Point3D pickedPoint)
-    {
-        if (intersectedNode.getParent() != null
-                && intersectedNode.getParent() instanceof ModelContainer)
-        {
-            Point3D scenePoint = intersectedNode.localToScene(pickedPoint);
-            Point3D localPoint = bedTranslateXform.sceneToLocal(scenePoint);
-            cameraTranslateDragPlaneTransform.setTranslateX(localPoint.getX());
-            cameraTranslateDragPlaneTransform.setTranslateY(localPoint.getY());
-            cameraTranslateDragPlaneTransform.setTranslateZ(localPoint.getZ());
-            cameraTranslateDragPlaneTransform.setRotateX(-cameraRotateXform.getRotateX());
-            cameraTranslateDragPlaneTransform.setRotateY(cameraRotateXform.getRotateY());
-        } else
-        {
-            cameraTranslateDragPlaneTransform.setTranslateX(cameraLookAtCentreX);
-            cameraTranslateDragPlaneTransform.setTranslateZ(cameraLookAtCentreZ);
-            cameraTranslateDragPlaneTransform.setRotateX(-cameraRotateXform.getRotateX());
-            cameraTranslateDragPlaneTransform.setRotateY(cameraRotateXform.getRotateY());
-        }
-
-//        dragMode.set(DragMode.CAMERA_TRANSLATE);
-    }
-
     private void handleMouseSingleClickedEvent(MouseEvent event)
     {
         boolean handleThisEvent = true;
@@ -701,11 +592,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         double mouseDeltaX = (mousePosX - mouseOldX);
         double mouseDeltaY = (mousePosY - mouseOldY);
 
-//        if (event.isPrimaryButtonDown())
-////                && projectGUIRules.canTranslateRotateOrScaleSelection().not().get())
-//        {
-//            return;
-//        }
         boolean shortcut = event.isShortcutDown();
 
         if (shortcut && event.isSecondaryButtonDown())
@@ -713,25 +599,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
             bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * 0.3);  // -
             bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * 0.3);  // -
             notifyModelsOfCameraViewChange();
-//            Node intersectedNode = event.getPickResult().getIntersectedNode();
-//            if (intersectedNode == cameraTranslateDragPlane)
-//            {
-//                Point3D pickedPoint = event.getPickResult().getIntersectedPoint();
-//                steno.info("Picked point was " + pickedPoint.toString());
-//                if (lastCameraPickedPoint != null)
-//                {
-//                    Point3D newBedPoint = bedTranslateXform.sceneToLocal(cameraTranslateDragPlane.localToScene(pickedPoint));
-//                    Point3D lastBedPoint = bedTranslateXform.sceneToLocal(cameraTranslateDragPlane.localToScene(lastCameraPickedPoint));
-//
-//                    Point3D bedResultant = newBedPoint.subtract(lastBedPoint);
-//                    steno.info("Resultant was " + bedResultant.toString());
-//                    cameraLookAtCentreX -= bedResultant.getX();
-//                    cameraLookAtCentreZ -= bedResultant.getZ();
-//                    cameraLookAtCentreY -= bedResultant.getY();
-//                    refreshCameraPosition();
-//                }
-//                lastCameraPickedPoint = pickedPoint;
-//            }
         } else if (event.isAltDown())
         {
             double z = bedTranslateXform.getTz() + (mouseDeltaY * 0.2);
@@ -766,11 +633,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                 }
                 lastDragPosition = pickedDragPlanePoint;
             }
-//            else
-//            {
-//                steno.error(
-//                    "In translation drag mode but intersected with something other than translation drag plane");
-//            }
+
         } else if (dragMode.get() == DragMode.TRANSLATING && event.isPrimaryButtonDown())
         {
             Node intersectedNode = event.getPickResult().getIntersectedNode();
@@ -884,12 +747,11 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                             subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             deselectAllModels();
-                            transitionCameraTo(1000, 30, 0, initialCameraDistance);
+                            transitionCameraToDefaults();
 
 //                            startSettingsAnimation();
                             break;
                         default:
-                            goToPreset(CameraPositionPreset.FRONT);
                             subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
                             subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
@@ -901,21 +763,41 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                 }
             };
 
-    private Circle circle00 = null;
-    private Circle circle01 = null;
-    private Circle circle02 = null;
-    private Circle circle03 = null;
-
     private MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
         updateModelColours();
     };
+
+    private void updateCurrentPrinter(Printer printer)
+    {
+        if (printer != null
+                && printer.printerConfigurationProperty().get() != null)
+        {
+            deselectAllModels();
+            
+            currentPrinterConfiguration = printer.printerConfigurationProperty().get();
+
+            defaultXTranslate = -currentPrinterConfiguration.getPrintVolumeWidth() / 2;
+            defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() - 80;
+            defaultDistance = initialCameraDistance;
+
+            if (currentPrinterConfiguration.getTypeCode().equals("RBXFR"))
+            {
+                defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() - 200;
+                defaultDistance = 800;
+            }
+
+            addPrintVolumeBoundingBox();
+            transitionCameraToDefaults();
+        }
+    }
 
     public ThreeDViewManager(ModelContainerProject project,
             ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
         this.project = project;
         this.undoableProject = new UndoableProject(project);
+
         loadedModels = project.getTopLevelThings();
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -932,23 +814,11 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         AnchorPane.setRightAnchor(root3D, 0.0);
         root3D.setPickOnBounds(false);
 
-//        cameraRotateXform.getChildren().add(camera);
-//        cameraTranslateXform.getChildren().add(cameraRotateXform);
         cameraDistance.set(initialCameraDistance);
 
-//        PointLight cameraLight = new PointLight();
-//        cameraTranslateXform.getChildren().add(cameraLight);
-//
-//        cameraTranslateDragPlane.setId("CameraTranslateDragPlane");
-//        cameraTranslateDragPlane.setVisible(true);
-//        cameraTranslateDragPlane.setOpacity(0.0);
-//        cameraTranslateDragPlane.setMouseTransparent(true);
-//        cameraTranslateDragPlaneTransform.getChildren().add(cameraTranslateDragPlane);
-//        root3D.getChildren().add(cameraTranslateDragPlaneTransform);
         root3D.getChildren().add(camera);
         camera.setNearClip(0.1);
         camera.setFarClip(5000.0);
-//        root3D.getChildren().add(cameraTranslateXform);
 
         PointLight cameraLight = new PointLight();
         cameraLight.setTranslateX(camera.getTranslateX());
@@ -963,17 +833,28 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         subScene.setFill(Color.TRANSPARENT);
         subScene.setCamera(camera);
 
-//        demandedCameraRotationX.addListener((ObservableValue<? extends Number> ov, Number t, Number t1) ->
-//        {
-//            cameraLight.setColor(Color.rgb(255, 255, 255, 1 - (t1.doubleValue() / 90)));
-//        });
         bed = buildBed();
+
+        Lookup.getSelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer t1)
+            {
+                updateCurrentPrinter(t1);
+            }
+        });
+
+        if (Lookup.getSelectedPrinterProperty().get() != null)
+        {
+            updateCurrentPrinter(Lookup.getSelectedPrinterProperty().get());
+        }
+
         translationDragPlane.setId("DragPlane");
         translationDragPlane.setOpacity(0.0);
         translationDragPlane.setMaterial(greyExcludedMaterial);
         translationDragPlane.setMouseTransparent(true);
-        translationDragPlane.setTranslateX(PrintBed.getPrintVolumeCentre().getX());
-        translationDragPlane.setTranslateZ(PrintBed.getPrintVolumeCentre().getZ());
+        translationDragPlane.setTranslateX(currentPrinterConfiguration.getPrintVolumeWidth());
+        translationDragPlane.setTranslateZ(currentPrinterConfiguration.getPrintVolumeDepth());
 
         verticalDragPlane.setId("VerticalDragPlane");
         verticalDragPlane.setOpacity(0.0);
@@ -997,8 +878,8 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                 verticalDragPlane, zCutDisplayPlane);
         root3D.getChildren().add(bedTranslateXform);
 
-        double bedXOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getWidth() / 2;
-        double bedZOffsetFromCameraZero = -printBedData.getPrintVolumeBounds().getDepth() / 2;
+        double bedXOffsetFromCameraZero = -currentPrinterConfiguration.getPrintVolumeWidth() / 2;
+        double bedZOffsetFromCameraZero = -currentPrinterConfiguration.getPrintVolumeDepth() / 2;
 
         bedTranslateXform.setTx(bedXOffsetFromCameraZero);
         bedTranslateXform.setTz(bedZOffsetFromCameraZero + cameraDistance.get());
@@ -1008,7 +889,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         bedTranslateXform.ry.angleProperty().bind(demandedCameraRotationY);
         bedTranslateXform.t.zProperty().bind(cameraDistance);
 
-        rotateCameraAroundAxes(-30, 0);
+        transitionCameraToDefaults();
 
         subScene.widthProperty().bind(widthPropertyToFollow);
         subScene.heightProperty().bind(heightPropertyToFollow);
@@ -1096,13 +977,6 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         }
     }
 
-    private void goToPreset(CameraPositionPreset preset)
-    {
-//        camera.setCentreOfRotation(preset.getPointToLookAt());
-//        camera.rotateAndElevateCameraTo(preset.getAzimuth(), preset.getElevation());
-//        camera.zoomCameraTo(preset.getDistance());
-    }
-
     private Group buildBed()
     {
         URL bedOuterURL = CoreTest.class
@@ -1145,7 +1019,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         bedClipsMeshView.setMaterial(bedClipsMaterial);
         bed.getChildren().addAll(bedClipsMeshView);
 
-        bed.getChildren().add(createBoundingBox());
+        addPrintVolumeBoundingBox();
 
         final Image roboxLogoImage = new Image(CoreTest.class.getResource(
                 ApplicationConfiguration.imageResourcePath + "BedGraphics.png").toExternalForm());
@@ -1174,7 +1048,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         return bed;
     }
 
-    private Node createBoundingBox()
+    private Node createBoundingBox(double printVolumeWidth, double printVolumeDepth, double printVolumeHeight)
     {
         PhongMaterial boundsBoxMaterial = new PhongMaterial(Color.BLUE);
         Image illuminationMap = new Image(SelectionHighlighter.class.getResource(
@@ -1185,53 +1059,50 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         Group boxGroup = new Group();
 
         double lineWidth = .1;
-        double printAreaHeight = -printBedData.getPrintVolumeBounds().getHeight();
-        double printAreaWidth = printBedData.getPrintVolumeBounds().getWidth();
-        double printAreaDepth = printBedData.getPrintVolumeBounds().getDepth();
 
-        Box lhf = new Box(lineWidth, printAreaHeight, lineWidth);
+        Box lhf = new Box(lineWidth, printVolumeHeight, lineWidth);
         lhf.setMaterial(boundsBoxMaterial);
-        lhf.setTranslateY(-printAreaHeight / 2);
+        lhf.setTranslateY(-printVolumeHeight / 2);
 
-        Box rhf = new Box(lineWidth, printAreaHeight, lineWidth);
+        Box rhf = new Box(lineWidth, printVolumeHeight, lineWidth);
         rhf.setMaterial(boundsBoxMaterial);
-        rhf.setTranslateY(-printAreaHeight / 2);
-        rhf.setTranslateX(printAreaWidth);
+        rhf.setTranslateY(-printVolumeHeight / 2);
+        rhf.setTranslateX(printVolumeWidth);
 
-        Box lhb = new Box(lineWidth, printAreaHeight, lineWidth);
+        Box lhb = new Box(lineWidth, printVolumeHeight, lineWidth);
         lhb.setMaterial(boundsBoxMaterial);
-        lhb.setTranslateY(-printAreaHeight / 2);
-        lhb.setTranslateZ(printAreaDepth);
+        lhb.setTranslateY(-printVolumeHeight / 2);
+        lhb.setTranslateZ(printVolumeDepth);
 
-        Box rhb = new Box(lineWidth, printAreaHeight, lineWidth);
+        Box rhb = new Box(lineWidth, printVolumeHeight, lineWidth);
         rhb.setMaterial(boundsBoxMaterial);
-        rhb.setTranslateY(-printAreaHeight / 2);
-        rhb.setTranslateX(printAreaWidth);
-        rhb.setTranslateZ(printAreaDepth);
+        rhb.setTranslateY(-printVolumeHeight / 2);
+        rhb.setTranslateX(printVolumeWidth);
+        rhb.setTranslateZ(printVolumeDepth);
 
         Box lhftTOlhbt = new Box(lineWidth, lineWidth,
-                printBedData.getPrintVolumeBounds().getDepth());
+                printVolumeDepth);
         lhftTOlhbt.setMaterial(boundsBoxMaterial);
-        lhftTOlhbt.setTranslateY(-printAreaHeight);
-        lhftTOlhbt.setTranslateZ(printAreaDepth / 2);
+        lhftTOlhbt.setTranslateY(-printVolumeHeight);
+        lhftTOlhbt.setTranslateZ(printVolumeDepth / 2);
 
         Box rhftTOrhbt = new Box(lineWidth, lineWidth,
-                printBedData.getPrintVolumeBounds().getDepth());
+                printVolumeDepth);
         rhftTOrhbt.setMaterial(boundsBoxMaterial);
-        rhftTOrhbt.setTranslateX(printAreaWidth);
-        rhftTOrhbt.setTranslateY(-printAreaHeight);
-        rhftTOrhbt.setTranslateZ(printAreaDepth / 2);
+        rhftTOrhbt.setTranslateX(printVolumeWidth);
+        rhftTOrhbt.setTranslateY(-printVolumeHeight);
+        rhftTOrhbt.setTranslateZ(printVolumeDepth / 2);
 
-        Box lhftTOrhft = new Box(printAreaWidth, lineWidth, lineWidth);
+        Box lhftTOrhft = new Box(printVolumeWidth, lineWidth, lineWidth);
         lhftTOrhft.setMaterial(boundsBoxMaterial);
-        lhftTOrhft.setTranslateX(printAreaWidth / 2);
-        lhftTOrhft.setTranslateY(-printAreaHeight);
+        lhftTOrhft.setTranslateX(printVolumeWidth / 2);
+        lhftTOrhft.setTranslateY(-printVolumeHeight);
 
-        Box lhbtTOrhbt = new Box(printAreaWidth, lineWidth, lineWidth);
+        Box lhbtTOrhbt = new Box(printVolumeWidth, lineWidth, lineWidth);
         lhbtTOrhbt.setMaterial(boundsBoxMaterial);
-        lhbtTOrhbt.setTranslateX(printAreaWidth / 2);
-        lhbtTOrhbt.setTranslateY(-printAreaHeight);
-        lhbtTOrhbt.setTranslateZ(printAreaDepth);
+        lhbtTOrhbt.setTranslateX(printVolumeWidth / 2);
+        lhbtTOrhbt.setTranslateY(-printVolumeHeight);
+        lhbtTOrhbt.setTranslateZ(printVolumeDepth);
 
         boxGroup.getChildren().addAll(lhf, rhf, lhb, rhb,
                 lhftTOlhbt, rhftTOrhbt,
@@ -1762,5 +1633,27 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     public ReadOnlyObjectProperty<DragMode> getDragModeProperty()
     {
         return dragMode;
+    }
+
+    private void addPrintVolumeBoundingBox()
+    {
+        if (bed != null)
+        {
+            Node newBoundingBox = createBoundingBox(currentPrinterConfiguration.getPrintVolumeWidth(),
+                    currentPrinterConfiguration.getPrintVolumeDepth(), currentPrinterConfiguration.getPrintVolumeHeight());
+            bed.getChildren().remove(printVolumeBoundingBox);
+            bed.getChildren().add(newBoundingBox);
+            printVolumeBoundingBox = newBoundingBox;
+        }
+    }
+
+    private void transitionCameraToDefaults()
+    {
+        transitionCameraTo(1000,
+                defaultXTranslate,
+                defaultYTranslate,
+                30,
+                0,
+                defaultDistance);
     }
 }

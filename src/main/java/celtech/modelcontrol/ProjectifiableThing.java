@@ -1,14 +1,19 @@
 package celtech.modelcontrol;
 
+import celtech.Lookup;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.coreUI.visualisation.ShapeProviderTwoD;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
+import celtech.roboxbase.printerControl.model.Printer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -27,6 +32,9 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     protected ScreenExtents extents = null;
     private List<ShapeProviderTwoD.ShapeChangeListener> shapeChangeListeners;
     private List<ScreenExtentsProviderTwoD.ScreenExtentsListener> screenExtentsChangeListeners;
+    protected double printVolumeWidth = 0;
+    protected double printVolumeDepth = 0;
+    protected double printVolumeHeight = 0;
 
     /**
      * The modelId is only guaranteed unique at the project level because it
@@ -54,6 +62,13 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
         isOffBed = new SimpleBooleanProperty(false);
         shapeChangeListeners = new ArrayList<>();
         screenExtentsChangeListeners = new ArrayList<>();
+
+        Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
+        {
+            updatePrintVolumeBounds(t1);
+        });
+
+        updatePrintVolumeBounds(Lookup.getSelectedPrinterProperty().get());
     }
 
     public int getModelId()
@@ -176,7 +191,6 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
         shapeChangeListeners.remove(listener);
     }
 
-    
     /**
      * This method must be called at the end of any operation that changes one
      * or more of the transforms.
@@ -188,4 +202,24 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
             shapeChangeListener.shapeChanged(this);
         }
     }
+
+    private void updatePrintVolumeBounds(Printer printer)
+    {
+        if (printer != null
+                && printer.printerConfigurationProperty().get() != null)
+        {
+            printVolumeWidth = printer.printerConfigurationProperty().get().getPrintVolumeWidth();
+            printVolumeDepth = printer.printerConfigurationProperty().get().getPrintVolumeDepth();
+            printVolumeHeight = printer.printerConfigurationProperty().get().getPrintVolumeHeight();
+        } else
+        {
+            PrinterDefinitionFile defaultPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
+            printVolumeWidth = defaultPrinterConfiguration.getPrintVolumeWidth();
+            printVolumeDepth = defaultPrinterConfiguration.getPrintVolumeDepth();
+            printVolumeHeight = defaultPrinterConfiguration.getPrintVolumeHeight();
+        }
+        printVolumeBoundsUpdated();
+    }
+    
+    protected abstract void printVolumeBoundsUpdated();
 }

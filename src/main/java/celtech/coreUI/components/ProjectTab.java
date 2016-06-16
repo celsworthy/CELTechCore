@@ -21,6 +21,7 @@ import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Printer;
 import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
 import java.io.File;
 import java.io.IOException;

@@ -1,6 +1,5 @@
 package celtech.modelcontrol;
 
-import celtech.roboxbase.configuration.PrintBed;
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.CameraViewChangeListener;
 import celtech.coreUI.visualisation.Edge;
@@ -88,7 +87,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
     private Stenographer steno;
-    private PrintBed printBed;
     private boolean isInvalidMesh = false;
 
     RectangularBounds originalModelBounds;
@@ -322,7 +320,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         nextModelId += 1;
 
         steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
-        printBed = PrintBed.getInstance();
 
         if (modelFile != null)
         {
@@ -389,9 +386,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      */
     public void setBedCentreOffsetTransform()
     {
-        bedCentreOffsetX = PrintBed.getPrintVolumeCentreZeroHeight().getX();
-        bedCentreOffsetY = PrintBed.getPrintVolumeCentreZeroHeight().getY();
-        bedCentreOffsetZ = PrintBed.getPrintVolumeCentreZeroHeight().getZ();
+        bedCentreOffsetX = printVolumeWidth / 2;
+        bedCentreOffsetY = 0;
+        bedCentreOffsetZ = printVolumeDepth / 2;
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
@@ -508,52 +505,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     /**
-     * This method checks if the model is off the print bed and if so it adjusts
-     * the transformMoveToPreferred to bring it back to the nearest edge of the
-     * bed. N.B. It only works for top level objects i.e. top level groups or
-     * ungrouped models.
-     */
-    private void keepOnBedXZ()
-    {
-        double deltaX = 0;
-
-        double minBedX = PrintBed.getPrintVolumeCentre().getX() - PrintBed.maxPrintableXSize / 2.0
-                + 1;
-        double maxBedX = PrintBed.getPrintVolumeCentre().getX() + PrintBed.maxPrintableXSize / 2.0
-                - 1;
-        if (lastTransformedBoundsInParent.getMinX() < minBedX)
-        {
-            deltaX = -(lastTransformedBoundsInParent.getMinX() - minBedX);
-            transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        } else if (lastTransformedBoundsInParent.getMaxX() > maxBedX)
-        {
-            deltaX = -(lastTransformedBoundsInParent.getMaxX() - maxBedX);
-            transformMoveToPreferred.setX(transformMoveToPreferred.getX() + deltaX);
-        }
-        updateLastTransformedBoundsInParentForTranslateByX(deltaX);
-
-        double deltaZ = 0;
-        double minBedZ = PrintBed.getPrintVolumeCentre().getZ() - PrintBed.maxPrintableZSize / 2.0
-                + 1;
-        double maxBedZ = PrintBed.getPrintVolumeCentre().getZ() + PrintBed.maxPrintableZSize / 2.0
-                - 1;
-        if (lastTransformedBoundsInParent.getMinZ() < minBedZ)
-        {
-            deltaZ = -(lastTransformedBoundsInParent.getMinZ() - minBedZ);
-            transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        } else if (lastTransformedBoundsInParent.getMaxZ() > maxBedZ)
-        {
-            deltaZ = -(lastTransformedBoundsInParent.getMaxZ() - maxBedZ);
-            transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + deltaZ);
-        }
-        updateLastTransformedBoundsInParentForTranslateByZ(deltaZ);
-
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
-    }
-
-    /**
      * Move the CENTRE of the object to the desired x,z position.
      *
      * @param xPosition
@@ -576,13 +527,11 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
 
-        BoundingBox printVolumeBounds = printBed.getPrintVolumeBounds();
-
         double scaling = 1.0;
 
-        double relativeXSize = printableBoundingBox.getWidth() / printVolumeBounds.getWidth();
-        double relativeYSize = printableBoundingBox.getHeight() / -printVolumeBounds.getHeight();
-        double relativeZSize = printableBoundingBox.getDepth() / printVolumeBounds.getDepth();
+        double relativeXSize = printableBoundingBox.getWidth() / printVolumeWidth;
+        double relativeYSize = printableBoundingBox.getHeight() / -printVolumeHeight;
+        double relativeZSize = printableBoundingBox.getDepth() / printVolumeDepth;
         steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize + " Z "
                 + relativeZSize);
 
@@ -1159,9 +1108,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         if (newMinX < 0)
         {
             finalXPosition += -newMinX;
-        } else if (newMaxX > printBed.getPrintVolumeMaximums().getX())
+        } else if (newMaxX > printVolumeWidth)
         {
-            finalXPosition -= (newMaxX - printBed.getPrintVolumeMaximums().getX());
+            finalXPosition -= (newMaxX - printVolumeWidth);
         }
 
         double currentXPosition = getTransformedCentreX();
@@ -1193,9 +1142,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         if (newMinZ < 0)
         {
             finalZPosition += -newMinZ;
-        } else if (newMaxZ > printBed.getPrintVolumeMaximums().getZ())
+        } else if (newMaxZ > printVolumeDepth)
         {
-            finalZPosition -= (newMaxZ - printBed.getPrintVolumeMaximums().getZ());
+            finalZPosition -= (newMaxZ - printVolumeDepth);
         }
 
         double currentZPosition = getTransformedCentreZ();
@@ -1248,22 +1197,26 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     {
         RectangularBounds bounds = lastTransformedBoundsInParent;
 
-        double epsilon = 0.001;
+        if (bounds != null)
+        {
+            double epsilon = 0.001;
 
-        if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
-                || MathUtils.compareDouble(bounds.getMaxX(), printBed.getPrintVolumeMaximums().getX(),
-                        epsilon) == MathUtils.MORE_THAN
-                || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
-                || MathUtils.compareDouble(bounds.getMaxZ(), printBed.getPrintVolumeMaximums().getZ(),
-                        epsilon) == MathUtils.MORE_THAN
-                || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
-                || MathUtils.compareDouble(bounds.getMinY(), printBed.getPrintVolumeMinimums().getY(),
-                        epsilon) == MathUtils.LESS_THAN)
-        {
-            isOffBed.set(true);
-        } else
-        {
-            isOffBed.set(false);
+            //We have to negate the print volume height for this test as up = -ve Y in jfx!
+            if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
+                    || MathUtils.compareDouble(bounds.getMaxX(), printVolumeWidth,
+                            epsilon) == MathUtils.MORE_THAN
+                    || MathUtils.compareDouble(bounds.getMinZ(), 0, epsilon) == MathUtils.LESS_THAN
+                    || MathUtils.compareDouble(bounds.getMaxZ(), printVolumeDepth,
+                            epsilon) == MathUtils.MORE_THAN
+                    || MathUtils.compareDouble(bounds.getMaxY(), 0, epsilon) == MathUtils.MORE_THAN
+                    || MathUtils.compareDouble(bounds.getMinY(), -printVolumeHeight,
+                            epsilon) == MathUtils.LESS_THAN)
+            {
+                isOffBed.set(true);
+            } else
+            {
+                isOffBed.set(false);
+            }
         }
     }
 
@@ -1531,7 +1484,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         ObservableFaceArray originalFaces = mesh.getFaces();
         ObservableFloatArray originalPoints = mesh.getPoints();
 
-        double minPrintableY = printBed.getPrintVolumeMinimums().getY();
+        double minPrintableY = printVolumeHeight;
         int numberOfBins = (int) Math.
                 ceil(Math.abs(originalModelBounds.getHeight() / minPrintableY));
 
@@ -2116,6 +2069,12 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     public void removeCollisionShapeListener(CollisionShapeListener collisionShapeListener)
     {
         collisionShapeListeners.remove(collisionShapeListener);
+    }
+
+    @Override
+    protected void printVolumeBoundsUpdated()
+    {
+        checkOffBed();
     }
 
     @Override
