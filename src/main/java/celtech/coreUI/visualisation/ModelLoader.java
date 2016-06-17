@@ -18,6 +18,8 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
@@ -247,7 +249,7 @@ public class ModelLoader
             {
                 modelContainers.iterator().forEachRemaining(mc ->
                 {
-                    addModelSequence(undoableProject, (ModelContainer)mc, shouldCentre, printer);
+                    addModelSequence(undoableProject, (ModelContainer) mc, shouldCentre, printer);
                 });
             }
         } else
@@ -275,15 +277,19 @@ public class ModelLoader
     {
         boolean shrinkModel = false;
         RectangularBounds originalBounds = modelContainer.getOriginalModelBounds();
-        boolean modelIsTooLarge = printer.isBiggerThanPrintVolume(originalBounds);
-        if (modelIsTooLarge)
+
+        if (printer != null)
         {
-            shrinkModel = BaseLookup.getSystemNotificationHandler().
-                    showModelTooBigDialog(modelContainer.getModelName());
-        }
-        if (shrinkModel)
-        {
-            modelContainer.shrinkToFitBed();
+            boolean modelIsTooLarge = printer.isBiggerThanPrintVolume(originalBounds);
+            if (modelIsTooLarge)
+            {
+                shrinkModel = BaseLookup.getSystemNotificationHandler().
+                        showModelTooBigDialog(modelContainer.getModelName());
+            }
+            if (shrinkModel)
+            {
+                modelContainer.shrinkToFitBed();
+            }
         }
     }
 

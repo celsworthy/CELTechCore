@@ -21,6 +21,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -774,7 +775,7 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
                 && printer.printerConfigurationProperty().get() != null)
         {
             deselectAllModels();
-            
+
             currentPrinterConfiguration = printer.printerConfigurationProperty().get();
 
             defaultXTranslate = -currentPrinterConfiguration.getPrintVolumeWidth() / 2;
@@ -797,6 +798,8 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
     {
         this.project = project;
         this.undoableProject = new UndoableProject(project);
+
+        currentPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
 
         loadedModels = project.getTopLevelThings();
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
@@ -847,6 +850,11 @@ public class ThreeDViewManager implements ModelContainerProject.ProjectChangesLi
         if (Lookup.getSelectedPrinterProperty().get() != null)
         {
             updateCurrentPrinter(Lookup.getSelectedPrinterProperty().get());
+        } else
+        {
+            // Update using the defaults
+            addPrintVolumeBoundingBox();
+            transitionCameraToDefaults();
         }
 
         translationDragPlane.setId("DragPlane");
