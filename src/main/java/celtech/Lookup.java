@@ -14,7 +14,13 @@ import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.i18n.UTF8Control;
 import celtech.roboxbase.printerControl.model.Printer;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -75,6 +81,8 @@ public class Lookup
      */
     private static final Map<Project, ProjectGUIState> projectGUIStates = new HashMap<>();
     private static final Languages languages = new Languages();
+
+    private static ResourceBundle defaultBundle = null;
 
     public static Languages getLanguages()
     {
@@ -177,27 +185,37 @@ public class Lookup
 
     public static String i18n(String stringId)
     {
-        return BaseLookup.i18n(stringId);
-//        if (defaultBundle == null)
-//        {
-//            defaultBundle = MultiplePropertiesResourceBundle.getBundle("celtech.resources.i18n.LanguageData",
-//                    new UTF8Control());
-//        }
-//
-//        String langString = null;
-//
-//        if (defaultBundle.containsKey(stringId))
-//        {
-//            //We have the key in our application bundle
-//            langString = defaultBundle.getString(stringId);
-//        } else
-//        {
-//            //Is it in the base bundle?
-//            langString = BaseLookup.i18n(stringId);
-//        }
-//
-//        //Note that for the moment we only use templates defined in the base bundle...
-//        langString = BaseLookup.substituteTemplates(langString);
-//        return langString;
+
+        if (defaultBundle == null)
+        {
+            URL[] urls = new URL[1];
+            File file = new File(BaseConfiguration.getApplicationInstallDirectory(null).concat("Language"));
+            try
+            {
+                urls[0] = file.toURI().toURL();
+            } catch (MalformedURLException ex)
+            {
+                steno.info("Failed to load resource bundle URL");
+            }
+
+            ClassLoader loader = new URLClassLoader(urls);
+            defaultBundle = ResourceBundle.getBundle("AutoMakerLanguageData", Locale.getDefault(), loader, new UTF8Control());
+        }
+
+        String langString = null;
+
+        if (defaultBundle.containsKey(stringId))
+        {
+            //We have the key in our application bundle
+            langString = defaultBundle.getString(stringId);
+        } else
+        {
+            //Is it in the base bundle?
+            langString = BaseLookup.i18n(stringId);
+        }
+
+        //Note that for the moment we only use templates defined in the base bundle...
+        langString = BaseLookup.substituteTemplates(langString);
+        return langString;
     }
 }
