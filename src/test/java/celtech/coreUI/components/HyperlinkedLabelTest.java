@@ -47,7 +47,7 @@ public class HyperlinkedLabelTest extends JavaFXConfiguredTest
     @Test
     public void testReplaceText_plaintextOnly()
     {
-        System.out.println("replaceText");
+        System.out.println("replaceText_plaintextOnly");
         String newText = "Some plain text";
         HyperlinkedLabel instance = new HyperlinkedLabel();
         instance.replaceText(newText);
@@ -63,7 +63,7 @@ public class HyperlinkedLabelTest extends JavaFXConfiguredTest
     @Test
     public void testReplaceText_plaintextAndHyperlink()
     {
-        System.out.println("replaceText");
+        System.out.println("replaceText_plaintextAndHyperlink");
         String newText = "Robox firmware update <a href=\"https://robox.freshdesk.com/solution/categories/1000090870/folders/1000214277/articles/1000180224-the-filament-isn-t-moving-as-expected\">Other article</a>";
         String expectedTextContent = "Robox firmware update ";
         String expectedHyperlinkContent = "Other article";
@@ -83,7 +83,7 @@ public class HyperlinkedLabelTest extends JavaFXConfiguredTest
     @Test
     public void testReplaceText_plaintextAndTwoHyperlinks()
     {
-        System.out.println("replaceText");
+        System.out.println("replaceText_plaintextAndTwoHyperlinks");
         String newText = "Robox firmware update <a href=\"https://robox.freshdesk.com/support/home\">Robox solutions</a>more text<a href=\"https://robox.freshdesk.com/solution/categories/1000090870/folders/1000214277/articles/1000180224-the-filament-isn-t-moving-as-expected\">Other article</a>";
 
         String expectedTextContent1 = "Robox firmware update ";
@@ -110,7 +110,7 @@ public class HyperlinkedLabelTest extends JavaFXConfiguredTest
     @Test
     public void testReplaceText_HyperlinkOnly()
     {
-        System.out.println("replaceText");
+        System.out.println("replaceText_HyperlinkOnly");
         String newText = "<a href=\"https://robox.freshdesk.com/solution/categories/1000090870/folders/1000214277/articles/1000180224-the-filament-isn-t-moving-as-expected\">Other article</a>";
         String expectedHyperlinkContent = "Other article";
         HyperlinkedLabel instance = new HyperlinkedLabel();
