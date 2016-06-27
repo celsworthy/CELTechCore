@@ -18,12 +18,16 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.i18n.UTF8Control;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -81,8 +85,6 @@ public class Lookup
      */
     private static final Map<Project, ProjectGUIState> projectGUIStates = new HashMap<>();
     private static final Languages languages = new Languages();
-
-    private static ResourceBundle defaultBundle = null;
 
     public static Languages getLanguages()
     {
@@ -185,37 +187,6 @@ public class Lookup
 
     public static String i18n(String stringId)
     {
-
-        if (defaultBundle == null)
-        {
-            URL[] urls = new URL[1];
-            File file = new File(BaseConfiguration.getApplicationInstallDirectory(null).concat("Language"));
-            try
-            {
-                urls[0] = file.toURI().toURL();
-            } catch (MalformedURLException ex)
-            {
-                steno.info("Failed to load resource bundle URL");
-            }
-
-            ClassLoader loader = new URLClassLoader(urls);
-            defaultBundle = ResourceBundle.getBundle("AutoMakerLanguageData", Locale.getDefault(), loader, new UTF8Control());
-        }
-
-        String langString = null;
-
-        if (defaultBundle.containsKey(stringId))
-        {
-            //We have the key in our application bundle
-            langString = defaultBundle.getString(stringId);
-        } else
-        {
-            //Is it in the base bundle?
-            langString = BaseLookup.i18n(stringId);
-        }
-
-        //Note that for the moment we only use templates defined in the base bundle...
-        langString = BaseLookup.substituteTemplates(langString);
-        return langString;
+        return BaseLookup.i18n(stringId);
     }
 }
