@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +37,7 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
 
         List<Object> localesList = new ArrayList<>();
         localesList.add(SYSTEM_DEFAULT);
-        localesList.addAll(Lookup.getLanguages().getLocales());
+        localesList.addAll(BaseLookup.getAvailableLocales());
         localesList.sort((Object o1, Object o2) ->
         {
             // Make "System Default" come at the top of the combo

@@ -4,9 +4,7 @@
 package celtech;
 
 import celtech.appManager.Project;
-import celtech.appManager.Project;
 import celtech.appManager.SystemNotificationManagerJavaFX;
-import celtech.configuration.Languages;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.coreUI.ProjectGUIState;
@@ -14,21 +12,10 @@ import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.i18n.UTF8Control;
 import celtech.roboxbase.printerControl.model.Printer;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -84,12 +71,6 @@ public class Lookup
      * for the Project eg selectionModel.
      */
     private static final Map<Project, ProjectGUIState> projectGUIStates = new HashMap<>();
-    private static final Languages languages = new Languages();
-
-    public static Languages getLanguages()
-    {
-        return languages;
-    }
 
     public static void setupDefaultValues()
     {
