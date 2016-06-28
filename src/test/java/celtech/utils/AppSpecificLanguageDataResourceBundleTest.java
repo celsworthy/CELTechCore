@@ -54,13 +54,14 @@ public class AppSpecificLanguageDataResourceBundleTest
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
-        String installDir = "/Users/ianhudson/Development/RoboxBase/target/test-classes/InstallDir/AutoMaker";
+        
+        URL applicationInstallURL = AppSpecificLanguageDataResourceBundleTest.class.getResource("/InstallDir/AutoMaker/");        
+        String installDir = applicationInstallURL.getPath();
+
         BaseConfiguration.setInstallationProperties(
                 testProperties,
                 installDir,
                 "");
-
-        System.out.println("Installdir: " + installDir);
 
         Locale.setDefault(Locale.ENGLISH);
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.i18n.LanguageData");
