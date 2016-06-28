@@ -130,7 +130,7 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
                         {
                             if (item instanceof Locale)
                             {
-                                setText(((Locale) item).getDisplayName());
+                                setText(((Locale) item).getDisplayName(BaseLookup.getApplicationLocale()));
                             } else
                             {
                                 setText((String) item);
