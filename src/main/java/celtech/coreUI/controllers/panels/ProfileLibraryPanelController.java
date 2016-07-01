@@ -13,6 +13,8 @@ import celtech.configuration.slicer.NozzleParameters;
 import celtech.configuration.slicer.SupportPattern;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
+import celtech.printerControl.model.Head;
+import celtech.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +53,9 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProfileLibraryPanelController implements Initializable, MenuInnerPanel
 {
-
+    
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
-
+    
     enum State
     {
 
@@ -70,10 +72,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
          */
         ROBOX
     };
-
+    
     private final ObjectProperty<ProfileLibraryPanelController.State> state = new SimpleObjectProperty<>();
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
-
+    
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
     private final BooleanProperty canSaveAs = new SimpleBooleanProperty(false);
@@ -82,211 +84,211 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private String currentProfileName;
     private final StringProperty currentHeadType = new SimpleStringProperty();
     private final IntegerProperty numNozzleHeaters = new SimpleIntegerProperty();
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(
             ProfileLibraryPanelController.class.getName());
-
+    
     @FXML
     private VBox container;
-
+    
     @FXML
     private ComboBox<String> cmbHeadType;
-
+    
     @FXML
     private ComboBox<SlicerParametersFile> cmbPrintProfile;
-
+    
     @FXML
     private RestrictedNumberField fillDensity;
-
+    
     @FXML
     private GridPane supportGrid;
-
+    
     @FXML
     private RestrictedNumberField perimeterExtrusionWidth;
-
+    
     @FXML
     private RestrictedNumberField enableFanIfLayerTimeBelow;
-
+    
     @FXML
     private RestrictedNumberField supportOverhangThreshold;
-
+    
     @FXML
     private ComboBox<String> supportNozzleChoice;
-
+    
     @FXML
     private RestrictedNumberField firstLayerSpeed;
-
+    
     @FXML
     private RestrictedNumberField perimeterSpeed;
-
+    
     @FXML
     private GridPane coolingGrid;
-
+    
     @FXML
     private GridPane speedGrid;
-
+    
     @FXML
     private RestrictedTextField profileNameField;
-
+    
     @FXML
     private ComboBox<String> supportInterfaceNozzleChoice;
-
+    
     @FXML
     private RestrictedNumberField supportMaterialSpeed;
-
+    
     @FXML
     private RestrictedNumberField minFanSpeed;
-
+    
     @FXML
     private RestrictedNumberField solidLayersBottom;
-
+    
     @FXML
     private RestrictedNumberField solidLayersTop;
-
+    
     @FXML
     private ComboBox<String> perimeterNozzleChoice;
-
+    
     @FXML
     private RestrictedNumberField smallPerimeterSpeed;
-
+    
     @FXML
     private RestrictedNumberField disableFanForFirstNLayers;
-
+    
     @FXML
     private Slider topSolidInfillExtrusionWidthSlider;
-
+    
     @FXML
     private ComboBox<SupportPattern> supportPattern;
-
+    
     @FXML
     private Slider supportExtrusionWidthSlider;
-
+    
     @FXML
     private RestrictedNumberField bridgesSpeed;
-
+    
     @FXML
     private RestrictedNumberField layerHeight;
-
+    
     @FXML
     private GridPane extrusionGrid;
-
+    
     @FXML
     private GridPane extrusionControls;
-
+    
     @FXML
     private GridPane nozzleControls;
-
+    
     @FXML
     private RestrictedNumberField supportPatternAngle;
-
+    
     @FXML
     private RestrictedNumberField infillExtrusionWidth;
-
+    
     @FXML
     private RestrictedNumberField slowFanIfLayerTimeBelow;
-
+    
     @FXML
     private Slider firstLayerExtrusionWidthSlider;
-
+    
     @FXML
     private CheckBox enableAutoCooling;
-
+    
     @FXML
     private RestrictedNumberField solidInfillSpeed;
-
+    
     @FXML
     private RestrictedNumberField nozzlePartialOpen0;
-
+    
     @FXML
     private RestrictedNumberField nozzlePartialOpen1;
-
+    
     @FXML
     private ComboBox<String> firstLayerNozzleChoice;
-
+    
     @FXML
     private Slider solidInfillExtrusionWidthSlider;
-
+    
     @FXML
     private ComboBox<String> fillNozzleChoice;
-
+    
     @FXML
     private RestrictedNumberField nozzleEjectionVolume0;
-
+    
     @FXML
     private RestrictedNumberField nozzleEjectionVolume1;
-
+    
     @FXML
     private RestrictedNumberField numberOfPerimeters;
-
+    
     @FXML
     private RestrictedNumberField topSolidInfillSpeed;
-
+    
     @FXML
     private Slider infillExtrusionWidthSlider;
-
+    
     @FXML
     private Slider perimeterExtrusionWidthSlider;
-
+    
     @FXML
     private RestrictedNumberField gapFillSpeed;
-
+    
     @FXML
     private ComboBox<FillPattern> fillPatternChoice;
-
+    
     @FXML
     private RestrictedNumberField infillSpeed;
-
+    
     @FXML
     private RestrictedNumberField minPrintSpeed;
-
+    
     @FXML
     private RestrictedNumberField infillEveryN;
-
+    
     @FXML
     private RestrictedNumberField solidInfillExtrusionWidth;
-
+    
     @FXML
     private RestrictedNumberField firstLayerExtrusionWidth;
-
+    
     @FXML
     private RestrictedNumberField supportPatternSpacing;
-
+    
     @FXML
     private RestrictedNumberField maxFanSpeed;
-
+    
     @FXML
     private RestrictedNumberField topSolidInfillExtrusionWidth;
-
+    
     @FXML
     private RestrictedNumberField bridgesFanSpeed;
-
+    
     @FXML
     private RestrictedNumberField interfaceSpeed;
-
+    
     @FXML
     private RestrictedNumberField supportExtrusionWidth;
-
+    
     @FXML
     private RestrictedNumberField externalPerimeterSpeed;
-
+    
     @FXML
     private ComboBox<CustomSlicerType> slicerChooser;
-
+    
     @FXML
     private RestrictedNumberField raftBaseLinewidth;
-
+    
     @FXML
     private RestrictedNumberField raftAirGapLayer0;
-
+    
     @FXML
     private RestrictedNumberField interfaceLayers;
-
+    
     @FXML
     private RestrictedNumberField supportXYDistance;
-
+    
     @FXML
     private RestrictedNumberField supportZDistance;
-
+    
     @FXML
     private TextArea helpText;
 
@@ -298,9 +300,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     /**
      * **************************************************************************
      */
-
+    
     private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
-
+    
     private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.
             observableArrayList();
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
@@ -308,19 +310,19 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private final ObservableList<FillPattern> fillPatternOptions = FXCollections.
             observableArrayList(
                     FillPattern.values());
-
+    
     private final ChangeListener<String> dirtyStringListener
             = (ObservableValue<? extends String> ov, String t, String t1) ->
             {
                 isDirty.set(true);
             };
-
+    
     private final ChangeListener<Boolean> dirtyBooleanListener
             = (ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
             {
                 isDirty.set(true);
             };
-
+    
     private final float minPoint8ExtrusionWidth = 0.5f;
     private final float defaultPoint8ExtrusionWidth = 0.8f;
     private final float maxPoint8ExtrusionWidth = 1.2f;
@@ -330,9 +332,20 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private final float minDualHeadExtrusionWidth = 0.4f;
     private final float maxDualHeadExtrusionWidth = 0.8f;
     private final float defaultDualHeadExtrusionWidth = 0.6f;
-
+    
     private SlicerMappings slicerMappings;
-
+    
+    private Printer currentPrinter = null;
+    
+    private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Head> ov, Head t, Head t1)
+        {
+            headHasChanged(t1);
+        }
+    };
+    
     public ProfileLibraryPanelController()
     {
     }
@@ -343,59 +356,106 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        Lookup.getSelectedPrinterProperty().addListener(new ChangeListener<Printer>()
+        {
+            
+            @Override
+            public void changed(ObservableValue<? extends Printer> ov, Printer t, Printer t1)
+            {
+                bindToPrinter(t1);
+            }
+        });
+        
+        if (Lookup.getSelectedPrinterProperty().get() != null)
+        {
+            bindToPrinter(Lookup.getSelectedPrinterProperty().get());
+        }
+        
         slicerMappings = Lookup.getSlicerMappings();
-
+        
         canSave.bind(isNameValid.and(isDirty.and(
                 state.isEqualTo(State.NEW).
                 or(state.isEqualTo(State.CUSTOM)))));
-
+        
         canSaveAs.bind(state.isNotEqualTo(State.NEW));
-
+        
         canDelete.bind(state.isNotEqualTo(State.NEW).and(state.isNotEqualTo(State.ROBOX)));
-
+        
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
-
+        
         setupWidgetChangeListeners();
-
+        
         setupHeadType();
-
+        
         setupPrintProfileCombo();
-
+        
         selectFirstPrintProfile();
-
+        
         setupWidgetEditableBindings();
-
+        
         setupFirstLayerNozzleChoice();
-
+        
         setupPerimeterNozzleChoice();
-
+        
         setupFillNozzleChoice();
-
+        
         setupSupportNozzleChoice();
-
+        
         setupSlicerChooser();
-
+        
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
-
+        
         forceNozzleFirstLayerOptions.addAll(nozzleOptions);
-
+        
         supportInterfaceNozzleChoice.setItems(nozzleOptions);
-
+        
         fillPatternChoice.setItems(fillPatternOptions);
-
+        
         FXMLUtilities.addColonsToLabels(container);
-
+        
         setupWidgetsForHeadType();
     }
-
+    
+    private void headHasChanged(Head head)
+    {
+        if (head != null)
+        {
+            if (isDirty.get())
+            {
+                whenSavePressed();
+            }
+            cmbHeadType.getSelectionModel().select(head.typeCodeProperty().get());
+        }
+    }
+    
+    private void bindToPrinter(Printer printer)
+    {
+        if (currentPrinter != null)
+        {
+            currentPrinter.headProperty().removeListener(headChangeListener);
+        }
+        
+        if (printer != null)
+        {
+            printer.headProperty().addListener(headChangeListener);
+            
+            if (printer.headProperty().get() != null)
+            {
+                headHasChanged(printer.headProperty().get());
+            }
+        }
+        
+        currentPrinter = printer;
+    }
+    
     private void setupHeadType()
     {
-
+        
         for (HeadFile head : HeadContainer.getCompleteHeadList())
         {
             cmbHeadType.getItems().add(head.getTypeCode());
         }
-
+        
         cmbHeadType.valueProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
         {
             currentHeadType.set(newValue);
@@ -404,10 +464,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             selectFirstPrintProfile();
             setSliderLimits(newValue);
         });
-
+        
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
     }
-
+    
     private void bringValueWithinDualHeadTypeLimits(RestrictedNumberField field)
     {
         float currentWidth = field.getAsFloat();
@@ -418,7 +478,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                     defaultDualHeadExtrusionWidth);
         }
     }
-
+    
     private void setSliderLimits(String headType)
     {
         int numNozzleHeaters = HeadContainer.getHeadByID(headType).getNozzleHeaters().size();
@@ -441,7 +501,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 bringValueWithinDualHeadTypeLimits(solidInfillExtrusionWidth);
                 bringValueWithinDualHeadTypeLimits(topSolidInfillExtrusionWidth);
                 bringValueWithinDualHeadTypeLimits(perimeterExtrusionWidth);
-
+                
                 firstLayerExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
                 firstLayerExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
                 supportExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
@@ -455,10 +515,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 perimeterExtrusionWidthSlider.setMin(minDualHeadExtrusionWidth);
                 perimeterExtrusionWidthSlider.setMax(maxDualHeadExtrusionWidth);
                 break;
-
+            
         }
     }
-
+    
     private void setupWidgetsForHeadType()
     {
         firstLayerNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
@@ -467,30 +527,30 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         supportNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
         supportInterfaceNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
     }
-
+    
     private void setupPrintProfileCombo()
     {
         cmbPrintProfile.setCellFactory(
                 (ListView<SlicerParametersFile> param) -> new PrintProfileCell());
-
+        
         cmbPrintProfile.setButtonCell(cmbPrintProfile.getCellFactory().call(null));
-
+        
         repopulateCmbPrintProfile();
-
+        
         cmbPrintProfile.valueProperty().addListener(
                 (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
                 {
                     selectPrintProfile();
                 });
-
+        
         selectPrintProfile();
     }
-
+    
     private void selectFirstPrintProfile()
     {
         cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
     }
-
+    
     public void setAndSelectPrintProfile(SlicerParametersFile printProfile)
     {
         if (SlicerParametersContainer.getCompleteProfileList().contains(printProfile))
@@ -502,11 +562,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             cmbPrintProfile.getSelectionModel().selectFirst();
         }
     }
-
+    
     private void selectPrintProfile()
     {
         SlicerParametersFile printProfile = cmbPrintProfile.getValue();
-
+        
         if (printProfile == null)
         {
             return;
@@ -524,7 +584,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         }
         isDirty.set(false);
     }
-
+    
     private void repopulateCmbPrintProfile()
     {
         try
@@ -541,11 +601,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             // this should only happen in SceneBuilder            
         }
     }
-
+    
     private void setupSlicerChooser()
     {
         slicerChooser.setItems(FXCollections.observableArrayList(CustomSlicerType.values()));
-
+        
         slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
         {
             @Override
@@ -559,7 +619,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             }
         });
     }
-
+    
     private void setupFirstLayerNozzleChoice()
     {
         firstLayerNozzleChoice.setItems(forceNozzleFirstLayerOptions);
@@ -569,7 +629,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                     setFirstLayerExtrusionWidthLimits(newValue);
                 });
     }
-
+    
     private void setFirstLayerExtrusionWidthLimits(Number newValue)
     {
         float currentWidth = firstLayerExtrusionWidth.getAsFloat();
@@ -599,11 +659,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 break;
         }
     }
-
+    
     private void setupSupportNozzleChoice()
     {
         supportNozzleChoice.setItems(nozzleOptions);
-
+        
         supportNozzleChoice.getSelectionModel()
                 .selectedIndexProperty().addListener(
                         (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
@@ -611,7 +671,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                             setSupportExtrusionWidthLimits(newValue);
                         });
     }
-
+    
     private void setSupportExtrusionWidthLimits(Number newValue)
     {
         float currentWidth = supportExtrusionWidth.getAsFloat();
@@ -641,7 +701,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 break;
         }
     }
-
+    
     private void setupFillNozzleChoice()
     {
         fillNozzleChoice.setItems(nozzleOptions);
@@ -651,7 +711,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                     setInfillExtrusionWidthLimits(newValue);
                 });
     }
-
+    
     private void setInfillExtrusionWidthLimits(Number newValue)
     {
         float currentInfillWidth = infillExtrusionWidth.getAsFloat();
@@ -681,7 +741,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                     topSolidInfillExtrusionWidth.setValue(
                             defaultPoint3ExtrusionWidth);
                 }
-
+                
                 infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
                 infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
                 solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
@@ -720,7 +780,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 break;
         }
     }
-
+    
     private void setupPerimeterNozzleChoice()
     {
         perimeterNozzleChoice.setItems(nozzleOptions);
@@ -730,7 +790,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                     setPerimeterExtrusionWidthLimits(newValue);
                 });
     }
-
+    
     private void setPerimeterExtrusionWidthLimits(Number newValue)
     {
         float currentWidth = perimeterExtrusionWidth.getAsFloat();
@@ -760,7 +820,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 break;
         }
     }
-
+    
     private void setupWidgetEditableBindings()
     {
         profileNameField.disableProperty().bind(isEditable.not());
@@ -772,7 +832,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         supportGrid.disableProperty().bind(isEditable.not());
         speedGrid.disableProperty().bind(isEditable.not());
     }
-
+    
     private void setupWidgetChangeListeners()
     {
         profileNameField.textProperty().addListener(
@@ -791,7 +851,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
         //Dirty listeners...
         profileNameField.textProperty().addListener(dirtyStringListener);
-
+        
         slicerChooser.valueProperty().addListener(
                 (ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue, CustomSlicerType newValue) ->
                 {
@@ -807,7 +867,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 firstLayerExtrusionWidth.setValue(t1.doubleValue());
             }
         });
-
+        
         firstLayerExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -816,11 +876,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 firstLayerExtrusionWidthSlider.setValue(firstLayerExtrusionWidth.getAsDouble());
             }
         });
-
+        
         firstLayerExtrusionWidth.textProperty().addListener(dirtyStringListener);
         firstLayerNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
                 dirtyStringListener);
-
+        
         perimeterExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -829,7 +889,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 perimeterExtrusionWidth.setValue(t1.doubleValue());
             }
         });
-
+        
         perimeterExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -838,11 +898,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 perimeterExtrusionWidthSlider.setValue(perimeterExtrusionWidth.getAsDouble());
             }
         });
-
+        
         perimeterExtrusionWidth.textProperty().addListener(dirtyStringListener);
         perimeterNozzleChoice.getSelectionModel().selectedItemProperty().addListener(
                 dirtyStringListener);
-
+        
         infillExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -851,7 +911,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 infillExtrusionWidth.setValue(t1.doubleValue());
             }
         });
-
+        
         infillExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -861,7 +921,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             }
         });
         infillExtrusionWidth.textProperty().addListener(dirtyStringListener);
-
+        
         solidInfillExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -870,7 +930,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 solidInfillExtrusionWidth.setValue(t1.doubleValue());
             }
         });
-
+        
         solidInfillExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -890,7 +950,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 topSolidInfillExtrusionWidth.setValue(t1.doubleValue());
             }
         });
-
+        
         topSolidInfillExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -900,7 +960,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             }
         });
         topSolidInfillExtrusionWidth.textProperty().addListener(dirtyStringListener);
-
+        
         supportExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -909,7 +969,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 supportExtrusionWidth.setValue(t1.doubleValue());
             }
         });
-
+        
         supportExtrusionWidth.valueChangedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -922,10 +982,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 .addListener(dirtyStringListener);
         supportNozzleChoice.getSelectionModel()
                 .selectedItemProperty().addListener(dirtyStringListener);
-
+        
         supportInterfaceNozzleChoice.getSelectionModel()
                 .selectedItemProperty().addListener(dirtyStringListener);
-
+        
         fillDensity.textProperty().addListener(dirtyStringListener);
         slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
         enableFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
@@ -943,7 +1003,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 {
                     isDirty.set(true);
                 });
-
+        
         supportMaterialSpeed.textProperty()
                 .addListener(dirtyStringListener);
         infillSpeed.textProperty()
@@ -974,10 +1034,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 .addListener(dirtyStringListener);
         supportPatternAngle.textProperty()
                 .addListener(dirtyStringListener);
-
+        
         enableAutoCooling.selectedProperty()
                 .addListener(dirtyBooleanListener);
-
+        
         perimeterNozzleChoice.getSelectionModel()
                 .selectedItemProperty().addListener(dirtyStringListener);
         fillNozzleChoice.getSelectionModel()
@@ -992,23 +1052,23 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                         {
                             isDirty.set(true);
                         });
-
+        
         nozzleEjectionVolume0.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen0.textProperty().addListener(dirtyStringListener);
         nozzleEjectionVolume1.textProperty().addListener(dirtyStringListener);
         nozzlePartialOpen1.textProperty().addListener(dirtyStringListener);
-
+        
         raftBaseLinewidth.textProperty().addListener(dirtyStringListener);
         raftAirGapLayer0.textProperty().addListener(dirtyStringListener);
         interfaceLayers.textProperty().addListener(dirtyStringListener);
         supportXYDistance.textProperty().addListener(dirtyStringListener);
         supportZDistance.textProperty().addListener(dirtyStringListener);
     }
-
+    
     private void updateWidgetsFromSettingsFile(SlicerParametersFile parametersFile)
     {
         temporarySettingsFile = parametersFile;
-
+        
         profileNameField.setText(parametersFile.getProfileName());
         SlicerType slicerType = parametersFile.getSlicerOverride();
         if (slicerType != null)
@@ -1031,21 +1091,21 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         firstLayerExtrusionWidth.setValue(
                 parametersFile.getFirstLayerExtrusionWidth_mm());
         firstLayerNozzleChoice.getSelectionModel().select(parametersFile.getFirstLayerNozzle());
-
+        
         perimeterExtrusionWidth.setValue(
                 parametersFile.getPerimeterExtrusionWidth_mm());
         perimeterNozzleChoice.getSelectionModel().select(parametersFile.getPerimeterNozzle());
-
+        
         infillExtrusionWidth.setValue(parametersFile.getFillExtrusionWidth_mm());
         solidInfillExtrusionWidth.setValue(
                 parametersFile.getSolidFillExtrusionWidth_mm());
         fillNozzleChoice.getSelectionModel().select(parametersFile.getFillNozzle());
         topSolidInfillExtrusionWidth.setValue(
                 parametersFile.getTopSolidFillExtrusionWidth_mm());
-
+        
         supportExtrusionWidth.setValue(parametersFile.getSupportExtrusionWidth_mm());
         supportNozzleChoice.getSelectionModel().select(parametersFile.getSupportNozzle());
-
+        
         supportInterfaceNozzleChoice.getSelectionModel().select(
                 parametersFile.getSupportInterfaceNozzle());
 
@@ -1096,7 +1156,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 1).getEjectionVolume());
         nozzlePartialOpen1.setValue(parametersFile.getNozzleParameters().get(
                 1).getPartialBMinimum());
-
+        
         updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
     }
 
@@ -1111,7 +1171,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         {
             slicerType = Lookup.getUserPreferences().getSlicerType();
         }
-
+        
         layerHeight.setDisable(!slicerMappings.isMapped(slicerType, "layerHeight_mm"));
         fillDensity.setDisable(!slicerMappings.isMapped(slicerType, "fillDensity_normalised"));
         infillEveryN.setDisable(!slicerMappings.isMapped(slicerType, "fillEveryNLayers"));
@@ -1119,7 +1179,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         solidLayersBottom.setDisable(!slicerMappings.isMapped(slicerType, "solidLayersAtBottom"));
         numberOfPerimeters.setDisable(!slicerMappings.isMapped(slicerType, "numberOfPerimeters"));
         fillPatternChoice.setDisable(!slicerMappings.isMapped(slicerType, "fillPattern"));
-
+        
         FillPattern currentFillPattern = fillPatternChoice.getValue();
         if (slicerType == SlicerType.Slic3r)
         {
@@ -1158,7 +1218,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 "supportPatternSpacing_mm"));
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
                 "supportPatternAngle_degrees"));
-
+        
         SupportPattern currentSupportPattern = supportPattern.getValue();
         if (slicerType == SlicerType.Slic3r)
         {
@@ -1207,11 +1267,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 "slowDownIfLayerTimeLessThan_secs"));
         minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));
     }
-
+    
     private SlicerParametersFile getPrintProfile()
     {
         SlicerParametersFile settingsToUpdate = null;
-
+        
         if (temporarySettingsFile != null)
         {
             settingsToUpdate = temporarySettingsFile;
@@ -1235,24 +1295,24 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 firstLayerExtrusionWidth.getAsFloat());
         settingsToUpdate.setFirstLayerNozzle(
                 firstLayerNozzleChoice.getSelectionModel().getSelectedIndex());
-
+        
         settingsToUpdate.setPerimeterExtrusionWidth_mm(
                 perimeterExtrusionWidth.getAsFloat());
         settingsToUpdate.setPerimeterNozzle(
                 perimeterNozzleChoice.getSelectionModel().getSelectedIndex());
-
+        
         settingsToUpdate.setFillExtrusionWidth_mm(infillExtrusionWidth.getAsFloat());
         settingsToUpdate.setSolidFillExtrusionWidth_mm(
                 solidInfillExtrusionWidth.getAsFloat());
         settingsToUpdate.setFillNozzle(fillNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setTopSolidFillExtrusionWidth_mm(
                 topSolidInfillExtrusionWidth.getAsFloat());
-
+        
         settingsToUpdate.setSupportExtrusionWidth_mm(
                 supportExtrusionWidth.getAsFloat());
         settingsToUpdate.
                 setSupportNozzle(supportNozzleChoice.getSelectionModel().getSelectedIndex());
-
+        
         settingsToUpdate.setSupportInterfaceNozzle(
                 supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
 
@@ -1309,15 +1369,15 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 nozzleEjectionVolume1.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
                 nozzlePartialOpen1.getAsFloat());
-
+        
         return settingsToUpdate;
     }
-
+    
     private boolean validateProfileName()
     {
         boolean valid = true;
         String profileNameText = profileNameField.getText();
-
+        
         if (profileNameText.equals(""))
         {
             valid = false;
@@ -1351,10 +1411,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         }
         return valid;
     }
-
+    
     public class PrintProfileCell extends ListCell<SlicerParametersFile>
     {
-
+        
         @Override
         protected void updateItem(SlicerParametersFile item, boolean empty)
         {
@@ -1368,7 +1428,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             }
         }
     }
-
+    
     void whenSavePressed()
     {
         assert (state.get() != ProfileLibraryPanelController.State.ROBOX);
@@ -1384,7 +1444,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         cmbPrintProfile.setValue(SlicerParametersContainer.getSettings(
                 parametersFile.getProfileName(), parametersFile.getHeadType()));
     }
-
+    
     void whenNewPressed()
     {
         state.set(ProfileLibraryPanelController.State.NEW);
@@ -1392,22 +1452,22 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         slicerParametersFile.setProfileName("");
         updateWidgetsFromSettingsFile(slicerParametersFile);
     }
-
+    
     void whenSaveAsPressed()
     {
-
+        
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
         SlicerParametersFile slicerParametersFile
                 = SlicerParametersContainer.getSettings(currentProfileName, currentHeadType.get()).clone();
-
+        
         updateWidgetsFromSettingsFile(slicerParametersFile);
         profileNameField.requestFocus();
         profileNameField.selectAll();
         currentProfileName = "";
         profileNameField.pseudoClassStateChanged(ERROR, true);
     }
-
+    
     private SlicerParametersFile makeNewSlicerParametersFile()
     {
         // WARNING - THIS WILL GIVE EMPTY VALUES FOR SOME PARAMETERS - USE WITH CAUTION!!!! //
@@ -1419,7 +1479,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         slicerParametersFile.setSupportPattern(SupportPattern.RECTILINEAR);
         return slicerParametersFile;
     }
-
+    
     void whenDeletePressed()
     {
         if (state.get() != ProfileLibraryPanelController.State.NEW)
@@ -1429,13 +1489,13 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();
     }
-
+    
     @Override
     public String getMenuTitle()
     {
         return "extrasMenu.printProfile";
     }
-
+    
     @Override
     public List<MenuInnerPanel.OperationButton> getOperationButtons()
     {
@@ -1447,31 +1507,31 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             {
                 return "genericFirstLetterCapitalised.Save";
             }
-
+            
             @Override
             public String getFXMLName()
             {
                 return "saveButton";
             }
-
+            
             @Override
             public String getTooltipTextId()
             {
                 return "genericFirstLetterCapitalised.Save";
             }
-
+            
             @Override
             public void whenClicked()
             {
                 whenSavePressed();
             }
-
+            
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canSave;
             }
-
+            
         };
         operationButtons.add(saveButton);
         MenuInnerPanel.OperationButton saveAsButton = new MenuInnerPanel.OperationButton()
@@ -1481,31 +1541,31 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             {
                 return "genericFirstLetterCapitalised.SaveAs";
             }
-
+            
             @Override
             public String getFXMLName()
             {
                 return "saveAsButton";
             }
-
+            
             @Override
             public String getTooltipTextId()
             {
                 return "genericFirstLetterCapitalised.SaveAs";
             }
-
+            
             @Override
             public void whenClicked()
             {
                 whenSaveAsPressed();
             }
-
+            
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canSaveAs;
             }
-
+            
         };
         operationButtons.add(saveAsButton);
         MenuInnerPanel.OperationButton deleteButton = new MenuInnerPanel.OperationButton()
@@ -1515,31 +1575,31 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             {
                 return "genericFirstLetterCapitalised.Delete";
             }
-
+            
             @Override
             public String getFXMLName()
             {
                 return "deleteButton";
             }
-
+            
             @Override
             public String getTooltipTextId()
             {
                 return "genericFirstLetterCapitalised.Delete";
             }
-
+            
             @Override
             public void whenClicked()
             {
                 whenDeletePressed();
             }
-
+            
             @Override
             public BooleanProperty whenEnabled()
             {
                 return canDelete;
             }
-
+            
         };
         operationButtons.add(deleteButton);
         return operationButtons;
