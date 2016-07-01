@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
@@ -31,9 +32,11 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -69,28 +72,52 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private ComboBox<SupportType> supportComboBox;
 
     @FXML
-    private CheckBox supportButton;
-
-    @FXML
-    private CheckBox raftButton;
-
-    @FXML
-    private CheckBox spiralPrintCheckbox;
-
-    @FXML
     private HBox customProfileBox;
-
-    @FXML
-    private Slider fillDensitySlider;
-
-    @FXML
-    private RestrictedNumberField fillDensityPercentEntry;
 
     @FXML
     private Label createProfileLabel;
 
     @FXML
+    private Button editPrintProfileButton;
+
+    @FXML
+    private HBox raftHBox;
+
+    @FXML
+    private CheckBox raftButton;
+
+    @FXML
+    private HBox supportHBox;
+
+    @FXML
+    private CheckBox supportButton;
+
+    @FXML
+    private HBox supportGapHBox;
+
+    @FXML
+    private CheckBox supportGapButton;
+
+    @FXML
+    private HBox brimHBox;
+
+    @FXML
     private HBox raftSupportBrimChooserBox;
+
+    @FXML
+    private CheckBox spiralPrintCheckbox;
+
+    @FXML
+    private HBox fillDensityHBox;
+
+    @FXML
+    private HBox spiralPrintHBox;
+
+    @FXML
+    private RestrictedNumberField fillDensityPercentEntry;
+
+    @FXML
+    private Slider fillDensitySlider;
 
     private Printer currentPrinter;
     private Project currentProject;
@@ -98,6 +125,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private String currentHeadType = HeadContainer.defaultHeadID;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
     private boolean populatingForProject = false;
+
+    private MapChangeListener<Integer, Filament> filamentListener = new MapChangeListener<Integer, Filament>()
+    {
+        @Override
+        public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
+        {
+            dealWithSupportGap();
+        }
+    };
 
     /**
      * Initialises the controller class.
@@ -202,13 +238,16 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 {
                     raftButton.setSelected(false);
                     supportButton.setSelected(false);
+                    supportGapButton.setSelected(false);
                     brimSlider.setValue(0);
                 }
 
-                raftButton.setDisable(t1);
-                supportButton.setDisable(t1);
+                raftHBox.setDisable(t1);
+                supportHBox.setDisable(t1);
+                supportGapHBox.setDisable(t1);
                 supportComboBox.setDisable(t1);
-                brimSlider.setDisable(t1);
+                brimHBox.setDisable(t1);
+                fillDensityHBox.setDisable(t1);
                 fillDensityPercentEntry.setDisable(t1);
                 fillDensitySlider.setDisable(t1);
             }
@@ -225,10 +264,16 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             && currentPrinter != null)
                     {
                         dealWithSpiralness();
+                        dealWithSupportGap();
                     }
                 }
             }
         });
+
+        raftSupportBrimChooserBox.disableProperty().bind(spiralPrintCheckbox.selectedProperty()
+                .or(supportButton.selectedProperty().not()
+                        .and(brimSlider.valueProperty().lessThanOrEqualTo(0))
+                        .and(raftButton.selectedProperty().not())));
     }
 
     PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->
@@ -319,6 +364,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         return;
                     }
 
+                    dealWithSupportGap();
+
                     if (printerSettings != null
                     && lastSupportValue != newSupportValue)
                     {
@@ -335,8 +382,20 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     }
 
                     updateSupportCombo(currentPrinter);
+                    dealWithSupportGap();
 
                     printerSettings.setPrintSupportOverride(selected);
+                });
+
+        supportGapButton.selectedProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
+                {
+                    if (populatingForProject)
+                    {
+                        return;
+                    }
+
+                    printerSettings.setPrintSupportGapEnabledOverride(selected);
                 });
 
         raftButton.selectedProperty().addListener(
@@ -406,6 +465,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void whenPrinterChanged(Printer printer)
     {
+        if (currentPrinter != null)
+        {
+            currentPrinter.effectiveFilamentsProperty().removeListener(filamentListener);
+        }
+
         currentPrinter = printer;
         if (printer != null)
         {
@@ -429,6 +493,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             populateCustomProfileChooser();
             updateSupportCombo(currentPrinter);
+
+            currentPrinter.effectiveFilamentsProperty().addListener(filamentListener);
         }
     }
 
@@ -492,6 +558,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         SupportType saveSupports = printerSettings.getPrintSupportTypeOverride();
         boolean savePrintRaft = printerSettings.getRaftOverride();
         boolean saveSpiralPrint = printerSettings.getSpiralPrintOverride();
+        boolean saveSupportGapEnabled = printerSettings.getPrintSupportGapEnabledOverride();
 
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
@@ -541,17 +608,32 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         spiralPrintCheckbox.setSelected(saveSpiralPrint);
         dealWithSpiralness();
 
+        supportGapButton.setSelected(saveSupportGapEnabled);
+        dealWithSupportGap();
+
         populatingForProject = false;
     }
 
     private void dealWithSpiralness()
     {
-        spiralPrintCheckbox.disableProperty().set(currentProject.getAllModels().size() != 1
+        spiralPrintHBox.disableProperty().set(currentProject.getAllModels().size() != 1
                 || !currentProject.allModelsOnSameExtruder(currentPrinter));
 
         spiralPrintCheckbox.setSelected(spiralPrintCheckbox.selectedProperty().get()
                 && currentProject.getAllModels().size() == 1
                 && currentProject.allModelsOnSameExtruder(currentPrinter));
+    }
+
+    private void dealWithSupportGap()
+    {
+        supportGapHBox.disableProperty().set(!supportButton.isSelected());
+
+        boolean supportGapEnabledDriver = currentPrinter != null
+                && supportButton.isSelected()
+                && !(currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() != currentPrinter.effectiveFilamentsProperty().get(1).getMaterial()
+                && !currentProject.getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
+
+        supportGapButton.setSelected(supportGapEnabledDriver);
     }
 
     private void selectCurrentCustomSettings()

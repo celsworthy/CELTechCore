@@ -31,35 +31,41 @@
                   <Insets />
                </VBox.margin>
                       </HBox>
-                      <HBox alignment="CENTER_LEFT" spacing="15.0">
+                      <HBox alignment="CENTER" spacing="59.0">
                           <VBox.margin>
                               <Insets />
                           </VBox.margin>
                           <children>
-                              <HBox alignment="CENTER" spacing="5.0">
+                              <HBox fx:id="raftHBox" alignment="CENTER" spacing="5.0">
                                   <children>
                                       <Label text="%settingsInsetPanel.raft" />
                         <CheckBox fx:id="raftButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
                                   </children>
                               </HBox>
-                              <HBox alignment="CENTER" spacing="5.0">
+                              <HBox fx:id="supportHBox" alignment="CENTER" spacing="5.0">
                                   <children>
                                       <Label text="%extrusion.support" />
                         <CheckBox fx:id="supportButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
                                   </children>
                               </HBox>
-                              <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                  <children>
-                                      <Label text="%settingsInsetPanel.brim" />
-                                      <Slider fx:id="brimSlider" blockIncrement="1.0" majorTickUnit="2.0" max="8.0" maxWidth="260" minorTickCount="1" showTickLabels="true" snapToTicks="true">
-                                          <opaqueInsets>
-                                              <Insets />
-                                          </opaqueInsets>
-                                      </Slider>
-                                  </children>
-                              </HBox>
+                  <HBox fx:id="supportGapHBox" alignment="CENTER" layoutX="76.0" layoutY="10.0" spacing="5.0">
+                     <children>
+                        <Label text="%support.supportGap" />
+                        <CheckBox fx:id="supportGapButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
+                     </children>
+                  </HBox>
                           </children>
                       </HBox>
+                        <HBox fx:id="brimHBox" alignment="CENTER_LEFT" spacing="5.0">
+                            <children>
+                                <Label text="%settingsInsetPanel.brim" />
+                                <Slider fx:id="brimSlider" blockIncrement="1.0" majorTickUnit="2.0" max="8.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" HBox.hgrow="ALWAYS">
+                                    <opaqueInsets>
+                                        <Insets />
+                                    </opaqueInsets>
+                                </Slider>
+                            </children>
+                        </HBox>
                       <HBox fx:id="raftSupportBrimChooserBox" alignment="CENTER_LEFT" spacing="5.0"> 
                           <children>
                               <Label text="%settingsInsetPanel.raftSupportBrim" />
@@ -68,26 +74,30 @@
                       </HBox>
                     <VBox spacing="5.0">
                         <children>
-                            <HBox alignment="CENTER_LEFT" spacing="5.0">
-                                <children>
-                                    <Label text="%sidePanel_settings.fillDensityLabel">
-                           <HBox.margin>
-                              <Insets />
-                           </HBox.margin>
-                        </Label>
-                        <RestrictedNumberField fx:id="fillDensityPercentEntry" maxLength="3" maxValue="100.0" maxValueSet="true" minValue="0.0" minValueSet="true" prefColumnCount="3" prefWidth="28.0" text="100" />
-                        <Label layoutX="10.0" layoutY="14.0" text="\%" />
-                                </children>
-                            </HBox>
+                  <HBox alignment="CENTER_LEFT">
+                     <children>
+                        <HBox fx:id="spiralPrintHBox" alignment="CENTER" spacing="5.0">
+                           <children>
+                              <Label text="%extrusion.spiralVase" />
+                              <CheckBox fx:id="spiralPrintCheckbox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
+                           </children>
+                        </HBox>
+                                  <HBox fx:id="fillDensityHBox" alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
+                                      <children>
+                                          <Label text="%sidePanel_settings.fillDensityLabel">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Label>
+                              <RestrictedNumberField fx:id="fillDensityPercentEntry" maxLength="3" maxValue="100.0" maxValueSet="true" minValue="0.0" minValueSet="true" prefColumnCount="3" prefWidth="28.0" text="100" />
+                              <Label layoutX="10.0" layoutY="14.0" text="\%" />
+                                      </children>
+                                  </HBox>
+                     </children>
+                  </HBox>
                               <Slider fx:id="fillDensitySlider" majorTickUnit="10.0" max="100.0" minorTickCount="5" showTickLabels="true" snapToTicks="true" />
                         </children>
                     </VBox>
-            <HBox alignment="CENTER" spacing="5.0">
-               <children>
-                  <Label text="%extrusion.spiralVase" />
-                  <CheckBox fx:id="spiralPrintCheckbox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
-               </children>
-            </HBox>
                 </children>
             </VBox>
     </children>

@@ -68,6 +68,7 @@ public class ProjectTab extends Tab
     private BedAxes bedAxes = null;
     private ZCutEntryBox zCutEntryBox = null;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
+    private ProjectAwareController projectAwareController = null;
 
     public ProjectTab(
             ReadOnlyDoubleProperty tabDisplayWidthProperty,
@@ -89,11 +90,10 @@ public class ProjectTab extends Tab
     private void initialise(ReadOnlyDoubleProperty tabDisplayWidthProperty,
             ReadOnlyDoubleProperty tabDisplayHeightProperty)
     {
-        setOnCloseRequest((Event t) ->
+        setOnClosed((Event t) ->
         {
             steno.debug("Beginning project save");
-            saveProject();
-            projectManager.projectClosed(project);
+            saveAndCloseProject();
             steno.debug("Completed project save");
         });
 
@@ -105,20 +105,20 @@ public class ProjectTab extends Tab
         viewManager = new ThreeDViewManager(project,
                 tabDisplayWidthProperty,
                 tabDisplayHeightProperty);
-        
+
         VBox rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
         Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
         Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
         rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
-        
+
         rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
         Node modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
         modelActionsInsetPanel.mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
 
         baseContainer = new Pane();
-        
+
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
         basePane.prefWidthProperty().bind(tabDisplayWidthProperty);
@@ -140,7 +140,7 @@ public class ProjectTab extends Tab
         AnchorPane.setTopAnchor(dimensionContainer, 0.0);
         AnchorPane.setRightAnchor(dimensionContainer, 0.0);
         AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
-        
+
         basePane.getChildren().addAll(viewManager.getSubScene(), rhInsetContainer, modelActionsInsetPanel);
         overlayPane.getChildren().addAll(bedAxes);
 
@@ -203,7 +203,7 @@ public class ProjectTab extends Tab
         try
         {
             insetPanel = loader.load();
-            ProjectAwareController projectAwareController = (ProjectAwareController) loader.getController();
+            projectAwareController = (ProjectAwareController) loader.getController();
             projectAwareController.setProject(project);
         } catch (IOException ex)
         {
@@ -410,12 +410,13 @@ public class ProjectTab extends Tab
         }
     }
 
-    public void saveProject()
+    public void saveAndCloseProject()
     {
-
-        Project.saveProject(project);
-
         viewManager.shutdown();
+        Project.saveProject(project);
+        projectAwareController.setProject(null);
+        projectManager.projectClosed(project);
+        project = null;
     }
 
     public void fireProjectSelected()

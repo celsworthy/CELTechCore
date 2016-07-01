@@ -26,7 +26,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +48,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -144,7 +142,7 @@ public class Project
     {
         lastCalculatedUsedExtruders.add(0, false);
         lastCalculatedUsedExtruders.add(1, false);
-        
+
         topLevelModels = FXCollections.observableArrayList();
         hasInvalidMeshes = new BooleanBinding()
         {
@@ -409,7 +407,7 @@ public class Project
      */
     public boolean allModelsOnSameExtruder(Printer printer)
     {
-        ObservableList<Boolean> extruders = getUsedExtruders(printer);
+        List<Boolean> extruders = getPrintingExtruders(printer);
         return !(extruders.get(0) && extruders.get(1));
     }
 
@@ -441,23 +439,30 @@ public class Project
         }
     }
 
-    /**
-     * Return which extruders are used by the project, as a set of the extruder
-     * numbers.
-     *
-     * @return
-     */
-    public ObservableList<Boolean> getUsedExtruders(Printer printer)
+    public List<Boolean> getPrintingExtruders(Printer printer)
     {
-        
         List<Boolean> localUsedExtruders = new ArrayList<>();
         localUsedExtruders.add(false);
         localUsedExtruders.add(false);
-        
+
         for (ModelContainer loadedModel : topLevelModels)
         {
             getUsedExtruders(loadedModel, localUsedExtruders, printer);
         }
+
+        return localUsedExtruders;
+    }
+
+    /**
+     * Return which extruders are used by the project, as a set of the extruder
+     * numbers.
+     *
+     * @param printer
+     * @return
+     */
+    public ObservableList<Boolean> getUsedExtruders(Printer printer)
+    {
+        List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
 
         // Don't add material 1 if there isn't a second extruder...
         if (printerSettings.getPrintSupportOverride())
@@ -478,7 +483,7 @@ public class Project
                 }
             }
         }
-        
+
         lastCalculatedUsedExtruders.setAll(localUsedExtruders);
         return lastCalculatedUsedExtruders;
     }

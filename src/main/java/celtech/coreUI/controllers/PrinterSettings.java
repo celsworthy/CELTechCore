@@ -36,6 +36,7 @@ public class PrinterSettings
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private final BooleanProperty printSupportOverride = new SimpleBooleanProperty(false);
+    private final BooleanProperty printSupportGapEnabledOverride = new SimpleBooleanProperty(false);
     private final ObjectProperty<SupportType> printSupportTypeOverride = new SimpleObjectProperty<>(SupportType.MATERIAL_1);
     private boolean raftOverride = false;
     private boolean spiralPrintOverride = false;
@@ -161,6 +162,7 @@ public class PrinterSettings
         profileCopy.setBrimWidth_mm(brimOverride);
         profileCopy.setFillDensity_normalised(fillDensityOverride);
         profileCopy.setGenerateSupportMaterial(printSupportOverride.get());
+        profileCopy.setSupportGapEnabled(printSupportGapEnabledOverride.get());
         profileCopy.setPrintRaft(raftOverride);
         profileCopy.setSpiralPrint(spiralPrintOverride);
         
@@ -213,6 +215,22 @@ public class PrinterSettings
     public void setPrintSupportOverride(boolean printSupportOverride)
     {
         this.printSupportOverride.set(printSupportOverride);
+        toggleDataChanged();
+    }
+    
+        public boolean getPrintSupportGapEnabledOverride()
+    {
+        return printSupportGapEnabledOverride.get();
+    }
+
+    public BooleanProperty getPrintSupportGapEnabledOverrideProperty()
+    {
+        return printSupportGapEnabledOverride;
+    }
+
+    public void setPrintSupportGapEnabledOverride(boolean printSupportGapEnabledOverride)
+    {
+        this.printSupportGapEnabledOverride.set(printSupportGapEnabledOverride);
         toggleDataChanged();
     }
 

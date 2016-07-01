@@ -142,7 +142,7 @@ public class AutoUpdate extends Thread
     {
         int upgradeStatus = ERROR;
 
-        String url = "http://downloads.cel-robox.com:8001/" + appDirectory + "/" + applicationName + "-update.xml";
+        String url = "http://downloads.cel-robox.com/" + appDirectory + "/" + applicationName + "-update.xml";
 
         String encodedSwVersion = null;
         try

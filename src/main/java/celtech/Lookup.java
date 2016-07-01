@@ -17,7 +17,6 @@ import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
-import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.GCodeOutputWriterFactory;
 import celtech.gcodetranslator.LiveGCodeOutputWriter;
@@ -309,6 +308,14 @@ public class Lookup
     public static void setSelectedProject(Project project)
     {
         selectedProject.set(project);
+    }
+
+    public static void removeProjectReferences(Project project)
+    {
+        if (projectGUIStates.containsKey(project))
+        {
+            projectGUIStates.remove(project);
+        }
     }
 
     public static ProjectGUIState getProjectGUIState(Project project)

@@ -437,7 +437,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
 
         currentProject = project;
-        undoableProject = new UndoableProject(project);
 
         if (projectSelection != null)
         {
@@ -456,33 +455,38 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             projectSelection.getPrimarySelectedModelDetails().getRotationTurn().removeListener(modelTurnChangeListener);
         }
 
-        projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
-        projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
-        numSelectedModels.bind(projectSelection.getNumModelsSelectedProperty());
+        if (project != null)
+        {
+            undoableProject = new UndoableProject(project);
 
-        layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
-        layoutSubmode.addListener(layoutSubmodeListener);
+            projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
+            projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
+            numSelectedModels.bind(projectSelection.getNumModelsSelectedProperty());
 
-        ProjectSelection.PrimarySelectedModelDetails selectedModelDetails
-                = projectSelection.getPrimarySelectedModelDetails();
-        selectedModelDetails.getWidth().addListener(widthListener);
-        selectedModelDetails.getHeight().addListener(heightListener);
-        selectedModelDetails.getDepth().addListener(depthListener);
+            layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
+            layoutSubmode.addListener(layoutSubmodeListener);
 
-        selectedModelDetails.getCentreX().addListener(xAxisListener);
-        selectedModelDetails.getCentreZ().addListener(yAxisListener);
+            ProjectSelection.PrimarySelectedModelDetails selectedModelDetails
+                    = projectSelection.getPrimarySelectedModelDetails();
+            selectedModelDetails.getWidth().addListener(widthListener);
+            selectedModelDetails.getHeight().addListener(heightListener);
+            selectedModelDetails.getDepth().addListener(depthListener);
 
-        selectedModelDetails.getScaleX().addListener(modelScaleXChangeListener);
-        selectedModelDetails.getScaleY().addListener(modelScaleYChangeListener);
-        selectedModelDetails.getScaleZ().addListener(modelScaleZChangeListener);
-        selectedModelDetails.getRotationLean().addListener(modelLeanChangeListener);
-        selectedModelDetails.getRotationTwist().addListener(modelTwistChangeListener);
-        selectedModelDetails.getRotationTurn().addListener(modelTurnChangeListener);
+            selectedModelDetails.getCentreX().addListener(xAxisListener);
+            selectedModelDetails.getCentreZ().addListener(yAxisListener);
 
-        repopulate(selectedModelDetails);
+            selectedModelDetails.getScaleX().addListener(modelScaleXChangeListener);
+            selectedModelDetails.getScaleY().addListener(modelScaleYChangeListener);
+            selectedModelDetails.getScaleZ().addListener(modelScaleZChangeListener);
+            selectedModelDetails.getRotationLean().addListener(modelLeanChangeListener);
+            selectedModelDetails.getRotationTwist().addListener(modelTwistChangeListener);
+            selectedModelDetails.getRotationTurn().addListener(modelTurnChangeListener);
 
-        setFieldsEditable();
-        updateDisplay();
+            repopulate(selectedModelDetails);
+
+            setFieldsEditable();
+            updateDisplay();
+        }
 
 //        group.disableProperty().bind(numModelsSelected.lessThan(2));
 //        cut.disableProperty().bind(numModelsSelected.lessThan(1));

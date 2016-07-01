@@ -1,5 +1,6 @@
 package celtech.appManager;
 
+import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import java.io.File;
 import java.io.FileInputStream;
@@ -164,6 +165,7 @@ public class ProjectManager implements Savable, Serializable
     public void projectClosed(Project project)
     {
         openProjects.remove(project);
+        Lookup.removeProjectReferences(project);
     }
     
     public List<Project> getOpenProjects()

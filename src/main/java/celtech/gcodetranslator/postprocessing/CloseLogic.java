@@ -856,12 +856,12 @@ public class CloseLogic
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
-                        copy.appendCommentText("copied node <" + id);
+//                        copy.appendCommentText("copied node <" + id);
                         finalCloseNode = copy;
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
-                        extrusionNodeBeingExamined.appendCommentText("Elided-" + id);
+//                        extrusionNodeBeingExamined.appendCommentText("Elided-" + id);
                     } else if (comparisonResult == MathUtils.EQUAL)
                     {
                         //All done
@@ -871,12 +871,12 @@ public class CloseLogic
                         //No extrusion during a close
                         copy.getExtrusion().eNotInUse();
                         copy.getExtrusion().dNotInUse();
-                        copy.appendCommentText("copied node =" + id);
+//                        copy.appendCommentText("copied node =" + id);
                         finalCloseNode = copy;
                         //Wipe out extrusion in the area we copied from as well
                         extrusionNodeBeingExamined.getExtrusion().eNotInUse();
                         extrusionNodeBeingExamined.getExtrusion().dNotInUse();
-                        extrusionNodeBeingExamined.appendCommentText("Elided-" + id);
+//                        extrusionNodeBeingExamined.appendCommentText("Elided-" + id);
                         break;
                     } else
                     {

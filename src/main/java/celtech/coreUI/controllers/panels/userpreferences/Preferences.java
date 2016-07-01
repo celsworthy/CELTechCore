@@ -46,8 +46,6 @@ public class Preferences
         Preference showTooltipsPref = new TickBoxPreference(userPreferences.showTooltipsProperty(),
                 "preferences.showTooltips");
         Preference logLevelPref = new LogLevelPreference(userPreferences);
-        Preference advancedModePref = new TickBoxPreference(userPreferences.advancedModeProperty(),
-                "preferences.advancedMode");
         Preference firstUsePref = new TickBoxPreference(userPreferences.firstUseProperty(),
                 "preferences.firstUse");
 
@@ -61,7 +59,6 @@ public class Preferences
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
-        preferences.add(advancedModePref);
         preferences.add(currencySymbolPref);
         preferences.add(currencyGBPToLocalMultiplierPref);
         preferences.add(loosePartSplitPref);
@@ -69,10 +66,13 @@ public class Preferences
         return preferences;
     }
 
-    public static List<PreferencesInnerPanelController.Preference> createInterfacePreferences(
+    public static List<PreferencesInnerPanelController.Preference> createAdvancedPreferences(
             UserPreferences userPreferences)
     {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
+
+        Preference advancedModePref = new TickBoxPreference(userPreferences.advancedModeProperty(),
+                "preferences.advancedMode");
 
         Preference showDiagnosticsPref = new TickBoxPreference(userPreferences.showDiagnosticsProperty(),
                 "preferences.showDiagnostics");
@@ -82,6 +82,7 @@ public class Preferences
         Preference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
                 "preferences.showAdjustments");
 
+        preferences.add(advancedModePref);
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);
         preferences.add(showAdjustmentsPref);
