@@ -68,8 +68,8 @@ public class SlicerParametersFile
     private int brimWidth_mm;
     private boolean spiralPrint;
     private boolean supportGapEnabled;
-    private float supportXYDistance_mm;
-    private float supportZDistance_mm;
+    private float supportXYDistance_mm = 0.7f;
+    private float supportZDistance_mm = 0.15f;
 
     /*
      * Nozzle data
