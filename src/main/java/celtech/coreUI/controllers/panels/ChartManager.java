@@ -6,6 +6,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.HeaterMode;
+import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
 import celtech.printerControl.model.PrinterAncillarySystems;
 import java.util.ArrayList;
@@ -47,7 +48,6 @@ class ChartManager
     private ReadOnlyIntegerProperty bedTemperatureProperty;
     private ReadOnlyIntegerProperty ambientTemperatureProperty;
     private ReadOnlyObjectProperty<HeaterMode> bedHeaterModeProperty;
-    private final List<Label> legendNozzle = new ArrayList<>();
     private Label legendBed;
     private Label legendAmbient;
     private final List<NozzleChartData> nozzleChartDataSets = new ArrayList<>();
@@ -85,6 +85,8 @@ class ChartManager
     private final String graphLineThinCSS = "-fx-stroke-width: 2; -fx-stroke-type: centered; -fx-stroke-line-cap: butt; ";
     private int dashedLineCounter = 0;
 
+    private Printer currentPrinter = null;
+
     private enum BugType
     {
 
@@ -97,16 +99,18 @@ class ChartManager
         ambientTargetTemperatureSeries.getData().add(ambientTargetPoint);
         bedTargetTemperatureSeries.getData().add(bedTargetPoint);
 
-        nozzleBugColour.add("#8c0000");
-        nozzleBugColour.add("#006e96");
+        nozzleBugColour.add("#009EE3");
+        nozzleBugColour.add("#FF661B");
 
-        nozzleLineColour.add("#ff0000");
-        nozzleLineColour.add("#0096e1");
+        nozzleLineColour.add("#009EE3");
+        nozzleLineColour.add("#FF661B");
 
     }
 
     public void bindPrinter(Printer printer)
     {
+        currentPrinter = printer;
+
         PrinterAncillarySystems ancillarySystems = printer.getPrinterAncillarySystems();
         setAmbientData(ancillarySystems.getAmbientTemperatureHistory());
         setBedData(ancillarySystems.getBedTemperatureHistory());
@@ -169,8 +173,26 @@ class ChartManager
             {
                 bugType = BugType.LOWER;
             }
+
+            int nozzleBugColourIndex = 0;
+            if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                switch (nozzleCounter)
+                {
+                    case 0:
+                        nozzleBugColourIndex = 1;
+                        break;
+                    case 1:
+                        nozzleBugColourIndex = 0;
+                        break;
+                }
+            } else
+            {
+                nozzleBugColourIndex = 0;
+            }
+
             setupBug(nozzleTargetTempFirstIndex + nozzleCounter, nozzleChartDataSets.get(
-                    nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour.get(nozzleCounter), BugType.ALL);
+                    nozzleCounter).getTargetTemperatureSeries(), nozzleBugColour.get(nozzleBugColourIndex), BugType.ALL);
         }
 
         int startOfLineSection = firstNozzleIndexOffset + nozzleChartDataSets.size();
@@ -181,9 +203,25 @@ class ChartManager
 
         for (int nozzleCounter = 0; nozzleCounter < nozzleChartDataSets.size(); nozzleCounter++)
         {
+            int nozzleBugColourIndex = 0;
+            if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                switch (nozzleCounter)
+                {
+                    case 0:
+                        nozzleBugColourIndex = 1;
+                        break;
+                    case 1:
+                        nozzleBugColourIndex = 0;
+                        break;
+                }
+            } else
+            {
+                nozzleBugColourIndex = 0;
+            }
             setupChartLine(startOfLineSection + firstNozzleIndexOffset + nozzleCounter,
                     nozzleChartDataSets.get(nozzleCounter).getNozzleTemperatureSeries(),
-                    nozzleLineColour.get(nozzleCounter),
+                    nozzleLineColour.get(nozzleBugColourIndex),
                     dashedNozzleLines);
         }
     }
@@ -338,11 +376,8 @@ class ChartManager
         }
     }
 
-    void setLegendLabels(Label legendNozzleS, Label legendNozzleT, Label legendBed, Label legendAmbient)
+    void setLegendLabels(Label legendBed, Label legendAmbient)
     {
-        this.legendNozzle.clear();
-        this.legendNozzle.add(legendNozzleS);
-        this.legendNozzle.add(legendNozzleT);
         this.legendBed = legendBed;
         this.legendAmbient = legendAmbient;
         updateLegend();
@@ -350,7 +385,6 @@ class ChartManager
 
     void clearLegendLabels()
     {
-        this.legendNozzle.clear();
         this.legendBed = null;
         this.legendAmbient = null;
         updateLegend();
@@ -424,8 +458,7 @@ class ChartManager
                 nozzleHeaterModeProperty,
                 nozzleTargetTemperatureProperty,
                 nozzleFirstLayerTargetTemperatureProperty,
-                nozzleTemperatureProperty,
-                legendNozzle.get(nozzleNumber));
+                nozzleTemperatureProperty);
 
         nozzleChartDataSets.add(nozzleChartData);
 

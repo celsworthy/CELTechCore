@@ -70,8 +70,8 @@
                                                     <Polygon fill="#FFFFFF" points="45.34,0.102,50,0.102,50,8.403,50,8.403,50,8.403,41.028,17.102,39.869,17.102,39.869,14.365,45.34,9.22"/>
                                                 </Group>
                                             </Group>
-                                            <Polygon fill="#009EE3" points="5.999,0,5.999,8.67,10.035,12.745,10.035,52,10.965,52,10.965,12.745,14.999,8.67,14.999,0"/>
-                                            <Polygon fill="#FF661B" points="39.035,52,39.965,52,39.965,12.745,43.998,8.67,43.998,0,34.998,0,34.998,8.67,39.035,12.745"/>
+                                            <Polygon fill="#FF661B" points="5.999,0,5.999,8.67,10.035,12.745,10.035,52,10.965,52,10.965,12.745,14.999,8.67,14.999,0"/>
+                                            <Polygon fill="#009EE3" points="39.035,52,39.965,52,39.965,12.745,43.998,8.67,43.998,0,34.998,0,34.998,8.67,39.035,12.745"/>
                                         </Group>
                                     </children>
                                 </StackPane>
@@ -147,13 +147,13 @@
                                         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                     </rowConstraints>
                                     <children>
-                                        <Label fx:id="legendNozzleS" text="" GridPane.columnIndex="0">
+                                        <Label fx:id="legendMaterial2" text="%printerStatus.temperatureGraphNozzleLabel0" GridPane.columnIndex="1">
                                             <styleClass>
-                                                <String fx:value="graph-red" />
+                                                <String fx:value="graph-orange" />
                                                 <String fx:value="temperatureChartLegend" />
                                             </styleClass>
                                         </Label>
-                                        <Label fx:id="legendNozzleT" text="" GridPane.columnIndex="1">
+                                        <Label fx:id="legendMaterial1" text="%printerStatus.temperatureGraphNozzleLabel1" GridPane.columnIndex="0">
                                             <styleClass>
                                                 <String fx:value="graph-blue" />
                                                 <String fx:value="temperatureChartLegend" />
@@ -189,12 +189,12 @@
                                         <RowConstraints minHeight="10.0" prefHeight="20.0" vgrow="SOMETIMES" />
                                     </rowConstraints>
                                     <children>
-                                        <Label fx:id="graphAlternativeN1Temp" style="-fx-font-size: 24; -fx-text-fill: #ff0000;" styleClass="regularFont" text="Label" />
-                                        <Label fx:id="graphAlternativeN2Temp" layoutX="15.0" layoutY="18.0" style="-fx-font-size: 24; -fx-text-fill: #0096e1;" styleClass="regularFont" text="Label" GridPane.columnIndex="1" />
+                                        <Label fx:id="graphAlternativeMaterial1Temp" layoutX="15.0" layoutY="18.0" style="-fx-font-size: 24; -fx-text-fill: #009EE3;" styleClass="regularFont" text="Label" GridPane.columnIndex="0" />
+                                        <Label fx:id="graphAlternativeMaterial2Temp" style="-fx-font-size: 24; -fx-text-fill: #FF661B;" styleClass="regularFont" text="Label" GridPane.columnIndex="1"/>
                                         <Label fx:id="graphAlternativeBedTemp" style="-fx-font-size: 24; -fx-text-fill: #ffc800;" styleClass="regularFont" text="Label" GridPane.columnIndex="2" />
                                         <Label fx:id="graphAlternativeAmbientTemp" layoutX="15.0" layoutY="10.0" style="-fx-font-size: 24; -fx-text-fill: #1eb43c;" styleClass="regularFont" text="Label" GridPane.columnIndex="3" />
-                                        <Label fx:id="graphAlternativeN1Legend" style="-fx-font-size: 12; -fx-text-fill: #ff0000;" styleClass="regularFont" text="%printerStatus.Nozzle1ControlLabel" GridPane.rowIndex="1" />
-                                        <Label fx:id="graphAlternativeN2Legend" layoutX="22.0" layoutY="64.0" style="-fx-font-size: 12; -fx-text-fill: #0096e1;" styleClass="regularFont" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label fx:id="graphAlternativeMaterial1Legend" layoutX="22.0" layoutY="64.0" style="-fx-font-size: 12; -fx-text-fill: #009EE3;" styleClass="regularFont" text="%printerStatus.Nozzle2ControlLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <Label fx:id="graphAlternativeMaterial2Legend" style="-fx-font-size: 12; -fx-text-fill: #FF661B;" styleClass="regularFont" text="%printerStatus.Nozzle1ControlLabel" GridPane.rowIndex="1" GridPane.columnIndex="1" />
                                         <Label fx:id="graphAlternativeBedLegend" layoutX="22.0" layoutY="64.0" style="-fx-font-size: 12; -fx-text-fill: #ffc800;" styleClass="regularFont" text="%printerStatus.temperatureGraphBedLabel" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                                         <Label fx:id="graphAlternativeAmbientLegend" layoutX="22.0" layoutY="14.0" style="-fx-font-size: 12; -fx-text-fill: #1eb43c;" styleClass="regularFont" text="%printerStatus.temperatureGraphAmbientLabel" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                                     </children>

@@ -64,4 +64,16 @@ public class TickBoxPreference implements PreferencesInnerPanelController.Prefer
     {
         return Lookup.i18n(caption);
     }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
+    }
+    
+    public BooleanProperty getSelectedProperty()
+    {
+        return control.selectedProperty();
+    }
 }

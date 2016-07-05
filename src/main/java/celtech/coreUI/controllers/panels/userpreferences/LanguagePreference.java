@@ -53,10 +53,10 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
         control.setPrefWidth(300);
         control.setMinWidth(control.getPrefWidth());
         control.valueProperty().addListener(
-            (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-            {
-                updateValueFromControl();
-            });
+                (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
+                {
+                    updateValueFromControl();
+                });
     }
 
     @Override
@@ -68,11 +68,11 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
             if (localeToUse.getVariant().length() > 0)
             {
                 userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
-                    + localeToUse.getCountry() + "-" + localeToUse.getVariant());
+                        + localeToUse.getCountry() + "-" + localeToUse.getVariant());
             } else if (localeToUse.getCountry().length() > 0)
             {
                 userPreferences.setLanguageTag(localeToUse.getLanguage() + "-"
-                    + localeToUse.getCountry());
+                        + localeToUse.getCountry());
             } else
             {
                 userPreferences.setLanguageTag(localeToUse.getLanguage());
@@ -141,5 +141,12 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
 
         control.setButtonCell(cellFactory.call(null));
         control.setCellFactory(cellFactory);
+    }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
     }
 }

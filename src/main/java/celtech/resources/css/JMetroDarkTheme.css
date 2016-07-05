@@ -58,10 +58,10 @@
     gizmoZHandle_pressed: #a74c30;
     gizmoXZHandle_pressed: #554dc9;
     gizmoRotationHandle_pressed: #53919d;
-    graph_line_red: #ff0000;
+    graph_line_orange: #FF661B;
     graph_line_green: #1eb43c;
     graph_line_yellow: #ffc800;
-    graph_line_blue: #0096e1;
+    graph_line_blue: #009EE3;
     graph_setpoint_red: #8c0000;
     graph_setpoint_green: #145019;
     graph_setpoint_yellow: #a07800;
@@ -1181,10 +1181,10 @@
     -fx-stroke-width: 2;
 }
 
-.graph-red {
-    -fx-fill: graph_line_red;
+.graph-orange {
+    -fx-fill: graph_line_orange;
     -fx-font-size: 9;
-    -fx-text-fill: graph_line_red;
+    -fx-text-fill: graph_line_orange;
     -fx-stroke-width: 2px;
     -fx-stroke-dash-array: 5 5;
 }

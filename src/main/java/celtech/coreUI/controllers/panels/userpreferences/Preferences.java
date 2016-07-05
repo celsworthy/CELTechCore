@@ -8,6 +8,8 @@ import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController.Preference;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 /**
  * Preferences creates collections of the Preference class.
@@ -71,16 +73,31 @@ public class Preferences
     {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
 
-        Preference advancedModePref = new TickBoxPreference(userPreferences.advancedModeProperty(),
+        TickBoxPreference advancedModePref = new TickBoxPreference(userPreferences.advancedModeProperty(),
                 "preferences.advancedMode");
 
-        Preference showDiagnosticsPref = new TickBoxPreference(userPreferences.showDiagnosticsProperty(),
+        TickBoxPreference showDiagnosticsPref = new TickBoxPreference(userPreferences.showDiagnosticsProperty(),
                 "preferences.showDiagnostics");
+        showDiagnosticsPref.disableProperty(advancedModePref.getSelectedProperty().not());
 
-        Preference showGCodePref = new TickBoxPreference(userPreferences.showGCodeProperty(),
+        TickBoxPreference showGCodePref = new TickBoxPreference(userPreferences.showGCodeProperty(),
                 "preferences.showGCode");
-        Preference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
+        showGCodePref.disableProperty(advancedModePref.getSelectedProperty().not());
+
+        TickBoxPreference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
                 "preferences.showAdjustments");
+        showAdjustmentsPref.disableProperty(advancedModePref.getSelectedProperty().not());
+
+        advancedModePref.getSelectedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+            {
+                showDiagnosticsPref.getSelectedProperty().set(t1);
+                showGCodePref.getSelectedProperty().set(t1);
+                showAdjustmentsPref.getSelectedProperty().set(t1);
+            }
+        });
 
         preferences.add(advancedModePref);
         preferences.add(showDiagnosticsPref);

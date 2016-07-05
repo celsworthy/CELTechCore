@@ -67,4 +67,11 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     {
         return Lookup.i18n("preferences.slicerType");
     }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
+    }
 }

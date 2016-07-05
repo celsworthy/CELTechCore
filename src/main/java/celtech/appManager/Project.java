@@ -402,6 +402,20 @@ public class Project
         }
     }
 
+    public List<Boolean> getPrintingExtruders(Printer printer)
+    {
+        List<Boolean> localUsedExtruders = new ArrayList<>();
+        localUsedExtruders.add(false);
+        localUsedExtruders.add(false);
+
+        for (ModelContainer loadedModel : topLevelModels)
+        {
+            getUsedExtruders(loadedModel, localUsedExtruders, printer);
+        }
+
+        return localUsedExtruders;
+    }
+
     /**
      * Return true if all objects are on the same extruder, else return false.
      */
@@ -439,20 +453,6 @@ public class Project
         }
     }
 
-    public List<Boolean> getPrintingExtruders(Printer printer)
-    {
-        List<Boolean> localUsedExtruders = new ArrayList<>();
-        localUsedExtruders.add(false);
-        localUsedExtruders.add(false);
-
-        for (ModelContainer loadedModel : topLevelModels)
-        {
-            getUsedExtruders(loadedModel, localUsedExtruders, printer);
-        }
-
-        return localUsedExtruders;
-    }
-
     /**
      * Return which extruders are used by the project, as a set of the extruder
      * numbers.
@@ -465,7 +465,9 @@ public class Project
         List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
 
         // Don't add material 1 if there isn't a second extruder...
-        if (printerSettings.getPrintSupportOverride())
+        if (printerSettings.getPrintSupportOverride()
+                || printerSettings.getRaftOverride()
+                || printerSettings.getBrimOverride() > 0)
         {
             if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
             {

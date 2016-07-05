@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.units.CurrencySymbol;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
@@ -66,5 +65,12 @@ public class CurrencySymbolPreference implements PreferencesInnerPanelController
     public String getDescription()
     {
         return Lookup.i18n("preferences.currencySymbol");
+    }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
     }
 }
