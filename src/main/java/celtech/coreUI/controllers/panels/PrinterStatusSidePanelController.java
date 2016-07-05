@@ -396,7 +396,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         .when(head.getNozzleHeaters().get(0).nozzleTemperatureProperty()
                                 .greaterThanOrEqualTo(ApplicationConfiguration.minTempToDisplayOnGraph))
                         .then(head.getNozzleHeaters().get(0).nozzleTemperatureProperty().asString("1: %d°C"))
-                        .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
+                        .otherwise("1: " + Lookup.i18n("printerStatus.tempOutOfRangeLow")));
             } else
             {
                 graphAlternativeMaterial2Temp.setVisible(true);
@@ -410,7 +410,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         .when(head.getNozzleHeaters().get(0).nozzleTemperatureProperty()
                                 .greaterThanOrEqualTo(ApplicationConfiguration.minTempToDisplayOnGraph))
                         .then(head.getNozzleHeaters().get(0).nozzleTemperatureProperty().asString("2: %d°C"))
-                        .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
+                        .otherwise("2: " + Lookup.i18n("printerStatus.tempOutOfRangeLow")));
             }
             
             NozzleHeater nozzleHeater = head.getNozzleHeaters().get(0);
@@ -436,7 +436,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                     .when(head.getNozzleHeaters().get(1).nozzleTemperatureProperty()
                             .greaterThanOrEqualTo(ApplicationConfiguration.minTempToDisplayOnGraph))
                     .then(head.getNozzleHeaters().get(1).nozzleTemperatureProperty().asString("1: %d°C"))
-                    .otherwise(Lookup.i18n("printerStatus.tempOutOfRangeLow")));
+                    .otherwise("1: " + Lookup.i18n("printerStatus.tempOutOfRangeLow")));
             NozzleHeater nozzleHeater = head.getNozzleHeaters().get(1);
             chartManager.addNozzle(1,
                     nozzleHeater.getNozzleTemperatureHistory(),
