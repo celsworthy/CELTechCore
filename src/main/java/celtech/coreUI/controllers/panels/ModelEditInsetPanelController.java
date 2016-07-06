@@ -496,10 +496,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             layoutSubmode.removeListener(layoutSubmodeListener);
         }
 
-        if (project != null)
-        {
             currentProject = project;
-            undoableProject = new UndoableProject(project);
 
             if (projectSelection != null)
             {
@@ -517,6 +514,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 projectSelection.getPrimarySelectedModelDetails().getRotationTwist().removeListener(modelTwistChangeListener);
                 projectSelection.getPrimarySelectedModelDetails().getRotationTurn().removeListener(modelTurnChangeListener);
             }
+
+        if (project != null)
+        {
+            undoableProject = new UndoableProject(project);
 
             projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
             projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();

@@ -58,28 +58,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     private final Stenographer steno = StenographerFactory.getStenographer(
             FilamentLibraryPanelController.class.getName());
 
-    enum Fields
-    {
-
-        NAME("name"), COLOUR("colour"), AMBIENT_TEMP("ambientTemp"), MATERIAL("material"),
-        DIAMETER("diameter"), MULTIPLIER("multiplier"), FEED_RATE_MULTIPLIER("feedRateMultiplier"),
-        FIRST_LAYER_BED_TEMP("firstlayerBedTemp"), BED_TEMP("bedTemp"),
-        FIRST_LAYER_NOZZLE_TEMP("firstLayerNozzleTemp"), NOZZLE_TEMP("nozzleTemp"),
-        COST_GBP_PER_KG("costGBPPerKG"), REMAINING_FILAMENT_M("remainingFilamentM");
-
-        private final String helpTextId;
-
-        Fields(String helpTextId)
-        {
-            this.helpTextId = helpTextId;
-        }
-
-        String getHelpText()
-        {
-            return Lookup.i18n("filamentLibraryHelp." + helpTextId);
-        }
-    }
-
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
 
     enum State
@@ -235,8 +213,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         setupWidgetEditableBindings();
 
         setupWidgetChangeListeners();
-
-        setupHelpTextListeners();
 
         setupFilamentCombo();
 
@@ -540,147 +516,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         ambientTemperature.disableProperty().bind(isEditable.not());
         costGBPPerKG.disableProperty().bind(isEditable.not());
         remainingOnReelM.disableProperty().bind(isEditable.not());
-    }
-
-    private void showHelpText(Fields field)
-    {
-        helpText.setText(field.getHelpText());
-    }
-
-    private void setupHelpTextListeners()
-    {
-        name.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.NAME);
-                });
-        colour.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.COLOUR);
-                });
-        material.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.MATERIAL);
-                });
-        filamentDiameter.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.DIAMETER);
-                });
-        filamentMultiplier.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.MULTIPLIER);
-                });
-        feedRateMultiplier.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.FEED_RATE_MULTIPLIER);
-                });
-        firstLayerBedTemperature.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.FIRST_LAYER_BED_TEMP);
-                });
-        bedTemperature.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.BED_TEMP);
-                });
-        firstLayerNozzleTemperature.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.FIRST_LAYER_NOZZLE_TEMP);
-                });
-        nozzleTemperature.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.NOZZLE_TEMP);
-                });
-        ambientTemperature.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.AMBIENT_TEMP);
-                });
-        costGBPPerKG.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.COST_GBP_PER_KG);
-                });
-        remainingOnReelM.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.REMAINING_FILAMENT_M);
-                });
-
-        name.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.NAME);
-                });
-        colour.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.COLOUR);
-                });
-        material.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.MATERIAL);
-                });
-        filamentDiameter.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.DIAMETER);
-                });
-        filamentMultiplier.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.MULTIPLIER);
-                });
-        feedRateMultiplier.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.FEED_RATE_MULTIPLIER);
-                });
-        firstLayerBedTemperature.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.FIRST_LAYER_BED_TEMP);
-                });
-        bedTemperature.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.BED_TEMP);
-                });
-        firstLayerNozzleTemperature.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.FIRST_LAYER_NOZZLE_TEMP);
-                });
-        nozzleTemperature.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.NOZZLE_TEMP);
-                });
-        ambientTemperature.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.AMBIENT_TEMP);
-                });
-        remainingOnReelM.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.REMAINING_FILAMENT_M);
-                });
-        costGBPPerKG.hoverProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    showHelpText(Fields.COST_GBP_PER_KG);
-                });
-
     }
 
     private final ChangeListener<String> dirtyStringListener

@@ -1,18 +1,14 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.model.HeaterMode;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Label;
 
 /**
  *
@@ -30,9 +26,7 @@ public class NozzleChartData
     private final ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty;
     private final ReadOnlyIntegerProperty nozzleTemperatureProperty;
     private final ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty;
-    private final Label nozzleReadout;
     private final String degreesC;
-    private final String legendNozzleStartingText;
 
     ChangeListener<HeaterMode> nozzleHeaterModeListener = (ObservableValue<? extends HeaterMode> observable, HeaterMode oldValue, HeaterMode newValue) ->
     {
@@ -49,17 +43,11 @@ public class NozzleChartData
         updateNozzleTargetPoint();
     };
 
-    InvalidationListener nozzleTemperatureListener = (Observable observable) ->
-    {
-        updateNozzleReadout();
-    };
-
     public NozzleChartData(int nozzleNumber, XYChart.Series<Number, Number> nozzleTemperatureData,
         ReadOnlyObjectProperty<HeaterMode> nozzleHeaterModeProperty,
         ReadOnlyIntegerProperty nozzleTargetTemperatureProperty,
         ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty,
-        ReadOnlyIntegerProperty nozzleTemperatureProperty,
-        Label nozzleReadout)
+        ReadOnlyIntegerProperty nozzleTemperatureProperty)
     {
         this.nozzleTemperatureData = nozzleTemperatureData;
 
@@ -74,14 +62,10 @@ public class NozzleChartData
                 nozzleFirstLayerTargetTemperatureListener);
 
         this.nozzleTemperatureProperty = nozzleTemperatureProperty;
-        nozzleTemperatureProperty.addListener(nozzleTemperatureListener);
 
         nozzleTargetTemperatureSeries.getData().add(nozzleTargetPoint);
 
-        this.nozzleReadout = nozzleReadout;
-
         degreesC = Lookup.i18n("misc.degreesC");
-        legendNozzleStartingText = nozzleReadout.getText();
 
         updateNozzleTargetPoint();
     }
@@ -103,14 +87,7 @@ public class NozzleChartData
             this.nozzleFirstLayerTargetTemperatureProperty.removeListener(
                     nozzleFirstLayerTargetTemperatureListener);
         }
-
-        if (this.nozzleTemperatureProperty != null)
-        {
-            nozzleTemperatureProperty.removeListener(nozzleTemperatureListener);
         }
-
-        nozzleReadout.setText("");
-    }
 
     private void updateNozzleTargetPoint()
     {
@@ -131,29 +108,6 @@ public class NozzleChartData
         } else
         {
             nozzleTargetPoint.setYValue(nozzleTargetTemperatureProperty.get());
-        }
-    }
-
-    private void updateNozzleReadout()
-    {
-        String legendNozzleText = legendNozzleStartingText;
-
-        if (nozzleReadout != null && nozzleTemperatureProperty != null)
-        {
-            if (nozzleTemperatureProperty.get() >= BaseConfiguration.minTempToDisplayOnGraph)
-            {
-                legendNozzleText += String.format(" %s%s",
-                        nozzleTemperatureProperty.get(),
-                        degreesC);
-            } else
-            {
-                legendNozzleText += " " + Lookup.i18n("printerStatus.tempOutOfRangeLow");
-            }
-        }
-
-        if (nozzleReadout != null)
-        {
-            nozzleReadout.setText(legendNozzleText);
         }
     }
 

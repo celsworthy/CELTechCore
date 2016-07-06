@@ -65,4 +65,11 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
     {
         return Lookup.i18n(caption);
     }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
+    }
 }

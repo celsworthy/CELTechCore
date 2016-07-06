@@ -22,7 +22,7 @@
                 <Insets bottom="15.0" left="10.0" right="5.0" top="10.0" />
             </VBox.margin>
         </HBox>
-        <Label style="-fx-font-family: 'Source Sans Pro'; -fx-font-size: 20px;" text="%modelEdit.TransformsLabel" textAlignment="RIGHT" />
+        <Label style="-fx-font-family: 'Source Sans Pro Regular'; -fx-font-size: 20px;" text="%modelEdit.TransformsLabel" textAlignment="RIGHT" />
         <VBox>
             <children>
                 <HBox alignment="CENTER" prefWidth="86.0" spacing="2.0">
@@ -54,7 +54,7 @@
                 </Line>
             </children>
         </VBox>
-        <StackPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="235.0">
+        <StackPane maxWidth="-Infinity" minWidth="-Infinity" prefWidth="245.0">
             <children>
                 <VBox fx:id="scalePanel" alignment="CENTER">
                     <children>
@@ -114,7 +114,7 @@
                                 <Group />
                                 <StackPane GridPane.columnIndex="2">
                                     <children>
-                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" maxLength="9" drivesUndoableOperation="true" prefColumnCount="4" text="" />
+                                        <RestrictedNumberField fx:id="scaleTextWidthField" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="9" prefColumnCount="4" text="" />
                                         <RestrictedNumberField fx:id="widthTextField" allowedDecimalPlaces="2" drivesUndoableOperation="true" layoutX="10.0" layoutY="15.0" maxLength="6" prefColumnCount="4" text="" />
                                     </children>
                                 </StackPane>
@@ -163,7 +163,7 @@
                             <children>
                                 <Label text="%modelEdit.XAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <Label text="%modelEdit.YAxisLabel" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                <RestrictedNumberField allowedDecimalPlaces="2" maxLength="6" drivesUndoableOperation="true" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
+                                <RestrictedNumberField allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="0" fx:id="xAxisTextField" />
                                 <RestrictedNumberField fx:id="yAxisTextField" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="6" prefColumnCount="4" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                             </children>
                             <columnConstraints>
@@ -187,9 +187,9 @@
                                 <Label text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                                 <Label text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <Label text="%modelEdit.turn" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
-                                <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                <RestrictedNumberField fx:id="rotationZTextField" allowNegative="true" allowedDecimalPlaces="2" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
+                                <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                <RestrictedNumberField fx:id="rotationZTextField" allowNegative="true" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                             </children>
                             <columnConstraints>
                                 <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" percentWidth="50.0" />

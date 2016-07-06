@@ -639,7 +639,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             tabDisplay.getTabs().stream().filter((tab) -> (tab instanceof ProjectTab)).forEach(
                     (tab) ->
                     {
-                        ((ProjectTab) tab).saveProject();
+                        ((ProjectTab) tab).saveAndCloseProject();
                     });
         }
     }

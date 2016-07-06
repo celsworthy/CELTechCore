@@ -55,18 +55,27 @@
             <String fx:value="filamentLibUpper" />
             <String fx:value="materialNumbers" />
             <String fx:value="preferenceControl" />
-         </styleClass></RestrictedNumberField>
+         </styleClass>
+         <tooltip>
+            <HideableTooltip text="%filamentLibraryHelp.costGBPPerKG" />
+         </tooltip></RestrictedNumberField>
            <RestrictedNumberField fx:id="remainingOnReelM" allowedDecimalPlaces="2" immediateUpdateMode="true" maxLength="6" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
          <styleClass>
             <String fx:value="filamentLibUpper" />
             <String fx:value="materialNumbers" />
             <String fx:value="preferenceControl" />
-         </styleClass></RestrictedNumberField>
+         </styleClass>
+         <tooltip>
+            <HideableTooltip text="%filamentLibraryHelp.remainingFilamentM" />
+         </tooltip></RestrictedNumberField>
         <ComboBox fx:id="material" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
             <styleClass>
                 <String fx:value="cmbCleanCombo" />
                 <String fx:value="filamentLibUpper" />
             </styleClass>
+         <tooltip>
+            <HideableTooltip text="%filamentLibraryHelp.material" />
+         </tooltip>
         </ComboBox>
         <ColorPicker fx:id="colour" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
             <styleClass>
@@ -74,12 +83,18 @@
                 <String fx:value="filamentLibUpper" />
             <String fx:value="preferenceControl" />
             </styleClass>
+         <tooltip>
+            <HideableTooltip text="%filamentLibraryHelp.colour" />
+         </tooltip>
         </ColorPicker>
         <ComboBox fx:id="cmbFilament" prefWidth="380.0" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER">
          <styleClass>
             <String fx:value="cmbCleanCombo" />
             <String fx:value="preferenceControl" />
-         </styleClass></ComboBox>
+         </styleClass>
+         <tooltip>
+            <HideableTooltip text="%filamentLibraryHelp.name" />
+         </tooltip></ComboBox>
         <Label text="%reelPanel.filamentID" GridPane.rowIndex="2">
          <styleClass>
             <String fx:value="colon" />
@@ -89,13 +104,15 @@
          <styleClass>
             <String fx:value="filamentLibUpper" />
             <String fx:value="preferenceControl" />
-         </styleClass></TextField>
+         </styleClass>
+         <tooltip>
+            <HideableTooltip text="%filamentLibrary.identification" />
+         </tooltip></TextField>
         <Label alignment="CENTER" text="%filamentLibrary.identification" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1">
          <styleClass>
             <String fx:value="filamentLibTitle" />
             <String fx:value="preferenceControl" />
          </styleClass></Label>
-        <TextArea id="helpText" fx:id="helpText" editable="false" wrapText="true" GridPane.columnSpan="2147483647" GridPane.rowIndex="9" />
         <Label text="%filamentLibrary.costGBPPerKG" GridPane.rowIndex="6">
          <styleClass>
             <String fx:value="colon" />
@@ -128,8 +145,8 @@
                   <String fx:value="filamentLibTitle" />
                   <String fx:value="preferenceControl" />
                </styleClass></Label>
-              <Label styleClass="colon" text="%sidePanel_settings.bedTemp" GridPane.rowIndex="1" />
-              <Label styleClass="colon" text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="2" />
+              <Label styleClass="colon" text="%sidePanel_settings.bedTemp" GridPane.rowIndex="2" />
+              <Label styleClass="colon" text="%sidePanel_settings.firstLayerBedTemp" GridPane.rowIndex="1" />
               <Label styleClass="colon" text="%sidePanel_settings.firstLayerNozzleTemp" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="3" />
               <Label styleClass="colon" text="%sidePanel_settings.nozzleTemp" GridPane.rowIndex="4" />
               <Label styleClass="colon" text="%sidePanel_settings.ambientTemp" GridPane.rowIndex="5" />
@@ -138,68 +155,86 @@
                   <String fx:value="filamentLibTitle" />
                   <String fx:value="preferenceControl" />
                </styleClass></Label>
-            <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <children>
-                  <RestrictedNumberField fx:id="bedTemperature" maxLength="3" prefColumnCount="4">
+                  <RestrictedNumberField fx:id="bedTemperature" immediateUpdateMode="true" maxLength="3" prefColumnCount="4">
                      <styleClass>
                         <String fx:value="materialNumbers" />
                         <String fx:value="filamentLibLower" />
                      </styleClass>
+                     <tooltip>
+                        <HideableTooltip text="%filamentLibraryHelp.bedTemp" />
+                     </tooltip>
                   </RestrictedNumberField>
                   <Label text="%misc.degreesC" />
                </children>
             </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <children>
-                  <RestrictedNumberField immediateUpdateMode="true" fx:id="firstLayerBedTemperature" maxLength="3" prefColumnCount="4">
+                  <RestrictedNumberField fx:id="firstLayerBedTemperature" immediateUpdateMode="true" maxLength="3" prefColumnCount="4">
                      <styleClass>
                         <String fx:value="materialNumbers" />
                         <String fx:value="filamentLibLower" />
                      </styleClass>
+                     <tooltip>
+                        <HideableTooltip text="%filamentLibraryHelp.firstlayerBedTemp" />
+                     </tooltip>
                   </RestrictedNumberField>
                   <Label text="%misc.degreesC" />
                </children>
             </HBox>
             <HBox alignment="CENTER_LEFT" fillHeight="false" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <children>
-                  <RestrictedNumberField immediateUpdateMode="true" fx:id="firstLayerNozzleTemperature" maxLength="3" prefColumnCount="4">
+                  <RestrictedNumberField fx:id="firstLayerNozzleTemperature" immediateUpdateMode="true" maxLength="3" prefColumnCount="4">
                      <styleClass>
                         <String fx:value="materialNumbers" />
                         <String fx:value="filamentLibLower" />
                      </styleClass>
+                     <tooltip>
+                        <HideableTooltip text="%filamentLibraryHelp.firstLayerNozzleTemp" />
+                     </tooltip>
                   </RestrictedNumberField>
                   <Label text="%misc.degreesC" />
                </children>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                <children>
-                  <RestrictedNumberField immediateUpdateMode="true" fx:id="nozzleTemperature" maxLength="3" prefColumnCount="4">
+                  <RestrictedNumberField fx:id="nozzleTemperature" immediateUpdateMode="true" maxLength="3" prefColumnCount="4">
                      <styleClass>
                         <String fx:value="materialNumbers" />
                         <String fx:value="filamentLibLower" />
                      </styleClass>
+                     <tooltip>
+                        <HideableTooltip text="%filamentLibraryHelp.nozzleTemp" />
+                     </tooltip>
                   </RestrictedNumberField>
                   <Label text="%misc.degreesC" />
                </children>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                <children>
-                  <RestrictedNumberField immediateUpdateMode="true" fx:id="ambientTemperature" maxLength="3" prefColumnCount="4">
+                  <RestrictedNumberField fx:id="ambientTemperature" immediateUpdateMode="true" maxLength="3" prefColumnCount="4">
                      <styleClass>
                         <String fx:value="materialNumbers" />
                         <String fx:value="filamentLibLower" />
                      </styleClass>
+                     <tooltip>
+                        <HideableTooltip text="%filamentLibraryHelp.ambientTemp" />
+                     </tooltip>
                   </RestrictedNumberField>
                   <Label text="%misc.degreesC" />
                </children>
             </HBox>
             <HBox alignment="CENTER_LEFT" spacing="5.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
                <children>
-                  <RestrictedNumberField fx:id="filamentDiameter" immediateUpdateMode="true" allowedDecimalPlaces="2" maxLength="4" prefColumnCount="4">
+                  <RestrictedNumberField fx:id="filamentDiameter" allowedDecimalPlaces="2" immediateUpdateMode="true" maxLength="4" prefColumnCount="4">
                      <styleClass>
                         <String fx:value="materialNumbers" />
                         <String fx:value="filamentLibLower" />
                      </styleClass>
+                     <tooltip>
+                        <HideableTooltip text="%filamentLibraryHelp.diameter" />
+                     </tooltip>
                   </RestrictedNumberField>
                   <Label text="%misc.mm" />
                </children>
@@ -207,17 +242,23 @@
               <Label styleClass="colon" text="%sidePanel_settings.filamentDiameterLabel" GridPane.columnIndex="3" GridPane.rowIndex="1" />
               <Label styleClass="colon" text="%sidePanel_settings.filamentMultiplierLabel" GridPane.columnIndex="3" GridPane.rowIndex="2" />
               <Label styleClass="colon" text="%sidePanel_settings.extrusionRateMultiplierLabel" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-            <RestrictedNumberField immediateUpdateMode="true" fx:id="filamentMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
+            <RestrictedNumberField fx:id="filamentMultiplier" allowedDecimalPlaces="2" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
                <styleClass>
                   <String fx:value="materialNumbers" />
                   <String fx:value="filamentLibLower" />
                </styleClass>
+               <tooltip>
+                  <HideableTooltip text="%filamentLibraryHelp.multiplier" />
+               </tooltip>
             </RestrictedNumberField>
-            <RestrictedNumberField immediateUpdateMode="true" fx:id="feedRateMultiplier" allowedDecimalPlaces="2" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
+            <RestrictedNumberField fx:id="feedRateMultiplier" allowedDecimalPlaces="2" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefWidth="60.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
                <styleClass>
                   <String fx:value="materialNumbers" />
                   <String fx:value="filamentLibLower" />
                </styleClass>
+               <tooltip>
+                  <HideableTooltip text="%filamentLibraryHelp.feedRateMultiplier" />
+               </tooltip>
             </RestrictedNumberField>
          </children>
       </GridPane>

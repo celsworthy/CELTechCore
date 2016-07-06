@@ -65,4 +65,11 @@ public class PasswordPreference implements PreferencesInnerPanelController.Prefe
     {
         return Lookup.i18n(caption);
     }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
+    }
 }

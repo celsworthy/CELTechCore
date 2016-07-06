@@ -28,11 +28,11 @@ public class LogLevelPreference implements PreferencesInnerPanelController.Prefe
         control.setMinWidth(control.getPrefWidth());
         control.getItems().setAll(LogLevel.values());
         control.getSelectionModel().selectedItemProperty()
-            .addListener(
-                (ObservableValue<? extends LogLevel> observable, LogLevel oldValue, LogLevel newValue) ->
-                {
-                    updateValueFromControl();
-                });
+                .addListener(
+                        (ObservableValue<? extends LogLevel> observable, LogLevel oldValue, LogLevel newValue) ->
+                        {
+                            updateValueFromControl();
+                        });
     }
 
     @Override
@@ -57,5 +57,12 @@ public class LogLevelPreference implements PreferencesInnerPanelController.Prefe
     public String getDescription()
     {
         return Lookup.i18n("preferences.logLevel");
+    }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
     }
 }

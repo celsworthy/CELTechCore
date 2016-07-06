@@ -79,6 +79,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private BedAxes bedAxes = null;
     private ZCutEntryBox zCutEntryBox = null;
     private ObjectProperty<LayoutSubmode> layoutSubmode;
+    private ProjectAwareController projectAwareController = null;
 
     private ReadOnlyDoubleProperty tabDisplayWidthProperty;
     private ReadOnlyDoubleProperty tabDisplayHeightProperty;
@@ -111,11 +112,10 @@ public class ProjectTab extends Tab implements ProjectCallback
 
     private void coreInitialisation()
     {
-        setOnCloseRequest((Event t) ->
+        setOnClosed((Event t) ->
         {
             steno.debug("Beginning project save");
-            saveProject();
-            projectManager.projectClosed(project);
+            saveAndCloseProject();
             steno.debug("Completed project save");
         });
 
@@ -139,7 +139,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         nonSpecificModelIndicator.getChildren().add(loadAModel);
 
         baseContainer = new Pane();
-        
+
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
         basePane.prefWidthProperty().bind(tabDisplayWidthProperty);
@@ -181,7 +181,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
 
         basePane.getChildren().addAll(rhInsetContainer, modelActionsInsetPanel);
-        
+
         dimensionLineManager = new DimensionLineManager(basePane, project, hideDimensions);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -258,7 +258,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     {
         nonSpecificModelIndicator.setVisible(false);
         svgViewManager = new SVGViewManager(project);
-        
+
         AnchorPane.setBottomAnchor(svgViewManager, 0.0);
         AnchorPane.setTopAnchor(svgViewManager, 0.0);
         AnchorPane.setLeftAnchor(svgViewManager, 0.0);
@@ -276,7 +276,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         try
         {
             insetPanel = loader.load();
-            ProjectAwareController projectAwareController = (ProjectAwareController) loader.getController();
+            projectAwareController = (ProjectAwareController) loader.getController();
             projectAwareController.setProject(project);
         } catch (IOException ex)
         {
@@ -494,13 +494,16 @@ public class ProjectTab extends Tab implements ProjectCallback
         }
     }
 
-    public void saveProject()
+    public void saveAndCloseProject()
     {
-        Project.saveProject(project);
         if (viewManager != null)
         {
             viewManager.shutdown();
         }
+        Project.saveProject(project);
+        projectAwareController.setProject(null);
+        projectManager.projectClosed(project);
+        project = null;
     }
 
     public void fireProjectSelected()

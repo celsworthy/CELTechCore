@@ -146,6 +146,14 @@ public class Lookup
         selectedProject.set(project);
     }
 
+    public static void removeProjectReferences(Project project)
+    {
+        if (projectGUIStates.containsKey(project))
+        {
+            projectGUIStates.remove(project);
+        }
+    }
+
     public static ProjectGUIState getProjectGUIState(Project project)
     {
         if (!projectGUIStates.containsKey(project))

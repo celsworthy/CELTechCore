@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Control;
@@ -33,6 +34,8 @@ public class PreferencesInnerPanelController implements Initializable, MenuInner
         public Control getControl();
 
         public String getDescription();
+        
+        public void disableProperty(ObservableValue<Boolean> disableProperty);
     }
 
     @FXML

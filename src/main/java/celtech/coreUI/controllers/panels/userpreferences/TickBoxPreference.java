@@ -27,15 +27,15 @@ public class TickBoxPreference implements PreferencesInnerPanelController.Prefer
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
         control.selectedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-            {
-                updateValueFromControl();
-            });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    updateValueFromControl();
+                });
         booleanProperty.addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-        {
-            control.setSelected(newValue);
-        });
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    control.setSelected(newValue);
+                });
     }
 
     @Override
@@ -63,5 +63,17 @@ public class TickBoxPreference implements PreferencesInnerPanelController.Prefer
     public String getDescription()
     {
         return Lookup.i18n(caption);
+    }
+
+    @Override
+    public void disableProperty(ObservableValue<Boolean> disableProperty)
+    {
+        control.disableProperty().unbind();
+        control.disableProperty().bind(disableProperty);
+    }
+
+    public BooleanProperty getSelectedProperty()
+    {
+        return control.selectedProperty();
     }
 }

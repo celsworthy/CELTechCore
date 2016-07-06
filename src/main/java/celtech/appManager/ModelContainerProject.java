@@ -260,12 +260,29 @@ public class ModelContainerProject extends Project
         }
     }
 
+    public List<Boolean> getPrintingExtruders(Printer printer)
+    {
+        List<Boolean> localUsedExtruders = new ArrayList<>();
+        localUsedExtruders.add(false);
+        localUsedExtruders.add(false);
+
+        for (ProjectifiableThing loadedModel : topLevelThings)
+        {
+            if (loadedModel instanceof ModelContainer)
+            {
+                getUsedExtruders((ModelContainer)loadedModel, localUsedExtruders, printer);
+            }
+        }
+
+        return localUsedExtruders;
+    }
+
     /**
      * Return true if all objects are on the same extruder, else return false.
      */
     public boolean allModelsOnSameExtruder(Printer printer)
     {
-        ObservableList<Boolean> extruders = getUsedExtruders(printer);
+        List<Boolean> extruders = getPrintingExtruders(printer);
         return !(extruders.get(0) && extruders.get(1));
     }
 
@@ -301,26 +318,21 @@ public class ModelContainerProject extends Project
      * Return which extruders are used by the project, as a set of the extruder
      * numbers.
      *
+     * @param printer
      * @return
      */
     public ObservableList<Boolean> getUsedExtruders(Printer printer)
     {
-
-        List<Boolean> localUsedExtruders = new ArrayList<>();
-        localUsedExtruders.add(false);
-        localUsedExtruders.add(false);
-
-        for (ProjectifiableThing loadedModel : topLevelThings)
-        {
-            getUsedExtruders((ModelContainer) loadedModel, localUsedExtruders, printer);
-        }
+        List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
 
         // Don't add material 1 if there isn't a second extruder...
-        if (printerSettings.getPrintSupportOverride())
+        if (printerSettings.getPrintSupportOverride()
+                || printerSettings.getRaftOverride()
+                || printerSettings.getBrimOverride() > 0)
         {
             if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
             {
-                if (!localUsedExtruders.contains(0))
+                if (!localUsedExtruders.get(0))
                 {
                     localUsedExtruders.set(0, true);
                 }
@@ -328,7 +340,7 @@ public class ModelContainerProject extends Project
                     && printer != null
                     && printer.extrudersProperty().get(1).isFittedProperty().get())
             {
-                if (!localUsedExtruders.contains(1))
+                if (!localUsedExtruders.get(1))
                 {
                     localUsedExtruders.set(1, true);
                 }
