@@ -43,6 +43,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import celtech.coreUI.DisplayManager;
 
 /**
  * FXML Controller class
