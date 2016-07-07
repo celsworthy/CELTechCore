@@ -7,7 +7,6 @@ import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.configuration.MaterialType;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
 import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
 import celtech.printerControl.model.Head;
@@ -30,7 +29,6 @@ import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
@@ -91,9 +89,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
     private Text materialRemaining;
 
     @FXML
-    private HBox materialRemainingHBox;
-
-    @FXML
     private TextFlow materialColourContainer;
 
     @FXML
@@ -137,6 +132,14 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
         setUpFilamentLoadedListener();
         configureDisplay();
+
+        if (extruderNumber == 0)
+        {
+            reelNumberMaterial.setStyle("-fx-fill: robox_blue;");
+        } else
+        {
+            reelNumberMaterial.setStyle("-fx-fill: highlight_colour_orange;");
+        }
     }
 
     private boolean filamentLoaded()
@@ -406,7 +409,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
-        reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
         svgLoaded.setFill(StandardColours.HIGHLIGHT_ORANGE);
         setReelColourString(colourString);

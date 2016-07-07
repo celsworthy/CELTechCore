@@ -11,23 +11,23 @@
     <children>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
-                <Label style="-fx-font-size: 18px;" styleClass="regularText" text="%projectDisplay.project" />
-                <Label style="-fx-font-size: 18px;" styleClass="lightText" fx:id="projectName" text="Label" />
+                <Label styleClass="regularText" text="%projectDisplay.project" />
+                <Label fx:id="projectName" styleClass="lightText" text="Label" />
             </children>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
-                <Label style="-fx-font-size: 18px;" styleClass="regularText" text="%projectDisplay.profile" />
-                <Label style="-fx-font-size: 18px;" styleClass="lightText" fx:id="profileName" text="Label" />
+                <Label styleClass="regularText" text="%projectDisplay.profile" />
+                <Label fx:id="profileName" styleClass="lightText" text="Label" />
             </children>
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
-                <Label style="-fx-font-size: 18px;" styleClass="regularText" text="%projectDisplay.layerHeight" />
+                <Label styleClass="regularText" text="%projectDisplay.layerHeight" />
                 <HBox alignment="CENTER_LEFT" spacing="2.0">
                     <children>
-                        <Label style="-fx-font-size: 18px;" styleClass="lightText" fx:id="layerHeight" text="Label" />
-                        <Label style="-fx-font-size: 18px;" styleClass="lightText" text="mm" />
+                        <Label fx:id="layerHeight" styleClass="lightText" text="Label" />
+                        <Label styleClass="lightText" text="mm" />
                     </children>
                 </HBox>
             </children>

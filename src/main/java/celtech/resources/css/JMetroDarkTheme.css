@@ -82,12 +82,14 @@
 {
     -fx-font-family: "Source Sans Pro";
     -fx-font-smoothing-type: lcd;
+    -fx-font-size: 10pt;
 }
 
 .lightText
 {
     -fx-font-family: "Source Sans Pro Light";
     -fx-font-smoothing-type: lcd;
+    -fx-font-size: 10pt;
 }
 
 .blackBorder {
@@ -1741,7 +1743,8 @@ modal-dialogue{
 }
 
 .slider .axis {
-    -fx-tick-label-font: 13px "Source Sans Pro"; 
+    -fx-tick-label-font: 10pt "Source Sans Pro";
+    -fx-max-height: 15px;
 }
 
 .slider .axis:bottom {
@@ -1749,7 +1752,7 @@ modal-dialogue{
 }
 
 .slider {
-    -fx-font-size: 12pt;
+    -fx-font-size: 10pt;
 }
 
 .slider .thumb {
@@ -1762,12 +1765,35 @@ modal-dialogue{
 .slider:focused .thumb {
     -fx-background-radius: 0em;
 }
+
+#material1Slider .fill {
+    -fx-background-color: robox_blue;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
+}
+
+#material2Slider .fill {
+    -fx-background-color: highlight_colour_orange;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
+}
+
+#bedSlider .fill {
+    -fx-background-color: graph_line_yellow;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
+}
+
 .slider .track {
     -fx-background-color: #6c6c6c;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
 }
+
 .slider .fill {
     -fx-background-color: robox_blue;
     -fx-padding: 0.333333em; /* This value must be equal to ".slider .thumb" padding */
