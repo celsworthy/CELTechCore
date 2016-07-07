@@ -149,6 +149,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private VBox parentPanel = null;
 
     private BooleanProperty selectedPrinterIsPrinting = new SimpleBooleanProperty(false);
+    private BooleanProperty projectPanelShouldBeVisible = new SimpleBooleanProperty(true);
+    private BooleanProperty projectPanelVisibility = new SimpleBooleanProperty(false);
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
@@ -173,6 +175,21 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             steno.error("Failed to jog printer - " + ex.getMessage());
         }
+    }
+
+    private void displayScaleChanged(DisplayManager.DisplayScalingMode scalingMode)
+    {
+        switch (scalingMode)
+        {
+            case VERY_SHORT:
+            case SHORT:
+                projectPanelShouldBeVisible.set(false);
+                break;
+            case NORMAL:
+                projectPanelShouldBeVisible.set(true);
+                break;
+        }
+        resizePrinterDisplay(parentPanel);
     }
 
     /**
@@ -295,6 +312,20 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 });
 
         disconnectedLinkedText.replaceText(Lookup.i18n("printerStatus.noPrinterAttached"));
+        
+        projectPanelVisibility.bind(projectPanelShouldBeVisible.and(selectedPrinterIsPrinting));
+
+        DisplayManager.getInstance().getDisplayScalingModeProperty().addListener(new ChangeListener<DisplayManager.DisplayScalingMode>()
+        {
+
+            @Override
+            public void changed(ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode t1)
+            {
+                displayScaleChanged(t1);
+    }
+        });
+
+        displayScaleChanged(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
     }
 
     private void setupBaseDisplay()
@@ -696,7 +727,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         });
 
         vBoxRight.setSpacing(20);
-        projectPanel = loadInsetPanel("ProjectPanel.fxml", "projectPanel.title", null, selectedPrinterIsPrinting, vBoxRight, 0);
+        projectPanel = loadInsetPanel("ProjectPanel.fxml", "projectPanel.title", null, projectPanelVisibility, vBoxRight, 0);
         projectPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);

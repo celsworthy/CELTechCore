@@ -92,9 +92,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
     private Text materialRemaining;
 
     @FXML
-    private HBox materialRemainingHBox;
-
-    @FXML
     private TextFlow materialColourContainer;
 
     @FXML
@@ -138,6 +135,14 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
         setUpFilamentLoadedListener();
         configureDisplay();
+
+        if (extruderNumber == 0)
+        {
+            reelNumberMaterial.setStyle("-fx-fill: robox_blue;");
+        } else
+        {
+            reelNumberMaterial.setStyle("-fx-fill: highlight_colour_orange;");
+    }
     }
 
     private boolean filamentLoaded()
@@ -408,7 +413,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         reelNumberMaterial.setText(numberMaterial);
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
-        reelNumberMaterial.setStyle("-fx-fill: #" + colourString + ";");
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
         svgLoaded.setFill(StandardColours.HIGHLIGHT_ORANGE);
         setReelColourString(colourString);
