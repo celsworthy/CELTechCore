@@ -136,9 +136,11 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         if (extruderNumber == 0)
         {
             reelNumberMaterial.setStyle("-fx-fill: robox_blue;");
+            svgLoaded.setStyle("-fx-fill: robox_blue;");
         } else
         {
             reelNumberMaterial.setStyle("-fx-fill: highlight_colour_orange;");
+            svgLoaded.setStyle("-fx-fill: highlight_colour_orange;");
         }
     }
 
