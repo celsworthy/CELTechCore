@@ -169,7 +169,7 @@
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                     </padding>
                 </VBox>
-                <AnchorPane>
+                <AnchorPane mouseTransparent="true">
                     <children>
                         <VBox fx:id="logoBox" alignment="CENTER" spacing="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
                             <children>
