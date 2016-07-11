@@ -1,9 +1,5 @@
 package celtech.coreUI.components.Notifications;
 
-import celtech.coreUI.components.Notifications.BedHeaterStatusBar;
-import celtech.coreUI.components.Notifications.PrintPreparationStatusBar;
-import celtech.coreUI.components.Notifications.PrintStatusBar;
-import celtech.coreUI.components.Notifications.NozzleHeaterStatusBar;
 import celtech.Lookup;
 import celtech.printerControl.model.Head;
 import celtech.printerControl.model.Printer;
@@ -21,13 +17,13 @@ public class ProgressDisplay extends VBox
     private Printer printerInUse = null;
     private PrintStatusBar stateDisplayBar;
     private BedHeaterStatusBar bedTemperatureDisplayBar;
-    private NozzleHeaterStatusBar nozzle1TemperatureDisplayBar;
-    private NozzleHeaterStatusBar nozzle2TemperatureDisplayBar;
+    private MaterialHeatingStatusBar material1TemperatureDisplayBar;
+    private MaterialHeatingStatusBar material2TemperatureDisplayBar;
     private PrintPreparationStatusBar printPreparationDisplayBar;
 
     private final ChangeListener<Boolean> headDataChangedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
-        createNozzleHeaterBars(printerInUse.headProperty().get());
+        createMaterialHeatBars(printerInUse.headProperty().get());
     };
 
     private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> ov, Head oldHead, Head newHead) ->
@@ -43,14 +39,13 @@ public class ProgressDisplay extends VBox
             newHead.dataChangedProperty().addListener(headDataChangedListener);
         }
 
-        createNozzleHeaterBars(newHead);
+        createMaterialHeatBars(newHead);
     };
 
     public ProgressDisplay()
     {
         setFillWidth(true);
         setPickOnBounds(false);
-//        setMouseTransparent(true);
 
         Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer oldSelection, Printer newSelection) ->
         {
@@ -77,44 +72,51 @@ public class ProgressDisplay extends VBox
         if (printer.headProperty().get() != null)
         {
             printerInUse.headProperty().get().dataChangedProperty().addListener(headDataChangedListener);
-            createNozzleHeaterBars(printer.headProperty().get());
+            createMaterialHeatBars(printer.headProperty().get());
         }
 
         getChildren().addAll(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
     }
 
-    private void destroyNozzleHeaterBars()
+    private void destroyMaterialHeatBars()
     {
-        if (nozzle1TemperatureDisplayBar != null)
+        if (material1TemperatureDisplayBar != null)
         {
-            nozzle1TemperatureDisplayBar.unbindAll();
-            getChildren().remove(nozzle1TemperatureDisplayBar);
-            nozzle1TemperatureDisplayBar = null;
+            material1TemperatureDisplayBar.unbindAll();
+            getChildren().remove(material1TemperatureDisplayBar);
+            material1TemperatureDisplayBar = null;
         }
 
-        if (nozzle2TemperatureDisplayBar != null)
+        if (material2TemperatureDisplayBar != null)
         {
-            nozzle2TemperatureDisplayBar.unbindAll();
-            getChildren().remove(nozzle2TemperatureDisplayBar);
-            nozzle2TemperatureDisplayBar = null;
+            material2TemperatureDisplayBar.unbindAll();
+            getChildren().remove(material2TemperatureDisplayBar);
+            material2TemperatureDisplayBar = null;
         }
     }
 
-    private void createNozzleHeaterBars(Head head)
+    private void createMaterialHeatBars(Head head)
     {
-        destroyNozzleHeaterBars();
+        destroyMaterialHeatBars();
         if (head != null
                 && head.getNozzleHeaters().size() > 0)
         {
-            nozzle1TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(0), 0, head.getNozzleHeaters().size() == 1);
-            getChildren().add(0, nozzle1TemperatureDisplayBar);
+            int materialNumber = 1;
+            if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+            {
+                materialNumber = 2;
+            }
+
+            material1TemperatureDisplayBar = new MaterialHeatingStatusBar(head.getNozzleHeaters().get(0), materialNumber, head.getNozzleHeaters().size() == 1);
+            getChildren().add(0, material1TemperatureDisplayBar);
         }
 
         if (head != null
                 && head.getNozzleHeaters().size() == 2)
         {
-            nozzle2TemperatureDisplayBar = new NozzleHeaterStatusBar(head.getNozzleHeaters().get(1), 1, false);
-            getChildren().add(0, nozzle2TemperatureDisplayBar);
+            //Must be DM - material 1
+            material2TemperatureDisplayBar = new MaterialHeatingStatusBar(head.getNozzleHeaters().get(1), 1, false);
+            getChildren().add(0, material2TemperatureDisplayBar);
         }
     }
 
@@ -128,7 +130,7 @@ public class ProgressDisplay extends VBox
                 printerInUse.headProperty().removeListener(headListener);
             }
 
-            destroyNozzleHeaterBars();
+            destroyMaterialHeatBars();
             stateDisplayBar.unbindAll();
             printPreparationDisplayBar.unbindAll();
             bedTemperatureDisplayBar.unbindAll();

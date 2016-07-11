@@ -3,7 +3,6 @@
  */
 package celtech.coreUI.components.Notifications;
 
-import celtech.coreUI.components.Notifications.AppearingProgressBar;
 import celtech.Lookup;
 import celtech.configuration.HeaterMode;
 import celtech.printerControl.model.NozzleHeater;
@@ -17,13 +16,13 @@ import javafx.fxml.Initializable;
  *
  * @author tony
  */
-public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initializable
+public class MaterialHeatingStatusBar extends AppearingProgressBar implements Initializable
 {
 
     private static final double EJECT_TEMPERATURE = 140.0;
 
     private NozzleHeater heater = null;
-    private final int nozzleNumber;
+    private final int materialNumber;
     private final boolean thisIsTheOnlyNozzle;
     private static final double showBarIfMoreThanXDegreesOut = 3;
 
@@ -37,11 +36,11 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
         reassessStatus();
     };
 
-    public NozzleHeaterStatusBar(NozzleHeater heater, int nozzleNumber, boolean thisIsTheOnlyNozzle)
+    public MaterialHeatingStatusBar(NozzleHeater heater, int materialNumber, boolean thisIsTheOnlyNozzle)
     {
         super();
         this.heater = heater;
-        this.nozzleNumber = nozzleNumber;
+        this.materialNumber = materialNumber;
         this.thisIsTheOnlyNozzle = thisIsTheOnlyNozzle;
 
         heater.nozzleTemperatureProperty().addListener(numberChangeListener);
@@ -87,13 +86,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
                         } else
                         {
-                            switch (nozzleNumber)
+                            switch (materialNumber)
                             {
-                                case 0:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
-                                    break;
                                 case 1:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle2ControlLabel"));
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Material1Label"));
+                                    break;
+                                case 2:
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Material2Label"));
                                     break;
                             }
                         }
@@ -104,13 +103,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             largeProgressDescription.setText(Lookup.i18n("printerStatus.coolingNozzle"));
                         } else
                         {
-                            switch (nozzleNumber)
+                            switch (materialNumber)
                             {
-                                case 0:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
-                                    break;
                                 case 1:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Nozzle2ControlLabel"));
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Material1Label"));
+                                    break;
+                                case 2:
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Material2Label"));
                                     break;
                             }
                         }
@@ -149,13 +148,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
                         } else
                         {
-                            switch (nozzleNumber)
+                            switch (materialNumber)
                             {
-                                case 0:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
-                                    break;
                                 case 1:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle2ControlLabel"));
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Material1Label"));
+                                    break;
+                                case 2:
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Material2Label"));
                                     break;
                             }
                         }
@@ -166,13 +165,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                             largeProgressDescription.setText(Lookup.i18n("printerStatus.coolingNozzle"));
                         } else
                         {
-                            switch (nozzleNumber)
+                            switch (materialNumber)
                             {
-                                case 0:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
-                                    break;
                                 case 1:
-                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Nozzle2ControlLabel"));
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Material1Label"));
+                                    break;
+                                case 2:
+                                    largeProgressDescription.setText(Lookup.i18n("printerStatus.cooling") + " " + Lookup.i18n("printerStatus.Material2Label"));
                                     break;
                             }
                         }
@@ -208,13 +207,13 @@ public class NozzleHeaterStatusBar extends AppearingProgressBar implements Initi
                         largeProgressDescription.setText(Lookup.i18n("printerStatus.heatingNozzle"));
                     } else
                     {
-                        switch (nozzleNumber)
+                        switch (materialNumber)
                         {
-                            case 0:
-                                largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle1ControlLabel"));
-                                break;
                             case 1:
-                                largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Nozzle2ControlLabel"));
+                                largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Material1Label"));
+                                break;
+                            case 2:
+                                largeProgressDescription.setText(Lookup.i18n("printerStatus.heating") + " " + Lookup.i18n("printerStatus.Material2Label"));
                                 break;
                         }
                     }
