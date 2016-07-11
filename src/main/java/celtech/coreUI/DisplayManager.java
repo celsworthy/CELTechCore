@@ -162,27 +162,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     tabDisplay.heightProperty());
             tabDisplay.getTabs().add(1, newProjectTab);
         }
-
-        if (Lookup.getUserPreferences().isFirstUse())
-        {
-            steno.debug("get first use stl file");
-            File firstUsePrintFile = new File(ApplicationConfiguration.
-                    getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
-
-            Project newProject = new Project();
-            newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));
-
-            List<File> fileToLoad = new ArrayList<>();
-            fileToLoad.add(firstUsePrintFile);
-            ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, fileToLoad, false);
-
-            ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
-                    tabDisplay.heightProperty());
-            tabDisplay.getTabs().add(projectTab);
-
-            Lookup.getUserPreferences().setFirstUse(false);
-        }
         steno.debug("end load projects");
     }
 
@@ -557,6 +536,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         steno.debug("load projects");
         loadProjectsAtStartup();
+
         loadModelsIntoNewProject(modelsToLoadAtStartup_projectName,
                 modelsToLoadAtStartup,
                 dontGroupStartupModels);
@@ -969,11 +949,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     public void loadModelsIntoNewProject(String projectName, List<String> modelsWithPaths, boolean dontGroupModels)
     {
+        List<File> listOfFiles = new ArrayList<>();
+
         if (modelsWithPaths != null
                 && modelsWithPaths.size() > 0)
         {
-            List<File> listOfFiles = new ArrayList<>();
-
             modelsWithPaths.forEach(modelRef ->
             {
                 File fileRef = new File(modelRef);
@@ -983,23 +963,61 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     listOfFiles.add(fileRef);
                 }
             });
+        }
+
+        Runnable loaderRunnable = () ->
+        {
+            Project newProject = new Project();
+            newProject.setProjectName(projectName);
+
+            ModelLoader loader = new ModelLoader();
+            loader.loadExternalModels(newProject, listOfFiles, false);
+            ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
+                    tabDisplay.heightProperty());
+            tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
+            tabDisplay.getSelectionModel().select(projectTab);
+        };
+
+        if (Lookup.getUserPreferences().isFirstUse())
+        {
+            File firstUsePrintFile = new File(ApplicationConfiguration.
+                    getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
+
+            Project newProject = new Project();
+            newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));
+
+            List<File> fileToLoad = new ArrayList<>();
+            fileToLoad.add(firstUsePrintFile);
+            ModelLoader loader = new ModelLoader();
 
             if (listOfFiles.size() > 0)
             {
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                ChangeListener<Boolean> firstUseModelLoadListener = new ChangeListener<Boolean>()
                 {
-                    Project newProject = new Project();
-                    newProject.setProjectName(projectName);
+                    @Override
+                    public void changed(ObservableValue<? extends Boolean> ov, Boolean wasRunning, Boolean isRunning)
+                    {
+                        if (wasRunning && !isRunning)
+                        {
+                            Lookup.getTaskExecutor().runOnGUIThread(loaderRunnable);
+                            loader.modelLoadingProperty().removeListener(this);
+                        }
+                    }
+                };
 
-                    ModelLoader loader = new ModelLoader();
-                    loader.loadExternalModels(newProject, listOfFiles, false);
-
-                    ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
-                            tabDisplay.heightProperty());
-                    tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
-                    tabDisplay.getSelectionModel().select(projectTab);
-                });
+                loader.modelLoadingProperty().addListener(firstUseModelLoadListener);
             }
+            loader.loadExternalModels(newProject, fileToLoad, false);
+
+            ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
+                    tabDisplay.heightProperty());
+            tabDisplay.getTabs().add(1, projectTab);
+
+            Lookup.getUserPreferences().setFirstUse(false);
+        } else if (listOfFiles.size()
+                > 0)
+        {
+            Lookup.getTaskExecutor().runOnGUIThread(loaderRunnable);
         }
     }
 }
