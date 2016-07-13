@@ -6,34 +6,16 @@ package celtech.coreUI.components.material;
 import celtech.Lookup;
 import celtech.configuration.Filament;
 import celtech.configuration.datafileaccessors.FilamentContainer;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.shape.Rectangle;
 
 /**
  *
  * @author tony
  */
-public class FilamentCell extends ListCell<Filament>
+public class FilamentCellLong extends FilamentCell
 {
-
-    private static int SWATCH_SQUARE_SIZE = 16;
-
-    HBox cellContainer;
-    Rectangle rectangle = new Rectangle();
-    Label label;
-
-    public FilamentCell()
+    public FilamentCellLong()
     {
-        cellContainer = new HBox();
-        cellContainer.setAlignment(Pos.CENTER_LEFT);
-        rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
-        label = new Label();
-        label.setId("materialComponentComboLabel");
-        label.getStyleClass().add("filamentSwatchPadding");
-        cellContainer.getChildren().addAll(rectangle, label);
+        super();
     }
 
     @Override
@@ -48,7 +30,14 @@ public class FilamentCell extends ListCell<Filament>
             rectangle.setVisible(true);
             rectangle.setFill(filament.getDisplayColour());
 
-            label.setText(filament.getLongFriendlyName());
+            if (filament.getMaterial() != null)
+            {
+                label.setText(filament.getLongFriendlyName() + " "
+                        + filament.getMaterial().getFriendlyName());
+            } else
+            {
+                label.setText(filament.getLongFriendlyName());
+            }
         } else if (item == FilamentContainer.UNKNOWN_FILAMENT)
         {
             Filament filament = (Filament) item;
