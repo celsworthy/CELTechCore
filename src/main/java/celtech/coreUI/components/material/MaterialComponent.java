@@ -31,7 +31,6 @@ import javafx.scene.Group;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.SVGPath;
@@ -135,15 +134,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
         setUpFilamentLoadedListener();
         configureDisplay();
-
-        if (extruderNumber == 0)
-        {
-            reelNumberMaterial.setStyle("-fx-fill: robox_blue;");
-        } else
-        {
-            reelNumberMaterial.setStyle("-fx-fill: highlight_colour_orange;");
-    }
-    }
+        }
 
     private boolean filamentLoaded()
     {
@@ -161,8 +152,8 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
      */
     private void setupComboBox()
     {
-        cmbMaterials.setCellFactory((ListView<Filament> param) -> new FilamentCell());
-        cmbMaterials.setButtonCell(cmbMaterials.getCellFactory().call(null));
+        cmbMaterials.setCellFactory((ListView<Filament> param) -> new FilamentCellLong());
+        cmbMaterials.setButtonCell(new FilamentCell());
 
         repopulateCmbMaterials();
 
@@ -177,7 +168,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         {
             cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
         }
-
         filamentContainer.getUserFilamentList().addListener(
                 (ListChangeListener.Change<? extends Filament> change) ->
                 {
@@ -206,6 +196,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
                 });
     }
 
+    @FXML
     public void whenMaterialSelected(ActionEvent e)
     {
         filamentInUse = cmbMaterials.getValue();
@@ -219,11 +210,11 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
                     comboItems.remove(FilamentContainer.UNKNOWN_FILAMENT);
                 });
             }
-            configureDisplay();
             if (Lookup.getSelectedPrinterProperty().get() != null)
             {
                 Lookup.getSelectedPrinterProperty().get().overrideFilament(extruderNumber, filamentInUse);
             }
+            configureDisplay();
         }
     }
 
@@ -296,6 +287,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
             //Loaded but no reel attached
             cmbMaterials.setVisible(true);
             materialRemaining.setVisible(false);
+            filamentInUse = printer.effectiveFilamentsProperty().get(extruderNumber);
         } else
         {
             //No reel and not loaded
@@ -318,7 +310,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
             if (filamentInUse == FilamentContainer.UNKNOWN_FILAMENT)
             {
                 svgLoaded.setVisible(true);
-                svgLoaded.setFill(Color.BLACK);
                 setReelType(ReelType.SOLID_QUESTION);
                 String materialUnknown = Lookup.i18n("materialComponent.materialUnknown");
                 showDetails((1 + extruderNumber) + ":", "", materialUnknown,
@@ -414,7 +405,16 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         materialRemaining.setText(materialRemainingString);
         String colourString = colourToString(colour);
         materialColourContainer.setStyle("-fx-background-color: #" + colourString + ";");
+
+        if (extruderNumber == 0)
+        {
+            reelNumberMaterial.setStyle("-fx-fill: robox_blue;");
+            svgLoaded.setFill(StandardColours.ROBOX_BLUE);
+        } else
+        {
+            reelNumberMaterial.setStyle("-fx-fill: highlight_colour_orange;");
         svgLoaded.setFill(StandardColours.HIGHLIGHT_ORANGE);
+        }
         setReelColourString(colourString);
 
         int endOfManufacturerSection = materialColourString.indexOf(' ');

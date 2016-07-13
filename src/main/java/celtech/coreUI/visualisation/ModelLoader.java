@@ -18,8 +18,6 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
@@ -86,6 +84,7 @@ public class ModelLoader
                     {
                         invalidModelNames.add(modelContainer.getModelName());
                         modelContainer.setIsInvalidMesh(true);
+                        steno.info("Model load - " + error.get().name());
                     }
 
                     //Assign the models incrementally to the extruders

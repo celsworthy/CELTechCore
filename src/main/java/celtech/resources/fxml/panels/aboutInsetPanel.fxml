@@ -46,21 +46,14 @@
                             <children>
                                 <Label styleClass="aboutBodyTextRegular" text="%aboutPanel.createdBy" wrapText="true">
                                 </Label>
-                                <Label text="%aboutPanel.copyright" wrapText="true">
-                           <styleClass>
-                              <String fx:value="aboutBodyText" />
-                              <String fx:value="regularText" />
-                           </styleClass></Label>
+                                <Label styleClass="aboutBodyText" text="%aboutPanel.copyright" wrapText="true">
+                                </Label>
                             </children>
                         </VBox>
-                        <Label fx:id="infoLabel" text="%aboutPanel.warning" wrapText="true" VBox.vgrow="ALWAYS">
+                        <Label fx:id="infoLabel" styleClass="aboutBodyText" text="%aboutPanel.warning" wrapText="true" VBox.vgrow="ALWAYS">
                             <VBox.margin>
                                 <Insets />
                             </VBox.margin>
-                     <styleClass>
-                        <String fx:value="aboutBodyText" />
-                        <String fx:value="regularText" />
-                     </styleClass>
                         </Label>
                         <GridPane>
                             <columnConstraints>
@@ -80,7 +73,6 @@
                                     <styleClass>
                                         <String fx:value="blue-inset-panel-text" />
                                         <String fx:value="aboutBodyTextRegular" />
-                              <String fx:value="regularText" />
                                     </styleClass>
                                 </Text>
                                 <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kenneth Tam" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -104,7 +96,6 @@
                                     <styleClass>
                                         <String fx:value="aboutBodyTextRegular" />
                                         <String fx:value="blue-inset-panel-text" />
-                              <String fx:value="regularText" />
                                     </styleClass>
                                 </Text>
                                 <Text fx:id="swengLabel" layoutX="10.0" layoutY="157.0" strokeType="OUTSIDE" strokeWidth="0.0" text="%aboutPanel.softwareEngineering" GridPane.rowIndex="1">
@@ -114,7 +105,6 @@
                                     <styleClass>
                                         <String fx:value="blue-inset-panel-text" />
                                         <String fx:value="aboutBodyTextRegular" />
-                              <String fx:value="regularText" />
                                     </styleClass>
                                 </Text>
                                 <Text fx:id="swengNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ian Hudson, Ben Willcocks and Tony Abdulhaq Lynch" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -188,7 +178,7 @@
                         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
                     </padding>
                 </VBox>
-                <AnchorPane>
+                <AnchorPane mouseTransparent="true">
                     <children>
                         <VBox fx:id="logoBox" alignment="CENTER" spacing="10.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
                             <children>
@@ -215,7 +205,7 @@
         </StackPane>
         <HBox fillHeight="false" styleClass="inset-panel-bottom-bar-redux" VBox.vgrow="NEVER">
             <children>
-                <GraphicButtonWithLabel fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" />
+                <GraphicButtonWithLabel accessibleText="%buttonText.back" fxmlFileName="backwardButton" labelText="%buttonText.back" onAction="#okPressed" />
             </children>
         </HBox>
     </children>

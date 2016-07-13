@@ -58,18 +58,18 @@
                   <Insets />
                </VBox.margin>
       </VBox>
-            <VBox fx:id="nozzleTemperature1Box">
+            <VBox fx:id="material1TemperatureBox">
          <children>
             <HBox alignment="CENTER_LEFT" spacing="5.0">
                <VBox.margin>
                   <Insets left="26.0" />
                </VBox.margin>
                <children>
-                        <Label fx:id="nozzle1Text" styleClass="regularText" text="%printAdjustments.nozzleTemperature" textAlignment="RIGHT" />
-                        <Label fx:id="nozzle1Display" layoutX="10.0" layoutY="10.0" styleClass="regularText" textAlignment="RIGHT" />
+                        <Label fx:id="material1Text" styleClass="regularText" text="%printAdjustments.nozzleTemperature" textAlignment="RIGHT" />
+                        <Label fx:id="material1Display" layoutX="10.0" layoutY="10.0" styleClass="regularText" textAlignment="RIGHT" />
                </children>
             </HBox>
-                  <Slider id="material1Slider" fx:id="nozzleTemperature1Slider" blockIncrement="5.0" majorTickUnit="5.0" max="250.0" min="220.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" value="230.0">
+                  <Slider id="material1Slider" fx:id="material1TemperatureSlider" blockIncrement="5.0" majorTickUnit="5.0" max="250.0" min="220.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" value="230.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>
@@ -121,7 +121,7 @@
             </Slider>
          </children>
       </VBox>
-            <VBox fx:id="nozzleTemperature2Box">
+            <VBox fx:id="material2TemperatureBox">
          <children>
             <HBox alignment="CENTER_LEFT" spacing="5.0">
                <VBox.margin>
@@ -129,10 +129,10 @@
                </VBox.margin>
                <children>
                         <Label styleClass="regularText" text="%printAdjustments.nozzleTemperature" textAlignment="RIGHT" />
-                        <Label fx:id="nozzle2Display" layoutX="10.0" layoutY="10.0" styleClass="regularText" textAlignment="RIGHT" />
+                        <Label fx:id="material2Display" layoutX="10.0" layoutY="10.0" styleClass="regularText" textAlignment="RIGHT" />
                </children>
             </HBox>
-                  <Slider id="material2Slider" fx:id="nozzleTemperature2Slider" blockIncrement="5.0" majorTickUnit="5.0" max="250.0" min="220.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" value="230.0">
+                  <Slider id="material2Slider" fx:id="material2TemperatureSlider" blockIncrement="5.0" majorTickUnit="5.0" max="250.0" min="220.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" value="230.0">
                <padding>
                   <Insets left="20.0" right="20.0" />
                </padding>

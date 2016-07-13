@@ -83,25 +83,19 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     private Slider extrusionMultiplier2Slider;
 
     @FXML
-    private VBox nozzleTemperature1Box;
+    private Label material1Text;
 
     @FXML
-    private Label nozzle1Text;
+    private Label material1Display;
 
     @FXML
-    private Label nozzle1Display;
+    private Slider material1TemperatureSlider;
 
     @FXML
-    private Slider nozzleTemperature1Slider;
+    private Label material2Display;
 
     @FXML
-    private VBox nozzleTemperature2Box;
-
-    @FXML
-    private Label nozzle2Display;
-
-    @FXML
-    private Slider nozzleTemperature2Slider;
+    private Slider material2TemperatureSlider;
 
     @FXML
     private Label bedDisplay;
@@ -264,29 +258,29 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 }
             };
 
-    private boolean inhibitNozzleTemp1 = false;
-    private final ChangeListener<Number> nozzleTargetTemp1ChangeListener
+    private boolean inhibitMaterial1Temp = false;
+    private final ChangeListener<Number> material1TargetTempChangeListener
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                inhibitNozzleTemp1 = true;
-                nozzleTemperature1Slider.setValue(newValue.intValue());
-                nozzle1Display.setText(String.format("%d°C", (int) newValue.doubleValue()));
-                inhibitNozzleTemp1 = false;
+                inhibitMaterial1Temp = true;
+                material1TemperatureSlider.setValue(newValue.intValue());
+                material1Display.setText(String.format("%d°C", (int) newValue.doubleValue()));
+                inhibitMaterial1Temp = false;
             };
 
-    private final ChangeListener<Number> nozzleLastFilamentTempChangeListener
+    private final ChangeListener<Number> lastFilamentTempChangeListener
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
                 updateTemperatureSliderBounds();
             };
 
-    private final ChangeListener<Number> nozzleTemp1SliderListener
+    private final ChangeListener<Number> material1TempSliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!inhibitNozzleTemp1
-                        && (!nozzleTemperature1Slider.isValueChanging()
-                        || now.doubleValue() >= nozzleTemperature1Slider.getMax()
-                        || now.doubleValue() <= nozzleTemperature1Slider.getMin()))
+                if (!inhibitMaterial1Temp
+                && (!material1TemperatureSlider.isValueChanging()
+                || now.doubleValue() >= material1TemperatureSlider.getMax()
+                || now.doubleValue() <= material1TemperatureSlider.getMin()))
                 {
                     if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
                     {
@@ -298,32 +292,32 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 }
             };
 
-    private boolean inhibitNozzleTemp2 = false;
+    private boolean inhibitMaterial2Temp = false;
     private final ChangeListener<Number> nozzleTargetTemp2ChangeListener
             = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
             {
-                inhibitNozzleTemp2 = true;
-                nozzleTemperature2Slider.setValue(newValue.intValue());
-                nozzle2Display.setText(String.format("%d°C", (int) newValue.doubleValue()));
-                inhibitNozzleTemp2 = false;
+                inhibitMaterial2Temp = true;
+                material2TemperatureSlider.setValue(newValue.intValue());
+                material2Display.setText(String.format("%d°C", (int) newValue.doubleValue()));
+                inhibitMaterial2Temp = false;
             };
 
-    private final ChangeListener<Number> nozzleTemp2SliderListener
+    private final ChangeListener<Number> material2TempSliderListener
             = (ObservableValue<? extends Number> observable, Number was, Number now) ->
             {
-                if (!inhibitNozzleTemp2
-                        && (!nozzleTemperature2Slider.isValueChanging()
-                        || now.doubleValue() >= nozzleTemperature2Slider.getMax()
-                        || now.doubleValue() <= nozzleTemperature2Slider.getMin()))
+                if (!inhibitMaterial2Temp
+                && (!material2TemperatureSlider.isValueChanging()
+                || now.doubleValue() >= material2TemperatureSlider.getMax()
+                || now.doubleValue() <= material2TemperatureSlider.getMin()))
                 {
-                    currentPrinter.setNozzleHeaterTargetTemperature(0, nozzleTemperature2Slider.valueProperty().intValue());
+                    currentPrinter.setNozzleHeaterTargetTemperature(0, material2TemperatureSlider.valueProperty().intValue());
                 }
             };
 
     private final ChangeListener<HeaterMode> heaterModeListener
             = (ObservableValue<? extends HeaterMode> observable, HeaterMode oldValue, HeaterMode newValue) ->
             {
-                updateNozzleTemperatureDisplay();
+                updateMaterialTemperatureDisplay();
             };
 
     /**
@@ -434,6 +428,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
         if (currentPrinter.extrudersProperty().get(0).isFittedProperty().get() && eUsedForThisPrintJob())
         {
+            //Both sets are visible
             extrusionMultiplier1Display.setText(String.format("%d%%", (int) (currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0)));
             extrusionMultiplier1Slider.setValue(currentPrinter.extrudersProperty().get(0).extrusionMultiplierProperty().doubleValue() * 100.0);
             extrusionMultiplier1Slider.valueProperty().addListener(extrusionMultiplier1SliderListener);
@@ -477,7 +472,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
         }
 
         bindNozzleTemperatureDisplay();
-        updateNozzleTemperatureDisplay();
+        updateMaterialTemperatureDisplay();
         container.setVisible(true);        
     }
 
@@ -509,11 +504,11 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                     extrusionMultiplier2ChangeListener);
         }
 
-        unbindNozzleTemperatureDisplay();
-        updateNozzleTemperatureDisplay();
+        unbindMaterialTemperatureDisplay();
+        updateMaterialTemperatureDisplay();
     }
 
-    private void updateNozzleTemperatureDisplay()
+    private void updateMaterialTemperatureDisplay()
     {
         if (currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
@@ -522,14 +517,14 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 if (currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                 {
-                    nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
-                    nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().get());
+                    material1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
+                    material1TemperatureSlider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().get());
                 } else
                 {
-                    nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().doubleValue()));
-                    inhibitNozzleTemp1 = true;
-                    nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().get());
-                    inhibitNozzleTemp1 = false;
+                    material1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().doubleValue()));
+                    inhibitMaterial1Temp = true;
+                    material1TemperatureSlider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().get());
+                    inhibitMaterial1Temp = false;
                 }
             } else
             {
@@ -537,16 +532,16 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 {
                     if (currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                     {
-                        nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
-                        inhibitNozzleTemp1 = true;
-                        nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().get());
-                        inhibitNozzleTemp1 = false;
+                        material2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
+                        inhibitMaterial2Temp = true;
+                        material2TemperatureSlider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().get());
+                        inhibitMaterial2Temp = false;
                     } else
                     {
-                        nozzle1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().doubleValue()));
-                        inhibitNozzleTemp1 = true;
-                        nozzleTemperature1Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().get());
-                        inhibitNozzleTemp1 = false;
+                        material2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().doubleValue()));
+                        inhibitMaterial2Temp = true;
+                        material2TemperatureSlider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().get());
+                        inhibitMaterial2Temp = false;
                     }
                 }
 
@@ -554,16 +549,16 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 {
                     if (currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().get() == HeaterMode.FIRST_LAYER)
                     {
-                        nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
-                        inhibitNozzleTemp2 = true;
-                        nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().get());
-                        inhibitNozzleTemp2 = false;
+                        material1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().doubleValue()));
+                        inhibitMaterial1Temp = true;
+                        material1TemperatureSlider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().get());
+                        inhibitMaterial1Temp = false;
                     } else
                     {
-                        nozzle2Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().doubleValue()));
-                        inhibitNozzleTemp2 = true;
-                        nozzleTemperature2Slider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().get());
-                        inhibitNozzleTemp2 = false;
+                        material1Display.setText(String.format("%d°C", (int) currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().doubleValue()));
+                        inhibitMaterial1Temp = true;
+                        material1TemperatureSlider.setValue(currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().get());
+                        inhibitMaterial1Temp = false;
                     }
                 }
             }
@@ -572,58 +567,58 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
 
     private void bindNozzleTemperatureDisplay()
     {
-        unbindNozzleTemperatureDisplay();
+        unbindMaterialTemperatureDisplay();
 
         if (currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
         {
-            nozzleTemperature1Slider.valueProperty().addListener(nozzleTemp1SliderListener);
+            material1TemperatureSlider.valueProperty().addListener(material1TempSliderListener);
             if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().addListener(nozzleTargetTemp1ChangeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().addListener(nozzleTargetTemp1ChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().addListener(heaterModeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(nozzleLastFilamentTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(lastFilamentTempChangeListener);
             } else
             {
-            currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().addListener(nozzleTargetTemp1ChangeListener);
-            currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().addListener(nozzleTargetTemp1ChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
             currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().addListener(heaterModeListener);
-            currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(nozzleLastFilamentTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(lastFilamentTempChangeListener);
             }
 
             if (currentPrinter.headProperty().get().getNozzleHeaters().size() > 1)
             {
-                nozzleTemperature2Slider.valueProperty().addListener(nozzleTemp2SliderListener);
+                material2TemperatureSlider.valueProperty().addListener(material2TempSliderListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().addListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().addListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().addListener(heaterModeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(nozzleLastFilamentTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(lastFilamentTempChangeListener);
             }
-                nozzle1Text.setText(Lookup.i18n("printAdjustments.nozzleTemperature"));
+            material1Text.setText(Lookup.i18n("printAdjustments.nozzleTemperature"));
             }
         }
 
-    private void unbindNozzleTemperatureDisplay()
+    private void unbindMaterialTemperatureDisplay()
     {
-        nozzleTemperature1Slider.valueProperty().removeListener(nozzleTemp1SliderListener);
-        nozzleTemperature2Slider.valueProperty().removeListener(nozzleTemp2SliderListener);
+        material1TemperatureSlider.valueProperty().removeListener(material1TempSliderListener);
+        material2TemperatureSlider.valueProperty().removeListener(material2TempSliderListener);
 
         if (currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
         {
             if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTargetTemp1ChangeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(nozzleTargetTemp1ChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleFirstLayerTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().removeListener(heaterModeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().removeListener(nozzleLastFilamentTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().removeListener(lastFilamentTempChangeListener);
             } else
             {
-            currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTargetTemp1ChangeListener);
-            currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(nozzleTargetTemp1ChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);
             currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().removeListener(heaterModeListener);
-            currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().removeListener(nozzleLastFilamentTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().removeListener(lastFilamentTempChangeListener);
             }
 
             if (currentPrinter.headProperty().get().getNozzleHeaters().size() > 1)
@@ -631,7 +626,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(nozzleTargetTemp2ChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).heaterModeProperty().removeListener(heaterModeListener);
-                currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().removeListener(nozzleLastFilamentTempChangeListener);
+                currentPrinter.headProperty().get().getNozzleHeaters().get(0).lastFilamentTemperatureProperty().removeListener(lastFilamentTempChangeListener);
             }
         }
     }
@@ -647,18 +642,19 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 float lastFilamentTemp = currentPrinter.headProperty().get().getNozzleHeaters().get(nozzleNumber).lastFilamentTemperatureProperty().get();
 
-                if (nozzleNumber == 0)
+                if (nozzleNumber == 0
+                        && currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
                 {
-                    inhibitNozzleTemp1 = true;
-                    nozzleTemperature1Slider.setMax(lastFilamentTemp + tempSliderTolerance);
-                    nozzleTemperature1Slider.setMin(lastFilamentTemp - tempSliderTolerance);
-                    inhibitNozzleTemp1 = false;
-                } else if (nozzleNumber == 1)
+                    inhibitMaterial2Temp = true;
+                    material2TemperatureSlider.setMax(lastFilamentTemp + tempSliderTolerance);
+                    material2TemperatureSlider.setMin(lastFilamentTemp - tempSliderTolerance);
+                    inhibitMaterial2Temp = false;
+                } else
                 {
-                    inhibitNozzleTemp2 = true;
-                    nozzleTemperature2Slider.setMax(lastFilamentTemp + tempSliderTolerance);
-                    nozzleTemperature2Slider.setMin(lastFilamentTemp - tempSliderTolerance);
-                    inhibitNozzleTemp2 = false;
+                    inhibitMaterial1Temp = true;
+                    material1TemperatureSlider.setMax(lastFilamentTemp + tempSliderTolerance);
+                    material1TemperatureSlider.setMin(lastFilamentTemp - tempSliderTolerance);
+                    inhibitMaterial1Temp = false;
                 }
             }
         }
@@ -678,15 +674,15 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
     public void whenHeadAdded(Printer printer)
     {
         bindNozzleTemperatureDisplay();
-        updateNozzleTemperatureDisplay();
+        updateMaterialTemperatureDisplay();
         updateTemperatureSliderBounds();
     }
 
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
-        unbindNozzleTemperatureDisplay();
-        updateNozzleTemperatureDisplay();
+        unbindMaterialTemperatureDisplay();
+        updateMaterialTemperatureDisplay();
     }
 
     @Override
