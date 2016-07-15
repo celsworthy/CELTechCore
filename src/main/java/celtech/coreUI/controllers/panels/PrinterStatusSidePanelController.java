@@ -390,6 +390,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             {
                 graphAlternativeMaterial1Temp.setVisible(true);
                 graphAlternativeMaterial1Legend.setVisible(true);
+                graphAlternativeMaterial2Temp.setVisible(false);
+                graphAlternativeMaterial2Legend.setVisible(false);
+                legendMaterial2.setVisible(false);
                 graphAlternativeMaterial1Temp.textProperty().bind(Bindings
                     .when(head.getNozzleHeaters().get(0).nozzleTemperatureProperty()
                                 .greaterThanOrEqualTo(BaseConfiguration.minTempToDisplayOnGraph))
@@ -402,8 +405,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
                         .otherwise("1: " + Lookup.i18n("printerStatus.tempOutOfRangeLow")));
             } else
             {
+                graphAlternativeMaterial1Temp.setVisible(false);
+                graphAlternativeMaterial1Legend.setVisible(false);
                 graphAlternativeMaterial2Temp.setVisible(true);
                 graphAlternativeMaterial2Legend.setVisible(true);
+                legendMaterial2.setVisible(true);
                 graphAlternativeMaterial2Temp.textProperty().bind(Bindings
                         .when(head.getNozzleHeaters().get(0).nozzleTemperatureProperty()
                                 .greaterThanOrEqualTo(BaseConfiguration.minTempToDisplayOnGraph))
