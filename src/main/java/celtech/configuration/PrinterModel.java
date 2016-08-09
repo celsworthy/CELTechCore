@@ -10,10 +10,11 @@ public enum PrinterModel
     /**
      *
      */
-    Robox("RBX01", "Robox version 1");
+    Robox("RBX01", "Robox version 1"),
+    Robox_2("RBX02", "Robox version 2");
 
-    private String codeName;
-    private String friendlyName;
+    private final String codeName;
+    private final String friendlyName;
 
     private PrinterModel(String codeName, String friendlyName)
     {
