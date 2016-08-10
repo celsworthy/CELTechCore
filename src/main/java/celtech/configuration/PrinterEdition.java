@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.configuration;
 
 /**
@@ -12,68 +7,52 @@ package celtech.configuration;
 public enum PrinterEdition
 {
 
-    /**
-     *
-     */
     Kickstarter("KS", "Kickstarter Edition"),
-    /**
-     *
-     */
     TradeSample(
-        "TS", "Trade Sample"),
-    /**
-     *
-     */
-    FirstEditionUK(
-        "BK", "First Edition UK"),
-    /**
-     *
-     */
-    FirstEditionEurope(
-        "BE", "First Edition Europe"),
-    /**
-     *
-     */
-    FirstEditionUSA(
-        "BU", "First Edition USA"),
-    /**
-     *
-     */
-    FirstEditionSouthAsia_Australia(
-        "BA", "First Edition South Asia / Australia"),
-    /**
-     *
-     */
-    FirstEditionJapan(
-        "BN", "First Edition Japan"),
-    /**
-     *
-     */
-    FirstEditionChina(
-        "BC", "First Edition China"),
-    /**
-     *
-     */
-    FirstEditionSwitzerland(
-        "BV", "First Edition Switzerland"),
-    /**
-     *
-     */
-    FirstEditionWorldwide(
-        "BW", "First Edition Worldwide"),
-    /**
-     *
-     */
-    FirstEditionKorea(
-        "BR", "First Edition Korea"),
-    /**
-     *
-     */
-    FirstEditionIsrael(
-        "BI", "First Edition Israel");
+            "TS", "Trade Sample"),
+    SingleHeadUK(
+            "BK", "Single head only UK"),
+    SingleHeadEurope(
+            "BE", "Single head only Europe"),
+    SingleHeadUSA(
+            "BU", "Single head only USA"),
+    SingleHeadSouthAsia_Australia(
+            "BA", "Single head only South Asia / Australia"),
+    SingleHeadJapan(
+            "BN", "Single head only Japan"),
+    SingleHeadChina(
+            "BC", "Single head only China"),
+    SingleHeadSwitzerland(
+            "BV", "Single head only Switzerland"),
+    SingleHeadWorldwide(
+            "BW", "Single head only Worldwide"),
+    SingleHeadKorea(
+            "BR", "Single head only Korea"),
+    SingleHeadIsrael(
+            "BI", "Single head only Israel"),
+    TwinHeadUK(
+            "SK", "Twin head UK"),
+    TwinHeadEurope(
+            "SE", "Twin head Europe"),
+    TwinHeadUSA(
+            "SU", "Twin head USA"),
+    TwinHeadSouthAsia_Australia(
+            "SA", "Twin head South Asia / Australia"),
+    TwinHeadJapan(
+            "SN", "Twin head Japan"),
+    TwinHeadChina(
+            "SC", "Twin head China"),
+    TwinHeadSwitzerland(
+            "SV", "Twin head Switzerland"),
+    TwinHeadWorldwide(
+            "SW", "Twin head Worldwide"),
+    TwinHeadKorea(
+            "SR", "Twin head Korea"),
+    TwinHeadIsrael(
+            "SI", "Twin head Israel");
 
-    private String codeName;
-    private String friendlyName;
+    private final String codeName;
+    private final String friendlyName;
 
     private PrinterEdition(String codeName, String friendlyName)
     {
@@ -120,7 +99,6 @@ public enum PrinterEdition
 //
 //        return printHead;
 //    }
-
     @Override
     public String toString()
     {

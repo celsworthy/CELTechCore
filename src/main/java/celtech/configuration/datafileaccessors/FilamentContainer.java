@@ -16,7 +16,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Properties;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -42,7 +41,7 @@ public class FilamentContainer
 
     public final Filament createNewFilament = new Filament(null, null, null,
             0, 0, 0, 0, 0, 0, 0, 0, Color.ALICEBLUE,
-            0, false);
+            0, 0, false);
     public static final Filament UNKNOWN_FILAMENT = new Filament(Lookup.i18n("materialComponent.unknown"),
             null,
             null,
@@ -55,6 +54,7 @@ public class FilamentContainer
             0,
             0,
             Color.ALICEBLUE,
+            0,
             0,
             false);
 
@@ -71,6 +71,7 @@ public class FilamentContainer
     private static final String firstLayerNozzleTempProperty = "first_layer_nozzle_temperature_C";
     private static final String nozzleTempProperty = "nozzle_temperature_C";
     private static final String displayColourProperty = "display_colour";
+    private static final String defaultLengthProperty = "default_length_m";
 
     public interface FilamentDatabaseChangesListener
     {
@@ -190,6 +191,16 @@ public class FilamentContainer
                     {
                         steno.warning("No cost per GBP found in filament file");
                     }
+                    
+                    // introduced in 2.01.03
+                    String default_length_mString = "240";
+                    try
+                    {
+                        default_length_mString = filamentProperties.getProperty(defaultLengthProperty).trim();
+                    } catch (Exception ex)
+                    {
+                        steno.warning("No default length found in filament file");
+                    }
 
                     if (name != null
                             && material != null
@@ -216,6 +227,7 @@ public class FilamentContainer
                             int nozzleTemp = Integer.valueOf(nozzleTempString);
                             Color colour = Color.web(displayColourString);
                             float costGBPPerKG = Float.valueOf(costGBPPerKGString);
+                            int defaultLength_m = Integer.valueOf(default_length_mString);
                             MaterialType selectedMaterial = MaterialType.valueOf(material);
 
                             Filament newFilament = new Filament(
@@ -232,6 +244,7 @@ public class FilamentContainer
                                     nozzleTemp,
                                     colour,
                                     costGBPPerKG,
+                                    defaultLength_m,
                                     filamentsAreMutable);
 
                             filamentList.add(newFilament);

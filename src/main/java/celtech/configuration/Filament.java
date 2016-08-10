@@ -48,7 +48,8 @@ public class Filament implements Serializable, Cloneable
     private final FloatProperty remainingFilament = new SimpleFloatProperty(
             ApplicationConfiguration.mmOfFilamentOnAReel);
     private final FloatProperty costGBPPerKG = new SimpleFloatProperty(35f);
-
+    private final IntegerProperty defaultLength_m = new SimpleIntegerProperty(0);
+    
     public static final Comparator<Filament> BY_MATERIAL
             = Comparator.comparing(Filament::getMaterial);
     public static final Comparator<Filament> BY_NAME
@@ -68,6 +69,7 @@ public class Filament implements Serializable, Cloneable
             int requiredNozzleTemperature,
             Color displayColour,
             float costGBPPerKG,
+            int defaultLength_m,
             boolean mutable)
     {
         this.friendlyFilamentName.set(friendlyFilamentName);
@@ -83,6 +85,7 @@ public class Filament implements Serializable, Cloneable
         this.requiredNozzleTemperature.set(requiredNozzleTemperature);
         this.displayColour.set(displayColour);
         this.costGBPPerKG.set(costGBPPerKG);
+        this.defaultLength_m.set(defaultLength_m);
         this.mutable.set(mutable);
     }
 
@@ -137,6 +140,7 @@ public class Filament implements Serializable, Cloneable
                 append(requiredNozzleTemperature.get()).
                 append(displayColour.get()).
                 append(costGBPPerKG.get()).
+                append(defaultLength_m.get()).
                 toHashCode();
     }
 
@@ -167,6 +171,7 @@ public class Filament implements Serializable, Cloneable
                 append(requiredNozzleTemperature.get(), rhs.requiredNozzleTemperature.get()).
                 append(displayColour.get(), rhs.displayColour.get()).
                 append(costGBPPerKG.get(), rhs.costGBPPerKG.get()).
+                append(defaultLength_m.get(), rhs.defaultLength_m.get()).
                 isEquals();
     }
 
@@ -386,6 +391,21 @@ public class Filament implements Serializable, Cloneable
         return mutable;
     }
 
+    public IntegerProperty getDefaultLength_mProperty()
+    {
+        return defaultLength_m;
+    }
+    
+    public int getDefaultLength_m()
+    {
+        return defaultLength_m.get();
+    }
+
+    public void setDefaultLength_m(int value)
+    {
+        defaultLength_m.set(value);
+    }
+
     /**
      * Return the friendlyName
      */
@@ -435,6 +455,7 @@ public class Filament implements Serializable, Cloneable
         stringToReturn.append(getLongFriendlyName());
         if (material.get() != null)
         {
+            stringToReturn.append(' ');
             stringToReturn.append(material.get());
         }
         return stringToReturn.toString();
@@ -465,6 +486,7 @@ public class Filament implements Serializable, Cloneable
                 this.getNozzleTemperature(),
                 this.getDisplayColour(),
                 this.getCostGBPPerKG(),
+                this.getDefaultLength_m(),
                 this.isMutable()
         );
 
