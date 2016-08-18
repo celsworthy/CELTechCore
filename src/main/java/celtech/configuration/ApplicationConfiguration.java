@@ -89,8 +89,6 @@ public class ApplicationConfiguration
 
     public static final String printFileExtension = ".prt";
 
-    public static final int mmOfFilamentOnAReel = 240000;
-
     private static String myMiniFactoryDownloadsDirectory = null;
 
     public static final float bedHotAboveDegrees = 60.0f;

@@ -1173,6 +1173,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             slicerType = Lookup.getUserPreferences().getSlicerType();
         }
 
+        //Belt and braces
+        if (slicerType == null)
+        {
+            slicerType = SlicerType.Cura;
+        }
+        
         layerHeight.setDisable(!slicerMappings.isMapped(slicerType, "layerHeight_mm"));
         fillDensity.setDisable(!slicerMappings.isMapped(slicerType, "fillDensity_normalised"));
         infillEveryN.setDisable(!slicerMappings.isMapped(slicerType, "fillEveryNLayers"));
