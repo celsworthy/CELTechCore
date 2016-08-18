@@ -3501,6 +3501,19 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
                                                         processErrorPacketFromPrinter(
                                                                 foundError, printer);
                                                     }
+                                                    if (foundError == FirmwareError.B_POSITION_LOST
+                                                    || foundError == FirmwareError.B_POSITION_WARNING
+                                                    || foundError == FirmwareError.B_STUCK)
+                                                    {
+                                                        try
+                                                        {
+                                                            String bDelta = transmitDirectGCode("M999", false);
+                                                            steno.warning("B delta response was " + bDelta);
+                                                        } catch (RoboxCommsException ex)
+                                                        {
+                                                            steno.error("Unable to request B value");
+                                                        }
+                                                    }
                                                 }
                                     });
                             steno.trace(ackResponse.toString());
