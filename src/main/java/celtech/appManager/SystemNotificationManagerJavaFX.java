@@ -127,6 +127,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.warning("B Position Lost error detected");
                     break;
 
+                case B_POSITION_WARNING:
+                    steno.warning("B Position Warning error detected");
+                    break;
+
                 default:
                     if (errorChoiceBox == null)
                     {

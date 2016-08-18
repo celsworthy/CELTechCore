@@ -15,8 +15,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
 /**
- * The PurgePrinterErrorHandler listens for printer errors and if they occur then cause the user
- * to get a Continue/Abort dialog.
+ * The PurgePrinterErrorHandler listens for printer errors and if they occur
+ * then cause the user to get a Continue/Abort dialog.
  *
  * @author tony
  */
@@ -24,7 +24,7 @@ public class PurgePrinterErrorHandler
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationXAndYActions.class.getName());
+            CalibrationXAndYActions.class.getName());
 
     private final Printer printer;
     private final Cancellable errorCancellable;
@@ -50,40 +50,44 @@ public class PurgePrinterErrorHandler
     }
 
     /**
-     * Check if a printer error has occurred and if so notify the user via a dialog box (only giving
-     * the Abort option). Return a boolean indicating if the process should abort.
+     * Check if a printer error has occurred and if so notify the user via a
+     * dialog box (only giving the Abort option). Return a boolean indicating if
+     * the process should abort.
      */
     private void notifyUserErrorHasOccurredAndAbortIfNotSlip(FirmwareError error)
     {
         if (!errorCancellable.cancelled().get())
         {
-            if (error == FirmwareError.B_POSITION_LOST)
+            if (error == FirmwareError.B_POSITION_LOST
+                    || error == FirmwareError.B_POSITION_WARNING)
             {
                 // Do nothing for the moment...
             } else if (error == FirmwareError.D_FILAMENT_SLIP
-                || error == FirmwareError.E_FILAMENT_SLIP)
+                    || error == FirmwareError.E_FILAMENT_SLIP)
             {
-                if (showingFilamentSlipErrorDialog) {
+                if (showingFilamentSlipErrorDialog)
+                {
                     return;
                 }
                 showingFilamentSlipErrorDialog = true;
                 String errorTitle = Lookup.i18n("purgeMaterial.filamentSlipTitle");
                 String errorMessage = Lookup.i18n("purgeMaterial.filamentSlipMessage");
                 String extruderName = "1";
-                if (error == FirmwareError.D_FILAMENT_SLIP) {
+                if (error == FirmwareError.D_FILAMENT_SLIP)
+                {
                     extruderName = "2";
                 }
                 errorTitle = errorTitle.replace("%s", extruderName);
                 errorMessage = errorMessage.replace("%s", extruderName);
                 Optional<PrinterErrorChoice> response = Lookup.getSystemNotificationHandler().
-                    showPrinterErrorDialog(
-                        errorTitle,
-                        errorMessage,
-                        true,
-                        true,
-                        false,
-                        false);
-                
+                        showPrinterErrorDialog(
+                                errorTitle,
+                                errorMessage,
+                                true,
+                                true,
+                                false,
+                                false);
+
                 showingFilamentSlipErrorDialog = false;
 
                 boolean abort = false;
@@ -111,13 +115,13 @@ public class PurgePrinterErrorHandler
                 // if not filament slip or B POSITION then cancel / abort printer activity immediately
                 cancelPurge();
                 Lookup.getSystemNotificationHandler().
-                    showPrinterErrorDialog(
-                        error.getLocalisedErrorTitle(),
-                        Lookup.i18n("error.purge.cannotContinue"),
-                        false,
-                        false,
-                        false,
-                        true);
+                        showPrinterErrorDialog(
+                                error.getLocalisedErrorTitle(),
+                                Lookup.i18n("error.purge.cannotContinue"),
+                                false,
+                                false,
+                                false,
+                                true);
             }
         }
     }

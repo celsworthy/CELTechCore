@@ -8,7 +8,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class FirmwareResponse extends RoboxRxPacket
 {
-
+    
     private final String charsetToUse = "US-ASCII";
     private String firmwareRevision = null;
     private final int firmwareRevisionBytes = 8;
@@ -32,7 +32,7 @@ public class FirmwareResponse extends RoboxRxPacket
     {
         return firmwareRevisionFloat;
     }
-
+    
     public String getFirmwareRevisionString()
     {
         return firmwareRevisionString;
@@ -64,22 +64,28 @@ public class FirmwareResponse extends RoboxRxPacket
     public boolean populatePacket(byte[] byteData, float requiredFirmwareVersion)
     {
         boolean success = false;
-
+        
         try
         {
             int byteOffset = 1;
             this.firmwareRevision = new String(byteData, byteOffset, firmwareRevisionBytes, charsetToUse);
             byteOffset += firmwareRevisionBytes;
-
+            
             this.firmwareRevisionString = firmwareRevision.trim();
-            this.firmwareRevisionFloat = Float.valueOf(firmwareRevision.trim().substring(1));
-
+            try
+            {
+                this.firmwareRevisionFloat = Float.valueOf(firmwareRevision.trim().substring(1));
+            } catch (NumberFormatException ex)
+            {
+                steno.warning("Couldn't calculate firmware version number from response");
+            }
+            
             success = true;
         } catch (UnsupportedEncodingException ex)
         {
             steno.error("Failed to convert byte array to Status Response");
         }
-
+        
         return success;
     }
 
@@ -91,7 +97,7 @@ public class FirmwareResponse extends RoboxRxPacket
     public String toString()
     {
         StringBuilder outputString = new StringBuilder();
-
+        
         outputString.append(">>>>>>>>>>\n");
         outputString.append("Packet type:");
         outputString.append(getPacketType().name());
@@ -99,10 +105,10 @@ public class FirmwareResponse extends RoboxRxPacket
         outputString.append("Firmware: " + getFirmwareRevision());
         outputString.append("\n");
         outputString.append(">>>>>>>>>>\n");
-
+        
         return outputString.toString();
     }
-
+    
     @Override
     public int packetLength(float requiredFirmwareVersion)
     {

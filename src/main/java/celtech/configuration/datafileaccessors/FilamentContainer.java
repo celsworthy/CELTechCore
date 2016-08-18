@@ -44,7 +44,7 @@ public class FilamentContainer
             0, 0, false);
     public static final Filament UNKNOWN_FILAMENT = new Filament(Lookup.i18n("materialComponent.unknown"),
             null,
-            null,
+            "",
             1.75f,
             1,
             1,
