@@ -599,7 +599,8 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         if (printer == currentPrinter)
         {
-            setCalibrationMode(CalibrationMode.CHOICE);
+            resetMenuAndGoToChoiceMode();
+            backToStatusAction(null);
         }
     }
 
