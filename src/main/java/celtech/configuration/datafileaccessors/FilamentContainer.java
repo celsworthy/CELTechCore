@@ -191,7 +191,7 @@ public class FilamentContainer
                     {
                         steno.warning("No cost per GBP found in filament file");
                     }
-                    
+
                     // introduced in 2.01.03
                     String default_length_mString = "240";
                     try
@@ -416,6 +416,7 @@ public class FilamentContainer
 
         if (filamentID != null
                 && (filamentID.matches("RBX-[0-9A-Z]{3}-.*")
+                || filamentID.matches("RLH-[0-9A-Z]{3}-.*")
                 || filamentID.matches("^U.*")))
         {
             filamentIDIsValid = true;
