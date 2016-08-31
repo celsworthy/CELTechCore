@@ -1226,7 +1226,7 @@ public final class HardwarePrinter implements Printer, ErrorConsumer
             });
         }
 
-        return response.getGCodeResponse();
+        return (response != null)?response.getGCodeResponse():null;
     }
 
     private boolean transmitDataFileStart(final String fileID, boolean jobCanBeReprinted) throws RoboxCommsException
