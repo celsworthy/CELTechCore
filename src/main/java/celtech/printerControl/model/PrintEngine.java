@@ -23,6 +23,7 @@ import celtech.services.slicer.AbstractSlicerService;
 import celtech.services.slicer.SliceResult;
 import celtech.configuration.slicer.SlicerConfigWriter;
 import celtech.configuration.slicer.SlicerConfigWriterFactory;
+import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.printerControl.PrintQueueStatus;
 import celtech.printerControl.comms.commands.MacroLoadException;
 import celtech.printerControl.comms.commands.GCodeMacros;
@@ -178,7 +179,9 @@ public class PrintEngine implements ControllableService
             steno.info(t.getSource().getTitle() + " has failed");
             if (raiseProgressNotifications)
             {
-                Lookup.getSystemNotificationHandler().showSliceFailedNotification();
+                Lookup.getNotificationDisplay().displayDismissableNotification(Lookup.i18n(
+                        "notification.sliceFailed"), Lookup.i18n(
+                                "notification.slicerFailure.dismiss"), NotificationDisplay.NotificationType.CAUTION);
             }
             try
             {
@@ -215,7 +218,9 @@ public class PrintEngine implements ControllableService
             {
                 if (raiseProgressNotifications)
                 {
-                    Lookup.getSystemNotificationHandler().showSliceFailedNotification();
+                    Lookup.getNotificationDisplay().displayDismissableNotification(Lookup.i18n(
+                            "notification.sliceFailed"), Lookup.i18n(
+                                    "notification.slicerFailure.dismiss"), NotificationDisplay.NotificationType.CAUTION);
                 }
                 try
                 {
@@ -242,10 +247,6 @@ public class PrintEngine implements ControllableService
         failedGCodePostProcessEventHandler = (WorkerStateEvent t) ->
         {
             steno.info(t.getSource().getTitle() + " has failed");
-            if (raiseProgressNotifications)
-            {
-                Lookup.getSystemNotificationHandler().showGCodePostProcessFailedNotification();
-            }
             try
             {
                 associatedPrinter.cancel(null);
@@ -291,10 +292,6 @@ public class PrintEngine implements ControllableService
                 }
             } else
             {
-                if (raiseProgressNotifications)
-                {
-                    Lookup.getSystemNotificationHandler().showGCodePostProcessFailedNotification();
-                }
                 try
                 {
                     associatedPrinter.cancel(null);

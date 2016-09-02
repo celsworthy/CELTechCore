@@ -5,6 +5,7 @@ import celtech.gcodetranslator.postprocessing.filamentSaver.FilamentSaver;
 import celtech.Lookup;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.controllers.PrinterSettings;
 import celtech.gcodetranslator.GCodeOutputWriter;
 import celtech.gcodetranslator.NozzleProxy;
@@ -405,12 +406,27 @@ public class PostProcessor
             steno.error("Error reading post-processor input file: " + gcodeFileToProcess);
         } catch (RuntimeException ex)
         {
-            if (ex.getCause() != null)
+            if (ex.getCause() instanceof ParserInputException)
+            {
+                steno.error("Fatal postprocessing error on layer - out of bounds - " + layerCounter + " got exception: " + ex.getCause().getMessage());
+                Lookup.getSystemNotificationHandler().showDismissableNotification(
+                        Lookup.i18n("notification.postProcessorFailure.modelOutOfBounds"),
+                        Lookup.i18n("notification.postProcessorFailure.dismiss"),
+                        NotificationDisplay.NotificationType.CAUTION);
+            } else if (ex.getCause() != null)
             {
                 steno.error("Fatal postprocessing error on layer " + layerCounter + " got exception: " + ex.getCause().getMessage());
+                Lookup.getSystemNotificationHandler().showDismissableNotification(
+                        Lookup.i18n("notification.postProcessorFailure.unknown"),
+                        Lookup.i18n("notification.postProcessorFailure.dismiss"),
+                        NotificationDisplay.NotificationType.CAUTION);
             } else
             {
                 steno.error("Fatal postprocessing error on layer " + layerCounter);
+                Lookup.getSystemNotificationHandler().showDismissableNotification(
+                        Lookup.i18n("notification.postProcessorFailure.unknown"),
+                        Lookup.i18n("notification.postProcessorFailure.dismiss"),
+                        NotificationDisplay.NotificationType.CAUTION);
             }
             ex.printStackTrace();
         } finally

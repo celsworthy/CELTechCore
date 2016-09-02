@@ -1,6 +1,7 @@
 package celtech.appManager;
 
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
@@ -34,11 +35,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result)
-    {
-    }
-
-    @Override
-    public void showGCodePostProcessFailedNotification()
     {
     }
 
@@ -79,11 +75,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void showSDCardNotification()
-    {
-    }
-
-    @Override
-    public void showSliceFailedNotification()
     {
     }
 
@@ -254,6 +245,11 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void hideProgramInvalidHeadDialog()
+    {
+    }
+
+    @Override
+    public void showDismissableNotification(String message, String buttonText, NotificationDisplay.NotificationType notificationType)
     {
     }
 }

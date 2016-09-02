@@ -922,6 +922,24 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         widthPropertyToFollow = widthProperty;
         heightPropertyToFollow = heightProperty;
+        
+        widthPropertyToFollow.addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                notifyListenersOfCameraViewChange();
+            }
+        });
+
+        heightPropertyToFollow.addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                notifyListenersOfCameraViewChange();
+            }
+        });
 
         root3D.setId("Root");
         AnchorPane.setBottomAnchor(root3D, 0.0);
@@ -1492,6 +1510,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     {
         for (ModelContainer model : loadedModels)
         {
+            model.checkOffBed();
             updateModelColours(model);
         }
     }

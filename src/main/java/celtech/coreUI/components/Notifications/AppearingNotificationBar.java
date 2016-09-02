@@ -4,6 +4,7 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.utils.Math.MathUtils;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
@@ -28,56 +30,59 @@ import javafx.util.Duration;
  */
 public abstract class AppearingNotificationBar extends StackPane implements Initializable
 {
-    
+
     @FXML
     private StackPane notificationBar;
-    
+
     @FXML
-    protected Label notificationDescription;
-    
+    protected HyperlinkedLabel notificationDescription;
+
     @FXML
     private Label notificationStepXofY;
-    
+
     @FXML
     private SVGPath noteIndicator;
-    
+
     @FXML
     private Group warningIndicator;
-    
+
     @FXML
     private Group cautionIndicator;
     
+    @FXML
+    Button actionButton;
+
     private static final Duration transitionLengthMillis = Duration.millis(200);
-    
-    private NotificationType notificationType;
-    
+
+    NotificationType notificationType;
+
     private Animation hideSidebar = new Transition()
     {
         {
             setCycleDuration(transitionLengthMillis);
         }
-        
+
         @Override
         public void interpolate(double frac)
         {
             slideMenuPanel(1.0 - frac);
         }
     };
-    
+
     private Animation showSidebar = new Transition()
     {
-        
+
         {
             setCycleDuration(transitionLengthMillis);
         }
-        
+
         @Override
         public void interpolate(double frac)
         {
             slideMenuPanel(frac);
         }
     };
-    
+
     private final double minimumToShow = 0.0;
     private final double maximumToShow = 1.0;
     private boolean slidingIntoView = false;
@@ -86,18 +91,18 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
     private boolean slidOutOfView = false;
     private double panelHeight = 0;
     private final Rectangle clippingRectangle = new Rectangle();
-    
+
     public AppearingNotificationBar()
     {
         super();
-        
+
         URL fxml = getClass().getResource(
                 "/celtech/resources/fxml/components/notifications/appearingNotificationBar.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
         fxmlLoader.setClassLoader(getClass().getClassLoader());
-        
+
         try
         {
             fxmlLoader.load();
@@ -106,14 +111,14 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
             exception.printStackTrace();
             throw new RuntimeException(exception);
         }
-        
+
         showSidebar.setOnFinished((ActionEvent t) ->
         {
             slidingIntoView = false;
             slidIntoView = true;
             finishedSlidingIntoView();
         });
-        
+
         hideSidebar.setOnFinished((ActionEvent t) ->
         {
             slidingOutOfView = false;
@@ -121,8 +126,9 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
             setVisible(false);
             finishedSlidingOutOfView();
         });
-        
+
         notificationStepXofY.setVisible(false);
+        actionButton.setVisible(false);
     }
 
     /**
@@ -138,9 +144,9 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
         {
             amountToShow = maximumToShow;
         }
-        
+
         double targetPanelHeight = panelHeight * amountToShow;
-        
+
         clippingRectangle.setY(panelHeight - targetPanelHeight);
         clippingRectangle.setHeight(targetPanelHeight);
         notificationBar.setPrefHeight(targetPanelHeight);
@@ -176,7 +182,7 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
                 slideMenuPanel(0);
             }
         }
-        
+
     }
 
     /**
@@ -211,14 +217,14 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
             }
         }
     }
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
         panelHeight = notificationBar.getPrefHeight();
-        
+
         notificationBar.setMinHeight(0);
-        
+
         slideMenuPanel(0);
         slidIntoView = false;
         slidOutOfView = true;
@@ -232,35 +238,30 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
         clippingRectangle.setY(0);
         clippingRectangle.setHeight(panelHeight);
         clippingRectangle.setWidth(4000);
-        
+
         setVisible(false);
         notificationBar.setClip(clippingRectangle);
         notificationBar.setPrefHeight(0);
     }
-    
+
     public boolean isSlidInOrSlidingIn()
     {
         return slidIntoView || slidingIntoView;
     }
-    
+
     public boolean isSlidOutOrSlidingOut()
     {
         return slidOutOfView || slidingOutOfView;
     }
-    
-    public void setTitle(String title)
-    {
-        
-    }
-    
+
     public void setMessage(String message)
     {
-        notificationDescription.setText(message);
+        notificationDescription.replaceText(message);
     }
-    
+
     public void setType(NotificationType notificationType)
     {
-        switch(notificationType)
+        switch (notificationType)
         {
             case NOTE:
                 noteIndicator.setVisible(true);
@@ -283,22 +284,26 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
                 cautionIndicator.setVisible(false);
                 break;
         }
-        
+
         this.notificationType = notificationType;
     }
-    
+
     public NotificationType getType()
     {
         return notificationType;
     }
-    
+
     public void setXOfY(int step, int ofSteps)
     {
         notificationStepXofY.setText(step + " " + Lookup.i18n("misc.of") + " " + ofSteps);
         notificationStepXofY.setVisible(true);
     }
-    
+
     public abstract void show();
+
     public abstract void finishedSlidingIntoView();
+
     public abstract void finishedSlidingOutOfView();
+    
+    public abstract boolean isSameAs(AppearingNotificationBar bar);
 }

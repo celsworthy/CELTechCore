@@ -191,7 +191,7 @@ public class ProjectTab extends Tab
         this.setGraphic(nonEditableProjectNameField);
 
         setupNameFields();
-
+        
     }
 
     private Node loadInsetPanel(String innerPanelFXMLName, Project project)

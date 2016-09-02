@@ -16,8 +16,6 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 
 /**
  *

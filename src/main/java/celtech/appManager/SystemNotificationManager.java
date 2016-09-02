@@ -1,6 +1,7 @@
 package celtech.appManager;
 
 import celtech.configuration.fileRepresentation.HeadFile;
+import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
@@ -27,6 +28,8 @@ public interface SystemNotificationManager
     void showWarningNotification(String title, String message);
 
     void showErrorNotification(String title, String message);
+    
+    void showDismissableNotification(String message, String buttonText, NotificationDisplay.NotificationType notificationType);
 
     /**
      * Returns true for no update and false for update
@@ -40,8 +43,6 @@ public interface SystemNotificationManager
     void showCalibrationDialogue();
 
     void showFirmwareUpgradeStatusNotification(FirmwareLoadResult result);
-
-    void showGCodePostProcessFailedNotification();
 
     void showGCodePostProcessSuccessfulNotification();
 
@@ -62,8 +63,6 @@ public interface SystemNotificationManager
     void showReprintStartedNotification();
 
     void showSDCardNotification();
-
-    void showSliceFailedNotification();
 
     void showSliceSuccessfulNotification();
 

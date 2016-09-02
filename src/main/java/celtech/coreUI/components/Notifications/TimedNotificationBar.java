@@ -3,7 +3,6 @@ package celtech.coreUI.components.Notifications;
 import celtech.Lookup;
 import java.util.Timer;
 import java.util.TimerTask;
-import javafx.application.Platform;
 
 /**
  *
@@ -64,5 +63,18 @@ public class TimedNotificationBar extends AppearingNotificationBar
                 finishedSlidingOutOfView();
             });
         }
+    }
+
+    @Override
+    public boolean isSameAs(AppearingNotificationBar bar)
+    {
+        boolean theSame = false;
+        if (this.getType() == bar.getType()
+                && this.notificationDescription.getText().equals(bar.notificationDescription.getText()))
+        {
+            theSame = true;
+        }
+
+        return theSame;
     }
 }

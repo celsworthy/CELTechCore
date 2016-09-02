@@ -1287,6 +1287,33 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     }
 
     /**
+     * Provides a way of checking to see if a model is in the print volume when
+     * considering additional offsets for rafts etc
+     *
+     * Offsets are in bed co-ordinates and affect the max height of the object
+     *
+     * @param heightOffset
+     * @return
+     */
+    public boolean isModelTooHighWithOffset(double heightOffset)
+    {
+        ModelBounds bounds = lastTransformedBoundsInParent;
+
+        boolean isOutOfPrintVolume = false;
+
+        double epsilon = 0.001;
+
+        if (MathUtils.compareDouble(bounds.getMinY(),
+                printBed.getPrintVolumeMinimums().getY() + heightOffset,
+                epsilon) == MathUtils.LESS_THAN)
+        {
+            isOutOfPrintVolume = true;
+        }
+
+        return isOutOfPrintVolume;
+    }
+
+    /**
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the
      * original model dimensions before any transforms).
      */

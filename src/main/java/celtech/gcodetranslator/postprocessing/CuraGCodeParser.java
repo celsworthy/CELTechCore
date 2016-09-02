@@ -925,34 +925,29 @@ public class CuraGCodeParser extends BaseParser<GCodeEventNode>
                             node.getFeedrate().setFeedRate_mmPerMin(fValue.get());
                         }
 
-                        try
+                        if (xValue.isSet())
                         {
-                            if (xValue.isSet())
-                            {
-                                node.getMovement().setX(xValue.get());
-                                validateXPosition(xValue.get());
-                            }
-
-                            if (yValue.isSet())
-                            {
-                                node.getMovement().setY(yValue.get());
-                                validateYPosition(yValue.get());
-                            }
-
-                            if (zValue.isSet())
-                            {
-                                node.getMovement().setZ(zValue.get());
-                                validateZPosition(zValue.get());
-                                currentLayerHeight = zValue.get();
-                            }
-
-                            node.setGCodeLineNumber(startingLineNumber);
-
-                            context.getValueStack().push(node);
-                        } catch (ParserInputException ex)
-                        {
-                            steno.warning("Discarded node with out of bounds values: " + node.renderForOutput());
+                            node.getMovement().setX(xValue.get());
+                            validateXPosition(xValue.get());
                         }
+
+                        if (yValue.isSet())
+                        {
+                            node.getMovement().setY(yValue.get());
+                            validateYPosition(yValue.get());
+                        }
+
+                        if (zValue.isSet())
+                        {
+                            node.getMovement().setZ(zValue.get());
+                            validateZPosition(zValue.get());
+                            currentLayerHeight = zValue.get();
+                        }
+
+                        node.setGCodeLineNumber(startingLineNumber);
+
+                        context.getValueStack().push(node);
+
                         return true;
                     }
                 }

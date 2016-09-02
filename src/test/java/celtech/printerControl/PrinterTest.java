@@ -4,19 +4,10 @@ import celtech.JavaFXConfiguredTest;
 import celtech.printerControl.comms.DeviceDetector;
 import celtech.printerControl.comms.PrinterStatusConsumer;
 import celtech.printerControl.comms.TestCommandInterface;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.HeadEEPROMDataResponse;
-import celtech.printerControl.comms.commands.rx.RoboxRxPacketFactory;
-import celtech.printerControl.comms.commands.rx.RxPacketTypeEnum;
 import celtech.printerControl.model.HardwarePrinter;
-import celtech.printerControl.model.PrinterException;
-import javafx.scene.paint.Color;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**

@@ -283,24 +283,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
 
     @Override
-    public void showSliceFailedNotification()
-    {
-        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
-                "notification.sliceFailed"));
-    }
-
-    @Override
     public void showSliceSuccessfulNotification()
     {
         showInformationNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
                 "notification.sliceSuccessful"));
-    }
-
-    @Override
-    public void showGCodePostProcessFailedNotification()
-    {
-        showErrorNotification(Lookup.i18n("notification.PrintQueueTitle"), Lookup.i18n(
-                "notification.gcodePostProcessFailed"));
     }
 
     @Override
@@ -1329,5 +1315,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 errorChoiceBox.closeDueToPrinterDisconnect();
             });
         }
+    }
+
+    @Override
+    public void showDismissableNotification(String message, String buttonText, NotificationType notificationType)
+    {
+        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            Lookup.getNotificationDisplay().displayDismissableNotification(message, buttonText, notificationType);
+        });
     }
 }

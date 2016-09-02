@@ -172,12 +172,12 @@ public class PostProcessorTask extends Task<GCodePostProcessingResult>
                     project.getPrinterSettings(),
                     objectToNozzleNumberMap);
 
-            RoboxiserResult roboxiserResult = postProcessor.processInput();
-            if (roboxiserResult.isSuccess())
-            {
-                roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
-                postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, roboxiserResult);
-            }
+                RoboxiserResult roboxiserResult = postProcessor.processInput();
+                if (roboxiserResult.isSuccess())
+                {
+                    roboxiserResult.getPrintJobStatistics().writeToFile(printJob.getStatisticsFileLocation());
+                    postProcessingResult = new GCodePostProcessingResult(printJobUUID, gcodeOutputFile, printer, roboxiserResult);
+                }
         } else
         {
             steno.error("Asked to post-process for a slicer we don't support");
