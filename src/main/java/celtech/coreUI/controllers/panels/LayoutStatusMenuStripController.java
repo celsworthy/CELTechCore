@@ -1105,7 +1105,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             SlicerParametersFile slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
 
-            for (ModelContainer modelContainer : selectedProject.getAllModels())
+            for (ModelContainer modelContainer : selectedProject.getTopLevelModels())
             {
                 aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
 

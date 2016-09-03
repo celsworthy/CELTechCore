@@ -382,7 +382,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     + slicerParameters.getRaftAirGapLayer0_mm();
 
             boolean aModelIsOffTheBed = false;
-            for (ModelContainer modelContainer : currentProject.getAllModels())
+            for (ModelContainer modelContainer : currentProject.getTopLevelModels())
             {
                 //TODO use settings derived offset values for spiral
                 if (modelContainer.isOffBedProperty().get()
