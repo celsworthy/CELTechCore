@@ -11,6 +11,7 @@ import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContain
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
+import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
@@ -376,17 +377,22 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     + slicerParameters.getRaftAirGapLayer0_mm();
 
             boolean aModelIsOffTheBed = false;
-            for (ModelContainer modelContainer : currentProject.getTopLevelThings())
+            for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
             {
-                //TODO use settings derived offset values for spiral
-                if (modelContainer.isOffBedProperty().get()
-                        || (currentProject.getPrinterSettings().getRaftOverride()
-                        && modelContainer.isModelTooHighWithOffset(raftOffset))
-                        || (currentProject.getPrinterSettings().getSpiralPrintOverride()
-                        && modelContainer.isModelTooHighWithOffset(0.5)))
+                if (projectifiableThing instanceof ModelContainer)
                 {
-                    aModelIsOffTheBed = true;
-                    break;
+                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+
+                    //TODO use settings derived offset values for spiral
+                    if (modelContainer.isOffBedProperty().get()
+                            || (currentProject.getPrinterSettings().getRaftOverride()
+                            && modelContainer.isModelTooHighWithOffset(raftOffset))
+                            || (currentProject.getPrinterSettings().getSpiralPrintOverride()
+                            && modelContainer.isModelTooHighWithOffset(0.5)))
+                    {
+                        aModelIsOffTheBed = true;
+                        break;
+                    }
                 }
             }
 

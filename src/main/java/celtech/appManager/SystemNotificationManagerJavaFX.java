@@ -10,10 +10,10 @@ import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
-import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -1327,7 +1327,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showDismissableNotification(String message, String buttonText, NotificationType notificationType)
     {
-        Lookup.getTaskExecutor().runOnGUIThread(() ->
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             Lookup.getNotificationDisplay().displayDismissableNotification(message, buttonText, notificationType);
         });

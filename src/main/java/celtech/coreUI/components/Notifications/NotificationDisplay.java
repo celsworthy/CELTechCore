@@ -1,5 +1,6 @@
 package celtech.coreUI.components.Notifications;
 
+import celtech.roboxbase.appManager.NotificationType;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 
@@ -14,26 +15,6 @@ public class NotificationDisplay extends VBox
     private final VBox noteNotifications = new VBox();
     private final VBox cautionNotifications = new VBox();
     private final VBox warningNotifications = new VBox();
-
-    public enum NotificationType
-    {
-
-        NOTE(0),
-        WARNING(1),
-        CAUTION(2);
-
-        private final int value;
-
-        private NotificationType(int value)
-        {
-            this.value = value;
-        }
-
-        public int getValue()
-        {
-            return value;
-        }
-    }
 
     public NotificationDisplay()
     {

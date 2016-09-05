@@ -235,4 +235,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     protected void printVolumeBoundsUpdated()
     {
     }
+
+    @Override
+    public void checkOffBed()
+    {
+    }
 }

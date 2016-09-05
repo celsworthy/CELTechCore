@@ -10,14 +10,18 @@ import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContain
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
+import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.MaterialType;
+import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -29,7 +33,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -146,7 +152,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        PLACompatibilityModeNotificationBar = new ConditionalNotificationBar("notification.printSettingsAutomaticallyAdjustedForPLA", NotificationDisplay.NotificationType.NOTE);
+        PLACompatibilityModeNotificationBar = new ConditionalNotificationBar("notification.printSettingsAutomaticallyAdjustedForPLA", NotificationType.NOTE);
         PLACompatibilityModeNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(inPLACompatibilityMode));
 
         try
@@ -664,8 +670,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 //One of the materials is PLA
                 && (currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.PLA || currentPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.PLA)
                 //Both materials are required for the print
-                && currentProject.getPrintingExtruders(currentPrinter).get(0)
-                && currentProject.getPrintingExtruders(currentPrinter).get(1);
+                && currentProject instanceof ModelContainerProject
+                && ((ModelContainerProject)currentProject).getPrintingExtruders(currentPrinter).get(0)
+                && ((ModelContainerProject)currentProject).getPrintingExtruders(currentPrinter).get(1);
 
         if (triggerPLAIncompatibility)
         {

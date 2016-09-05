@@ -10,6 +10,7 @@ import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
@@ -267,14 +268,14 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         applicationStatus = ApplicationStatus.getInstance();
 
-        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationDisplay.NotificationType.CAUTION);
-        oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationDisplay.NotificationType.CAUTION);
+        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationType.CAUTION);
+        oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationType.CAUTION);
+        twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationType.CAUTION);
+        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
 
-        cantCalibrateHeadIsDetachedNotificationBar = new ConditionalNotificationBar("dialogs.cantCalibrateHeadIsDetached", NotificationDisplay.NotificationType.CAUTION);
+        cantCalibrateHeadIsDetachedNotificationBar = new ConditionalNotificationBar("dialogs.cantCalibrateHeadIsDetached", NotificationType.CAUTION);
 
         this.resources = resources;
         spinnerControl = Lookup.getSpinnerControl();

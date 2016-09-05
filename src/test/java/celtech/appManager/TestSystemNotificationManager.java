@@ -1,5 +1,6 @@
 package celtech.appManager;
 
+import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
@@ -76,11 +77,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void showSDCardNotification()
-    {
-    }
-
-    @Override
-    public void showSliceFailedNotification()
     {
     }
 
@@ -255,7 +251,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showDismissableNotification(String message, String buttonText, NotificationDisplay.NotificationType notificationType)
+    public void showDismissableNotification(String message, String buttonText, NotificationType notificationType)
     {
     }
 }

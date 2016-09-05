@@ -7,10 +7,10 @@ import celtech.appManager.ModelContainerProject;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -233,13 +233,13 @@ public class PurgeInsetPanelController implements Initializable
 
         applicationStatus = ApplicationStatus.getInstance();
 
-        cantPurgeDoorIsOpenNotificationBar = new ConditionalNotificationBar("dialogs.cantPurgeDoorIsOpenMessage", NotificationDisplay.NotificationType.CAUTION);
-        cantPrintNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationDisplay.NotificationType.CAUTION);
-        cantPrintNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationDisplay.NotificationType.CAUTION);
-        cantPrintNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationDisplay.NotificationType.CAUTION);
-        cantPrintFilamentNotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationDisplay.NotificationType.CAUTION);
-        cantPrintFilament0NotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationDisplay.NotificationType.CAUTION);
-        cantPrintFilament1NotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationDisplay.NotificationType.CAUTION);
+        cantPurgeDoorIsOpenNotificationBar = new ConditionalNotificationBar("dialogs.cantPurgeDoorIsOpenMessage", NotificationType.CAUTION);
+        cantPrintNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationType.CAUTION);
+        cantPrintNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
+        cantPrintNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
+        cantPrintFilamentNotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationType.CAUTION);
+        cantPrintFilament0NotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationType.CAUTION);
+        cantPrintFilament1NotSpecifiedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationType.CAUTION);
 
         FXMLUtilities.addColonsToLabels(purgeDetailsGrid);
 

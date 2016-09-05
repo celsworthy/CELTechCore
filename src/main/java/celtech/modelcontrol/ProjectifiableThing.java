@@ -169,7 +169,7 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     {
         screenExtentsChangeListeners.remove(listener);
     }
-    
+
     public final void notifyScreenExtentsChange()
     {
         if (recalculateScreenExtents())
@@ -222,6 +222,8 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
         }
         printVolumeBoundsUpdated();
     }
-    
+
     protected abstract void printVolumeBoundsUpdated();
+
+    public abstract void checkOffBed();
 }

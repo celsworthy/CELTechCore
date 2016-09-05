@@ -21,7 +21,6 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
@@ -32,6 +31,8 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -802,22 +803,22 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void initialize()
     {
-        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationDisplay.NotificationType.CAUTION);
-        oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationDisplay.NotificationType.CAUTION);
-        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationDisplay.NotificationType.CAUTION);
-        doorOpenConditionalNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintDoorIsOpenMessage", NotificationDisplay.NotificationType.CAUTION);
-        invalidMeshInProjectNotificationBar = new ConditionalNotificationBar("dialogs.invalidMeshInProjectMessage", NotificationDisplay.NotificationType.NOTE);
-        chooseACustomProfileNotificationBar = new ConditionalNotificationBar("dialogs.chooseACustomProfile", NotificationDisplay.NotificationType.CAUTION);
-        printHeadPowerOffNotificationBar = new ConditionalNotificationBar("dialogs.printHeadPowerOff", NotificationDisplay.NotificationType.CAUTION);
-        noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationDisplay.NotificationType.CAUTION);
-        noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationDisplay.NotificationType.CAUTION);
+        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationType.CAUTION);
+        oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationType.CAUTION);
+        twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationType.CAUTION);
+        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
+        doorOpenConditionalNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintDoorIsOpenMessage", NotificationType.CAUTION);
+        invalidMeshInProjectNotificationBar = new ConditionalNotificationBar("dialogs.invalidMeshInProjectMessage", NotificationType.NOTE);
+        chooseACustomProfileNotificationBar = new ConditionalNotificationBar("dialogs.chooseACustomProfile", NotificationType.CAUTION);
+        printHeadPowerOffNotificationBar = new ConditionalNotificationBar("dialogs.printHeadPowerOff", NotificationType.CAUTION);
+        noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationType.CAUTION);
+        noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationType.CAUTION);
 
-        modelsOffBedNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBed", NotificationDisplay.NotificationType.CAUTION);
-        modelsOffBedWithRaftNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithRaft", NotificationDisplay.NotificationType.CAUTION);
-        modelOffBedWithSpiralNotificationBar = new ConditionalNotificationBar("dialogs.modelOffBedWithSpiral", NotificationDisplay.NotificationType.CAUTION);
+        modelsOffBedNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBed", NotificationType.CAUTION);
+        modelsOffBedWithRaftNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithRaft", NotificationType.CAUTION);
+        modelOffBedWithSpiralNotificationBar = new ConditionalNotificationBar("dialogs.modelOffBedWithSpiral", NotificationType.CAUTION);
 
         modelsOffBedNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBed).and(modelsOffBedWithRaft.not()).and(modelOffBedWithSpiral.not()));
         modelsOffBedWithRaftNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBedWithRaft));
@@ -1187,31 +1188,35 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             SlicerParametersFile slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
 
-            for (ModelContainer modelContainer : selectedProject.getTopLevelThings())
+            for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
             {
-                aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
-
-                //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-                double raftOffset = slicerParameters.getRaftBaseThickness_mm()
-                        //Raft interface thickness
-                        + 0.28
-                        //Raft surface layer thickness * surface layers
-                        + (slicerParameters.getInterfaceLayers() * 0.27)
-                        + slicerParameters.getRaftAirGapLayer0_mm();
-
-                if (selectedProject.getPrinterSettings().getRaftOverride()
-                        && modelContainer.isModelTooHighWithOffset(raftOffset))
+                if (projectifiableThing instanceof ModelContainer)
                 {
-                    aModelIsOffTheBedWithRaft = true;
-                }
+                    ModelContainer modelContainer = (ModelContainer)projectifiableThing;
+                    aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
 
-                //TODO use settings derived offset values
-                if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
-                        && modelContainer.isModelTooHighWithOffset(0.5))
-                {
-                    aModelIsOffTheBedWithSpiral = true;
+                    //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+                    double raftOffset = slicerParameters.getRaftBaseThickness_mm()
+                            //Raft interface thickness
+                            + 0.28
+                            //Raft surface layer thickness * surface layers
+                            + (slicerParameters.getInterfaceLayers() * 0.27)
+                            + slicerParameters.getRaftAirGapLayer0_mm();
+
+                    if (selectedProject.getPrinterSettings().getRaftOverride()
+                            && modelContainer.isModelTooHighWithOffset(raftOffset))
+                    {
+                        aModelIsOffTheBedWithRaft = true;
+                    }
+
+                    //TODO use settings derived offset values
+                    if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
+                            && modelContainer.isModelTooHighWithOffset(0.5))
+                    {
+                        aModelIsOffTheBedWithSpiral = true;
+                    }
                 }
-            };
+            }
         }
 
         if (aModelIsOffTheBed != modelsOffBed.get())
@@ -1299,9 +1304,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                             .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
                                     .and(printer.headPowerOnFlagProperty()))
-                        .and(modelsOffBed.not())
-                        .and(modelsOffBedWithRaft.not())
-                        .and(modelOffBedWithSpiral.not())
+                            .and(modelsOffBed.not())
+                            .and(modelsOffBedWithRaft.not())
+                            .and(modelOffBedWithSpiral.not())
                     );
                 } else
                 {
@@ -1319,9 +1324,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(printer.extrudersProperty().get(extruderNumber).
                                     filamentLoadedProperty()
                                     .and(printer.headPowerOnFlagProperty()))
-                        .and(modelsOffBed.not())
-                        .and(modelsOffBedWithRaft.not())
-                        .and(modelOffBedWithSpiral.not())
+                            .and(modelsOffBed.not())
+                            .and(modelsOffBedWithRaft.not())
+                            .and(modelOffBedWithSpiral.not())
                     );
                 }
                 printButton.disableProperty().bind(canPrintProject.not());
