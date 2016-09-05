@@ -4,8 +4,8 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.appManager.SystemNotificationManager.NotificationType;
 import celtech.coreUI.components.HyperlinkedLabel;
-import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.utils.Math.MathUtils;
 import java.io.IOException;
 import java.net.URL;

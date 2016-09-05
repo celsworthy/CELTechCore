@@ -3,6 +3,7 @@ package celtech.gcodetranslator.postprocessing;
 import celtech.gcodetranslator.postprocessing.verifier.OutputVerifier;
 import celtech.gcodetranslator.postprocessing.filamentSaver.FilamentSaver;
 import celtech.Lookup;
+import celtech.appManager.SystemNotificationManager.NotificationType;
 import celtech.configuration.fileRepresentation.HeadFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
@@ -412,21 +413,21 @@ public class PostProcessor
                 Lookup.getSystemNotificationHandler().showDismissableNotification(
                         Lookup.i18n("notification.postProcessorFailure.modelOutOfBounds"),
                         Lookup.i18n("notification.postProcessorFailure.dismiss"),
-                        NotificationDisplay.NotificationType.CAUTION);
+                        NotificationType.CAUTION);
             } else if (ex.getCause() != null)
             {
                 steno.error("Fatal postprocessing error on layer " + layerCounter + " got exception: " + ex.getCause().getMessage());
                 Lookup.getSystemNotificationHandler().showDismissableNotification(
                         Lookup.i18n("notification.postProcessorFailure.unknown"),
                         Lookup.i18n("notification.postProcessorFailure.dismiss"),
-                        NotificationDisplay.NotificationType.CAUTION);
+                        NotificationType.CAUTION);
             } else
             {
                 steno.error("Fatal postprocessing error on layer " + layerCounter);
                 Lookup.getSystemNotificationHandler().showDismissableNotification(
                         Lookup.i18n("notification.postProcessorFailure.unknown"),
                         Lookup.i18n("notification.postProcessorFailure.dismiss"),
-                        NotificationDisplay.NotificationType.CAUTION);
+                        NotificationType.CAUTION);
             }
             ex.printStackTrace();
         } finally

@@ -249,7 +249,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showDismissableNotification(String message, String buttonText, NotificationDisplay.NotificationType notificationType)
+    public void showDismissableNotification(String message, String buttonText, NotificationType notificationType)
     {
     }
 }

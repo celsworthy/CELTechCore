@@ -8,7 +8,6 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
-import celtech.coreUI.components.Notifications.NotificationDisplay.NotificationType;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.printerControl.comms.commands.rx.FirmwareError;

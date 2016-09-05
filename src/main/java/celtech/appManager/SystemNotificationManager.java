@@ -1,7 +1,6 @@
 package celtech.appManager;
 
 import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.printerControl.comms.commands.rx.FirmwareError;
 import celtech.printerControl.model.Printer;
 import celtech.services.firmware.FirmwareLoadResult;
@@ -17,6 +16,26 @@ import java.util.Set;
 public interface SystemNotificationManager
 {
 
+    public enum NotificationType
+    {
+
+        NOTE(0),
+        WARNING(1),
+        CAUTION(2);
+
+        private final int value;
+
+        private NotificationType(int value)
+        {
+            this.value = value;
+        }
+
+        public int getValue()
+        {
+            return value;
+        }
+    }
+
     public enum PrinterErrorChoice
     {
 
@@ -28,8 +47,8 @@ public interface SystemNotificationManager
     void showWarningNotification(String title, String message);
 
     void showErrorNotification(String title, String message);
-    
-    void showDismissableNotification(String message, String buttonText, NotificationDisplay.NotificationType notificationType);
+
+    void showDismissableNotification(String message, String buttonText, NotificationType notificationType);
 
     /**
      * Returns true for no update and false for update
@@ -79,22 +98,24 @@ public interface SystemNotificationManager
     boolean showApplicationUpgradeDialog(String applicationName);
 
     public PurgeResponse showPurgeDialog();
+
     public PurgeResponse showPurgeDialog(boolean allowAutoPrint);
 
     public boolean showJobsTransferringShutdownDialog();
 
     public void showProgramInvalidHeadDialog(TaskResponder<HeadFile> taskResponse);
+
     public void hideProgramInvalidHeadDialog();
 
     public void showHeadNotRecognisedDialog(String printerName);
 
     /**
-     * Show a dialog to the user asking them to choose between available Continue, Abort or Retry
-     * actions when a printer error has occurred.
+     * Show a dialog to the user asking them to choose between available
+     * Continue, Abort or Retry actions when a printer error has occurred.
      */
     public Optional<PrinterErrorChoice> showPrinterErrorDialog(String title, String message,
-        boolean showContinueOption,
-        boolean showAbortOption, boolean showRetryOption, boolean showOKOption);
+            boolean showContinueOption,
+            boolean showAbortOption, boolean showRetryOption, boolean showOKOption);
 
     public void showReelNotRecognisedDialog(String printerName);
 
@@ -117,8 +138,8 @@ public interface SystemNotificationManager
     public void showFilamentStuckMessage();
 
     public void showLoadFilamentNowMessage();
-    
+
     public boolean showModelIsInvalidDialog(Set<String> modelNames);
-    
+
     public void clearAllDialogsOnDisconnect();
 }

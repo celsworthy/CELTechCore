@@ -2,6 +2,7 @@ package celtech.printerControl.model;
 
 import celtech.Lookup;
 import celtech.appManager.Project;
+import celtech.appManager.SystemNotificationManager.NotificationType;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.Macro;
 import celtech.configuration.MaterialType;
@@ -179,9 +180,9 @@ public class PrintEngine implements ControllableService
             steno.info(t.getSource().getTitle() + " has failed");
             if (raiseProgressNotifications)
             {
-                Lookup.getNotificationDisplay().displayDismissableNotification(Lookup.i18n(
+                Lookup.getSystemNotificationHandler().showDismissableNotification(Lookup.i18n(
                         "notification.sliceFailed"), Lookup.i18n(
-                                "notification.slicerFailure.dismiss"), NotificationDisplay.NotificationType.CAUTION);
+                                "notification.slicerFailure.dismiss"), NotificationType.CAUTION);
             }
             try
             {
@@ -218,9 +219,9 @@ public class PrintEngine implements ControllableService
             {
                 if (raiseProgressNotifications)
                 {
-                    Lookup.getNotificationDisplay().displayDismissableNotification(Lookup.i18n(
+                    Lookup.getSystemNotificationHandler().showDismissableNotification(Lookup.i18n(
                             "notification.sliceFailed"), Lookup.i18n(
-                                    "notification.slicerFailure.dismiss"), NotificationDisplay.NotificationType.CAUTION);
+                                    "notification.slicerFailure.dismiss"), NotificationType.CAUTION);
                 }
                 try
                 {

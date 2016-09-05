@@ -1,6 +1,7 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.appManager.SystemNotificationManager.NotificationType;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -24,7 +25,7 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
         }
     };
 
-    public ConditionalNotificationBar(String message, NotificationDisplay.NotificationType notificationType)
+    public ConditionalNotificationBar(String message, NotificationType notificationType)
     {
         notificationDescription.replaceText(Lookup.i18n(message));
         setType(notificationType);
