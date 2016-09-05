@@ -199,7 +199,8 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void backToStatusAction(ActionEvent event)
     {
-        if (calibrationMode == CalibrationMode.CHOICE)
+        if (calibrationMode == CalibrationMode.CHOICE
+                || stateManager == null)
         {
             ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
         } else
@@ -448,7 +449,6 @@ public class CalibrationInsetPanelController implements Initializable,
         BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
         BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
         noFilament1Selected.get();
-        
 
         oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(
                 noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
