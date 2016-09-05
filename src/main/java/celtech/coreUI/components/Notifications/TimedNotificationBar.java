@@ -65,4 +65,17 @@ public class TimedNotificationBar extends AppearingNotificationBar
             });
         }
     }
+
+    @Override
+    public boolean isSameAs(AppearingNotificationBar bar)
+    {
+        boolean theSame = false;
+        if (this.getType() == bar.getType()
+                && this.notificationDescription.getText().equals(bar.notificationDescription.getText()))
+        {
+            theSame = true;
+}
+
+        return theSame;
+    }
 }

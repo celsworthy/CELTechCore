@@ -122,14 +122,48 @@ public class NotificationDisplay extends VBox
 //    }
     public void displayTimedNotification(String title, String message, NotificationType notificationType)
     {
+        //Check to see if any other identical notifications are on display
         TimedNotificationBar notificationBar = new TimedNotificationBar();
-        notificationBar.setTitle(title);
         notificationBar.setMessage(message);
         notificationBar.setType(notificationType);
+        if (!isThisADuplicateBar(notificationBar))
+        {
         notificationBar.show();
     }
+    }
 
-    public void addNotificationBar(AppearingNotificationBar notificationBar)
+    private boolean isThisADuplicateBar(AppearingNotificationBar notificationBar)
+    {
+        boolean isADuplicate = false;
+
+        for (Node child : getChildren())
+        {
+            if (child instanceof AppearingNotificationBar)
+            {
+                AppearingNotificationBar bar = (AppearingNotificationBar) child;
+                if (bar.isSameAs(notificationBar))
+                {
+                    isADuplicate = true;
+                    break;
+                }
+            }
+        }
+
+        return isADuplicate;
+    }
+
+    public void displayDismissableNotification(String message, String buttonText, NotificationType notificationType)
+    {
+        DismissableNotificationBar notificationBar = new DismissableNotificationBar(buttonText);
+        notificationBar.setMessage(message);
+        notificationBar.setType(notificationType);
+        if (!isThisADuplicateBar(notificationBar))
+        {
+            notificationBar.show();
+        }
+    }
+
+    void addNotificationBar(AppearingNotificationBar notificationBar)
     {
         if (!getChildren().contains(notificationBar))
         {

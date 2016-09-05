@@ -2334,6 +2334,40 @@ modal-dialogue{
     -fx-fill: white;
 }
 
+.hyperlink {
+    -fx-padding: 0.166667em 0.25em 0.166667em 0.25em; /* 2 3 2 3 */
+    -fx-cursor: hand;
+    -fx-content-display: LEFT;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+.hyperlink,
+.hyperlink:hover,
+.hyperlink:hover:visited {
+    -fx-text-fill: white;
+}
+.hyperlink:armed,
+.hyperlink:visited,
+.hyperlink:hover:armed {
+    -fx-text-fill: -fx-text-background-color;
+}
+.hyperlink:hover,
+.hyperlink:visited,
+.hyperlink:hover:visited {
+    -fx-underline: true;
+}
+.hyperlink:visited:armed {
+    -fx-underline: false;
+}
+.hyperlink:focused {
+    -fx-border-color: white;
+    -fx-border-style: segments(0.166667em, 0.166667em);
+    -fx-border-width: 1px;
+}
+.hyperlink:show-mnemonics > .mnemonic-underline {
+    -fx-stroke: -fx-text-fill;
+}
+
 /**
  * The error dialog configuration
  */

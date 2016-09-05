@@ -40,11 +40,6 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showGCodePostProcessFailedNotification()
-    {
-    }
-
-    @Override
     public void showGCodePostProcessSuccessfulNotification()
     {
     }
@@ -256,6 +251,11 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 
     @Override
     public void hideProgramInvalidHeadDialog()
+    {
+    }
+
+    @Override
+    public void showDismissableNotification(String message, String buttonText, NotificationDisplay.NotificationType notificationType)
     {
     }
 }

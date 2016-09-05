@@ -208,6 +208,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar noHeadNotificationBar;
     private ConditionalNotificationBar noModelsNotificationBar;
 
+    private final BooleanProperty modelsOffBed = new SimpleBooleanProperty(false);
+    private final BooleanProperty modelsOffBedWithRaft = new SimpleBooleanProperty(false);
+    private final BooleanProperty modelOffBedWithSpiral = new SimpleBooleanProperty(false);
+    private ConditionalNotificationBar modelsOffBedNotificationBar;
+    private ConditionalNotificationBar modelsOffBedWithRaftNotificationBar;
+    private ConditionalNotificationBar modelOffBedWithSpiralNotificationBar;
+
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
         whenProjectOrSettingsPrinterChange();
@@ -349,7 +356,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             (ModelContainerProject) currentProject, printer);
                 } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
                 {
-                    ObservableList<Boolean> usedExtruders = ((ModelContainerProject)currentProject).getUsedExtruders(printer);
+                    ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
                     for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
                     {
                         if (usedExtruders.get(extruderNumber))
@@ -808,6 +815,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationDisplay.NotificationType.CAUTION);
         noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationDisplay.NotificationType.CAUTION);
 
+        modelsOffBedNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBed", NotificationDisplay.NotificationType.CAUTION);
+        modelsOffBedWithRaftNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithRaft", NotificationDisplay.NotificationType.CAUTION);
+        modelOffBedWithSpiralNotificationBar = new ConditionalNotificationBar("dialogs.modelOffBedWithSpiral", NotificationDisplay.NotificationType.CAUTION);
+
+        modelsOffBedNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBed).and(modelsOffBedWithRaft.not()).and(modelOffBedWithSpiral.not()));
+        modelsOffBedWithRaftNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBedWithRaft));
+        modelOffBedWithSpiralNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelOffBedWithSpiral));
+
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
         printerUtils = PrinterUtils.getInstance();
@@ -1050,7 +1065,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
                 purgeButton.disableProperty()
                         .bind(newValue.canPurgeHeadProperty().not());
-                
+
                 if (newValue.headProperty().get() != null)
                 {
                     bindNozzleControls(newValue);
@@ -1108,11 +1123,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         @Override
         public void whenAutoLaidOut()
         {
+            dealWithOutOfBoundsModels();
         }
 
         @Override
         public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
         {
+            dealWithOutOfBoundsModels();
         }
 
         @Override
@@ -1158,12 +1175,68 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     }
 
+    private void dealWithOutOfBoundsModels()
+    {
+        boolean aModelIsOffTheBed = false;
+        boolean aModelIsOffTheBedWithRaft = false;
+        boolean aModelIsOffTheBedWithSpiral = false;
+
+        if (selectedProject != null
+                && currentPrinter != null
+                && currentPrinter.headProperty().get() != null)
+        {
+            SlicerParametersFile slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
+
+            for (ModelContainer modelContainer : selectedProject.getTopLevelThings())
+            {
+                aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
+
+                //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+                double raftOffset = slicerParameters.getRaftBaseThickness_mm()
+                        //Raft interface thickness
+                        + 0.28
+                        //Raft surface layer thickness * surface layers
+                        + (slicerParameters.getInterfaceLayers() * 0.27)
+                        + slicerParameters.getRaftAirGapLayer0_mm();
+
+                if (selectedProject.getPrinterSettings().getRaftOverride()
+                        && modelContainer.isModelTooHighWithOffset(raftOffset))
+                {
+                    aModelIsOffTheBedWithRaft = true;
+                }
+
+                //TODO use settings derived offset values
+                if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
+                        && modelContainer.isModelTooHighWithOffset(0.5))
+                {
+                    aModelIsOffTheBedWithSpiral = true;
+                }
+            };
+        }
+
+        if (aModelIsOffTheBed != modelsOffBed.get())
+        {
+            modelsOffBed.set(aModelIsOffTheBed);
+        }
+
+        if (aModelIsOffTheBedWithRaft != modelsOffBedWithRaft.get())
+        {
+            modelsOffBedWithRaft.set(aModelIsOffTheBedWithRaft);
+        }
+
+        if (aModelIsOffTheBedWithSpiral != modelOffBedWithSpiral.get())
+        {
+            modelOffBedWithSpiral.set(aModelIsOffTheBedWithSpiral);
+        }
+    }
+
     private void whenProjectOrSettingsPrinterChange()
     {
         try
         {
             updateCanPrintProjectBindings(currentPrinter, selectedProject);
             updatePrintButtonConditionalText(currentPrinter, selectedProject);
+            dealWithOutOfBoundsModels();
         } catch (Exception ex)
         {
             steno.warning("Error updating can print or print button conditionals: " + ex);
@@ -1226,6 +1299,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
                             .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
                                     .and(printer.headPowerOnFlagProperty()))
+                        .and(modelsOffBed.not())
+                        .and(modelsOffBedWithRaft.not())
+                        .and(modelOffBedWithSpiral.not())
                     );
                 } else
                 {
@@ -1243,6 +1319,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(printer.extrudersProperty().get(extruderNumber).
                                     filamentLoadedProperty()
                                     .and(printer.headPowerOnFlagProperty()))
+                        .and(modelsOffBed.not())
+                        .and(modelsOffBedWithRaft.not())
+                        .and(modelOffBedWithSpiral.not())
                     );
                 }
                 printButton.disableProperty().bind(canPrintProject.not());

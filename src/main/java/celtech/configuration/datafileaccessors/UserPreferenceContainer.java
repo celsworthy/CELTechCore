@@ -33,7 +33,6 @@ public class UserPreferenceContainer
         if (!userPreferenceInputFile.exists())
         {
             userPreferenceFile = new UserPreferenceFile();
-            userPreferenceFile.setSlicerType(SlicerType.Cura);
             try
             {
                 mapper.writeValue(userPreferenceInputFile, userPreferenceFile);
@@ -46,11 +45,14 @@ public class UserPreferenceContainer
             try
             {
                 userPreferenceFile = mapper.readValue(userPreferenceInputFile, UserPreferenceFile.class);
-
             } catch (IOException ex)
             {
                 steno.error("Error loading user preferences " + userPreferenceInputFile.getAbsolutePath() + ": " + ex.getMessage());
             }
+        }
+        if (userPreferenceFile.getSlicerType() == null)
+        {
+            userPreferenceFile.setSlicerType(SlicerType.Cura);
         }
     }
 

@@ -12,6 +12,7 @@ import javafx.beans.value.ObservableValue;
  */
 public class ConditionalNotificationBar extends AppearingNotificationBar
 {
+
     private ObservableValue<Boolean> appearanceCondition;
 
     private final ChangeListener<Boolean> conditionChangeListener = new ChangeListener<Boolean>()
@@ -26,7 +27,7 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
 
     public ConditionalNotificationBar(String message, NotificationDisplay.NotificationType notificationType)
     {
-        notificationDescription.setText(Lookup.i18n(message));
+        notificationDescription.replaceText(Lookup.i18n(message));
         setType(notificationType);
     }
 
@@ -83,5 +84,18 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
     public void finishedSlidingOutOfView()
     {
         Lookup.getNotificationDisplay().removeStepCountedNotificationBar(this);
+    }
+
+    @Override
+    public boolean isSameAs(AppearingNotificationBar bar)
+    {
+        boolean theSame = false;
+        if (this.getType() == bar.getType()
+                && this.notificationDescription.getText().equals(bar.notificationDescription.getText()))
+        {
+            theSame = true;
+        }
+
+        return theSame;
     }
 }

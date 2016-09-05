@@ -17,6 +17,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
@@ -34,7 +35,7 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
     private StackPane notificationBar;
     
     @FXML
-    protected Label notificationDescription;
+    protected HyperlinkedLabel notificationDescription;
     
     @FXML
     private Label notificationStepXofY;
@@ -48,9 +49,12 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
     @FXML
     private Group cautionIndicator;
     
+    @FXML
+    Button actionButton;
+
     private static final Duration transitionLengthMillis = Duration.millis(200);
     
-    private NotificationType notificationType;
+    NotificationType notificationType;
     
     private Animation hideSidebar = new Transition()
     {
@@ -124,6 +128,7 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
         });
         
         notificationStepXofY.setVisible(false);
+        actionButton.setVisible(false);
     }
 
     /**
@@ -249,19 +254,14 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
         return slidOutOfView || slidingOutOfView;
     }
     
-    public void setTitle(String title)
-    {
-        
-    }
-    
     public void setMessage(String message)
     {
-        notificationDescription.setText(message);
+        notificationDescription.replaceText(message);
     }
     
     public void setType(NotificationType notificationType)
     {
-        switch(notificationType)
+        switch (notificationType)
         {
             case NOTE:
                 noteIndicator.setVisible(true);
@@ -300,6 +300,10 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
     }
     
     public abstract void show();
+
     public abstract void finishedSlidingIntoView();
+
     public abstract void finishedSlidingOutOfView();
+    
+    public abstract boolean isSameAs(AppearingNotificationBar bar);
 }

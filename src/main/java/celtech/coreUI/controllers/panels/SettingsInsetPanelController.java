@@ -128,12 +128,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private ObjectProperty<PrintQualityEnumeration> printQuality;
     private boolean populatingForProject = false;
 
+    private final BooleanProperty inPLACompatibilityMode = new SimpleBooleanProperty(false);
+    private ConditionalNotificationBar PLACompatibilityModeNotificationBar;
+
     private MapChangeListener<Integer, Filament> filamentListener = new MapChangeListener<Integer, Filament>()
     {
         @Override
         public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
         {
-            dealWithSupportGap();
+            dealWithPrintOptimisation();
         }
     };
 
@@ -143,6 +146,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        PLACompatibilityModeNotificationBar = new ConditionalNotificationBar("notification.printSettingsAutomaticallyAdjustedForPLA", NotificationDisplay.NotificationType.NOTE);
+        PLACompatibilityModeNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(inPLACompatibilityMode));
+
         try
         {
             supportComboBox.getItems().clear();
@@ -265,8 +271,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     if (currentProject != null
                             && currentPrinter != null)
                     {
-                        dealWithSpiralness();
-                        dealWithSupportGap();
+                        dealWithPrintOptimisation();
                     }
                 }
             }
@@ -366,7 +371,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                         return;
                     }
 
-                    dealWithSupportGap();
+                    dealWithPrintOptimisation();
 
                     if (printerSettings != null
                     && lastSupportValue != newSupportValue)
@@ -384,7 +389,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     }
 
                     updateSupportCombo(currentPrinter);
-                    dealWithSupportGap();
+                    dealWithPrintOptimisation();
 
                     printerSettings.setPrintSupportOverride(selected);
                 });
@@ -608,12 +613,19 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
 
         spiralPrintCheckbox.setSelected(saveSpiralPrint);
-        dealWithSpiralness();
 
         supportGapButton.setSelected(saveSupportGapEnabled);
-        dealWithSupportGap();
+
+        dealWithPrintOptimisation();
 
         populatingForProject = false;
+    }
+
+    private void dealWithPrintOptimisation()
+    {
+        dealWithSpiralness();
+        dealWithSupportGap();
+        dealWithIncompatibleMaterials();
     }
 
     private void dealWithSpiralness()
@@ -639,6 +651,33 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 && !((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
 
         supportGapButton.setSelected(supportGapEnabledDriver);
+    }
+
+    private void dealWithIncompatibleMaterials()
+    {
+        boolean triggerPLAIncompatibility = currentPrinter != null
+                //Neither material is UNKNOWN
+                && currentPrinter.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT
+                && currentPrinter.effectiveFilamentsProperty().get(1) != FilamentContainer.UNKNOWN_FILAMENT
+                //Materials are not the same
+                && currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() != currentPrinter.effectiveFilamentsProperty().get(1).getMaterial()
+                //One of the materials is PLA
+                && (currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.PLA || currentPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.PLA)
+                //Both materials are required for the print
+                && currentProject.getPrintingExtruders(currentPrinter).get(0)
+                && currentProject.getPrintingExtruders(currentPrinter).get(1);
+
+        if (triggerPLAIncompatibility)
+        {
+            SupportType requiredSupportType = (currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.PLA) ? SupportType.MATERIAL_1 : SupportType.MATERIAL_2;
+            raftButton.setSelected(true);
+            supportComboBox.getSelectionModel().select(requiredSupportType);
+        }
+        
+        if (triggerPLAIncompatibility != inPLACompatibilityMode.get())
+        {
+            inPLACompatibilityMode.set(triggerPLAIncompatibility);
+        }
     }
 
     private void selectCurrentCustomSettings()

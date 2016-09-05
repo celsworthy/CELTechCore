@@ -674,6 +674,15 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         break;
                 }
             }
+        } else if (applicationStatus.getMode() == ApplicationMode.STATUS
+                && Lookup.getUserPreferences().isAdvancedMode())
+        {
+            switch (event.getCode())
+            {
+                case G:
+                    Lookup.getUserPreferences().setShowGCode(true);
+                    break;
+            }
         }
     }
 

@@ -361,66 +361,97 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
         Cancellable cancellable = new SimpleCancellable();
         if (currentProject != null
-                && currentProject.getNumberOfProjectifiableElements() > 0)
+                && currentProject.getNumberOfProjectifiableElements() > 0
+                && currentPrinter != null
+                && currentPrinter.headProperty().get() != null)
         {
-            Runnable runUpdateFields = () ->
-            {
-                try
-                {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex)
-                {
-                    return;
-                }
-                if (cancellable.cancelled().get())
-                {
-                    return;
-                }
+            SlicerParametersFile slicerParameters = currentProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
 
-                if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
-                        && !currentProject.getPrinterSettings().getSettingsName().equals(""))
+            //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+            double raftOffset = slicerParameters.getRaftBaseThickness_mm()
+                    //Raft interface thickness
+                    + 0.28
+                    //Raft surface layer thickness * surface layers
+                    + (slicerParameters.getInterfaceLayers() * 0.27)
+                    + slicerParameters.getRaftAirGapLayer0_mm();
+
+            boolean aModelIsOffTheBed = false;
+            for (ModelContainer modelContainer : currentProject.getTopLevelThings())
+            {
+                //TODO use settings derived offset values for spiral
+                if (modelContainer.isOffBedProperty().get()
+                        || (currentProject.getPrinterSettings().getRaftOverride()
+                        && modelContainer.isModelTooHighWithOffset(raftOffset))
+                        || (currentProject.getPrinterSettings().getSpiralPrintOverride()
+                        && modelContainer.isModelTooHighWithOffset(0.5)))
                 {
-                    SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
-                            currentHeadType);
-                    updateFieldsForProfile(project, customSettings, lblCustomTime,
-                            lblCustomWeight,
-                            lblCustomCost, cancellable);
+                    aModelIsOffTheBed = true;
+                    break;
+                }
+            }
+
+            if (!aModelIsOffTheBed)
+            {
+
+                Runnable runUpdateFields = () ->
+                {
+                    try
+                    {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex)
+                    {
+                        return;
+                    }
                     if (cancellable.cancelled().get())
                     {
                         return;
                     }
-                }
-                SlicerParametersFile settings = SlicerParametersContainer.getSettings(
-                        BaseConfiguration.draftSettingsProfileName,
-                        currentHeadType);
-                updateFieldsForProfile(project, settings, lblDraftTime,
-                        lblDraftWeight,
-                        lblDraftCost, cancellable);
-                if (cancellable.cancelled().get())
-                {
-                    return;
-                }
-                settings = SlicerParametersContainer.getSettings(
-                        BaseConfiguration.normalSettingsProfileName,
-                        currentHeadType);
-                updateFieldsForProfile(project, settings, lblNormalTime,
-                        lblNormalWeight,
-                        lblNormalCost, cancellable);
-                if (cancellable.cancelled().get())
-                {
-                    return;
-                }
-                settings = SlicerParametersContainer.getSettings(
-                        BaseConfiguration.fineSettingsProfileName,
-                        currentHeadType);
-                updateFieldsForProfile(project, settings, lblFineTime,
-                        lblFineWeight,
-                        lblFineCost, cancellable);
-            };
 
-            clearPrintJobDirectories();
+                    if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
+                            && !currentProject.getPrinterSettings().getSettingsName().equals(""))
+                    {
+                        SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
+                                currentHeadType);
+                        updateFieldsForProfile(project, customSettings, lblCustomTime,
+                                lblCustomWeight,
+                                lblCustomCost, cancellable);
+                        if (cancellable.cancelled().get())
+                        {
+                            return;
+                        }
+                    }
+                    SlicerParametersFile settings = SlicerParametersContainer.getSettings(
+                            BaseConfiguration.draftSettingsProfileName,
+                            currentHeadType);
+                    updateFieldsForProfile(project, settings, lblDraftTime,
+                            lblDraftWeight,
+                            lblDraftCost, cancellable);
+                    if (cancellable.cancelled().get())
+                    {
+                        return;
+                    }
+                    settings = SlicerParametersContainer.getSettings(
+                            BaseConfiguration.normalSettingsProfileName,
+                            currentHeadType);
+                    updateFieldsForProfile(project, settings, lblNormalTime,
+                            lblNormalWeight,
+                            lblNormalCost, cancellable);
+                    if (cancellable.cancelled().get())
+                    {
+                        return;
+                    }
+                    settings = SlicerParametersContainer.getSettings(
+                            BaseConfiguration.fineSettingsProfileName,
+                            currentHeadType);
+                    updateFieldsForProfile(project, settings, lblFineTime,
+                            lblFineWeight,
+                            lblFineCost, cancellable);
+                };
 
-            timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
+                clearPrintJobDirectories();
+
+                timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
+            }
         }
     }
 
