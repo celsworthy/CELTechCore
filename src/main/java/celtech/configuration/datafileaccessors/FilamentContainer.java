@@ -129,9 +129,9 @@ public class FilamentContainer
         {
             filaments = ingestFilaments(applicationfilaments, false);
             appFilamentList.addAll(filaments);
-            appFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament.BY_NAME));
+            appFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament::compareByFilamentID));
             completeFilamentList.addAll(filaments);
-            completeFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament.BY_NAME));
+            completeFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament::compareByFilamentID));
         } else
         {
             steno.error("No application filaments found");

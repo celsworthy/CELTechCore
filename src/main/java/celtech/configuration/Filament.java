@@ -27,15 +27,15 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  */
 public class Filament implements Serializable, Cloneable
 {
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(
             Filament.class.getName());
-
+    
     private final BooleanProperty mutable = new SimpleBooleanProperty(false);
     private final StringProperty friendlyFilamentName = new SimpleStringProperty("");
     private final ObjectProperty<MaterialType> material = new SimpleObjectProperty();
     private final StringProperty filamentID = new SimpleStringProperty();
-
+    
     private final FloatProperty diameter = new SimpleFloatProperty(0);
     private final FloatProperty filamentMultiplier = new SimpleFloatProperty(0);
     private final FloatProperty feedRateMultiplier = new SimpleFloatProperty(0);
@@ -53,7 +53,48 @@ public class Filament implements Serializable, Cloneable
             = Comparator.comparing(Filament::getMaterial);
     public static final Comparator<Filament> BY_NAME
             = Comparator.comparing(Filament::getFriendlyFilamentName);
+    
+    private static int charsToDiscardInIDComparisonFinal = 8;
+    private static int charsToRetainInIDComparisonInitial = 3;
+    
+    public static int compareByFilamentID(Filament lhs, Filament rhs)
+    {
+        String lhsFinalCode = lhs.getFilamentID();
+        String rhsFinalCode = rhs.getFilamentID();
+        
+        if (lhsFinalCode.length() > charsToDiscardInIDComparisonFinal)
+        {
+            lhsFinalCode = lhsFinalCode.substring(charsToDiscardInIDComparisonFinal);
+        }
+        
+        if (rhsFinalCode.length() > charsToDiscardInIDComparisonFinal)
+        {
+            rhsFinalCode = rhsFinalCode.substring(charsToDiscardInIDComparisonFinal);
+        }
+        
+        if (lhsFinalCode.equals(rhsFinalCode))
+        {
+            String lhsInitialCode = lhs.getFilamentID();
+            String rhsInitialCode = rhs.getFilamentID();
+            
+            if (lhsInitialCode.length() > charsToRetainInIDComparisonInitial)
+            {
+                lhsInitialCode = lhsInitialCode.substring(charsToRetainInIDComparisonInitial);
+            }
+            
+            if (rhsInitialCode.length() > charsToRetainInIDComparisonInitial)
+            {
+                rhsInitialCode = rhsInitialCode.substring(charsToRetainInIDComparisonInitial);
+            }
 
+            //Must compare by the first 3 chars of the ID
+            return lhsInitialCode.compareTo(rhsInitialCode);
+        } else
+        {
+            return lhsFinalCode.compareTo(rhsFinalCode);
+        }
+    }
+    
     public Filament(
             String friendlyFilamentName,
             MaterialType material,
@@ -89,7 +130,7 @@ public class Filament implements Serializable, Cloneable
         this.remainingFilament.set(defaultLength_m * 1000);
         this.mutable.set(mutable);
     }
-
+    
     public Filament(ReelEEPROMDataResponse response)
     {
         this.filamentID.set(response.getReelFilamentID());
@@ -106,7 +147,7 @@ public class Filament implements Serializable, Cloneable
         this.requiredNozzleTemperature.set(response.getNozzleTemperature());
         detectAndSetMutable();
     }
-
+    
     public Filament(Reel reel)
     {
         this.filamentID.set(reel.filamentIDProperty().get());
@@ -123,7 +164,7 @@ public class Filament implements Serializable, Cloneable
         this.requiredNozzleTemperature.set(reel.nozzleTemperatureProperty().get());
         detectAndSetMutable();
     }
-
+    
     @Override
     public int hashCode()
     {
@@ -144,7 +185,7 @@ public class Filament implements Serializable, Cloneable
                 append(defaultLength_m.get()).
                 toHashCode();
     }
-
+    
     @Override
     public boolean equals(Object obj)
     {
@@ -156,7 +197,7 @@ public class Filament implements Serializable, Cloneable
         {
             return true;
         }
-
+        
         Filament rhs = (Filament) obj;
         return new EqualsBuilder().
                 append(filamentID.get(), rhs.filamentID.get()).
@@ -175,223 +216,223 @@ public class Filament implements Serializable, Cloneable
                 append(defaultLength_m.get(), rhs.defaultLength_m.get()).
                 isEquals();
     }
-
+    
     public String getFileName()
     {
         return friendlyFilamentName.get() + "_" + material.toString();
     }
-
+    
     public StringProperty getFriendlyFilamentNameProperty()
     {
         return friendlyFilamentName;
     }
-
+    
     public String getFriendlyFilamentName()
     {
         return friendlyFilamentName.get();
     }
-
+    
     public String getFilamentID()
     {
         return filamentID.get();
     }
-
+    
     public StringProperty getFilamentIDProperty()
     {
         return filamentID;
     }
-
+    
     public ObjectProperty<MaterialType> getMaterialProperty()
     {
         return material;
     }
-
+    
     public MaterialType getMaterial()
     {
         return material.get();
     }
-
+    
     public FloatProperty getDiameterProperty()
     {
         return diameter;
     }
-
+    
     public float getDiameter()
     {
         return diameter.get();
     }
-
+    
     public FloatProperty getFilamentMultiplierProperty()
     {
         return filamentMultiplier;
     }
-
+    
     public float getFilamentMultiplier()
     {
         return filamentMultiplier.get();
     }
-
+    
     public FloatProperty getFeedRateMultiplierProperty()
     {
         return feedRateMultiplier;
     }
-
+    
     public float getFeedRateMultiplier()
     {
         return feedRateMultiplier.get();
     }
-
+    
     public IntegerProperty getAmbientTemperatureProperty()
     {
         return requiredAmbientTemperature;
     }
-
+    
     public int getAmbientTemperature()
     {
         return requiredAmbientTemperature.get();
     }
-
+    
     public IntegerProperty getFirstLayerBedTemperatureProperty()
     {
         return requiredFirstLayerBedTemperature;
     }
-
+    
     public int getFirstLayerBedTemperature()
     {
         return requiredFirstLayerBedTemperature.get();
     }
-
+    
     public IntegerProperty getBedTemperatureProperty()
     {
         return requiredBedTemperature;
     }
-
+    
     public int getBedTemperature()
     {
         return requiredBedTemperature.get();
     }
-
+    
     public IntegerProperty getFirstLayerNozzleTemperatureProperty()
     {
         return requiredFirstLayerNozzleTemperature;
     }
-
+    
     public int getFirstLayerNozzleTemperature()
     {
         return requiredFirstLayerNozzleTemperature.get();
     }
-
+    
     public IntegerProperty getNozzleTemperatureProperty()
     {
         return requiredNozzleTemperature;
     }
-
+    
     public int getNozzleTemperature()
     {
         return requiredNozzleTemperature.get();
     }
-
+    
     public ObjectProperty<Color> getDisplayColourProperty()
     {
         return displayColour;
     }
-
+    
     public Color getDisplayColour()
     {
         return displayColour.get();
     }
-
+    
     public FloatProperty getRemainingFilamentProperty()
     {
         return remainingFilament;
     }
-
+    
     public float getRemainingFilament()
     {
         return remainingFilament.get();
     }
-
+    
     public void setFriendlyFilamentName(String friendlyColourName)
     {
         this.friendlyFilamentName.set(friendlyColourName);
     }
-
+    
     public void setFilamentID(String value)
     {
         this.filamentID.set(value);
         detectAndSetMutable();
     }
-
+    
     public void setMaterial(MaterialType material)
     {
         this.material.set(material);
     }
-
+    
     public void setFilamentDiameter(float diameter)
     {
         this.diameter.set(diameter);
     }
-
+    
     public void setFilamentMultiplier(float filamentMultiplier)
     {
         this.filamentMultiplier.set(filamentMultiplier);
     }
-
+    
     public void setFeedRateMultiplier(float feedRateMultiplier)
     {
         this.feedRateMultiplier.set(feedRateMultiplier);
     }
-
+    
     public void setAmbientTemperature(int requiredAmbientTemperature)
     {
         this.requiredAmbientTemperature.set(requiredAmbientTemperature);
     }
-
+    
     public void setFirstLayerBedTemperature(int requiredFirstLayerBedTemperature)
     {
         this.requiredFirstLayerBedTemperature.set(requiredFirstLayerBedTemperature);
     }
-
+    
     public void setBedTemperature(int requiredBedTemperature)
     {
         this.requiredBedTemperature.set(requiredBedTemperature);
     }
-
+    
     public void setFirstLayerNozzleTemperature(int requiredFirstLayerNozzleTemperature)
     {
         this.requiredFirstLayerNozzleTemperature.set(requiredFirstLayerNozzleTemperature);
     }
-
+    
     public void setNozzleTemperature(int requiredNozzleTemperature)
     {
         this.requiredNozzleTemperature.set(requiredNozzleTemperature);
     }
-
+    
     public void setDisplayColour(Color displayColour)
     {
         this.displayColour.set(displayColour);
     }
-
+    
     public void setRemainingFilament(float value)
     {
         this.remainingFilament.set(value);
     }
-
+    
     public boolean isMutable()
     {
         return mutable.get();
     }
-
+    
     public void setMutable(boolean value)
     {
         this.mutable.set(value);
     }
-
+    
     public BooleanProperty getMutableProperty()
     {
         return mutable;
     }
-
+    
     public IntegerProperty getDefaultLength_mProperty()
     {
         return defaultLength_m;
@@ -401,7 +442,7 @@ public class Filament implements Serializable, Cloneable
     {
         return defaultLength_m.get();
     }
-
+    
     public void setDefaultLength_m(int value)
     {
         defaultLength_m.set(value);
@@ -416,7 +457,7 @@ public class Filament implements Serializable, Cloneable
         {
             return friendlyFilamentName.get();
         }
-
+        
         return friendlyFilamentName.get();
     }
 
@@ -448,7 +489,7 @@ public class Filament implements Serializable, Cloneable
         double weight = volumeCubicMetres * densityKGM3;
         return weight * costGBPPerKG.get();
     }
-
+    
     @Override
     public String toString()
     {
@@ -461,7 +502,7 @@ public class Filament implements Serializable, Cloneable
         }
         return stringToReturn.toString();
     }
-
+    
     public static String generateUserFilamentID()
     {
         String fullID = SystemUtils.generate16DigitID();
@@ -470,7 +511,7 @@ public class Filament implements Serializable, Cloneable
         id.append(fullID.substring(1, fullID.length() - 1));
         return id.toString();
     }
-
+    
     @Override
     public Filament clone()
     {
@@ -490,15 +531,15 @@ public class Filament implements Serializable, Cloneable
                 this.getDefaultLength_m(),
                 this.isMutable()
         );
-
+        
         return clone;
     }
-
+    
     public float getCostGBPPerKG()
     {
         return costGBPPerKG.get();
     }
-
+    
     public void setCostGBPPerKG(float cost)
     {
         costGBPPerKG.set(cost);
@@ -518,6 +559,6 @@ public class Filament implements Serializable, Cloneable
         {
             mutable.set(false);
         }
-
+        
     }
 }
