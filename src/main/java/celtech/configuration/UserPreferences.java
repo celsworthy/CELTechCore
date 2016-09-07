@@ -42,6 +42,7 @@ public class UserPreferences
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
     private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
     private final StringProperty goProWifiPassword = new SimpleStringProperty("");
+    private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(false);
     private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseYMove = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);
@@ -87,6 +88,7 @@ public class UserPreferences
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
         this.timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
         this.goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
+        this.timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
         this.timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
         this.timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
         this.timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
@@ -104,6 +106,7 @@ public class UserPreferences
         showMetricUnits.addListener(booleanChangeListener);
         timelapseTriggerEnabled.addListener(booleanChangeListener);
         goProWifiPassword.addListener(stringChangeListener);
+        timelapseMoveBeforeCapture.addListener(booleanChangeListener);
         timelapseXMove.addListener(numberChangeListener);
         timelapseYMove.addListener(numberChangeListener);
         timelapseDelay.addListener(numberChangeListener);
@@ -367,6 +370,21 @@ public class UserPreferences
         return showMetricUnits;
     }
 
+    public BooleanProperty getTimelapseMoveBeforeCaptureProperty()
+    {
+        return timelapseMoveBeforeCapture;
+    }
+    
+    public boolean isTimelapseMoveBeforeCapture()
+    {
+        return timelapseMoveBeforeCapture.get();
+    }
+
+    public void setTimelapseMoveBeforeCapture(boolean value)
+    {
+        timelapseMoveBeforeCapture.set(value);
+    }
+    
     public int getTimelapseXMove()
     {
         return timelapseXMove.get();

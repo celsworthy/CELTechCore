@@ -31,6 +31,7 @@ public class UserPreferenceFile
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
     private String goProWifiPassword = "";
+    private boolean timelapseMoveBeforeCapture = false;
     private int timelapseXMove = 0;
     private int timelapseYMove = 150;
     private int timelapseDelay = 2;
@@ -197,6 +198,16 @@ public class UserPreferenceFile
         this.goProWifiPassword = goProWifiPassword;
     }
 
+    public boolean isTimelapseMoveBeforeCapture()
+    {
+        return timelapseMoveBeforeCapture;
+    }
+
+    public void setTimelapseMoveBeforeCapture(boolean timelapseMoveBeforeCapture)
+    {
+        this.timelapseMoveBeforeCapture = timelapseMoveBeforeCapture;
+    }
+
     public void setTimelapseXMove(int timelapseXMove)
     {
         this.timelapseXMove = timelapseXMove;
@@ -265,6 +276,7 @@ public class UserPreferenceFile
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
         setGoProWifiPassword(userPreferences.getGoProWifiPassword());
+        setTimelapseMoveBeforeCapture(userPreferences.isTimelapseMoveBeforeCapture());
         setTimelapseXMove(userPreferences.getTimelapseXMove());
         setTimelapseYMove(userPreferences.getTimelapseYMove());
         setTimelapseDelay(userPreferences.getTimelapseDelay());

@@ -4,9 +4,7 @@ import celtech.Lookup;
 import celtech.gcodetranslator.postprocessing.nodes.CommentNode;
 import celtech.gcodetranslator.postprocessing.nodes.GCodeDirectiveNode;
 import celtech.gcodetranslator.postprocessing.nodes.LayerChangeDirectiveNode;
-import celtech.gcodetranslator.postprocessing.nodes.LayerNode;
 import celtech.gcodetranslator.postprocessing.nodes.TravelNode;
-import celtech.gcodetranslator.postprocessing.nodes.providers.Movement;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -86,16 +84,18 @@ public class CameraTriggerManager
 
         TravelNode moveBedForward = new TravelNode();
 
-        boolean outputMoveCommand = false;
-        int xMoveInt = Lookup.getUserPreferences().getTimelapseXMove();
-        moveBedForward.getMovement().setX(xMoveInt);
-        outputMoveCommand = true;
+        boolean outputMoveCommand = Lookup.getUserPreferences().isTimelapseMoveBeforeCapture();
 
-        int yMoveInt = Lookup.getUserPreferences().getTimelapseYMove();
-        moveBedForward.getMovement().setY(yMoveInt);
-        outputMoveCommand = true;
+        if (outputMoveCommand)
+        {
+            int xMoveInt = Lookup.getUserPreferences().getTimelapseXMove();
+            moveBedForward.getMovement().setX(xMoveInt);
 
-        moveBedForward.getFeedrate().setFeedRate_mmPerMin(moveFeedrate_mm_per_min);
+            int yMoveInt = Lookup.getUserPreferences().getTimelapseYMove();
+            moveBedForward.getMovement().setY(yMoveInt);
+
+            moveBedForward.getFeedrate().setFeedRate_mmPerMin(moveFeedrate_mm_per_min);
+        }
 
         GCodeDirectiveNode dwellWhilePictureTaken = new GCodeDirectiveNode();
         dwellWhilePictureTaken.setGValue(4);
