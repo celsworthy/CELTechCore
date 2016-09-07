@@ -42,7 +42,7 @@ public class UserPreferences
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
     private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
     private final StringProperty goProWifiPassword = new SimpleStringProperty("");
-    private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(false);
+    private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(true);
     private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseYMove = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);

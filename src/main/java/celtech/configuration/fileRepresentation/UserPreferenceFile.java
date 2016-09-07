@@ -31,7 +31,7 @@ public class UserPreferenceFile
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
     private String goProWifiPassword = "";
-    private boolean timelapseMoveBeforeCapture = false;
+    private boolean timelapseMoveBeforeCapture = true;
     private int timelapseXMove = 0;
     private int timelapseYMove = 150;
     private int timelapseDelay = 2;
