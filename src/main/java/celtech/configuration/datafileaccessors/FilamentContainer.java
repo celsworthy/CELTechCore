@@ -143,9 +143,9 @@ public class FilamentContainer
         {
             filaments = ingestFilaments(userfilaments, true);
             completeFilamentList.addAll(filaments);
-            completeFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament.BY_NAME));
+            completeFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament::compareByFilamentID));
             userFilamentList.addAll(filaments);
-            userFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament.BY_NAME));
+            userFilamentList.sort(Filament.BY_MATERIAL.thenComparing(Filament::compareByFilamentID));
         } else
         {
             steno.info("No user filaments found");
