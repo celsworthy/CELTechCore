@@ -50,7 +50,8 @@ public class Filament implements Serializable, Cloneable
     private final IntegerProperty defaultLength_m = new SimpleIntegerProperty(0);
     
     public static final Comparator<Filament> BY_MATERIAL
-            = Comparator.comparing(Filament::getMaterial);
+            = (Filament o1, Filament o2) -> o1.getMaterial().name().compareTo(o2.getMaterial().name());
+    
     public static final Comparator<Filament> BY_NAME
             = Comparator.comparing(Filament::getFriendlyFilamentName);
     
