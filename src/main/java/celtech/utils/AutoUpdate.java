@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.CoreMemory;
 import celtech.roboxbase.configuration.MachineType;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -159,7 +160,7 @@ public class AutoUpdate extends Thread
         String encodedFwVersion = null;
         try
         {
-            encodedFwVersion = URLEncoder.encode(String.format(Locale.UK, "%.2f", BaseConfiguration.getCoreMemory().getLastPrinterFirmwareVersion()), "UTF-8");
+            encodedFwVersion = URLEncoder.encode(String.format(Locale.UK, "%.2f", CoreMemory.getInstance().getLastPrinterFirmwareVersion()), "UTF-8");
             url += "&fw=" + encodedFwVersion;
         } catch (UnsupportedEncodingException ex)
         {
@@ -168,9 +169,9 @@ public class AutoUpdate extends Thread
         String encodedHwVersion = null;
         try
         {
-            if (BaseConfiguration.getCoreMemory().getLastPrinterSerial() != null)
+            if (CoreMemory.getInstance().getLastPrinterSerial() != null)
             {
-                encodedHwVersion = URLEncoder.encode(BaseConfiguration.getCoreMemory().getLastPrinterSerial(), "UTF-8");
+                encodedHwVersion = URLEncoder.encode(CoreMemory.getInstance().getLastPrinterSerial(), "UTF-8");
                 url += "&hw=" + encodedHwVersion;
             }
         } catch (UnsupportedEncodingException ex)
