@@ -389,14 +389,12 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         try
         {
             allFilaments.clear();
-            allFilaments.addAll(filamentContainer.getAppFilamentList().sorted(
-                    (Filament o1, Filament o2)
-                    -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
             if (Lookup.getUserPreferences().isAdvancedMode())
             {
-                allFilaments.addAll(filamentContainer.getUserFilamentList().sorted(
-                        (Filament o1, Filament o2)
-                        -> o1.getFriendlyFilamentName().compareTo(o2.getFriendlyFilamentName())));
+                allFilaments.addAll(filamentContainer.getCompleteFilamentList());
+            } else
+            {
+                allFilaments.addAll(filamentContainer.getAppFilamentList());
             }
             comboItems = FXCollections.observableArrayList(allFilaments);
             cmbFilament.setItems(comboItems);

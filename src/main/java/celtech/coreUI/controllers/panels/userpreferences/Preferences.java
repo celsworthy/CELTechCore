@@ -118,6 +118,9 @@ public class Preferences
         Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
                 "preferences.goProWifiPassword");
 
+        Preference timelapseMoveBeforeCapturePref = new TickBoxPreference(userPreferences.getTimelapseMoveBeforeCaptureProperty(),
+                "preferences.timelapseMoveBeforeCapture");
+
         Preference timelapseXMovePref = new IntegerPreference(userPreferences.getTimelapseXMoveProperty(),
                 "preferences.timelapseXMove");
 

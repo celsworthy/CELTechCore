@@ -207,6 +207,7 @@ public class CalibrationInsetPanelController implements Initializable,
         {
             stateManager.followTransition(StateTransitionManager.GUIName.BACK);
             ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
+            calibrationMenu.reset();
         }
     }
 
@@ -464,6 +465,8 @@ public class CalibrationInsetPanelController implements Initializable,
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
+        if (printer.headProperty().get() != null)
+        {
         twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
                 .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
                 .and(noFilament1Selected)
@@ -473,6 +476,7 @@ public class CalibrationInsetPanelController implements Initializable,
                 .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
                 .and(printer.extrudersProperty().get(1).
                         filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+        }
 
         switch (calibrationMode)
         {
