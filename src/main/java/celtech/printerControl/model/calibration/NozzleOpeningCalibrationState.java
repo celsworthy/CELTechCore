@@ -72,7 +72,7 @@ public enum NozzleOpeningCalibrationState
      * Return if the cancel button should be shown for this state.
      */
     public boolean showCancelButton() {
-        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLING);
+        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLING && this != DONE);
     }    
     
     public Optional<URL> getDiagramFXMLFileName() {

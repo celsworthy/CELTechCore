@@ -45,7 +45,7 @@ public enum NozzleHeightCalibrationState
      * Return if the cancel button should be show for this state.
      */
     public boolean showCancelButton() {
-        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLED);
+        return (this != IDLE && this != FAILED && this != FINISHED && this != CANCELLED && this != DONE);
     }
 
     public Optional<URL> getDiagramFXMLFileName()

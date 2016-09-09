@@ -4,7 +4,6 @@
 package celtech.printerControl.model;
 
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
 import celtech.configuration.PrintBed;
 import celtech.configuration.datafileaccessors.HeadContainer;
 import celtech.configuration.fileRepresentation.HeadFile;
