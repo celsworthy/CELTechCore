@@ -30,6 +30,8 @@ public class PrinterSVGComponent extends Pane
     Pane notificationIcon;
     @FXML
     Pane errorIcon;
+    @FXML
+    Pane rootIndicator;
 
     private void hideAllIcons()
     {
@@ -89,4 +91,8 @@ public class PrinterSVGComponent extends Pane
         getTransforms().add(scale);
     }
 
+    public void setIsRoot(boolean isARoot)
+    {
+        rootIndicator.setVisible(isARoot);
+    }
 }

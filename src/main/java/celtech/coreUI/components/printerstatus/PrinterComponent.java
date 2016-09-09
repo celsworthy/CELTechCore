@@ -200,10 +200,7 @@ public class PrinterComponent extends Pane
         if (printer != null)
         {
             nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
-            if (printer.getCommandInterface() instanceof RoboxRemoteCommandInterface)
-            {
-                nameText += " (R)";
-            }
+            printerSVG.setIsRoot(printer.getCommandInterface() instanceof RoboxRemoteCommandInterface);
             setColour(printer.getPrinterIdentity().printerColourProperty().get());
             printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
             printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
