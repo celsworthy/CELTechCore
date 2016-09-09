@@ -329,6 +329,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 cameraTriggerData = new CameraTriggerData(
                         Lookup.getUserPreferences().getGoProWifiPassword(),
+                        Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
                         Lookup.getUserPreferences().getTimelapseXMove(),
                         Lookup.getUserPreferences().getTimelapseYMove(),
                         Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
