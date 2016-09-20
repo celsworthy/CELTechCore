@@ -340,6 +340,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     meshesForProcessing,
                     ((ModelContainerProject) currentProject).getUsedExtruders(printer),
                     extruderForModel,
+                    currentProject.getProjectName(),
                     ((ModelContainerProject) currentProject).getLastPrintJobID(),
                     currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get()),
                     currentProject.getPrinterSettings(),

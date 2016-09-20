@@ -145,6 +145,7 @@ public class GetTimeWeightCost
                 meshesForProcessing,
                 project.getUsedExtruders(printer),
                 extruderForModel,
+                "Time and Cost",
                 "bart",
                 settings,
                 project.getPrinterSettings(),
@@ -168,7 +169,7 @@ public class GetTimeWeightCost
 
         steno.debug("start post processing");
 
-        GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(settings.getProfileName(),
+        GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
                 settings.getProfileName(),
                 printableMeshes,
                 temporaryDirectory,

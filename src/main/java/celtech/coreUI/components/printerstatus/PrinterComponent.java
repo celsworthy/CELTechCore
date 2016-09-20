@@ -9,6 +9,7 @@ import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
 import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
+import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
@@ -20,6 +21,7 @@ import java.net.URL;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -77,8 +79,7 @@ public class PrinterComponent extends Pane
         READY("printerStatus.idle"),
         PRINTING("printerStatus.printing"),
         PAUSED("printerStatus.paused"),
-        NOTIFICATION(""),
-        ERROR("");
+        NOTIFICATION("");
 
         private final String i18nString;
 
@@ -223,6 +224,17 @@ public class PrinterComponent extends Pane
             });
 
             updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
+
+            printer.getActiveErrors().addListener(new ListChangeListener<FirmwareError>()
+            {
+                @Override
+                public void onChanged(ListChangeListener.Change<? extends FirmwareError> c)
+                {
+                    printerSVG.showErrorIndicator(!printer.getActiveErrors().isEmpty());
+                }
+            });
+
+            printerSVG.showErrorIndicator(!printer.getActiveErrors().isEmpty());
 
             URL printerImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "printers/" + printer.printerConfigurationProperty().get().getTypeCode() + ".png");
             if (printerImageURL != null)

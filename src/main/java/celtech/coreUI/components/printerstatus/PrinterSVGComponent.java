@@ -39,7 +39,6 @@ public class PrinterSVGComponent extends Pane
         printingIcon.setVisible(false);
         pausedIcon.setVisible(false);
         notificationIcon.setVisible(false);
-        errorIcon.setVisible(false);
     }
 
     public PrinterSVGComponent()
@@ -56,6 +55,8 @@ public class PrinterSVGComponent extends Pane
         {
             throw new RuntimeException(exception);
         }
+        
+        errorIcon.setVisible(false);
     }
 
     public void setStatus(PrinterComponent.Status status)
@@ -76,12 +77,14 @@ public class PrinterSVGComponent extends Pane
             case PRINTING:
                 printingIcon.setVisible(true);
                 break;
-            case ERROR:
-                errorIcon.setVisible(true);
-                break;
             case NO_INDICATOR:
                 break;
         }
+    }
+
+    public void showErrorIndicator(boolean showErrorIndicator)
+    {
+        errorIcon.setVisible(showErrorIndicator);
     }
 
     public void setSize(double size)

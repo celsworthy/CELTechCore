@@ -200,6 +200,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                         default:
                                             break;
                                     }
+                                    printer.clearError(error);
                                     break;
                                 }
                             }
