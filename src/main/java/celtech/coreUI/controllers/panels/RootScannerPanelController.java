@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DetectedDevice;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
@@ -9,6 +10,7 @@ import celtech.roboxbase.configuration.CoreMemory;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -51,8 +53,18 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     @FXML
     void scanForRoots(ActionEvent event)
     {
-        List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
-        scannedRoots.setItems(FXCollections.observableArrayList(foundServers));
+        scannedRoots.setItems(null);
+        Platform.runLater(() ->
+        {
+            List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
+            if (foundServers.isEmpty())
+            {
+                scannedRoots.setItems(null);
+            } else
+            {
+                scannedRoots.setItems(FXCollections.observableArrayList(foundServers));
+            }
+        });
     }
 
     class ServerListCell extends ListCell<DetectedServer>
@@ -64,6 +76,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         private Circle statusBlob;
         private final Button connectButton;
         private final Button disconnectButton;
+        private final Button upgradeButton;
         private DetectedServer detectedServer;
 
         private final ChangeListener<ServerStatus> statusChangeListener = (ObservableValue<? extends ServerStatus> ov, ServerStatus t, ServerStatus t1) ->
@@ -108,7 +121,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                     detectedServer.connect();
                 }
             });
-            
+
             disconnectButton = new Button("Disconnect");
             disconnectButton.setVisible(false);
             disconnectButton.setOnAction((ActionEvent t) ->
@@ -118,7 +131,16 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                     detectedServer.disconnect();
                 }
             });
-            
+
+            upgradeButton = new Button("Upgrade");
+            upgradeButton.setVisible(false);
+            upgradeButton.setOnAction((ActionEvent t) ->
+            {
+                if (detectedServer != null)
+                {
+                }
+            });
+
             buttonContainer = new StackPane();
             buttonContainer.getChildren().addAll(connectButton, disconnectButton);
 
