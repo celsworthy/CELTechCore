@@ -93,11 +93,8 @@ public class ApplicationConfiguration
 
     public static final float bedHotAboveDegrees = 60.0f;
 
-    private static Properties applicationMemoryProperties = null;
-    private static final String fileMemoryItem = "FileMemory";
-    private static final String userLocaleItem = "Locale";
-
     public static final String projectDataFilename = "projects.dat";
+    private static final String userLocaleItem = "Locale";
 
     public static final Color xAxisColour = Color.RED;
 
@@ -205,95 +202,13 @@ public class ApplicationConfiguration
         return returnVal;
     }
 
-    private static void loadApplicationMemoryProperties()
-    {
-        InputStream input = null;
-
-        if (applicationMemoryProperties == null)
-        {
-            applicationMemoryProperties = new Properties();
-            for (DirectoryMemoryProperty directoryMemory : DirectoryMemoryProperty.values())
-            {
-                setLastDirectory(directoryMemory, BaseConfiguration.getUserStorageDirectory());
-            }
-        }
-
-        try
-        {
-            File inputFile = new File(BaseConfiguration.getApplicationStorageDirectory() + BaseConfiguration.getApplicationName()
-                    + ".properties");
-            if (inputFile.exists())
-            {
-                input = new FileInputStream(inputFile);
-
-                // load a properties file
-                applicationMemoryProperties.load(input);
-
-                for (DirectoryMemoryProperty directoryMemory : DirectoryMemoryProperty.values())
-                {
-                    String directory = getLastDirectory(directoryMemory);
-
-                    File directoryFile = new File(directory);
-                    if (directoryFile.exists() == false)
-                    {
-                        setLastDirectory(directoryMemory, BaseConfiguration.getUserStorageDirectory());
-                    }
-                }
-
-            }
-        } catch (IOException ex)
-        {
-            ex.printStackTrace();
-        } finally
-        {
-            if (input != null)
-            {
-                try
-                {
-                    input.close();
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public static String getLastDirectory(DirectoryMemoryProperty whichProperty)
-    {
-        if (applicationMemoryProperties == null)
-        {
-            loadApplicationMemoryProperties();
-        }
-
-        String directory = applicationMemoryProperties.getProperty(fileMemoryItem
-                + whichProperty.name());
-
-        return directory;
-    }
-
-    public static void setLastDirectory(DirectoryMemoryProperty whichProperty, String directoryName)
-    {
-        if (applicationMemoryProperties == null)
-        {
-            loadApplicationMemoryProperties();
-        }
-
-        applicationMemoryProperties.setProperty(fileMemoryItem + whichProperty.name(), directoryName);
-    }
-
     public static Locale getUserPreferredLocale()
     {
-        if (applicationMemoryProperties == null)
-        {
-            loadApplicationMemoryProperties();
-        }
-
         Locale localeToReturn = null;
 
-        if (applicationMemoryProperties.getProperty(userLocaleItem) != null)
+        if (BaseConfiguration.getApplicationMemory(userLocaleItem) != null)
         {
-            localeToReturn = Locale.forLanguageTag(applicationMemoryProperties.getProperty(
+            localeToReturn = Locale.forLanguageTag(BaseConfiguration.getApplicationMemory(
                     userLocaleItem));
         } else
         {
@@ -305,48 +220,24 @@ public class ApplicationConfiguration
 
     public static void setUserPreferredLocale(Locale locale)
     {
-        if (applicationMemoryProperties == null)
-        {
-            loadApplicationMemoryProperties();
-        }
-
-        applicationMemoryProperties.setProperty(userLocaleItem, locale.getLanguage());
+        BaseConfiguration.setApplicationMemory(userLocaleItem, locale.getLanguage());
     }
 
-    /**
-     *
-     */
-    public static void writeApplicationMemory()
+    public static String getLastDirectory(DirectoryMemoryProperty memoryProperty)
     {
-        if (applicationMemoryProperties == null)
+        String directory = BaseConfiguration.getApplicationMemory(memoryProperty.name());
+        if (directory == null)
         {
-            loadApplicationMemoryProperties();
+            directory = BaseConfiguration.getUserStorageDirectory();
+            BaseConfiguration.setApplicationMemory(memoryProperty.name(), directory);
         }
+        
+        return directory;
+    }
 
-        OutputStream output = null;
-
-        try
-        {
-            output = new FileOutputStream(BaseConfiguration.getApplicationStorageDirectory() + BaseConfiguration.getApplicationName()
-                    + ".properties");
-
-            applicationMemoryProperties.save(output, BaseConfiguration.getApplicationName() + " runtime properties");
-        } catch (IOException ex)
-        {
-            ex.printStackTrace();
-        } finally
-        {
-            if (output != null)
-            {
-                try
-                {
-                    output.close();
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
+    public static void setLastDirectory(DirectoryMemoryProperty memoryProperty, String value)
+    {
+        BaseConfiguration.setApplicationMemory(memoryProperty.name(), value);
     }
 
     /**

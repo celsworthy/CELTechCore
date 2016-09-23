@@ -32,6 +32,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
@@ -438,8 +439,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             if (files != null && !files.isEmpty())
             {
-                ApplicationConfiguration.setLastDirectory(
-                        DirectoryMemoryProperty.MODEL,
+                ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY,
                         files.get(0).getParentFile().getAbsolutePath());
                 modelLoader.loadExternalModels(selectedProject, files, true, DisplayManager.getInstance(), false);
             }
@@ -466,8 +466,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         ApplicationConfiguration.
                         getSupportedFileExtensionWildcards(
                                 currentProjectMode)));
-        modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
+        modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY)));
         List<File> files;
 
         files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());
@@ -1194,7 +1193,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 if (projectifiableThing instanceof ModelContainer)
                 {
-                    ModelContainer modelContainer = (ModelContainer)projectifiableThing;
+                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
                     aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
 
                     //NOTE - this needs to change if raft settings in slicermapping.dat is changed

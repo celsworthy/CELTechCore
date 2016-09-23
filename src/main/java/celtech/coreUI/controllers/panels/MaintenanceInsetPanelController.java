@@ -220,13 +220,12 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         firmwareFileChooser.setInitialFileName("Untitled");
 
-        firmwareFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.FIRMWARE)));
+        firmwareFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_FIRMWARE_DIRECTORY)));
 
         final File file = firmwareFileChooser.showOpenDialog(DisplayManager.getMainStage());
         if (file != null)
         {
-            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.FIRMWARE, file.
+            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.LAST_FIRMWARE_DIRECTORY, file.
                     getParentFile().getAbsolutePath());
             connectedPrinter.loadFirmware(file.getAbsolutePath());
         }
@@ -237,8 +236,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         gcodeFileChooser.setInitialFileName("Untitled");
 
-        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.GCODE)));
+        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_GCODE_DIRECTORY)));
 
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
 
@@ -251,7 +249,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             {
                 steno.error("Error sending SD job");
             }
-            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.GCODE, file.
+            ApplicationConfiguration.setLastDirectory(DirectoryMemoryProperty.LAST_GCODE_DIRECTORY, file.
                     getParentFile().getAbsolutePath());
         }
     }

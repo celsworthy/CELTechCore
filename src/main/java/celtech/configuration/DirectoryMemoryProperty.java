@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.configuration;
 
 /**
@@ -12,23 +7,11 @@ package celtech.configuration;
 public enum DirectoryMemoryProperty
 {
 
-    /**
-     *
-     */
-    MODEL,
+    LAST_MODEL_DIRECTORY,
 
-    /**
-     *
-     */
-    FIRMWARE,
+    LAST_FIRMWARE_DIRECTORY,
 
-    /**
-     *
-     */
-    MACRO,
+    LAST_MACRO_DIRECTORY,
 
-    /**
-     *
-     */
-    GCODE
+    LAST_GCODE_DIRECTORY
 }
