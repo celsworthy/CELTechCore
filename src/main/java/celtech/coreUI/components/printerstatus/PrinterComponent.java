@@ -8,6 +8,7 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
+import celtech.roboxbase.comms.RemoteDetectedPrinter;
 import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -27,6 +28,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -118,6 +120,12 @@ public class PrinterComponent extends Pane
     private Text name;
 
     @FXML
+    private Text rootName;
+
+    @FXML
+    private HBox rootNameBox;
+
+    @FXML
     private Pane innerPane;
 
     @FXML
@@ -196,12 +204,25 @@ public class PrinterComponent extends Pane
         name.getStyleClass().add(styleClassForText);
         name.setFill(Color.WHITE);
 
+        rootName.getStyleClass().add(styleClassForText);
+        rootName.setFill(Color.WHITE);
+
         String nameText;
 
         if (printer != null)
         {
             nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
-            printerSVG.setIsRoot(printer.getCommandInterface() instanceof RoboxRemoteCommandInterface);
+            if (printer.getCommandInterface() instanceof RoboxRemoteCommandInterface)
+            {
+                rootName.setText(((RemoteDetectedPrinter) printer.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo().getName());
+                rootName.setVisible(true);
+                printerSVG.setIsRoot(true);
+            } else
+            {
+                rootName.setVisible(false);
+                printerSVG.setIsRoot(false);
+            }
+
             setColour(printer.getPrinterIdentity().printerColourProperty().get());
             printer.getPrinterIdentity().printerFriendlyNameProperty().addListener(nameListener);
             printer.getPrinterIdentity().printerColourProperty().addListener(colorListener);
@@ -402,6 +423,12 @@ public class PrinterComponent extends Pane
         innerPane.setMaxHeight(sizePixels - borderWidth * 2);
         innerPane.setTranslateX(borderWidth);
         innerPane.setTranslateY(borderWidth);
+
+        rootNameBox.setPrefWidth(sizePixels - borderWidth * 2);
+        rootNameBox.setPrefHeight(sizePixels - borderWidth * 2);
+        rootNameBox.setTranslateX(borderWidth);
+        rootNameBox.setTranslateY(borderWidth);
+
         printerSVG.setSize(sizePixels);
         progressBar.setLayoutX(progressBarX);
         progressBar.setLayoutY(progressBarY);
@@ -427,6 +454,10 @@ public class PrinterComponent extends Pane
         name.setStyle("-fx-font-size: " + fontSize
                 + "px;");
         name.setLayoutX(progressBarX);
+
+        rootName.setStyle("-fx-font-size: " + fontSize
+                + "px;");
+        rootName.setLayoutX(progressBarX);
 
         Font font = name.getFont();
         Font actualFont = new Font(font.getName(), fontSize);
