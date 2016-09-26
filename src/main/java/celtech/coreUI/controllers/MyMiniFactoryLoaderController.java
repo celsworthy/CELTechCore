@@ -106,12 +106,15 @@ public class MyMiniFactoryLoaderController implements Initializable
     {
         addToProjectButton.disableProperty().bind(Bindings.equal("", fileDownloadLocation));
 
-        boolean siteReachable = checkSiteIsReachable();
-
-        if (siteReachable)
+        Platform.runLater(() ->
         {
-            loadWebData();
-        }
+            boolean siteReachable = checkSiteIsReachable();
+
+            if (siteReachable)
+            {
+                loadWebData();
+            }
+        });
     }
 
     public void loadWebData()

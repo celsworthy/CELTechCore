@@ -98,6 +98,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
     private VBox sidePanel;
 
+    private static AnchorPane tabAndNotificationArea;
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
     private static Tab printerStatusTab;
@@ -357,9 +358,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
         addTopMenuStripController();
-        addNotificationArea();
 
         mainHolder.getChildren().add(rhPanel);
+
+        tabAndNotificationArea = new AnchorPane();
 
         // Configure the main display tab pane - just the printer status page to start with
         tabDisplay = new TabPane();
@@ -372,6 +374,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         configureProjectDragNDrop(tabDisplay);
 
         VBox.setVgrow(tabDisplay, Priority.ALWAYS);
+        AnchorPane.setBottomAnchor(tabDisplay, 0.0);
+        AnchorPane.setTopAnchor(tabDisplay, 0.0);
+        AnchorPane.setLeftAnchor(tabDisplay, 0.0);
+        AnchorPane.setRightAnchor(tabDisplay, 0.0);
 
         // The printer status tab will always be visible - the page is static
         try
@@ -434,7 +440,9 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         }
                     });
 
-            projectTabPaneHolder.getChildren().add(tabDisplay);
+            tabAndNotificationArea.getChildren().add(tabDisplay);
+            addNotificationArea();
+            projectTabPaneHolder.getChildren().add(tabAndNotificationArea);
         } catch (IOException ex)
         {
             steno.exception("Failed to load printer status page", ex);
@@ -586,10 +594,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private void addNotificationArea()
     {
         NotificationArea notificationArea = new NotificationArea();
-        AnchorPane.setBottomAnchor(notificationArea, 90.0);
+        AnchorPane.setBottomAnchor(notificationArea, 0.0);
         AnchorPane.setLeftAnchor(notificationArea, 0.0);
         AnchorPane.setRightAnchor(notificationArea, 0.0);
-        rhPanel.getChildren().add(notificationArea);
+        tabAndNotificationArea.getChildren().add(notificationArea);
     }
 
     private ProjectTab createAndAddNewProjectTab()
