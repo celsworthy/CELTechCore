@@ -1054,4 +1054,14 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Lookup.setSelectedProject(project);
         }
     }
+
+    public void initialiseBlank3DProject()
+    {
+        ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).initialiseBlank3DProject();
+    }
+
+    public void initialiseBlank2DProject()
+    {
+        ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).initialiseBlank2DProject();
+    }
 }

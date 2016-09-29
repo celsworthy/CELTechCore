@@ -72,6 +72,8 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -427,6 +429,37 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     )
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.REGISTRATION);
+    }
+
+    @FXML
+    void addModelContext(ContextMenuEvent event)
+    {
+        ContextMenu contextMenu = new ContextMenu();
+
+        String cm1Text = "Blank 2D Project";
+        String cm2Text = "Blank 3D Project";
+
+        MenuItem cmItem1 = new MenuItem(cm1Text);
+        MenuItem cmItem2 = new MenuItem(cm2Text);
+
+        cmItem1.setOnAction((ActionEvent e) ->
+        {
+            DisplayManager.getInstance().initialiseBlank2DProject();
+        });
+        cmItem2.setOnAction((ActionEvent e) ->
+        {
+            DisplayManager.getInstance().initialiseBlank3DProject();
+        });
+
+        contextMenu.getItems().add(cmItem1);
+        contextMenu.getItems().add(cmItem2);
+
+        double cm1Width = getWidthOfString(cm1Text, "lightText", 14);
+        double cm2Width = getWidthOfString(cm2Text, "lightText", 14);
+
+        contextMenu.show(addModelButton, Side.TOP,
+                35 - ((max(cm1Width, cm2Width) + 20) / 2.0), -25);
+
     }
 
     @FXML

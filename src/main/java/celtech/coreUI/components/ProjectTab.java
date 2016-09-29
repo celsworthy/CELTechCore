@@ -520,4 +520,24 @@ public class ProjectTab extends Tab implements ProjectCallback
             initialiseWithProject();
         }
     }
+
+    public void initialiseBlank3DProject()
+    {
+        if (this.project == null)
+        {
+            ModelContainerProject newProject = new ModelContainerProject();
+            this.project = newProject;
+            initialiseWithProject();
+        }
+    }
+
+    public void initialiseBlank2DProject()
+    {
+        if (this.project == null)
+        {
+            SVGProject newProject = new SVGProject();
+            this.project = newProject;
+            initialiseWithProject();
+        }
+    }
 }

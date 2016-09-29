@@ -5,10 +5,13 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
+import celtech.coreUI.DisplayManager;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import static celtech.utils.StringMetrics.getWidthOfString;
 import celtech.utils.threed.importers.svg.ShapeContainer;
+import static java.lang.Double.max;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -18,12 +21,18 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
+import javafx.geometry.Side;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.input.ScrollEvent;
@@ -59,26 +68,34 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private final Translate bedTranslate = new Translate();
     private final Scale bedScale = new Scale();
-    private DoubleProperty scale = new SimpleDoubleProperty(1.0);
     private final Group bed = new Group();
     private final Group parts = new Group();
+
+    private final double bedWidth = 210;
+    private final double bedHeight = 150;
+    private final double bedBorder = 10;
 
     private final ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
     private boolean justEnteredDragMode;
 
     private final UndoableProject undoableProject;
 
+    private ContextMenu bedContextMenu = null;
+
     public SVGViewManager(Project project)
     {
         this.project = project;
         this.undoableProject = new UndoableProject(project);
 
-        bedScale.xProperty().bind(scale);
-        bedScale.yProperty().bind(scale);
+        this.setPickOnBounds(false);
 
         createBed();
 
-        getChildren().add(parts);
+        Group partsAndBed = new Group();
+        partsAndBed.getChildren().addAll(bed, parts);
+
+        getChildren().add(partsAndBed);
+
         parts.getTransforms().addAll(bedTranslate, bedScale);
 
         for (ProjectifiableThing projectifiableThing : project.getAllModels())
@@ -97,31 +114,114 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         setStyle("-fx-background-color: blue;");
 
+        this.widthProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                resizeBed();
+            }
+        });
+
+        this.heightProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
+            {
+                resizeBed();
+            }
+        });
+
     }
 
     private void createBed()
     {
         // The bed is in mm units
         StackPane stack = new StackPane();
-        Rectangle bedPartToDisplay = new Rectangle(210, 150);
+        Rectangle bedPartToDisplay = new Rectangle(bedWidth, bedHeight);
         Label label = new Label("Bed");
         label.setTextFill(Color.BLACK);
         stack.getChildren().addAll(bedPartToDisplay, label);
         bedPartToDisplay.setFill(Color.AZURE);
         bed.getChildren().add(stack);
-        bed.setMouseTransparent(true);
         bed.getTransforms().addAll(bedTranslate, bedScale);
-        this.getChildren().add(bed);
+
+        bedContextMenu = new ContextMenu();
+
+        String cm1Text = "Add Text";
+
+        MenuItem cmItem1 = new MenuItem(cm1Text);
+
+        cmItem1.setOnAction((ActionEvent e) ->
+        {
+            parts.getChildren().add(new TextField("Text"));
+        });
+
+        bedContextMenu.getItems().add(cmItem1);
+
+        bed.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>()
+        {
+            @Override
+            public void handle(ContextMenuEvent event)
+            {
+                steno.info("X = " + event.getX() + " Y = " + event.getY());
+                steno.info("Scene X = " + event.getSceneX() + " Y = " + event.getSceneY());
+                steno.info("SCrren X = " + event.getScreenX() + " Y = " + event.getScreenY());
+                event.getPickResult().getIntersectedNode();
+                steno.info("Pick X = " + event.getPickResult().getIntersectedPoint().getX()+ " Y = " + event.getPickResult().getIntersectedPoint().getY());
+                Point3D scenePoint = ((Rectangle)event.getTarget()).localToScene(event.getPickResult().getIntersectedPoint());
+                steno.info("Scene point X = " + scenePoint.getX() + " Y = " + scenePoint.getY());
+                bedContextMenu.show(bed, Side.TOP, scenePoint.getX(), scenePoint.getY());
+            }
+        });
+    }
+
+    private void resizeBed()
+    {
+        double viewAreaWidth = this.getWidth();
+        double viewAreaHeight = this.getHeight();
+        double bedWidthToUse = bedWidth + bedBorder;
+        double bedHeightToUse = bedHeight + bedBorder;
+        double displayAspect = viewAreaWidth / viewAreaHeight;
+        double aspect = bedWidth / bedHeight;
+
+        double newWidth = 0;
+        double newHeight = 0;
+        if (displayAspect >= aspect)
+        {
+            // Drive from height
+            newWidth = viewAreaHeight * aspect;
+            newHeight = viewAreaHeight;
+        } else
+        {
+            //Drive from width
+            newHeight = viewAreaWidth / aspect;
+            newWidth = viewAreaWidth;
+        }
+
+        double xScale = newWidth / bedWidth;
+        double yScale = newHeight / bedHeight;
+
+        bedScale.setX(xScale);
+        bedScale.setY(yScale);
+
+        double xOffset = ((viewAreaWidth - newWidth) / 2) + bedBorder;
+        double yOffset = ((viewAreaHeight - newHeight) / 2) + bedBorder;
+
+        bedTranslate.setX(xOffset);
+        bedTranslate.setY(yOffset);
     }
 
     @Override
-    public void whenModelAdded(ProjectifiableThing projectifiableThing)
+    public void whenModelAdded(ProjectifiableThing projectifiableThing
+    )
     {
         this.getChildren().add(projectifiableThing);
     }
 
     @Override
-    public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing)
+    public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing
+    )
     {
         this.getChildren().remove(projectifiableThing);
     }
@@ -132,17 +232,20 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     }
 
     @Override
-    public void whenModelsTransformed(Set<ProjectifiableThing> projectifiableThing)
+    public void whenModelsTransformed(Set<ProjectifiableThing> projectifiableThing
+    )
     {
     }
 
     @Override
-    public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
+    public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName
+    )
     {
     }
 
     @Override
-    public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
+    public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings
+    )
     {
     }
 
@@ -178,7 +281,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
                 && event.getZoomFactor() < 1.2)
         {
-            scale.set(scale.get() * event.getZoomFactor());
+//            scale.set(scale.get() * event.getZoomFactor());
         }
     };
 
@@ -191,7 +294,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     private void handleMouseSingleClickedEvent(MouseEvent event)
     {
         boolean handleThisEvent = true;
+        steno.info("source was " + event.getSource());
+        steno.info("target was " + event.getTarget());
         PickResult pickResult = event.getPickResult();
+        steno.info("picked was " + pickResult.getIntersectedNode());
         Point3D pickedPoint = pickResult.getIntersectedPoint();
         Node intersectedNode = pickResult.getIntersectedNode();
 
@@ -206,6 +312,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 justEnteredDragMode = true;
                 doSelectTranslateModel(intersectedNode, pickedPoint, event, true);
             }
+        } else if (event.isSecondaryButtonDown())
+        {
+//            intersectedNode.fireEvent(new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED,
+//                    event.getX(), event.getY(),
+//                    event.getScreenX(), event.getScreenY(),
+//                    false,
+//                    pickResult));
         }
     }
 
@@ -228,7 +341,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         {
             undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), mouseDeltaX, mouseDeltaY,
                     !justEnteredDragMode);
-                                justEnteredDragMode = false;
+            justEnteredDragMode = false;
         }
 
 //        if (event.isPrimaryButtonDown())
