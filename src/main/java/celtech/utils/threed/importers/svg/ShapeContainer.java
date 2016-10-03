@@ -1,17 +1,19 @@
 package celtech.utils.threed.importers.svg;
 
+import celtech.coreUI.visualisation.Edge;
+import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.ResizeableTwoD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.modelcontrol.TwoDItemState;
-import celtech.roboxbase.importers.twod.svg.metadata.SVGMetaPart;
+import celtech.roboxbase.utils.twod.ShapeToWorldTransformer;
 import java.io.File;
 import java.io.Serializable;
-import java.util.List;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -20,13 +22,16 @@ import javafx.scene.transform.Translate;
  *
  * @author ianhudson
  */
-public class ShapeContainer extends ProjectifiableThing implements Serializable, ScaleableTwoD, TranslateableTwoD, ResizeableTwoD
+public class ShapeContainer extends ProjectifiableThing implements Serializable,
+        ScaleableTwoD,
+        TranslateableTwoD,
+        ResizeableTwoD,
+        ShapeToWorldTransformer
 {
 
     private static final long serialVersionUID = 1L;
-
-    //Keep these parts for printing later on
-    private List<SVGMetaPart> metaparts;
+    
+    private Shape shape = null;
 
     private final Scale scale = new Scale();
     private final Translate translation = new Translate();
@@ -35,6 +40,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     public ShapeContainer()
     {
         super();
+        initialise();
     }
 
     public ShapeContainer(File modelFile)
@@ -43,19 +49,18 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         initialise();
     }
 
+    public ShapeContainer(String name, Shape shape)
+    {
+        super();
+        initialise();
+        setModelName(name);
+        this.getChildren().add(shape);
+        this.shape = shape;
+    }
+    
     private void initialise()
     {
         this.getTransforms().addAll(rotation, scale, translation);
-    }
-
-    public void setMetaparts(List<SVGMetaPart> metaparts)
-    {
-        this.metaparts = metaparts;
-    }
-
-    public List<SVGMetaPart> getMetaparts()
-    {
-        return metaparts;
     }
 
     @Override
@@ -121,28 +126,11 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public void addChildNodes(ObservableList<Node> nodes)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void addChildNode(Node node)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ObservableList<Node> getChildNodes()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void translateBy(double xMove, double yMove)
     {
         translation.setX(translation.getX() + xMove);
         translation.setY(translation.getY() + yMove);
+        notifyScreenExtentsChange();
     }
 
     @Override
@@ -150,28 +138,49 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         translation.setX(xPosition);
         translation.setY(yPosition);
+        notifyScreenExtentsChange();
     }
 
     @Override
     public void translateXTo(double xPosition)
     {
         translation.setX(xPosition);
+        notifyScreenExtentsChange();
     }
 
     @Override
     public void translateZTo(double yPosition)
     {
         translation.setY(yPosition);
+        notifyScreenExtentsChange();
     }
 
     @Override
     public void resizeHeight(double height)
     {
+        Bounds bounds = getBoundsInLocal();
+
+        double currentHeight = bounds.getHeight();
+
+        double newScale = height / currentHeight;
+        setYScale(newScale);
+
+        notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     @Override
     public void resizeWidth(double width)
     {
+        Bounds bounds = getBoundsInLocal();
+
+        double originalWidth = bounds.getWidth();
+
+        double newScale = width / originalWidth;
+        setXScale(newScale);
+
+        notifyShapeChange();
+        notifyScreenExtentsChange();
     }
 
     @Override
@@ -191,8 +200,46 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     protected boolean recalculateScreenExtents()
     {
-        //TODO calculate screen extents
-        return false;
+        boolean extentsChanged = false;
+
+        Bounds localBounds = getBoundsInLocal();
+
+        double minX = localBounds.getMinX();
+        double maxX = localBounds.getMaxX();
+        double minY = localBounds.getMinY();
+        double maxY = localBounds.getMaxY();
+
+        Point2D leftBottom = localToScreen(minX, maxY);
+        Point2D rightBottom = localToScreen(maxX, maxY);
+        Point2D leftTop = localToScreen(minX, minY);
+        Point2D rightTop = localToScreen(maxX, minY);
+
+        ScreenExtents lastExtents = extents;
+        if (extents == null && leftBottom != null)
+        {
+            extents = new ScreenExtents();
+        }
+
+        if (extents != null && leftBottom != null)
+        {
+            extents.heightEdges.clear();
+            extents.heightEdges.add(0, new Edge(leftBottom, leftTop));
+            extents.heightEdges.add(1, new Edge(rightBottom, rightTop));
+
+            extents.widthEdges.clear();
+            extents.widthEdges.add(0, new Edge(leftBottom, rightBottom));
+            extents.widthEdges.add(1, new Edge(leftTop, rightTop));
+
+            extents.recalculateMaxMin();
+        }
+
+        if (extents != null
+                && !extents.equals(lastExtents))
+        {
+            extentsChanged = true;
+        }
+
+        return extentsChanged;
     }
 
     @Override
@@ -228,7 +275,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getCentreY()
     {
-        return getBoundsInParent().getMinY() + getBoundsInParent().getHeight()/ 2.0;
+        return getBoundsInParent().getMinY() + getBoundsInParent().getHeight() / 2.0;
     }
 
     @Override
@@ -239,5 +286,16 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void checkOffBed()
     {
+    }
+
+    @Override
+    public Point2D transformShapeToRealWorldCoordinates(float vertexX, float vertexY)
+    {
+        return bed.sceneToLocal(localToScene(vertexX, vertexY));
+    }
+    
+    public Shape getShape()
+    {
+        return shape;
     }
 }

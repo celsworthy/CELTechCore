@@ -35,7 +35,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableFloatArray;
-import javafx.collections.ObservableList;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -135,8 +134,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private double cameraDistance = 1;
-
-    private Group bed;
 
     private Camera cameraViewingMe = null;
 
@@ -657,12 +654,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         maxMin.add((float) modelBounds.getMaxY());
         maxMin.add((float) modelBounds.getMinY());
         return maxMin;
-    }
-
-    public void setBedReference(Group bed)
-    {
-        this.bed = bed;
-
     }
 
     private class ApplyTwist implements UnivariateFunction
@@ -1938,20 +1929,23 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
             if (extents != null && frontLeftBottom != null)
             {
-                extents.heightEdges[0] = new Edge(frontLeftBottom, frontLeftTop);
-                extents.heightEdges[1] = new Edge(frontRightBottom, frontRightTop);
-                extents.heightEdges[2] = new Edge(backLeftBottom, backLeftTop);
-                extents.heightEdges[3] = new Edge(backRightBottom, backRightTop);
+                extents.heightEdges.clear();
+                extents.heightEdges.add(0, new Edge(frontLeftBottom, frontLeftTop));
+                extents.heightEdges.add(1, new Edge(frontRightBottom, frontRightTop));
+                extents.heightEdges.add(2, new Edge(backLeftBottom, backLeftTop));
+                extents.heightEdges.add(3, new Edge(backRightBottom, backRightTop));
 
-                extents.widthEdges[0] = new Edge(frontLeftBottom, frontRightBottom);
-                extents.widthEdges[1] = new Edge(backLeftBottom, backRightBottom);
-                extents.widthEdges[2] = new Edge(frontLeftTop, frontRightTop);
-                extents.widthEdges[3] = new Edge(backLeftTop, backRightTop);
+                extents.widthEdges.clear();
+                extents.widthEdges.add(0, new Edge(frontLeftBottom, frontRightBottom));
+                extents.widthEdges.add(1, new Edge(backLeftBottom, backRightBottom));
+                extents.widthEdges.add(2, new Edge(frontLeftTop, frontRightTop));
+                extents.widthEdges.add(3, new Edge(backLeftTop, backRightTop));
 
-                extents.depthEdges[0] = new Edge(frontLeftBottom, backLeftBottom);
-                extents.depthEdges[1] = new Edge(frontRightBottom, backRightBottom);
-                extents.depthEdges[2] = new Edge(frontLeftTop, backLeftTop);
-                extents.depthEdges[3] = new Edge(frontRightTop, backRightTop);
+                extents.depthEdges.clear();
+                extents.depthEdges.add(0, new Edge(frontLeftBottom, backLeftBottom));
+                extents.depthEdges.add(1, new Edge(frontRightBottom, backRightBottom));
+                extents.depthEdges.add(2, new Edge(frontLeftTop, backLeftTop));
+                extents.depthEdges.add(3, new Edge(frontRightTop, backRightTop));
 
                 extents.recalculateMaxMin();
             }
@@ -1999,25 +1993,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
             selectionHighlighter.cameraDistanceChange(cameraDistance);
         }
         notifyScreenExtentsChange();
-    }
-
-    @Override
-    public void addChildNodes(ObservableList<Node> nodes)
-    {
-        getChildren().addAll(nodes);
-    }
-
-    @Override
-    public void addChildNode(Node node)
-    {
-        getChildren().add(node);
-    }
-
-    @Override
-    public ObservableList<Node> getChildNodes()
-    {
-        return getChildren();
-
     }
 
     public Set<ModelContainer> getChildModelContainers()

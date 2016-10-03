@@ -528,6 +528,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             ModelContainerProject newProject = new ModelContainerProject();
             this.project = newProject;
             initialiseWithProject();
+            fireProjectSelected();
         }
     }
 
@@ -538,6 +539,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             SVGProject newProject = new SVGProject();
             this.project = newProject;
             initialiseWithProject();
+            fireProjectSelected();
         }
     }
 }

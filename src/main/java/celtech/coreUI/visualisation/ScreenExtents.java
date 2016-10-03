@@ -1,5 +1,7 @@
 package celtech.coreUI.visualisation;
 
+import java.util.ArrayList;
+import java.util.List;
 import javafx.geometry.Point2D;
 
 /**
@@ -9,9 +11,9 @@ import javafx.geometry.Point2D;
 public class ScreenExtents
 {
 
-    public Edge[] heightEdges = new Edge[4];
-    public Edge[] widthEdges = new Edge[4];
-    public Edge[] depthEdges = new Edge[4];
+    public List<Edge> heightEdges = new ArrayList<>();
+    public List<Edge> widthEdges = new ArrayList<>();
+    public List<Edge> depthEdges = new ArrayList<>();
     public int minX;
     public int maxX;
     public int minY;

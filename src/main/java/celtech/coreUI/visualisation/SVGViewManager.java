@@ -5,41 +5,43 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
-import celtech.coreUI.DisplayManager;
+import celtech.coreUI.visualisation.svg.PrintableShape;
+import celtech.coreUI.visualisation.svg.TextPath;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import static celtech.utils.StringMetrics.getWidthOfString;
+import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
+import celtech.roboxbase.postprocessor.nouveau.nodes.TravelNode;
+import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
+import celtech.roboxbase.utils.models.PrintableShapes;
+import celtech.roboxbase.utils.models.ShapeForProcessing;
 import celtech.utils.threed.importers.svg.ShapeContainer;
-import static java.lang.Double.max;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.geometry.Side;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.PickResult;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.transform.Scale;
@@ -56,29 +58,33 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private final Stenographer steno = StenographerFactory.getStenographer(SVGViewManager.class.getName());
     private final Project project;
+    private final UndoableProject undoableProject;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
     private final ProjectSelection projectSelection;
     private ObservableList<ProjectifiableThing> loadedModels;
 
-    private Point3D lastDragPosition;
+    private Shape shapeBeingDragged = null;
+    private Point2D lastDragPosition = null;
     private double mousePosX;
     private double mousePosY;
     private double mouseOldX;
     private double mouseOldY;
 
-    private final Translate bedTranslate = new Translate();
-    private final Scale bedScale = new Scale();
-    private final Group bed = new Group();
-    private final Group parts = new Group();
-
     private final double bedWidth = 210;
     private final double bedHeight = 150;
     private final double bedBorder = 10;
 
+    private Group partsAndBed = new Group();
+    private final Translate bedTranslate = new Translate();
+    private final Scale bedScale = new Scale();
+    private final Rectangle bed = new Rectangle(bedWidth, bedHeight);
+    private final Group parts = new Group();
+    private final Group gCodeOverlay = new Group();
+
+    private final Pane parentPane;
+
     private final ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
     private boolean justEnteredDragMode;
-
-    private final UndoableProject undoableProject;
 
     private ContextMenu bedContextMenu = null;
 
@@ -87,20 +93,21 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         this.project = project;
         this.undoableProject = new UndoableProject(project);
 
+        parentPane = this;
+
         this.setPickOnBounds(false);
 
         createBed();
 
-        Group partsAndBed = new Group();
-        partsAndBed.getChildren().addAll(bed, parts);
+        partsAndBed.getChildren().addAll(bed, parts, gCodeOverlay);
+        partsAndBed.getTransforms().addAll(bedTranslate, bedScale);
 
         getChildren().add(partsAndBed);
-
-        parts.getTransforms().addAll(bedTranslate, bedScale);
 
         for (ProjectifiableThing projectifiableThing : project.getAllModels())
         {
             parts.getChildren().add(projectifiableThing);
+            projectifiableThing.setBedReference(partsAndBed);
         }
 
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
@@ -112,8 +119,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         addEventHandler(ZoomEvent.ANY, zoomEventHandler);
         addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 
-        setStyle("-fx-background-color: blue;");
-
+//        setStyle("-fx-background-color: blue;");
         this.widthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -132,46 +138,111 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             }
         });
 
+        /**
+         * Listen for adding and removing of models from the project
+         */
+        project.addProjectChangesListener(this);
     }
 
     private void createBed()
     {
+        bed.setFill(Color.ANTIQUEWHITE);
         // The bed is in mm units
-        StackPane stack = new StackPane();
-        Rectangle bedPartToDisplay = new Rectangle(bedWidth, bedHeight);
-        Label label = new Label("Bed");
-        label.setTextFill(Color.BLACK);
-        stack.getChildren().addAll(bedPartToDisplay, label);
-        bedPartToDisplay.setFill(Color.AZURE);
-        bed.getChildren().add(stack);
-        bed.getTransforms().addAll(bedTranslate, bedScale);
 
         bedContextMenu = new ContextMenu();
 
         String cm1Text = "Add Text";
+        String cm2Text = "Add Box";
+        String cm3Text = "Add Circle";
+        String cm4Text = "Generate GCode";
 
-        MenuItem cmItem1 = new MenuItem(cm1Text);
+        MenuItem addTextMenuItem = new MenuItem(cm1Text);
+        MenuItem addRectangleMenuItem = new MenuItem(cm2Text);
+        MenuItem addCircleMenuItem = new MenuItem(cm3Text);
+        MenuItem generateGCodeMenuItem = new MenuItem(cm4Text);
 
-        cmItem1.setOnAction((ActionEvent e) ->
+        addTextMenuItem.setOnAction((ActionEvent e) ->
         {
-            parts.getChildren().add(new TextField("Text"));
+            String textToDisplay = "Text";
+            TextPath newPath = new TextPath();
+            newPath.setText(textToDisplay);
+
+            ShapeContainer newShapeContainer = new ShapeContainer("Text", newPath);
+
+            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
+
+            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
+
+            Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
+
+//            parts.getChildren().add(newPath);
+//            
+//            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
+//            newPath.setTranslateX(pointToPlaceAt.getX());
+//            newPath.setTranslateY(pointToPlaceAt.getY());
         });
 
-        bedContextMenu.getItems().add(cmItem1);
+        addRectangleMenuItem.setOnAction((ActionEvent e) ->
+        {
+//            DraggableRectangle newShape = new DraggableRectangle(10, 10);
+//            parts.getChildren().add(newShape);
+
+            Rectangle newShape = new Rectangle(10, 10);
+
+            ShapeContainer newShapeContainer = new ShapeContainer("Rectangle", newShape);
+
+            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
+
+            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
+
+            Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
+        });
+
+        addCircleMenuItem.setOnAction((ActionEvent e) ->
+        {
+
+            Circle newShape = new Circle(10);
+
+            ShapeContainer newShapeContainer = new ShapeContainer("Circle", newShape);
+
+            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
+            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
+
+            Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
+
+//            DraggableCircle newShape = new DraggableCircle(10);
+//            parts.getChildren().add(newShape);
+//            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
+//            newShape.setTranslateX(pointToPlaceAt.getX());
+//            newShape.setTranslateY(pointToPlaceAt.getY());
+        });
+
+        generateGCodeMenuItem.setOnAction((ActionEvent e) ->
+        {
+            List<ShapeForProcessing> shapes = new ArrayList<>();
+            parts.getChildren().forEach(child ->
+            {
+                if (child instanceof ShapeContainer)
+                {
+                    ShapeContainer shapeContainer = (ShapeContainer) child;
+                    shapes.add(new ShapeForProcessing(shapeContainer.getShape(), shapeContainer));
+                }
+            });
+
+            PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
+            List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
+            renderGCode(gcodeData);
+        });
+
+        bedContextMenu.getItems().addAll(addTextMenuItem, addRectangleMenuItem, addCircleMenuItem, generateGCodeMenuItem);
 
         bed.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>()
         {
             @Override
             public void handle(ContextMenuEvent event)
             {
-                steno.info("X = " + event.getX() + " Y = " + event.getY());
-                steno.info("Scene X = " + event.getSceneX() + " Y = " + event.getSceneY());
-                steno.info("SCrren X = " + event.getScreenX() + " Y = " + event.getScreenY());
-                event.getPickResult().getIntersectedNode();
-                steno.info("Pick X = " + event.getPickResult().getIntersectedPoint().getX()+ " Y = " + event.getPickResult().getIntersectedPoint().getY());
-                Point3D scenePoint = ((Rectangle)event.getTarget()).localToScene(event.getPickResult().getIntersectedPoint());
-                steno.info("Scene point X = " + scenePoint.getX() + " Y = " + scenePoint.getY());
-                bedContextMenu.show(bed, Side.TOP, scenePoint.getX(), scenePoint.getY());
+                Point3D parentPoint = partsAndBed.localToParent(event.getPickResult().getIntersectedPoint());
+                bedContextMenu.show(parentPane, Side.TOP, parentPoint.getX(), parentPoint.getY());
             }
         });
     }
@@ -180,8 +251,6 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     {
         double viewAreaWidth = this.getWidth();
         double viewAreaHeight = this.getHeight();
-        double bedWidthToUse = bedWidth + bedBorder;
-        double bedHeightToUse = bedHeight + bedBorder;
         double displayAspect = viewAreaWidth / viewAreaHeight;
         double aspect = bedWidth / bedHeight;
 
@@ -190,13 +259,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         if (displayAspect >= aspect)
         {
             // Drive from height
-            newWidth = viewAreaHeight * aspect;
-            newHeight = viewAreaHeight;
+            newWidth = (viewAreaHeight * aspect) - bedBorder;
+            newHeight = viewAreaHeight - bedBorder;
         } else
         {
             //Drive from width
-            newHeight = viewAreaWidth / aspect;
-            newWidth = viewAreaWidth;
+            newHeight = (viewAreaWidth / aspect) - bedBorder;
+            newWidth = viewAreaWidth - bedBorder;
         }
 
         double xScale = newWidth / bedWidth;
@@ -205,25 +274,24 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         bedScale.setX(xScale);
         bedScale.setY(yScale);
 
-        double xOffset = ((viewAreaWidth - newWidth) / 2) + bedBorder;
-        double yOffset = ((viewAreaHeight - newHeight) / 2) + bedBorder;
+        double xOffset = ((viewAreaWidth - newWidth) / 2);
+        double yOffset = ((viewAreaHeight - newHeight) / 2);
 
         bedTranslate.setX(xOffset);
         bedTranslate.setY(yOffset);
     }
 
     @Override
-    public void whenModelAdded(ProjectifiableThing projectifiableThing
-    )
+    public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
-        this.getChildren().add(projectifiableThing);
+        parts.getChildren().add(projectifiableThing);
+        projectifiableThing.setBedReference(partsAndBed);
     }
 
     @Override
-    public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing
-    )
+    public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing)
     {
-        this.getChildren().remove(projectifiableThing);
+        parts.getChildren().removeAll(projectifiableThing);
     }
 
     @Override
@@ -267,29 +335,46 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED)
         {
-            handleMouseDragEvent(event);
+            dragShape(shapeBeingDragged, event);
 
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
-            lastDragPosition = null;
+            shapeBeingDragged = null;
             dragMode.set(DragMode.IDLE);
         }
     };
 
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
-        if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
-                && event.getZoomFactor() < 1.2)
-        {
-//            scale.set(scale.get() * event.getZoomFactor());
-        }
+//        if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
+//                && event.getZoomFactor() < 1.2)
+//        {
+////            scale.set(scale.get() * event.getZoomFactor());
+//        }
     };
 
     private final EventHandler<ScrollEvent> scrollEventHandler = event ->
     {
-        bedTranslate.setX(bedTranslate.getTx() + (0.01 * event.getDeltaX()));
-        bedTranslate.setY(bedTranslate.getTy() + (0.01 * event.getDeltaY()));
+//        bedTranslate.setX(bedTranslate.getTx() + (0.01 * event.getDeltaX()));
+//        bedTranslate.setY(bedTranslate.getTy() + (0.01 * event.getDeltaY()));
     };
+
+    private ShapeContainer findShapeContainerParent(Node shape)
+    {
+        ShapeContainer sc = null;
+        Node currentNode = shape;
+
+        while (currentNode != null)
+        {
+            if (currentNode instanceof ShapeContainer)
+            {
+                sc = (ShapeContainer) currentNode;
+            }
+            currentNode = currentNode.getParent();
+        }
+
+        return sc;
+    }
 
     private void handleMouseSingleClickedEvent(MouseEvent event)
     {
@@ -303,75 +388,62 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         boolean shortcut = event.isShortcutDown();
 
+        if (intersectedNode != bed)
+        {
+            bedContextMenu.hide();
+        }
         if (event.isPrimaryButtonDown())
         {
-            if (intersectedNode instanceof Shape)
+            if (intersectedNode != bed
+                    && intersectedNode instanceof Shape)
             {
+                ShapeContainer sc = findShapeContainerParent(intersectedNode);
+                if (sc != null)
+                {
+                    if (event.isShortcutDown())
+                    {
+                        projectSelection.addSelectedItem(sc);
+                    } else
+                    {
+                        projectSelection.deselectAllModels();
+                        projectSelection.addSelectedItem(sc);
+                    }
+                }
                 steno.info("Picked: " + intersectedNode + " at " + pickedPoint);
                 dragMode.set(DragMode.TRANSLATING);
                 justEnteredDragMode = true;
-                doSelectTranslateModel(intersectedNode, pickedPoint, event, true);
+                dragShape((Shape) intersectedNode, event);
+            } else
+            {
+                projectSelection.deselectAllModels();
             }
-        } else if (event.isSecondaryButtonDown())
-        {
-//            intersectedNode.fireEvent(new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED,
-//                    event.getX(), event.getY(),
-//                    event.getScreenX(), event.getScreenY(),
-//                    false,
-//                    pickResult));
         }
+//        } else if (event.isSecondaryButtonDown())
+//        {
+////            intersectedNode.fireEvent(new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED,
+////                    event.getX(), event.getY(),
+////                    event.getScreenX(), event.getScreenY(),
+////                    false,
+////                    pickResult));
+//        }
     }
 
-    private void handleMouseDragEvent(MouseEvent event)
+    private void dragShape(Shape shapeToDrag, MouseEvent event)
     {
-
-        double mouseDeltaX = (mousePosX - mouseOldX);
-        double mouseDeltaY = (mousePosY - mouseOldY);
-
-        if (event.isSecondaryButtonDown())
+        Point2D newPosition = new Point2D(event.getSceneX(), event.getSceneY());
+        if (shapeBeingDragged != null)
         {
-//            Node intersectedNode = event.getPickResult().getIntersectedNode();
-//            Point3D pickedPoint = event.getPickResult().getIntersectedPoint();
-//            Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
-//            Point3D pickedBedTranslateXformPoint = sc
-//
-            bedTranslate.setX(bedTranslate.getX() + mouseDeltaX);
-            bedTranslate.setY(bedTranslate.getY() + mouseDeltaY);
-        } else if (event.isPrimaryButtonDown() && dragMode.get() == DragMode.TRANSLATING)
-        {
-            undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), mouseDeltaX, mouseDeltaY,
+            steno.info("New position = " + newPosition);
+            Point2D resultantPosition = partsAndBed.sceneToLocal(newPosition).subtract(partsAndBed.sceneToLocal(lastDragPosition));
+            steno.info("Resultant " + resultantPosition);
+
+            undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), resultantPosition.getX(), resultantPosition.getY(),
                     !justEnteredDragMode);
+
             justEnteredDragMode = false;
         }
-
-//        if (event.isPrimaryButtonDown())
-//        {
-//            Node intersectedNode = event.getPickResult().getIntersectedNode();
-//            //Move the model!
-//            if (intersectedNode == translationDragPlane)
-//            {
-//                Point3D pickedPoint = event.getPickResult().getIntersectedPoint();
-//                Point3D pickedScenePoint = intersectedNode.localToScene(pickedPoint);
-//                Point3D pickedBedTranslateXformPoint = bedTranslateXform.sceneToLocal(
-//                        pickedScenePoint);
-//
-////                translationDragPlane.setTranslateY(pickedBedTranslateXformPoint.getY());
-//                Point3D pickedDragPlanePoint = translationDragPlane.sceneToLocal(pickedScenePoint);
-//
-//                if (lastDragPosition != null)
-//                {
-//                    Point3D resultant = pickedDragPlanePoint.subtract(lastDragPosition);
-//                    translateSelection(resultant.getX(), resultant.getZ());
-//                    justEnteredDragMode = false;
-//                }
-//                lastDragPosition = pickedDragPlanePoint;
-//            }
-////            else
-////            {
-////                steno.error(
-////                    "In translation drag mode but intersected with something other than translation drag plane");
-////            }
-//        }
+        shapeBeingDragged = shapeToDrag;
+        lastDragPosition = newPosition;
     }
 
     private final ChangeListener<ApplicationMode> applicationModeListener
@@ -426,27 +498,27 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         }
     }
 
-    private void doSelectTranslateModel(Node intersectedNode, Point3D pickedPoint, MouseEvent event, boolean findParentGroup)
+    private void renderGCode(List<GCodeEventNode> gcodeNodes)
     {
-        lastDragPosition = pickedPoint;
+        gCodeOverlay.getChildren().clear();
 
-        Parent parent = intersectedNode.getParent();
-        if (!(parent instanceof ShapeContainer))
-        {
-            parent = parent.getParent();
-        }
+        double currentX = 0;
+        double currentY = 0;
 
-        ShapeContainer pickedModel = (ShapeContainer) parent;
-        if (pickedModel.isSelected() == false)
+        for (GCodeEventNode node : gcodeNodes)
         {
-            boolean multiSelect = event.isShortcutDown();
-            selectModel(pickedModel, multiSelect);
-        } else
-        {
-            boolean multiSelect = event.isShortcutDown();
-            if (multiSelect)
+            if (node instanceof TravelNode)
             {
-                deselectModel(pickedModel);
+                Line newLine = new Line();
+                newLine.setStartX(currentX);
+                newLine.setStartY(currentY);
+                currentX = ((TravelNode) node).getMovement().getX();
+                currentY = ((TravelNode) node).getMovement().getY();
+                newLine.setEndX(currentX);
+                newLine.setEndY(currentY);
+                newLine.setStroke(Color.CRIMSON);
+                newLine.setStrokeWidth(0.2);
+                gCodeOverlay.getChildren().add(newLine);
             }
         }
     }

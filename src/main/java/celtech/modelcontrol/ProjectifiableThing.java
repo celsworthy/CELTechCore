@@ -37,6 +37,7 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     protected double printVolumeWidth = 0;
     protected double printVolumeDepth = 0;
     protected double printVolumeHeight = 0;
+    protected Group bed;
 
     /**
      * The modelId is only guaranteed unique at the project level because it
@@ -101,11 +102,20 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
         return modelFile;
     }
 
-    public abstract void addChildNodes(ObservableList<Node> nodes);
+    public final void addChildNodes(ObservableList<Node> nodes)
+    {
+        getChildren().addAll(nodes);
+    }
 
-    public abstract void addChildNode(Node node);
+    public final void addChildNode(Node node)
+    {
+        getChildren().add(node);
+    }
 
-    public abstract ObservableList<Node> getChildNodes();
+    public final ObservableList<Node> getChildNodes()
+    {
+        return getChildren();
+    }
 
     public void setSelected(boolean selected)
     {
@@ -226,4 +236,9 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     protected abstract void printVolumeBoundsUpdated();
 
     public abstract void checkOffBed();
+
+    public void setBedReference(Group bed)
+    {
+        this.bed = bed;
+    }
 }

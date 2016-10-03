@@ -5,6 +5,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
+import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
@@ -25,8 +26,6 @@ import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
-import celtech.roboxbase.utils.Math.MathUtils;
-import celtech.roboxbase.utils.Math.PolarCoordinate;
 import celtech.roboxbase.utils.TimeUtils;
 import java.net.URL;
 import java.util.ArrayList;
@@ -69,7 +68,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.MeshView;
 import javafx.util.Duration;
 import libertysystems.stenographer.Stenographer;
@@ -79,7 +77,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager implements ModelContainerProject.ProjectChangesListener, ScreenCoordinateConverter
+public class ThreeDViewManager implements Project.ProjectChangesListener, ScreenCoordinateConverter
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(

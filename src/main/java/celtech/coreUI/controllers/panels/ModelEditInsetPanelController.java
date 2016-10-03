@@ -22,6 +22,7 @@ import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ResizeableTwoD;
 import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ResizeableThreeD;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.TranslateableThreeD;
@@ -496,24 +497,24 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             layoutSubmode.removeListener(layoutSubmodeListener);
         }
 
-            currentProject = project;
+        currentProject = project;
 
-            if (projectSelection != null)
-            {
-                projectSelection.getPrimarySelectedModelDetails().getWidth().removeListener(widthListener);
-                projectSelection.getPrimarySelectedModelDetails().getHeight().removeListener(heightListener);
-                projectSelection.getPrimarySelectedModelDetails().getDepth().removeListener(depthListener);
+        if (projectSelection != null)
+        {
+            projectSelection.getPrimarySelectedModelDetails().getWidth().removeListener(widthListener);
+            projectSelection.getPrimarySelectedModelDetails().getHeight().removeListener(heightListener);
+            projectSelection.getPrimarySelectedModelDetails().getDepth().removeListener(depthListener);
 
-                projectSelection.getPrimarySelectedModelDetails().getCentreX().removeListener(xAxisListener);
-                projectSelection.getPrimarySelectedModelDetails().getCentreZ().removeListener(yAxisListener);
+            projectSelection.getPrimarySelectedModelDetails().getCentreX().removeListener(xAxisListener);
+            projectSelection.getPrimarySelectedModelDetails().getCentreZ().removeListener(yAxisListener);
 
-                projectSelection.getPrimarySelectedModelDetails().getScaleX().removeListener(modelScaleXChangeListener);
-                projectSelection.getPrimarySelectedModelDetails().getScaleY().removeListener(modelScaleYChangeListener);
-                projectSelection.getPrimarySelectedModelDetails().getScaleZ().removeListener(modelScaleZChangeListener);
-                projectSelection.getPrimarySelectedModelDetails().getRotationLean().removeListener(modelLeanChangeListener);
-                projectSelection.getPrimarySelectedModelDetails().getRotationTwist().removeListener(modelTwistChangeListener);
-                projectSelection.getPrimarySelectedModelDetails().getRotationTurn().removeListener(modelTurnChangeListener);
-            }
+            projectSelection.getPrimarySelectedModelDetails().getScaleX().removeListener(modelScaleXChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getScaleY().removeListener(modelScaleYChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getScaleZ().removeListener(modelScaleZChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getRotationLean().removeListener(modelLeanChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getRotationTwist().removeListener(modelTwistChangeListener);
+            projectSelection.getPrimarySelectedModelDetails().getRotationTurn().removeListener(modelTurnChangeListener);
+        }
 
         if (project != null)
         {
@@ -1135,14 +1136,24 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastHeight = newHeight;
         }
+
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ResizeableThreeD.class);
+
         if (inFixedAR())
         {
             ProjectifiableThing modelContainer = getSingleSelection();
             if (modelContainer instanceof ModelContainer)
             {
                 double ratio = newHeight / ((ModelContainer) modelContainer).getScaledHeight();
-                undoableProject.scaleXYZRatioSelection(
-                        projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
+                if (selectedThreeDShapes.size() > 0)
+                {
+                    undoableProject.scaleXYZRatioSelection(
+                            selectedThreeDShapes, ratio);
+                } else
+                {
+                    undoableProject.scaleXYRatioSelection(
+                            projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
+                }
             }
         } else
         {
@@ -1207,12 +1218,22 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastWidth = newWidth;
         }
+
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ResizeableThreeD.class);
+
         if (inFixedAR())
         {
             ProjectifiableThing modelContainer = getSingleSelection();
-            double ratio = newWidth / ((ModelContainer) modelContainer).getScaledWidth();
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class), ratio);
+            double ratio = newWidth / modelContainer.getScaledWidth();
+            if (selectedThreeDShapes.size() > 0)
+            {
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes, ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
+            }
         } else
         {
             undoableProject.resizeModelsWidth(projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class),
@@ -1280,13 +1301,24 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             lastScaleDepth = newScaleHeight;
         }
 
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class);
+
         if (inMultiSelectWithFixedAR())
         {
             double ratio = scaleFactor / lastScaleRatio;
             lastScaleRatio = scaleFactor;
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
-                    ratio);
+
+            if (selectedThreeDShapes.size() > 0)
+            {
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes,
+                        ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
+                        ratio);
+            }
             showScaleForXYZ(lastScaleRatio);
         } else
         {
@@ -1314,13 +1346,24 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             lastScaleDepth = newScaleWidth;
         }
 
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class);
+
         if (inMultiSelectWithFixedAR())
         {
             double ratio = scaleFactor / lastScaleRatio;
             lastScaleRatio = scaleFactor;
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class),
-                    ratio);
+
+            if (selectedThreeDShapes.size() > 0)
+            {
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes,
+                        ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
+                        ratio);
+            }
             showScaleForXYZ(lastScaleRatio);
         } else
         {

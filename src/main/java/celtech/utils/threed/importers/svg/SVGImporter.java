@@ -200,7 +200,7 @@ public class SVGImporter
             steno.exception("Failed to process SVG file " + modelFile.getAbsolutePath(), ex);
         }
 
-        renderableSVG.setMetaparts(metaparts);
+//        renderableSVG.setMetaparts(metaparts);
         Set<ProjectifiableThing> renderableSVGs = new HashSet<>();
         renderableSVGs.add(renderableSVG);
 

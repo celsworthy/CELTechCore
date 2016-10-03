@@ -14,6 +14,7 @@ import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
@@ -341,43 +342,40 @@ public class ProjectSelection implements ProjectChangesListener
         {
             if (boundModelContainer != null)
             {
-                if (boundModelContainer instanceof ShapeProviderTwoD)
+                if (boundModelContainer instanceof ShapeProviderThreeD)
                 {
                     width.set(((ShapeProviderTwoD) boundModelContainer).getScaledWidth());
                     height.set(((ShapeProviderTwoD) boundModelContainer).getScaledHeight());
-                }
-
-                if (boundModelContainer instanceof ShapeProviderThreeD)
-                {
                     depth.set(((ShapeProviderThreeD) boundModelContainer).getScaledDepth());
-                }
-
-                if (boundModelContainer instanceof ScaleableTwoD)
+                    centreX.set(((ModelContainer) boundModelContainer).getTransformedCentreX());
+                    centreZ.set(((ModelContainer) boundModelContainer).getTransformedCentreZ());
+                } else if (boundModelContainer instanceof ShapeProviderTwoD)
                 {
-                    scaleX.set(((ScaleableTwoD) boundModelContainer).getXScale());
-                    scaleY.set(((ScaleableTwoD) boundModelContainer).getYScale());
+                    width.set(((ShapeProviderTwoD) boundModelContainer).getScaledWidth());
+                    height.set(((ShapeProviderTwoD) boundModelContainer).getScaledHeight());
+                    centreX.set(((ShapeProviderTwoD) boundModelContainer).getCentreX());
+                    centreZ.set(((ShapeProviderTwoD) boundModelContainer).getCentreY());
                 }
 
                 if (boundModelContainer instanceof ScaleableThreeD)
                 {
+                    scaleX.set(((ScaleableTwoD) boundModelContainer).getXScale());
+                    scaleY.set(((ScaleableTwoD) boundModelContainer).getYScale());
                     scaleZ.set(((ScaleableThreeD) boundModelContainer).getZScale());
-                }
-
-                if (boundModelContainer instanceof ModelContainer)
+                } else if (boundModelContainer instanceof ScaleableTwoD)
                 {
-                    centreX.set(((ModelContainer) boundModelContainer).getTransformedCentreX());
-                    centreZ.set(((ModelContainer) boundModelContainer).getTransformedCentreZ());
-                }
-
-                if (boundModelContainer instanceof RotatableTwoD)
-                {
-                    rotationTurn.set(((RotatableTwoD) boundModelContainer).getRotationTurn());
+                    scaleX.set(((ScaleableTwoD) boundModelContainer).getXScale());
+                    scaleY.set(((ScaleableTwoD) boundModelContainer).getYScale());
                 }
 
                 if (boundModelContainer instanceof RotatableThreeD)
                 {
                     rotationLean.set(((RotatableThreeD) boundModelContainer).getRotationLean());
                     rotationTwist.set(((RotatableThreeD) boundModelContainer).getRotationTwist());
+                    rotationTurn.set(((RotatableTwoD) boundModelContainer).getRotationTurn());
+                } else if (boundModelContainer instanceof RotatableTwoD)
+                {
+                    rotationTurn.set(((RotatableTwoD) boundModelContainer).getRotationTurn());
                 }
             }
         }

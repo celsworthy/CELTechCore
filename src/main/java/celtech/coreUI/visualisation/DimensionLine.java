@@ -146,13 +146,13 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         {
             dimensionLabel.setValue(transformedHeight);
 
-            Edge heightEdge = extents.heightEdges[0];
-            for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
+            Edge heightEdge = extents.heightEdges.get(0);
+            for (int edgeIndex = 1; edgeIndex < extents.heightEdges.size(); edgeIndex++)
             {
-                if (extents.heightEdges[edgeIndex].getFirstPoint().getX() < heightEdge.
+                if (extents.heightEdges.get(edgeIndex).getFirstPoint().getX() < heightEdge.
                         getFirstPoint().getX())
                 {
-                    heightEdge = extents.heightEdges[edgeIndex];
+                    heightEdge = extents.heightEdges.get(edgeIndex);
                 }
             }
 
@@ -213,13 +213,13 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         {
             dimensionLabel.setValue(transformedWidth);
 
-            Edge widthEdge = extents.widthEdges[0];
-            if (extents.widthEdges[1].getFirstPoint().getY()
+            Edge widthEdge = extents.widthEdges.get(0);
+            if (extents.widthEdges.get(1).getFirstPoint().getY()
                     > widthEdge.getFirstPoint().getY()
-                    && extents.widthEdges[1].getSecondPoint().getY()
+                    && extents.widthEdges.get(1).getSecondPoint().getY()
                     > widthEdge.getSecondPoint().getY())
             {
-                widthEdge = extents.widthEdges[1];
+                widthEdge = extents.widthEdges.get(1);
             }
 
             Point2D leftHorizontalPoint = widthEdge.getFirstPoint();
@@ -290,13 +290,13 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         {
             dimensionLabel.setValue(transformedDepth);
 
-            Edge depthEdge = extents.depthEdges[0];
-            if (extents.depthEdges[1].getFirstPoint().getY()
+            Edge depthEdge = extents.depthEdges.get(0);
+            if (extents.depthEdges.get(1).getFirstPoint().getY()
                     > depthEdge.getFirstPoint().getY()
-                    && extents.depthEdges[1].getSecondPoint().getY()
+                    && extents.depthEdges.get(1).getSecondPoint().getY()
                     > depthEdge.getSecondPoint().getY())
             {
-                depthEdge = extents.depthEdges[1];
+                depthEdge = extents.depthEdges.get(1);
             }
 
             Point2D backHorizontalPoint = null;

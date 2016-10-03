@@ -102,20 +102,15 @@ public class DimensionLineManager
 
                     public void whenRemoved(ProjectifiableThing projectifiableThing)
                     {
-                        if (projectifiableThing instanceof ModelContainer)
-                        {
-                            ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-
-                            List<DimensionLine> dimensionLinesToRemove = dimensionLines
-                            .get(modelContainer);
-                            dimensionLinesToRemove.forEach(line ->
-                                    {
-                                        modelContainer.removeScreenExtentsChangeListener(line);
-                                        paneToAddDimensionsTo.getChildren().remove(line);
-                                        paneToAddDimensionsTo.getChildren().remove(line.getDimensionLabel());
-                            });
-                            dimensionLines.remove(modelContainer);
-                        }
+                        List<DimensionLine> dimensionLinesToRemove = dimensionLines
+                        .get(projectifiableThing);
+                        dimensionLinesToRemove.forEach(line ->
+                                {
+                                    projectifiableThing.removeScreenExtentsChangeListener(line);
+                                    paneToAddDimensionsTo.getChildren().remove(line);
+                                    paneToAddDimensionsTo.getChildren().remove(line.getDimensionLabel());
+                        });
+                        dimensionLines.remove(projectifiableThing);
                     }
                 }
         );
