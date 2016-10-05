@@ -354,10 +354,18 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             ignoreSerialValidationProperty.set(false);
         }
 
-        lastFilamentTemperature0.setText(String.format("%.0f",
-                head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
-        headMaxTemperature.setText(String.format("%.0f",
-                head.getNozzleHeaters().get(0).maximumTemperatureProperty().get()));
+        if (head.getNozzleHeaters().size() > 0)
+        {
+            lastFilamentTemperature0.setText(String.format("%.0f",
+                    head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().get()));
+            headMaxTemperature.setText(String.format("%.0f",
+                    head.getNozzleHeaters().get(0).maximumTemperatureProperty().get()));
+            headThermistorBeta.setText(String.format("%.2f",
+                    head.getNozzleHeaters().get(0).betaProperty().get()));
+            headThermistorTCal.setText(String.format("%.2f",
+                    head.getNozzleHeaters().get(0).tCalProperty().get()));
+        }
+
         if (head.getNozzleHeaters().size() > 1)
         {
             lastFilamentTemperature1.setText(String.format("%.0f",
@@ -367,11 +375,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             lastFilamentTemperature1.setVisible(false);
         }
+
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
-        headThermistorBeta.setText(String.format("%.2f",
-                head.getNozzleHeaters().get(0).betaProperty().get()));
-        headThermistorTCal.setText(String.format("%.2f",
-                head.getNozzleHeaters().get(0).tCalProperty().get()));
 
         nozzle1BOffset.setText(String.format("%.2f",
                 head.getNozzles().get(0).bOffsetProperty().get()));
@@ -558,13 +563,18 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             updateFieldsFromAttachedHead(head);
         };
+
         head.getNozzles().get(0).xOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(0).yOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(0).zOffsetProperty().addListener(headChangeListener);
         head.getNozzles().get(0).bOffsetProperty().addListener(headChangeListener);
-        head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(
-                headChangeListener);
-
+        
+        if (head.getNozzleHeaters().size() > 0)
+        {
+            head.getNozzleHeaters().get(0).lastFilamentTemperatureProperty().addListener(
+                    headChangeListener);
+        }
+        
         if (head.getNozzles().size() > 1)
         {
             head.getNozzles().get(1).xOffsetProperty().addListener(headChangeListener);

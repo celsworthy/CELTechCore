@@ -9,8 +9,14 @@ import celtech.coreUI.visualisation.svg.PrintableShape;
 import celtech.coreUI.visualisation.svg.TextPath;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
+import celtech.roboxbase.importers.twod.svg.SVGConverterConfiguration;
 import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
+import celtech.roboxbase.postprocessor.nouveau.nodes.StylusLiftNode;
+import celtech.roboxbase.postprocessor.nouveau.nodes.StylusPlungeNode;
+import celtech.roboxbase.postprocessor.nouveau.nodes.StylusScribeNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.TravelNode;
 import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
 import celtech.roboxbase.utils.models.PrintableShapes;
@@ -44,6 +50,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.transform.Affine;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
@@ -102,12 +109,19 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         partsAndBed.getChildren().addAll(bed, parts, gCodeOverlay);
         partsAndBed.getTransforms().addAll(bedTranslate, bedScale);
 
+        Affine jfxToRealWorld = new Affine();
+        jfxToRealWorld.appendScale(1, -1);
+        jfxToRealWorld.appendTranslation(0, -bedHeight);
+
+        gCodeOverlay.getTransforms().addAll(bedTranslate, bedScale, jfxToRealWorld);
+
         getChildren().add(partsAndBed);
+        getChildren().add(gCodeOverlay);
 
         for (ProjectifiableThing projectifiableThing : project.getAllModels())
         {
             parts.getChildren().add(projectifiableThing);
-            projectifiableThing.setBedReference(partsAndBed);
+            projectifiableThing.setBedReference(gCodeOverlay);
         }
 
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
@@ -163,9 +177,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         addTextMenuItem.setOnAction((ActionEvent e) ->
         {
-            String textToDisplay = "Text";
             TextPath newPath = new TextPath();
-            newPath.setText(textToDisplay);
 
             ShapeContainer newShapeContainer = new ShapeContainer("Text", newPath);
 
@@ -174,19 +186,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
 
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
-
-//            parts.getChildren().add(newPath);
-//            
-//            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-//            newPath.setTranslateX(pointToPlaceAt.getX());
-//            newPath.setTranslateY(pointToPlaceAt.getY());
         });
 
         addRectangleMenuItem.setOnAction((ActionEvent e) ->
         {
-//            DraggableRectangle newShape = new DraggableRectangle(10, 10);
-//            parts.getChildren().add(newShape);
-
             Rectangle newShape = new Rectangle(10, 10);
 
             ShapeContainer newShapeContainer = new ShapeContainer("Rectangle", newShape);
@@ -209,12 +212,6 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
 
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
-
-//            DraggableCircle newShape = new DraggableCircle(10);
-//            parts.getChildren().add(newShape);
-//            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-//            newShape.setTranslateX(pointToPlaceAt.getX());
-//            newShape.setTranslateY(pointToPlaceAt.getY());
         });
 
         generateGCodeMenuItem.setOnAction((ActionEvent e) ->
@@ -225,13 +222,19 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 if (child instanceof ShapeContainer)
                 {
                     ShapeContainer shapeContainer = (ShapeContainer) child;
-                    shapes.add(new ShapeForProcessing(shapeContainer.getShape(), shapeContainer));
+                    shapeContainer.getShapes().forEach((shape) ->
+                    {
+                        shapes.add(new ShapeForProcessing(shape, shapeContainer));
+                    });
                 }
             });
 
             PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
             List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
-            renderGCode(gcodeData);
+            DragKnifeCompensator dnc = new DragKnifeCompensator();
+            List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 2);
+            PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTest.gcode", dragKnifeCompensatedGCodeNodes);
+            renderGCode(dragKnifeCompensatedGCodeNodes);
         });
 
         bedContextMenu.getItems().addAll(addTextMenuItem, addRectangleMenuItem, addCircleMenuItem, generateGCodeMenuItem);
@@ -285,7 +288,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
         parts.getChildren().add(projectifiableThing);
-        projectifiableThing.setBedReference(partsAndBed);
+        projectifiableThing.setBedReference(gCodeOverlay);
     }
 
     @Override
@@ -346,17 +349,21 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
-//        if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
-//                && event.getZoomFactor() < 1.2)
-//        {
-////            scale.set(scale.get() * event.getZoomFactor());
-//        }
+        if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
+                && event.getZoomFactor() < 1.2)
+        {
+            double newScale = bedScale.getX() * event.getZoomFactor();
+
+            bedScale.setX(newScale);
+            bedScale.setY(newScale);
+        }
     };
 
     private final EventHandler<ScrollEvent> scrollEventHandler = event ->
     {
-//        bedTranslate.setX(bedTranslate.getTx() + (0.01 * event.getDeltaX()));
-//        bedTranslate.setY(bedTranslate.getTy() + (0.01 * event.getDeltaY()));
+        double newScale = bedScale.getX() + (0.01 * event.getDeltaY());
+        bedScale.setX(newScale);
+        bedScale.setY(newScale);
     };
 
     private ShapeContainer findShapeContainerParent(Node shape)
@@ -459,7 +466,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                             break;
                         default:
                             addEventHandler(MouseEvent.ANY, mouseEventHandler);
-//                            subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                            addEventHandler(ZoomEvent.ANY, zoomEventHandler);
 //                            subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             break;
                     }
@@ -504,20 +511,67 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         double currentX = 0;
         double currentY = 0;
+        boolean isInContact = false;
 
         for (GCodeEventNode node : gcodeNodes)
         {
-            if (node instanceof TravelNode)
+            if (node instanceof StylusLiftNode)
             {
+                //Not in contact
+                isInContact = false;
+                Circle contactCircle = new Circle(0.5);
+                contactCircle.setFill(Color.RED);
+                contactCircle.setCenterX(currentX);
+                contactCircle.setCenterY(currentY);
+                gCodeOverlay.getChildren().add(contactCircle);
+            } else if (node instanceof StylusPlungeNode)
+            {
+                //Now in contact
+                isInContact = true;
+                Circle contactCircle = new Circle(0.5);
+                contactCircle.setFill(Color.GREEN);
+                contactCircle.setCenterX(currentX);
+                contactCircle.setCenterY(currentY);
+                gCodeOverlay.getChildren().add(contactCircle);
+            } else if (node instanceof StylusScribeNode)
+            {
+                StylusScribeNode scribeNode = (StylusScribeNode) node;
                 Line newLine = new Line();
                 newLine.setStartX(currentX);
                 newLine.setStartY(currentY);
-                currentX = ((TravelNode) node).getMovement().getX();
-                currentY = ((TravelNode) node).getMovement().getY();
+                currentX = scribeNode.getMovement().getX();
+                currentY = scribeNode.getMovement().getY();
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
-                newLine.setStroke(Color.CRIMSON);
-                newLine.setStrokeWidth(0.2);
+                newLine.setStrokeWidth(0.75);
+
+                if (isInContact)
+                {
+                    newLine.setStroke(Color.GREEN);
+                } else
+                {
+                    newLine.setStroke(Color.RED);
+                }
+                gCodeOverlay.getChildren().add(newLine);
+            } else if (node instanceof TravelNode)
+            {
+                TravelNode travelNode = (TravelNode) node;
+                Line newLine = new Line();
+                newLine.setStartX(currentX);
+                newLine.setStartY(currentY);
+                currentX = travelNode.getMovement().getX();
+                currentY = travelNode.getMovement().getY();
+                newLine.setEndX(currentX);
+                newLine.setEndY(currentY);
+                newLine.setStrokeWidth(0.25);
+
+                if (isInContact)
+                {
+                    newLine.setStroke(Color.GREEN);
+                } else
+                {
+                    newLine.setStroke(Color.RED);
+                }
                 gCodeOverlay.getChildren().add(newLine);
             }
         }

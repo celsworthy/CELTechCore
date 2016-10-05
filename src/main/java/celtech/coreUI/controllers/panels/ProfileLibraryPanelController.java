@@ -549,7 +549,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void selectFirstPrintProfile()
     {
-        cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
+        if (cmbPrintProfile.getItems().size() > 0)
+        {
+            cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
+        }
     }
 
     public void setAndSelectPrintProfile(SlicerParametersFile printProfile)
@@ -1178,7 +1181,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         {
             slicerType = SlicerType.Cura;
         }
-        
+
         layerHeight.setDisable(!slicerMappings.isMapped(slicerType, "layerHeight_mm"));
         fillDensity.setDisable(!slicerMappings.isMapped(slicerType, "fillDensity_normalised"));
         infillEveryN.setDisable(!slicerMappings.isMapped(slicerType, "fillEveryNLayers"));

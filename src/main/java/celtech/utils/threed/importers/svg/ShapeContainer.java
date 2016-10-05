@@ -11,8 +11,11 @@ import celtech.modelcontrol.TwoDItemState;
 import celtech.roboxbase.utils.twod.ShapeToWorldTransformer;
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Group;
 import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
@@ -30,8 +33,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 {
 
     private static final long serialVersionUID = 1L;
-    
-    private Shape shape = null;
+
+    private List<Shape> shapes = new ArrayList<>();
 
     private final Scale scale = new Scale();
     private final Translate translation = new Translate();
@@ -49,15 +52,34 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         initialise();
     }
 
+    public ShapeContainer(String name, List<Shape> shapes)
+    {
+        super();
+        initialise();
+        setModelName(name);
+
+        if (shapes.size() > 1)
+        {
+            Group shapeGroup = new Group();
+            shapeGroup.getChildren().addAll(shapes);
+            this.getChildren().add(shapeGroup);
+        } else
+        {
+            this.getChildren().add(shapes.get(0));
+        }
+        this.shapes.addAll(shapes);
+    }
+
     public ShapeContainer(String name, Shape shape)
     {
         super();
         initialise();
         setModelName(name);
+
         this.getChildren().add(shape);
-        this.shape = shape;
+        this.shapes.add(shape);
     }
-    
+
     private void initialise()
     {
         this.getTransforms().addAll(rotation, scale, translation);
@@ -293,9 +315,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         return bed.sceneToLocal(localToScene(vertexX, vertexY));
     }
-    
-    public Shape getShape()
+
+    public List<Shape> getShapes()
     {
-        return shape;
+        return shapes;
     }
 }

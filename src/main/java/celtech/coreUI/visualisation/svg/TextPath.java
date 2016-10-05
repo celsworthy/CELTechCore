@@ -6,15 +6,18 @@ import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.PathIterator;
-import javafx.event.ActionEvent;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
-import javafx.geometry.Point3D;
-import javafx.geometry.Side;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
+import org.controlsfx.control.PopOver;
 
 /**
  *
@@ -23,65 +26,100 @@ import javafx.scene.shape.SVGPath;
 public class TextPath extends SVGPath implements PrintableShape
 {
 
-    private String textToDisplay = "";
+    private String textToDisplay = "Text";
     private GraphicsEnvironment ge;
     private Font fontInUse;
     private FontRenderContext frc;
-    private ContextMenu contextMenu = null;
     private final TextPath thisTextPath;
+    private final TextField textEditor = new TextField();
+    private final ComboBox<String> fontChooser = new ComboBox();
+    private final ComboBox<Integer> fontSizeChooser = new ComboBox();
+    private final ComboBox<String> fontStyleChooser = new ComboBox();
 
     public TextPath()
     {
         thisTextPath = this;
         ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
-        updateFont(new Font("Segoe UI", Font.PLAIN, 48));
-
-        setupContextMenu();
-    }
-
-    private void setupContextMenu()
-    {
-        contextMenu = new ContextMenu();
-
-        String cm1Text = "Edit Text";
-        String cm2Text = "Change font";
-
-        MenuItem cmItem1 = new MenuItem(cm1Text);
-        MenuItem cmItem2 = new MenuItem(cm2Text);
-
-        cmItem1.setOnAction((ActionEvent e) ->
-        {
-//            String textToDisplay = "Hello";
-//            TextPath newPath = new TextPath();
-//            newPath.setText(textToDisplay);
-//            parts.getChildren().add(newPath);
-//
-//            Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-//            newPath.setTranslateX(pointToPlaceAt.getX());
-//            newPath.setTranslateY(pointToPlaceAt.getY());
-        });
-
-        cmItem2.setOnAction((ActionEvent e) ->
-        {
-
-        });
-
-        contextMenu.getItems().addAll(cmItem1, cmItem2);
-
-        setOnContextMenuRequested(new EventHandler<ContextMenuEvent>()
+        VBox editBox = new VBox();
+        editBox.setSpacing(5);
+        
+        textEditor.setText(textToDisplay);
+        textEditor.textProperty().addListener(new ChangeListener<String>()
         {
             @Override
-            public void handle(ContextMenuEvent event)
+            public void changed(ObservableValue<? extends String> ov, String t, String t1)
             {
-                Point3D parentPoint = ((TextPath) event.getTarget()).localToParent(event.getPickResult().getIntersectedPoint());
-                contextMenu.show(thisTextPath, Side.TOP, parentPoint.getX(), parentPoint.getY());
+                textToDisplay = t1;
+                updateTextPath();
+            }
+        });
+
+        String[] fonts = ge.getAvailableFontFamilyNames();
+        fontChooser.setItems(FXCollections.observableArrayList(fonts));
+        fontChooser.getSelectionModel().selectFirst();
+        fontChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> ov, String t, String t1)
+            {
+                updateFont();
+            }
+        });
+        
+        String[] fontStyles =
+        {
+            "Plain", "Bold", "Italic"
+        };
+        fontStyleChooser.setItems(FXCollections.observableArrayList(fontStyles));
+        fontStyleChooser.getSelectionModel().selectFirst();
+        fontStyleChooser.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                updateFont();
+            }
+        });
+        
+        ObservableList<Integer> fontSizes = FXCollections.observableArrayList();
+        fontSizes.addAll(18, 20, 24, 28, 33, 36, 40, 44, 48, 52, 56);
+        fontSizeChooser.setItems(fontSizes);
+        fontSizeChooser.getSelectionModel().selectFirst();
+        fontSizeChooser.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
+            {
+                updateFont();
+            }
+        });
+        
+        editBox.getChildren().addAll(textEditor, fontChooser, fontStyleChooser, fontSizeChooser);
+
+        PopOver popOver = new PopOver(editBox);
+        popOver.setTitle("Text Editor");
+
+        updateFont();
+
+        setOnMouseClicked(new EventHandler<MouseEvent>()
+        {
+            @Override
+            public void handle(MouseEvent t)
+            {
+                if (t.getClickCount() > 1)
+                {
+                    popOver.show(thisTextPath);
+                }
             }
         });
     }
 
-    private void updateFont(Font fontWeWishToUse)
+    private void updateFont()
     {
+        Font fontWeWishToUse = new Font(fontChooser.getSelectionModel().getSelectedItem(),
+                fontStyleChooser.getSelectionModel().getSelectedIndex(),
+                fontSizeChooser.getSelectionModel().getSelectedItem());
         fontInUse = fontWeWishToUse;
         frc = new FontRenderContext(fontInUse.getTransform(), true, true);
         updateTextPath();
@@ -169,11 +207,6 @@ public class TextPath extends SVGPath implements PrintableShape
         }
 
         this.setContent(svgContent.toString());
-    }
-
-    public void setFont()
-    {
-
     }
 
     public void setText(String newText)

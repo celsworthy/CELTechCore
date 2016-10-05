@@ -22,6 +22,7 @@ import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.SVGPath;
+import javafx.scene.shape.Shape;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
@@ -55,9 +56,7 @@ public class SVGImporter
         this.parentTask = parentTask;
         this.percentProgressProperty = percentProgressProperty;
 
-        List<SVGMetaPart> metaparts = new ArrayList<>();
-        ShapeContainer renderableSVG = new ShapeContainer(modelFile);
-        renderableSVG.setModelName(modelFile.getName());
+        List<Shape> shapes = new ArrayList<>();
 
         try
         {
@@ -72,7 +71,14 @@ public class SVGImporter
             bridgeContext.setDynamicState(BridgeContext.DYNAMIC);
 
             // Enable CSS- and SVG-specific enhancements.
-            (new GVTBuilder()).build(bridgeContext, doc);
+            GVTBuilder gvtBuilder = new GVTBuilder();
+//            try
+//            {
+//                gvtBuilder.build(bridgeContext, doc);
+//            } catch (RuntimeException e)
+//            {
+//                steno.exception("Exception building svg tree", e);
+//            }
 
             SVGConverterConfiguration converterConfiguration = SVGConverterConfiguration.getInstance();
 
@@ -114,24 +120,23 @@ public class SVGImporter
             NodeList rects = doc.getElementsByTagName("rect");
             NodeList polygons = doc.getElementsByTagName("polygon");
 
-            PathParserThing parserThing = new PathParserThing(metaparts);
-
-            PathParser pathParser = new PathParser();
-            pathParser.setPathHandler(parserThing);
-
+//            PathParserThing parserThing = new PathParserThing(metaparts);
+//            
+//            PathParser pathParser = new PathParser();
+//            pathParser.setPathHandler(parserThing);
             for (int pathIndex = 0; pathIndex < paths.getLength(); pathIndex++)
             {
                 Node pathNode = paths.item(pathIndex);
                 NamedNodeMap nodeMap = pathNode.getAttributes();
                 Node dNode = nodeMap.getNamedItem("d");
                 System.out.println(dNode.getNodeValue());
-                pathParser.parse(dNode.getNodeValue());
+//                pathParser.parse(dNode.getNodeValue());
                 SVGPath displayablePath = new SVGPath();
                 displayablePath.scaleXProperty().set(converterConfiguration.getxPointCoefficient());
                 displayablePath.scaleYProperty().set(converterConfiguration.getyPointCoefficient());
 //                displayablePath.
                 displayablePath.setContent(dNode.getNodeValue());
-                renderableSVG.getChildren().add(displayablePath);
+                shapes.add(displayablePath);
             }
 
             NumberFormat threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
@@ -164,17 +169,15 @@ public class SVGImporter
                         + 0 + ','
                         + (threeDPformatter.format(-hValue)) + ' ';
 
-                pathParser.parse(synthPath);
-
+//                pathParser.parse(synthPath);
                 SVGPath displayablePath = new SVGPath();
                 displayablePath.setContent(synthPath);
-                renderableSVG.getChildren().add(displayablePath);
+                shapes.add(displayablePath);
             }
 
-            PointsParser pp = new PointsParser();
-            PointParserThing pointParserThing = new PointParserThing(metaparts);
-            pp.setPointsHandler(pointParserThing);
-
+//            PointsParser pp = new PointsParser();
+//            PointParserThing pointParserThing = new PointParserThing(metaparts);
+//            pp.setPointsHandler(pointParserThing);
             for (int polygonIndex = 0; polygonIndex < polygons.getLength(); polygonIndex++)
             {
                 Node polygonNode = polygons.item(polygonIndex);
@@ -182,8 +185,7 @@ public class SVGImporter
 
                 Node points = nodeMap.getNamedItem("points");
 
-                pp.parse(points.getNodeValue());
-
+//                pp.parse(points.getNodeValue());
                 Polygon displayablePoly = new Polygon();
                 String[] pointPairs = points.getNodeValue().split(" ");
                 for (String pointPair : pointPairs)
@@ -193,12 +195,16 @@ public class SVGImporter
                     Double y = Double.valueOf(pointPairSplit[1]);
                     displayablePoly.getPoints().addAll(x * converterConfiguration.getxPointCoefficient(), y * converterConfiguration.getyPointCoefficient());
                 }
-                renderableSVG.getChildren().add(displayablePoly);
+
+                shapes.add(displayablePoly);
+//                renderableSVG.getChildren().add(displayablePoly);
             }
         } catch (IOException ex)
         {
             steno.exception("Failed to process SVG file " + modelFile.getAbsolutePath(), ex);
         }
+
+        ShapeContainer renderableSVG = new ShapeContainer(modelFile.getName(), shapes);
 
 //        renderableSVG.setMetaparts(metaparts);
         Set<ProjectifiableThing> renderableSVGs = new HashSet<>();
