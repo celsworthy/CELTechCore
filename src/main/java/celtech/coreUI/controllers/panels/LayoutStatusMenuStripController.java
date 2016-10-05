@@ -306,11 +306,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             Set<ModelContainer> modelContainers = (Set) currentProject.getAllModels();
             for (ModelContainer modelContainer : modelContainers)
             {
-                for (ModelContainer modelContainerWithMesh : modelContainer.getModelsHoldingMeshViews())
+                if (!(modelContainer instanceof ModelGroup))
                 {
-                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainer.getMeshView(), modelContainer);
                     meshesForProcessing.add(meshForProcessing);
-                    extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
+                    extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
                 }
             }
 
