@@ -135,6 +135,7 @@ public class Preferences
 
         preferences.add(timelapseTriggerEnabledPref);
         preferences.add(goProWifiPasswordPref);
+        preferences.add(timelapseMoveBeforeCapturePref);
         preferences.add(timelapseXMovePref);
         preferences.add(timelapseYMovePref);
         preferences.add(timelapseDelayPref);

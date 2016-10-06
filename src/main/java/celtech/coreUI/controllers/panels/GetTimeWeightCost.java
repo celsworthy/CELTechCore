@@ -174,8 +174,6 @@ public class GetTimeWeightCost
                 printableMeshes,
                 temporaryDirectory,
                 printer,
-                null,
-                false,
                 null);
 
         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().

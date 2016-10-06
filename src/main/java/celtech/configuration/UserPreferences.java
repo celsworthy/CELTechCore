@@ -1,7 +1,6 @@
 package celtech.configuration;
 
 import celtech.roboxbase.configuration.SlicerType;
-import celtech.Lookup;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.configuration.units.CurrencySymbol;
@@ -90,6 +89,7 @@ public class UserPreferences
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
         this.timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
         this.goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
+        this.timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
         this.timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
         this.timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
         this.timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
