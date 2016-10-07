@@ -123,7 +123,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             parts.getChildren().add(projectifiableThing);
             projectifiableThing.setBedReference(gCodeOverlay);
         }
-
+        
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         loadedModels = project.getTopLevelThings();
 
@@ -543,7 +543,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 currentY = scribeNode.getMovement().getY();
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
-                newLine.setStrokeWidth(0.75);
+                newLine.setStrokeWidth(0.5);
 
                 if (isInContact)
                 {
