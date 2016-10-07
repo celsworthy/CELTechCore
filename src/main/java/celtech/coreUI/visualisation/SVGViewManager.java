@@ -17,6 +17,7 @@ import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.StylusLiftNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.StylusPlungeNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.StylusScribeNode;
+import celtech.roboxbase.postprocessor.nouveau.nodes.StylusSwivelNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.TravelNode;
 import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
 import celtech.roboxbase.utils.models.PrintableShapes;
@@ -113,7 +114,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         jfxToRealWorld.appendScale(1, -1);
         jfxToRealWorld.appendTranslation(0, -bedHeight);
 
-        gCodeOverlay.getTransforms().addAll(bedTranslate, bedScale, jfxToRealWorld);
+        gCodeOverlay.getTransforms().addAll(bedScale, bedTranslate, jfxToRealWorld);
 
         getChildren().add(partsAndBed);
         getChildren().add(gCodeOverlay);
@@ -123,7 +124,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             parts.getChildren().add(projectifiableThing);
             projectifiableThing.setBedReference(gCodeOverlay);
         }
-        
+
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         loadedModels = project.getTopLevelThings();
 
@@ -205,6 +206,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         {
 
             Circle newShape = new Circle(10);
+            newShape.setSmooth(true);
 
             ShapeContainer newShapeContainer = new ShapeContainer("Circle", newShape);
 
@@ -232,8 +234,9 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
             List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
             DragKnifeCompensator dnc = new DragKnifeCompensator();
-            List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 2);
-            PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTest.gcode", dragKnifeCompensatedGCodeNodes);
+            List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2);
+            PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestRaw.gcode", gcodeData);
+            PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestCompensated.gcode", dragKnifeCompensatedGCodeNodes);
             renderGCode(dragKnifeCompensatedGCodeNodes);
         });
 
@@ -401,8 +404,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         }
         if (event.isPrimaryButtonDown())
         {
-            if (intersectedNode != bed
-                    && intersectedNode instanceof Shape)
+            if (intersectedNode instanceof Shape)
             {
                 ShapeContainer sc = findShapeContainerParent(intersectedNode);
                 if (sc != null)
@@ -443,9 +445,16 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             steno.info("New position = " + newPosition);
             Point2D resultantPosition = partsAndBed.sceneToLocal(newPosition).subtract(partsAndBed.sceneToLocal(lastDragPosition));
             steno.info("Resultant " + resultantPosition);
+            if (shapeBeingDragged == bed)
+            {
+                bedTranslate.setX(bedTranslate.getX() + resultantPosition.getX());
+                bedTranslate.setY(bedTranslate.getY() + resultantPosition.getY());
+            } else
+            {
 
-            undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), resultantPosition.getX(), resultantPosition.getY(),
-                    !justEnteredDragMode);
+                undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), resultantPosition.getX(), resultantPosition.getY(),
+                        !justEnteredDragMode);
+            }
 
             justEnteredDragMode = false;
         }
@@ -519,20 +528,20 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             {
                 //Not in contact
                 isInContact = false;
-                Circle contactCircle = new Circle(0.5);
-                contactCircle.setFill(Color.RED);
-                contactCircle.setCenterX(currentX);
-                contactCircle.setCenterY(currentY);
-                gCodeOverlay.getChildren().add(contactCircle);
+//                Circle contactCircle = new Circle(0.5);
+//                contactCircle.setFill(Color.RED);
+//                contactCircle.setCenterX(currentX);
+//                contactCircle.setCenterY(currentY);
+//                gCodeOverlay.getChildren().add(contactCircle);
             } else if (node instanceof StylusPlungeNode)
             {
                 //Now in contact
                 isInContact = true;
-                Circle contactCircle = new Circle(0.5);
-                contactCircle.setFill(Color.GREEN);
-                contactCircle.setCenterX(currentX);
-                contactCircle.setCenterY(currentY);
-                gCodeOverlay.getChildren().add(contactCircle);
+//                Circle contactCircle = new Circle(0.5);
+//                contactCircle.setFill(Color.GREEN);
+//                contactCircle.setCenterX(currentX);
+//                contactCircle.setCenterY(currentY);
+//                gCodeOverlay.getChildren().add(contactCircle);
             } else if (node instanceof StylusScribeNode)
             {
                 StylusScribeNode scribeNode = (StylusScribeNode) node;
@@ -543,7 +552,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 currentY = scribeNode.getMovement().getY();
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
-                newLine.setStrokeWidth(0.5);
+                newLine.setStrokeWidth(0.1);
 
                 if (isInContact)
                 {
@@ -551,6 +560,26 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 } else
                 {
                     newLine.setStroke(Color.RED);
+                }
+                gCodeOverlay.getChildren().add(newLine);
+            } else if (node instanceof StylusSwivelNode)
+            {
+                StylusSwivelNode scribeNode = (StylusSwivelNode) node;
+                Line newLine = new Line();
+                newLine.setStartX(currentX);
+                newLine.setStartY(currentY);
+                currentX = scribeNode.getMovement().getX();
+                currentY = scribeNode.getMovement().getY();
+                newLine.setEndX(currentX);
+                newLine.setEndY(currentY);
+                newLine.setStrokeWidth(0.1);
+
+                if (isInContact)
+                {
+                    newLine.setStroke(Color.PURPLE);
+                } else
+                {
+                    newLine.setStroke(Color.BLUE);
                 }
                 gCodeOverlay.getChildren().add(newLine);
             } else if (node instanceof TravelNode)
@@ -563,7 +592,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 currentY = travelNode.getMovement().getY();
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
-                newLine.setStrokeWidth(0.25);
+                newLine.setStrokeWidth(0.5);
 
                 if (isInContact)
                 {
