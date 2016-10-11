@@ -132,8 +132,8 @@ public class SVGImporter
                 System.out.println(dNode.getNodeValue());
 //                pathParser.parse(dNode.getNodeValue());
                 SVGPath displayablePath = new SVGPath();
-                displayablePath.scaleXProperty().set(converterConfiguration.getxPointCoefficient());
-                displayablePath.scaleYProperty().set(converterConfiguration.getyPointCoefficient());
+//                displayablePath.scaleXProperty().set(converterConfiguration.getxPointCoefficient());
+//                displayablePath.scaleYProperty().set(converterConfiguration.getyPointCoefficient());
 //                displayablePath.
                 displayablePath.setContent(dNode.getNodeValue());
                 shapes.add(displayablePath);

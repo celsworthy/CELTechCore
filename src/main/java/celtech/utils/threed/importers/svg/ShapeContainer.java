@@ -8,11 +8,14 @@ import celtech.modelcontrol.ResizeableTwoD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.modelcontrol.TwoDItemState;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.roboxbase.utils.twod.ShapeToWorldTransformer;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
@@ -20,6 +23,8 @@ import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -32,13 +37,10 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         ShapeToWorldTransformer
 {
 
+    private final Stenographer steno = StenographerFactory.getStenographer(ShapeContainer.class.getName());
     private static final long serialVersionUID = 1L;
 
     private List<Shape> shapes = new ArrayList<>();
-
-    private final Scale scale = new Scale();
-    private final Translate translation = new Translate();
-    private final Rotate rotation = new Rotate();
 
     public ShapeContainer()
     {
@@ -50,12 +52,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         super(modelFile);
         initialise();
+        initialiseTransforms();
     }
 
     public ShapeContainer(String name, List<Shape> shapes)
     {
         super();
-        initialise();
         setModelName(name);
 
         if (shapes.size() > 1)
@@ -68,32 +70,39 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             this.getChildren().add(shapes.get(0));
         }
         this.shapes.addAll(shapes);
+        initialise();
+        initialiseTransforms();
     }
 
     public ShapeContainer(String name, Shape shape)
     {
         super();
-        initialise();
         setModelName(name);
 
         this.getChildren().add(shape);
         this.shapes.add(shape);
+
+        initialise();
+        initialiseTransforms();
     }
 
     private void initialise()
     {
-        this.getTransforms().addAll(rotation, scale, translation);
+        preferredXScale = new SimpleDoubleProperty(1);
+        preferredYScale = new SimpleDoubleProperty(1);
+        preferredRotationTurn = new SimpleDoubleProperty(0);
+        rotationTransforms = new ArrayList<>();
     }
 
     @Override
     public ItemState getState()
     {
         return new TwoDItemState(modelId,
-                translation.getX(),
-                translation.getY(),
-                scale.getX(),
-                scale.getY(),
-                rotation.getAngle());
+                transformMoveToPreferred.getX(),
+                transformMoveToPreferred.getY(),
+                preferredXScale.get(),
+                preferredYScale.get(),
+                preferredRotationTurn.get());
     }
 
     @Override
@@ -101,38 +110,21 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         if (state instanceof TwoDItemState)
         {
-            translation.setX(state.x);
-            translation.setY(state.y);
+            TwoDItemState convertedState = (TwoDItemState) state;
+            transformMoveToPreferred.setX(convertedState.x);
+            transformMoveToPreferred.setZ(convertedState.y);
 
-            scale.setX(state.preferredXScale);
-            scale.setY(state.preferredYScale);
+            preferredXScale.set(convertedState.preferredXScale);
+            transformScalePreferred.setX(convertedState.preferredXScale);
+            preferredYScale.set(convertedState.preferredYScale);
+            transformScalePreferred.setY(convertedState.preferredYScale);
 
-            rotation.setAngle(state.preferredRotationTurn);
+            preferredRotationTurn.set(convertedState.preferredRotationTurn);
+
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+            notifyScreenExtentsChange();
+            notifyShapeChange();
         }
-    }
-
-    @Override
-    public double getXScale()
-    {
-        return scale.getX();
-    }
-
-    @Override
-    public void setXScale(double scaleFactor)
-    {
-        scale.setX(scaleFactor);
-    }
-
-    @Override
-    public double getYScale()
-    {
-        return scale.getY();
-    }
-
-    @Override
-    public void setYScale(double scaleFactor)
-    {
-        scale.setY(scaleFactor);
     }
 
     @Override
@@ -150,30 +142,75 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void translateBy(double xMove, double yMove)
     {
-        translation.setX(translation.getX() + xMove);
-        translation.setY(translation.getY() + yMove);
-        notifyScreenExtentsChange();
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
+        transformMoveToPreferred.setY(transformMoveToPreferred.getY() + yMove);
+
+        updateLastTransformedBoundsInParentForTranslateByX(xMove);
+        updateLastTransformedBoundsInParentForTranslateByY(yMove);
+
+        checkOffBed();
     }
 
     @Override
     public void translateTo(double xPosition, double yPosition)
     {
-        translation.setX(xPosition);
-        translation.setY(yPosition);
-        notifyScreenExtentsChange();
+        translateXTo(xPosition);
+        translateDepthPositionTo(yPosition);
     }
 
     @Override
     public void translateXTo(double xPosition)
     {
-        translation.setX(xPosition);
+        RectangularBounds bounds = lastTransformedBoundsInParent;
+
+        double newMaxX = xPosition + bounds.getWidth() / 2;
+        double newMinX = xPosition - bounds.getWidth() / 2;
+
+        double finalXPosition = xPosition;
+
+        if (newMinX < 0)
+        {
+            finalXPosition += -newMinX;
+        } else if (newMaxX > printVolumeWidth)
+        {
+            finalXPosition -= (newMaxX - printVolumeWidth);
+        }
+
+        double currentXPosition = lastTransformedBoundsInParent.getCentreX();
+        double requiredTranslation = finalXPosition - currentXPosition;
+        transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
+
+        updateLastTransformedBoundsInParentForTranslateByX(requiredTranslation);
+        checkOffBed();
+        notifyShapeChange();
         notifyScreenExtentsChange();
     }
 
     @Override
-    public void translateZTo(double yPosition)
+    public void translateDepthPositionTo(double yPosition)
     {
-        translation.setY(yPosition);
+        RectangularBounds bounds = lastTransformedBoundsInParent;
+
+        double newMaxY = yPosition + bounds.getDepth() / 2;
+        double newMinY = yPosition - bounds.getDepth() / 2;
+
+        double finalYPosition = yPosition;
+
+        if (newMinY < 0)
+        {
+            finalYPosition += -newMinY;
+        } else if (newMaxY > printVolumeDepth)
+        {
+            finalYPosition -= (newMaxY - printVolumeDepth);
+        }
+
+        double currentYPosition = lastTransformedBoundsInParent.getCentreY();
+        double requiredTranslation = finalYPosition - currentYPosition;
+        transformMoveToPreferred.setY(transformMoveToPreferred.getY() + requiredTranslation);
+
+        updateLastTransformedBoundsInParentForTranslateByY(requiredTranslation);
+        checkOffBed();
+        notifyShapeChange();
         notifyScreenExtentsChange();
     }
 
@@ -185,7 +222,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         double currentHeight = bounds.getHeight();
 
         double newScale = height / currentHeight;
-        setYScale(newScale);
+        transformScalePreferred.setY(newScale);
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -199,7 +236,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         double originalWidth = bounds.getWidth();
 
         double newScale = width / originalWidth;
-        setXScale(newScale);
+        transformScalePreferred.setX(newScale);
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -273,7 +310,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getTransformedWidth()
     {
-        return getBoundsInParent().getWidth();
+        return lastTransformedBoundsInParent.getWidth();
     }
 
     @Override
@@ -291,13 +328,13 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getCentreX()
     {
-        return getBoundsInParent().getMinX() + getBoundsInParent().getWidth() / 2.0;
+        return lastTransformedBoundsInParent.getMinX() + lastTransformedBoundsInParent.getWidth() / 2.0;
     }
 
     @Override
     public double getCentreY()
     {
-        return getBoundsInParent().getMinY() + getBoundsInParent().getHeight() / 2.0;
+        return lastTransformedBoundsInParent.getMinY() + lastTransformedBoundsInParent.getHeight() / 2.0;
     }
 
     @Override
@@ -319,5 +356,190 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     public List<Shape> getShapes()
     {
         return shapes;
+    }
+
+    @Override
+    public void shrinkToFitBed()
+    {
+        BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
+
+        double scaling = 1.0;
+
+        double relativeXSize = printableBoundingBox.getWidth() / printVolumeWidth;
+        double relativeYSize = printableBoundingBox.getHeight() / printVolumeDepth;
+        steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize);
+
+        if (relativeXSize > relativeYSize)
+        {
+            if (relativeXSize > 1)
+            {
+                scaling = 1 / relativeXSize;
+            }
+        } else if (relativeYSize > relativeXSize)
+        {
+            if (relativeYSize > 1)
+            {
+                scaling = 1 / relativeYSize;
+            }
+
+        }
+
+        if (scaling != 1.0f)
+        {
+            transformScalePreferred.setX(scaling);
+            transformScalePreferred.setY(scaling);
+        }
+
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+    }
+
+    @Override
+    public void setBedCentreOffsetTransform()
+    {
+        BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
+
+        bedCentreOffsetX = -printableBoundingBox.getMinX();
+        bedCentreOffsetY = -printableBoundingBox.getMinY();
+        transformBedCentre.setX(bedCentreOffsetX);
+        transformBedCentre.setY(bedCentreOffsetY);
+        updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
+        updateLastTransformedBoundsInParentForTranslateByY(bedCentreOffsetY);
+    }
+
+    protected final void initialiseTransforms()
+    {
+        transformScalePreferred = new Scale(1, 1, 1);
+        transformMoveToPreferred = new Translate(0, 0, 0);
+        transformBedCentre = new Translate(0, 0, 0);
+
+        transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
+        rotationTransforms.add(transformRotateTurnPreferred);
+
+        setBedCentreOffsetTransform();
+
+        /**
+         * Rotations (which are all around the centre of the model) must be
+         * applied before any translations.
+         */
+        getTransforms().addAll(transformMoveToPreferred,
+                transformBedCentre,
+                transformRotateTurnPreferred,
+                transformScalePreferred
+        );
+
+        updateOriginalModelBounds();
+
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    @Override
+    protected RectangularBounds calculateBoundsInLocal()
+    {
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double minZ = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        for (Shape shape : shapes)
+        {
+            Bounds localBounds = shape.getBoundsInLocal();
+            minX = Math.min(localBounds.getMinX(), minX);
+            minY = Math.min(localBounds.getMinY(), minY);
+            minZ = Math.min(localBounds.getMinZ(), minZ);
+
+            maxX = Math.max(localBounds.getMaxX(), maxX);
+            maxY = Math.max(localBounds.getMaxY(), maxY);
+            maxZ = Math.max(localBounds.getMaxZ(), maxZ);
+        }
+
+        double newwidth = maxX - minX;
+        double newdepth = maxZ - minZ;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+        double newcentreZ = minZ + (newdepth / 2);
+
+        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+                newheight, newdepth, newcentreX, newcentreY,
+                newcentreZ);
+    }
+
+    @Override
+    public RectangularBounds calculateBoundsInParentCoordinateSystem()
+    {        
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+
+        if (bed != null)
+        {
+            for (Shape shape : shapes)
+            {
+                Bounds boundsInLocal = shape.getBoundsInLocal();
+                Bounds worldBounds = bed.sceneToLocal(localToScene(boundsInLocal));
+
+                steno.info("Started with local bounds: " + boundsInLocal);
+                steno.info("Finished with bed bounds: " + worldBounds);
+
+                minX = Math.min(worldBounds.getMinX(), minX);
+                minY = Math.min(worldBounds.getMinY(), minY);
+
+                maxX = Math.max(worldBounds.getMaxX(), maxX);
+                maxY = Math.max(worldBounds.getMaxY(), maxY);
+            }
+        }
+
+        double newwidth = maxX - minX;
+        double newheight = maxY - minY;
+
+        double newcentreX = minX + (newwidth / 2);
+        double newcentreY = minY + (newheight / 2);
+
+        return new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
+                newheight, 0, newcentreX, newcentreY,
+                0);
+    }
+
+    @Override
+    protected void updateScaleTransform()
+    {
+        checkOffBed();
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    private void updateLastTransformedBoundsInParentForTranslateByX(double deltaCentreX)
+    {
+        if (lastTransformedBoundsInParent != null)
+        {
+            lastTransformedBoundsInParent.translateX(deltaCentreX);
+        }
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    private void updateLastTransformedBoundsInParentForTranslateByY(double deltaCentreY)
+    {
+        if (lastTransformedBoundsInParent != null)
+        {
+            lastTransformedBoundsInParent.translateY(deltaCentreY);
+        }
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    @Override
+    public void moveToCentre()
+    {
+        translateTo(bedCentreOffsetX, bedCentreOffsetY);
+
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 }

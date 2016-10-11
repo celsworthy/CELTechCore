@@ -6,7 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.BaseLookup;
@@ -445,7 +444,7 @@ public class CalibrationInsetPanelController implements Initializable,
         cantCalibrateHeadIsDetachedNotificationBar.setAppearanceCondition(Bindings.isNull(printer.headProperty())
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
+        BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(0).isFittedProperty().not();
         BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
         BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
         BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
@@ -467,15 +466,15 @@ public class CalibrationInsetPanelController implements Initializable,
 
         if (printer.headProperty().get() != null)
         {
-        twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
-                .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
-                .and(noFilament1Selected)
-                .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+            twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
+                    .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
+                    .and(noFilament1Selected)
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter
-                .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
-                .and(printer.extrudersProperty().get(1).
-                        filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+            twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter
+                    .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
+                    .and(printer.extrudersProperty().get(1).
+                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
         }
 
         switch (calibrationMode)

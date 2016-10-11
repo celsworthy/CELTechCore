@@ -16,6 +16,7 @@ import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
+import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableThreeD;
 import celtech.modelcontrol.TranslateableTwoD;
 import java.util.Set;
@@ -73,11 +74,11 @@ public class UndoableProject
         });
     }
 
-    public void translateModelsZTo(Set<TranslateableThreeD> modelContainers, double z)
+    public void translateModelsDepthPositionTo(Set<Translateable> modelContainers, double position)
     {
         doTransformCommand(() ->
         {
-            project.translateModelsZTo(modelContainers, z);
+            project.translateModelsDepthPositionTo(modelContainers, position);
         });
     }
 

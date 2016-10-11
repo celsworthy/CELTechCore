@@ -142,14 +142,11 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
-        basePane.prefWidthProperty().bind(tabDisplayWidthProperty);
-        basePane.prefHeightProperty().bind(tabDisplayHeightProperty);
-        basePane.maxWidth(Region.USE_PREF_SIZE);
-        basePane.maxHeight(Region.USE_PREF_SIZE);
 
         overlayPane = new AnchorPane();
         overlayPane.setMouseTransparent(true);
         overlayPane.setPickOnBounds(false);
+
 
         basePane.getChildren().add(nonSpecificModelIndicator);
 
@@ -258,6 +255,8 @@ public class ProjectTab extends Tab implements ProjectCallback
     {
         nonSpecificModelIndicator.setVisible(false);
         svgViewManager = new SVGViewManager(project);
+        svgViewManager.setMaxWidth(basePane.getWidth());
+        svgViewManager.setMaxHeight(basePane.getHeight());
 
         AnchorPane.setBottomAnchor(svgViewManager, 0.0);
         AnchorPane.setTopAnchor(svgViewManager, 0.0);

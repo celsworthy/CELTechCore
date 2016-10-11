@@ -9,16 +9,23 @@ import celtech.coreUI.visualisation.ShapeProviderTwoD;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.utils.RectangularBounds;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point3D;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
+import javafx.scene.transform.Translate;
 
 /**
  *
@@ -46,6 +53,23 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
      */
     protected int modelId;
     private SimpleStringProperty modelName;
+    protected Translate transformBedCentre;
+    protected Scale transformScalePreferred;
+    protected Rotate transformRotateTurnPreferred;
+    protected Translate transformMoveToPreferred;
+    protected List<Transform> rotationTransforms;
+    protected RectangularBounds lastTransformedBoundsInParent;
+    protected RectangularBounds originalModelBounds;
+    protected static final Point3D Y_AXIS = new Point3D(0, 1, 0);
+    protected static final Point3D Z_AXIS = new Point3D(0, 0, 1);
+    protected static final Point3D X_AXIS = new Point3D(1, 0, 0);
+    protected DoubleProperty preferredXScale;
+    protected DoubleProperty preferredYScale;
+    protected DoubleProperty preferredRotationTurn;
+
+    protected double bedCentreOffsetX;
+    protected double bedCentreOffsetY;
+    protected double bedCentreOffsetZ;
 
     public ProjectifiableThing()
     {
@@ -237,8 +261,103 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
 
     public abstract void checkOffBed();
 
+    public abstract void moveToCentre();
+
     public void setBedReference(Group bed)
     {
         this.bed = bed;
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+    }
+
+    public abstract void setBedCentreOffsetTransform();
+
+    public RectangularBounds getOriginalModelBounds()
+    {
+        return originalModelBounds;
+    }
+
+    public abstract void shrinkToFitBed();
+
+    protected abstract RectangularBounds calculateBoundsInLocal();
+
+    protected final void setScalePivotToCentreOfModel()
+    {
+        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX()
+                + getBoundsInLocal().getWidth() / 2.0);
+        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY()
+                + getBoundsInLocal().getHeight() / 2.0);
+
+        if (this instanceof ScaleableThreeD)
+        {
+            transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ()
+                    + getBoundsInLocal().getDepth() / 2.0);
+        }
+    }
+
+    protected void setRotationPivotsToCentreOfModel()
+    {
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+
+        if (this instanceof RotatableThreeD)
+        {
+            transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        }
+    }
+
+    public void updateOriginalModelBounds()
+    {
+        originalModelBounds = calculateBoundsInLocal();
+        setScalePivotToCentreOfModel();
+        setRotationPivotsToCentreOfModel();
+    }
+
+    public abstract RectangularBounds calculateBoundsInParentCoordinateSystem();
+
+    protected abstract void updateScaleTransform();
+
+    public Scale getTransformScale()
+    {
+        return transformScalePreferred;
+    }
+
+    public double getXScale()
+    {
+        return preferredXScale.get();
+    }
+
+    public double getYScale()
+    {
+        return preferredYScale.get();
+    }
+
+    public void setXScale(double scaleFactor)
+    {
+        preferredXScale.set(scaleFactor);
+        transformScalePreferred.setX(scaleFactor);
+        updateScaleTransform();
+    }
+
+    public void setYScale(double scaleFactor)
+    {
+        preferredYScale.set(scaleFactor);
+        transformScalePreferred.setY(scaleFactor);
+        updateScaleTransform();
+    }
+
+    public double getTransformedCentreDepth()
+    {
+        if (this instanceof TranslateableThreeD)
+        {
+            return lastTransformedBoundsInParent.getCentreZ();
+        } else
+        {
+            return lastTransformedBoundsInParent.getCentreY();
+        }
+    }
+
+    public double getTransformedCentreX()
+    {
+        return lastTransformedBoundsInParent.getCentreX();
     }
 }

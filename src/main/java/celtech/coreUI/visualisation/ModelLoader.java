@@ -141,6 +141,7 @@ public class ModelLoader
         } else if (loadResults.getType() == ModelLoadResultType.SVG)
         {
 
+            project.setMode(ProjectMode.SVG);
             Set<ProjectifiableThing> allProjectifiableThings = new HashSet<>();
             for (ModelLoadResult result : loadResults.getResults())
             {
@@ -149,7 +150,6 @@ public class ModelLoader
 
             addToProject(project, allProjectifiableThings, false, dontGroupModelsOverride, printer);
 
-            project.setMode(ProjectMode.SVG);
         }
 
         if (project != null
@@ -248,34 +248,37 @@ public class ModelLoader
             {
                 modelContainers.iterator().forEachRemaining(mc ->
                 {
-                    addModelSequence(undoableProject, (ModelContainer) mc, shouldCentre, printer);
+                    addModelSequence(undoableProject, mc, shouldCentre, printer);
                 });
             }
         } else
         {
-            undoableProject.addModel(modelContainers.iterator().next());
+            addModelSequence(undoableProject, modelContainers.iterator().next(), shouldCentre, printer);
         }
     }
 
     private void addModelSequence(UndoableProject undoableProject,
-            ModelContainer modelContainer,
+            ProjectifiableThing projectifiableThing,
             boolean shouldCentre,
             Printer printer)
     {
         if (shouldCentre)
         {
-            modelContainer.moveToCentre();
-            modelContainer.dropToBed();
+            projectifiableThing.moveToCentre();
+            if (projectifiableThing instanceof ModelContainer)
+            {
+                ((ModelContainer)projectifiableThing).dropToBed();
+            }
         }
-        shrinkIfRequested(modelContainer, printer);
-        modelContainer.checkOffBed();
-        undoableProject.addModel(modelContainer);
+        shrinkIfRequested(projectifiableThing, printer);
+        projectifiableThing.checkOffBed();
+        undoableProject.addModel(projectifiableThing);
     }
 
-    private void shrinkIfRequested(ModelContainer modelContainer, Printer printer)
+    private void shrinkIfRequested(ProjectifiableThing projectifiableThing, Printer printer)
     {
         boolean shrinkModel = false;
-        RectangularBounds originalBounds = modelContainer.getOriginalModelBounds();
+        RectangularBounds originalBounds = projectifiableThing.getOriginalModelBounds();
 
         if (printer != null)
         {
@@ -283,11 +286,11 @@ public class ModelLoader
             if (modelIsTooLarge)
             {
                 shrinkModel = BaseLookup.getSystemNotificationHandler().
-                        showModelTooBigDialog(modelContainer.getModelName());
+                        showModelTooBigDialog(projectifiableThing.getModelName());
             }
             if (shrinkModel)
             {
-                modelContainer.shrinkToFitBed();
+                projectifiableThing.shrinkToFitBed();
             }
         }
     }

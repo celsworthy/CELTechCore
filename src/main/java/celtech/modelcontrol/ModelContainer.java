@@ -88,44 +88,27 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     private Stenographer steno;
     private boolean isInvalidMesh = false;
 
-    RectangularBounds originalModelBounds;
-
-    protected Scale transformScalePreferred;
     private Translate transformDropToBedYAdjust;
-    private static final Point3D Y_AXIS = new Point3D(0, 1, 0);
-    private static final Point3D Z_AXIS = new Point3D(0, 0, 1);
-    private static final Point3D X_AXIS = new Point3D(1, 0, 0);
     private Rotate transformRotateTwistPreferred;
-    private Rotate transformRotateTurnPreferred;
     private Rotate transformRotateLeanPreferred;
-    private Translate transformMoveToPreferred;
-    private Translate transformBedCentre;
 
     private MeshView meshView;
 
     /**
      * Property wrapper around the scale.
      */
-    private DoubleProperty preferredXScale;
-    private DoubleProperty preferredYScale;
     private DoubleProperty preferredZScale;
     /**
      * Property wrappers around the rotations.
      */
     private DoubleProperty preferredRotationTwist;
     private DoubleProperty preferredRotationLean;
-    private DoubleProperty preferredRotationTurn;
-
-    private double bedCentreOffsetX;
-    private double bedCentreOffsetY;
-    private double bedCentreOffsetZ;
 
     /**
      * The bounds of the object in its parent. For top level objects this is
      * also the bounds in the bed coordinates. They are kept valid even after
      * translates etc.
      */
-    protected RectangularBounds lastTransformedBoundsInParent;
     private SelectionHighlighter selectionHighlighter;
 
     /**
@@ -136,8 +119,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     private double cameraDistance = 1;
 
     private Camera cameraViewingMe = null;
-
-    private List<Transform> rotationTransforms;
 
     private MeshView collisionShape = null;
     private List<CollisionShapeListener> collisionShapeListeners = new ArrayList<>();
@@ -178,11 +159,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         {
             return null;
         }
-    }
-
-    public Scale getTransformScale()
-    {
-        return transformScalePreferred;
     }
 
     /**
@@ -271,38 +247,17 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         notifyScreenExtentsChange();
     }
 
-    public void updateOriginalModelBounds()
+    @Override
+    protected void setRotationPivotsToCentreOfModel()
     {
-        originalModelBounds = calculateBoundsInLocal();
-        setScalePivotToCentreOfModel();
-        setRotationPivotsToCentreOfModel();
-    }
 
-    void setScalePivotToCentreOfModel()
-    {
-        transformScalePreferred.setPivotX(getBoundsInLocal().getMinX()
-                + getBoundsInLocal().getWidth() / 2.0);
-        transformScalePreferred.setPivotY(getBoundsInLocal().getMinY()
-                + getBoundsInLocal().getHeight() / 2.0);
-        transformScalePreferred.setPivotZ(getBoundsInLocal().getMinZ()
-                + getBoundsInLocal().getDepth() / 2.0);
-    }
-
-    void setRotationPivotsToCentreOfModel()
-    {
-        transformRotateLeanPreferred.setPivotX(originalModelBounds.getCentreX());
-        transformRotateLeanPreferred.setPivotY(originalModelBounds.getCentreY());
-        transformRotateLeanPreferred.setPivotZ(originalModelBounds.getCentreZ());
-
-        transformRotateTwistPreferred.setPivotX(originalModelBounds.getCentreX());
-        transformRotateTwistPreferred.setPivotY(originalModelBounds.getCentreY());
-        transformRotateTwistPreferred.setPivotZ(originalModelBounds.getCentreZ());
 
         transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
         transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
     }
 
+    @Override
     public void moveToCentre()
     {
         translateTo(bedCentreOffsetX, bedCentreOffsetZ);
@@ -381,6 +336,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      * Set transformBedCentre according to the position of the centre of the
      * bed.
      */
+    @Override
     public void setBedCentreOffsetTransform()
     {
         bedCentreOffsetX = printVolumeWidth / 2;
@@ -511,7 +467,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     public void translateTo(double xPosition, double zPosition)
     {
         translateXTo(xPosition);
-        translateZTo(zPosition);
+        translateDepthPositionTo(zPosition);
     }
 
     public void centreObjectOnBed()
@@ -520,6 +476,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         transformMoveToPreferred.setZ(0);
     }
 
+    @Override
     public void shrinkToFitBed()
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
@@ -696,28 +653,13 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         }
     }
 
-    private void updateScaleTransform()
+    @Override
+    protected void updateScaleTransform()
     {
         dropToBed();
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
-    }
-
-    @Override
-    public void setXScale(double scaleFactor)
-    {
-        preferredXScale.set(scaleFactor);
-        transformScalePreferred.setX(scaleFactor);
-        updateScaleTransform();
-    }
-
-    @Override
-    public void setYScale(double scaleFactor)
-    {
-        preferredYScale.set(scaleFactor);
-        transformScalePreferred.setY(scaleFactor);
-        updateScaleTransform();
     }
 
     @Override
@@ -753,18 +695,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
         transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
         transformRotateTurnPreferred.setAxis(Y_AXIS);
-    }
-
-    @Override
-    public double getXScale()
-    {
-        return preferredXScale.get();
-    }
-
-    @Override
-    public double getYScale()
-    {
-        return preferredYScale.get();
     }
 
     @Override
@@ -1121,7 +1051,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      * @param zPosition
      */
     @Override
-    public void translateZTo(double zPosition)
+    public void translateDepthPositionTo(double zPosition)
     {
         RectangularBounds bounds = lastTransformedBoundsInParent;
 
@@ -1138,7 +1068,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
             finalZPosition -= (newMaxZ - printVolumeDepth);
         }
 
-        double currentZPosition = getTransformedCentreZ();
+        double currentZPosition = getTransformedCentreDepth();
         double requiredTranslation = finalZPosition - currentZPosition;
         transformMoveToPreferred.setZ(transformMoveToPreferred.getZ() + requiredTranslation);
 
@@ -1247,7 +1177,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the
      * original model dimensions before any transforms).
      */
-    RectangularBounds calculateBoundsInLocal()
+    @Override
+    protected RectangularBounds calculateBoundsInLocal()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -1401,6 +1332,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      * Calculate max/min X,Y,Z after the transforms have been applied (ie in the
      * parent node).
      */
+    @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
     {
 
@@ -1663,11 +1595,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         return v1;
     }
 
-    public RectangularBounds getOriginalModelBounds()
-    {
-        return originalModelBounds;
-    }
-
     public void dropToBed()
     {
         // Correct transformPostRotationYAdjust for change in height (Y)
@@ -1693,16 +1620,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     public double getCentreX()
     {
         return getLocalBounds().getCentreX();
-    }
-
-    public double getTransformedCentreZ()
-    {
-        return lastTransformedBoundsInParent.getCentreZ();
-    }
-
-    public double getTransformedCentreX()
-    {
-        return lastTransformedBoundsInParent.getCentreX();
     }
 
     public double getTransformedCentreY()

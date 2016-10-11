@@ -98,7 +98,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
     private VBox sidePanel;
 
-    private static AnchorPane tabAndNotificationArea;
+    private static AnchorPane interchangeablePanelAreaWithNotificationArea;
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
     private static Tab printerStatusTab;
@@ -119,6 +119,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private AnchorPane rootAnchorPane;
     private Pane spinnerContainer;
     private Spinner spinner;
+
+    private NotificationArea notificationArea = new NotificationArea();
 
     //Display scaling
     private BooleanProperty nodesMayHaveMoved;
@@ -188,12 +190,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Pane lastInsetPanel = insetPanels.get(oldMode);
             if (lastInsetPanel != null)
             {
-                rhPanel.getChildren().remove(lastInsetPanel);
+                interchangeablePanelAreaWithNotificationArea.getChildren().remove(lastInsetPanel);
             } else
             {
-                if (rhPanel.getChildren().contains(projectTabPaneHolder))
+                if (interchangeablePanelAreaWithNotificationArea.getChildren().contains(projectTabPaneHolder))
                 {
-                    rhPanel.getChildren().remove(projectTabPaneHolder);
+                    interchangeablePanelAreaWithNotificationArea.getChildren().remove(projectTabPaneHolder);
                 }
             }
         }
@@ -206,12 +208,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             AnchorPane.setTopAnchor(newInsetPanel, 0.0);
             AnchorPane.setLeftAnchor(newInsetPanel, 0.0);
             AnchorPane.setRightAnchor(newInsetPanel, 0.0);
-            rhPanel.getChildren().add(0, newInsetPanel);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, newInsetPanel);
         }
 
         if (newMode == ApplicationMode.LAYOUT)
         {
-            rhPanel.getChildren().add(0, projectTabPaneHolder);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
 
             ProjectTab projectTab = null;
 
@@ -241,10 +243,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         } else if (newMode == ApplicationMode.SETTINGS)
         {
-            rhPanel.getChildren().add(0, projectTabPaneHolder);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
         } else if (newMode == ApplicationMode.STATUS)
         {
-            rhPanel.getChildren().add(0, projectTabPaneHolder);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
             tabDisplaySelectionModel.select(0);
         }
     }
@@ -357,11 +359,20 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
-        addTopMenuStripController();
+        interchangeablePanelAreaWithNotificationArea = new AnchorPane();
+        AnchorPane.setBottomAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        AnchorPane.setTopAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        AnchorPane.setLeftAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        AnchorPane.setRightAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        rhPanel.getChildren().add(interchangeablePanelAreaWithNotificationArea);
+
+        HBox topMenuStrip = new TopMenuStrip();
+        AnchorPane.setTopAnchor(topMenuStrip, 0.0);
+        AnchorPane.setLeftAnchor(topMenuStrip, 0.0);
+        AnchorPane.setRightAnchor(topMenuStrip, 0.0);
+        rhPanel.getChildren().add(topMenuStrip);
 
         mainHolder.getChildren().add(rhPanel);
-
-        tabAndNotificationArea = new AnchorPane();
 
         // Configure the main display tab pane - just the printer status page to start with
         tabDisplay = new TabPane();
@@ -440,9 +451,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         }
                     });
 
-            tabAndNotificationArea.getChildren().add(tabDisplay);
-            addNotificationArea();
-            projectTabPaneHolder.getChildren().add(tabAndNotificationArea);
+            AnchorPane.setBottomAnchor(notificationArea, 90.0);
+            AnchorPane.setLeftAnchor(notificationArea, 0.0);
+            AnchorPane.setRightAnchor(notificationArea, 0.0);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(notificationArea);
+            projectTabPaneHolder.getChildren().add(tabDisplay);
         } catch (IOException ex)
         {
             steno.exception("Failed to load printer status page", ex);
@@ -580,24 +593,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             insetPanelControllers.put(mode, null);
             steno.exception("Couldn't load inset panel for mode:" + mode, ex);
         }
-    }
-
-    private void addTopMenuStripController()
-    {
-        HBox topMenuStrip = new TopMenuStrip();
-        AnchorPane.setTopAnchor(topMenuStrip, 0.0);
-        AnchorPane.setLeftAnchor(topMenuStrip, 0.0);
-        AnchorPane.setRightAnchor(topMenuStrip, 0.0);
-        rhPanel.getChildren().add(topMenuStrip);
-    }
-
-    private void addNotificationArea()
-    {
-        NotificationArea notificationArea = new NotificationArea();
-        AnchorPane.setBottomAnchor(notificationArea, 0.0);
-        AnchorPane.setLeftAnchor(notificationArea, 0.0);
-        AnchorPane.setRightAnchor(notificationArea, 0.0);
-        tabAndNotificationArea.getChildren().add(notificationArea);
     }
 
     private ProjectTab createAndAddNewProjectTab()

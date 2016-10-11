@@ -188,16 +188,16 @@ public class CollisionManager implements CollisionShapeListener
 //        for (ModelContainer model : modelContainers)
 //        {
 ////            Transform worldTxform = new Transform();
-////            worldTxform.transform(new Vector3f((float) model.getTransformedCentreX(), (float) model.getTransformedCentreY(), (float) model.getTransformedCentreZ()));
+////            worldTxform.transform(new Vector3f((float) model.getTransformedCentreX(), (float) model.getTransformedCentreY(), (float) model.getTransformedCentreDepth()));
 //            GhostObject ghost = monitoredModels.get(model);
 //            if (ghost != null)
 //            {
-////                monitoredModelsTransforms.get(model).origin.set((float) model.getTransformedCentreX(), (float) model.getTransformedCentreY(), (float) model.getTransformedCentreZ());
+////                monitoredModelsTransforms.get(model).origin.set((float) model.getTransformedCentreX(), (float) model.getTransformedCentreY(), (float) model.getTransformedCentreDepth());
 //                Transform centringTransform = monitoredModelsCentringTransforms.get(model);
 //                monitoredModelsTransforms.get(model).origin.set(
 //                        (float) model.getTransformedCentreX() + centringTransform.origin.x,
 //                        0,
-//                        (float) model.getTransformedCentreZ() + centringTransform.origin.z);
+//                        (float) model.getTransformedCentreDepth() + centringTransform.origin.z);
 ////                ghost.
 //                ghost.setWorldTransform(monitoredModelsTransforms.get(model));
 //            }

@@ -25,6 +25,7 @@ import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ResizeableThreeD;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
+import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableThreeD;
 import celtech.roboxbase.utils.Math.MathUtils;
 import java.net.URL;
@@ -506,7 +507,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             projectSelection.getPrimarySelectedModelDetails().getDepth().removeListener(depthListener);
 
             projectSelection.getPrimarySelectedModelDetails().getCentreX().removeListener(xAxisListener);
-            projectSelection.getPrimarySelectedModelDetails().getCentreZ().removeListener(yAxisListener);
+            projectSelection.getPrimarySelectedModelDetails().getCentreDepth().removeListener(yAxisListener);
 
             projectSelection.getPrimarySelectedModelDetails().getScaleX().removeListener(modelScaleXChangeListener);
             projectSelection.getPrimarySelectedModelDetails().getScaleY().removeListener(modelScaleYChangeListener);
@@ -534,7 +535,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             selectedModelDetails.getDepth().addListener(depthListener);
 
             selectedModelDetails.getCentreX().addListener(xAxisListener);
-            selectedModelDetails.getCentreZ().addListener(yAxisListener);
+            selectedModelDetails.getCentreDepth().addListener(yAxisListener);
 
             selectedModelDetails.getScaleX().addListener(modelScaleXChangeListener);
             selectedModelDetails.getScaleY().addListener(modelScaleYChangeListener);
@@ -706,7 +707,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         populateHeightField(selectedModelDetails.getHeight().get());
         populateDepthField(selectedModelDetails.getDepth().get());
         populateXAxisField(selectedModelDetails.getCentreX().get());
-        populateYAxisField(selectedModelDetails.getCentreZ().get());
+        populateYAxisField(selectedModelDetails.getCentreDepth().get());
     }
 
     private void setUpNumSelectedModelsListener()
@@ -1083,7 +1084,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastY = newY;
         }
-        undoableProject.translateModelsZTo(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), newY);
+        undoableProject.translateModelsDepthPositionTo(projectSelection.getSelectedModelsSnapshot(Translateable.class), newY);
     }
 
     private void updateX()

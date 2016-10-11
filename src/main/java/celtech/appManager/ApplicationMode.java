@@ -10,6 +10,7 @@ import celtech.coreUI.controllers.panels.LoadModelInsetPanelController;
 import celtech.coreUI.controllers.panels.MaintenanceInsetPanelController;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.controllers.panels.RegistrationInsetPanelController;
+import celtech.coreUI.controllers.panels.WelcomeInsetPanelController;
 
 /**
  *
@@ -18,7 +19,7 @@ import celtech.coreUI.controllers.panels.RegistrationInsetPanelController;
 public enum ApplicationMode
 {
 
-    WELCOME(null, null),
+    WELCOME("Welcome", WelcomeInsetPanelController.class),
     CALIBRATION_CHOICE("Calibration", CalibrationInsetPanelController.class),
     REGISTRATION("registration", RegistrationInsetPanelController.class),
     PURGE("purge", PurgeInsetPanelController.class),

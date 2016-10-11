@@ -26,6 +26,11 @@ public class SVGProject extends Project
 
     private static final Stenographer steno = StenographerFactory.getStenographer(SVGProject.class.getName());
 
+    public SVGProject()
+    {
+        super();
+    }
+
     @Override
     protected void initialise()
     {
@@ -45,11 +50,6 @@ public class SVGProject extends Project
             topLevelThings.add(modelContainer);
             projectModified();
             fireWhenModelAdded(modelContainer);
-//            addModelListeners(modelContainer);
-//            for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
-//            {
-//                addModelListeners(childModelContainer);
-//            }
         }
     }
 

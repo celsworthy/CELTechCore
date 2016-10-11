@@ -19,6 +19,7 @@ public class ExtrasMenuPanelController extends MenuPanelController
      * this is configuration information that could be e.g. stored in XML or in
      * a plugin.
      */
+    @Override
     protected void setupInnerPanels()
     {
         loadInnerPanel(

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -89,13 +90,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     private final Group parts = new Group();
     private final Group gCodeOverlay = new Group();
 
-    private final Pane parentPane;
+    private Pane parentPane = null;
 
     private final ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
     private boolean justEnteredDragMode;
 
     private ContextMenu bedContextMenu = null;
-
+    
     public SVGViewManager(Project project)
     {
         this.project = project;
@@ -107,35 +108,29 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         createBed();
 
-        partsAndBed.getChildren().addAll(bed, parts, gCodeOverlay);
+        partsAndBed.getChildren().addAll(bed, parts);
         partsAndBed.getTransforms().addAll(bedTranslate, bedScale);
 
         Affine jfxToRealWorld = new Affine();
         jfxToRealWorld.appendScale(1, -1);
         jfxToRealWorld.appendTranslation(0, -bedHeight);
 
-        gCodeOverlay.getTransforms().addAll(bedScale, bedTranslate, jfxToRealWorld);
+        gCodeOverlay.getTransforms().addAll(bedTranslate, bedScale, jfxToRealWorld);
 
         getChildren().add(partsAndBed);
         getChildren().add(gCodeOverlay);
-
-        for (ProjectifiableThing projectifiableThing : project.getAllModels())
-        {
-            parts.getChildren().add(projectifiableThing);
-            projectifiableThing.setBedReference(gCodeOverlay);
-        }
 
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         loadedModels = project.getTopLevelThings();
 
         applicationStatus.modeProperty().addListener(applicationModeListener);
 
-        addEventHandler(MouseEvent.ANY, mouseEventHandler);
-        addEventHandler(ZoomEvent.ANY, zoomEventHandler);
-        addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+        parentPane.addEventHandler(MouseEvent.ANY, mouseEventHandler);
+        parentPane.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+        parentPane.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 
 //        setStyle("-fx-background-color: blue;");
-        this.widthProperty().addListener(new ChangeListener<Number>()
+        this.maxWidthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
@@ -144,7 +139,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             }
         });
 
-        this.heightProperty().addListener(new ChangeListener<Number>()
+        this.maxHeightProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
@@ -157,6 +152,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
          * Listen for adding and removing of models from the project
          */
         project.addProjectChangesListener(this);
+
+        for (ProjectifiableThing projectifiableThing : project.getAllModels())
+        {
+            projectifiableThing.setBedReference(gCodeOverlay);
+            parts.getChildren().add(projectifiableThing);
+//            projectifiableThing.shrinkToFitBed();
+        }
     }
 
     private void createBed()
@@ -255,8 +257,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void resizeBed()
     {
-        double viewAreaWidth = this.getWidth();
-        double viewAreaHeight = this.getHeight();
+        double viewAreaWidth = maxWidthProperty().get();
+        double viewAreaHeight = maxHeightProperty().get();
         double displayAspect = viewAreaWidth / viewAreaHeight;
         double aspect = bedWidth / bedHeight;
 
@@ -274,11 +276,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             newWidth = viewAreaWidth - bedBorder;
         }
 
-        double xScale = newWidth / bedWidth;
-        double yScale = newHeight / bedHeight;
+        double scale = newWidth / bedWidth;
 
-        bedScale.setX(xScale);
-        bedScale.setY(yScale);
+        bedScale.setX(scale);
+        bedScale.setY(scale);
 
         double xOffset = ((viewAreaWidth - newWidth) / 2);
         double yOffset = ((viewAreaHeight - newHeight) / 2);
@@ -290,8 +291,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     @Override
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
-        parts.getChildren().add(projectifiableThing);
+        steno.info("Bounds are " + projectifiableThing.getBoundsInLocal());
         projectifiableThing.setBedReference(gCodeOverlay);
+        parts.getChildren().add(projectifiableThing);
+//        projectifiableThing.shrinkToFitBed();
     }
 
     @Override
@@ -404,7 +407,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         }
         if (event.isPrimaryButtonDown())
         {
-            if (intersectedNode instanceof Shape)
+            if (intersectedNode != bed
+                    && intersectedNode instanceof Shape)
             {
                 ShapeContainer sc = findShapeContainerParent(intersectedNode);
                 if (sc != null)
@@ -445,11 +449,11 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             steno.info("New position = " + newPosition);
             Point2D resultantPosition = partsAndBed.sceneToLocal(newPosition).subtract(partsAndBed.sceneToLocal(lastDragPosition));
             steno.info("Resultant " + resultantPosition);
-            if (shapeBeingDragged == bed)
-            {
-                bedTranslate.setX(bedTranslate.getX() + resultantPosition.getX());
-                bedTranslate.setY(bedTranslate.getY() + resultantPosition.getY());
-            } else
+//            if (shapeBeingDragged == bed)
+//            {
+//                bedTranslate.setX(bedTranslate.getX() + resultantPosition.getX());
+//                bedTranslate.setY(bedTranslate.getY() + resultantPosition.getY());
+//            } else
             {
 
                 undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), resultantPosition.getX(), resultantPosition.getY(),
@@ -470,13 +474,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                     switch (newMode)
                     {
                         case SETTINGS:
-                            removeEventHandler(MouseEvent.ANY, mouseEventHandler);
+                            parentPane.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
                             deselectAllModels();
                             break;
                         default:
-                            addEventHandler(MouseEvent.ANY, mouseEventHandler);
-                            addEventHandler(ZoomEvent.ANY, zoomEventHandler);
-//                            subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                            parentPane.addEventHandler(MouseEvent.ANY, mouseEventHandler);
+                            parentPane.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                            parentPane.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
                             break;
                     }
 //                    updateModelColours();

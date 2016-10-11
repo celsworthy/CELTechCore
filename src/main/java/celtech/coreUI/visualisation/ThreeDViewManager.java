@@ -1523,7 +1523,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         zCutDisplayPlane.setWidth(modelContainer.getTransformedWidth());
         zCutDisplayPlane.setDepth(modelContainer.getTransformedDepth());
         zCutDisplayPlane.setTranslateX(modelContainer.getTransformedCentreX());
-        zCutDisplayPlane.setTranslateZ(modelContainer.getTransformedCentreZ());
+        zCutDisplayPlane.setTranslateZ(modelContainer.getTransformedCentreDepth());
         zCutDisplayPlane.setTranslateY(-cutHeight.get());
 
         this.cutHeight = cutHeight;
@@ -1568,7 +1568,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 ////            csgTimer.timerStart(this, "cut");
 ////            Vector3d boxWHD = new Vector3d(modelContainer.getTransformedWidth(), 5, modelContainer.getTransformedDepth());
 ////            Vector3d boxCentreTop = new Vector3d(0, -cutHeight.get(), 0);
-//////            Vector3d boxCentreBottom = new Vector3d(modelContainer.getTransformedCentreX(), -modelContainer.getTransformedHeight() * 0.25, modelContainer.getTransformedCentreZ());
+//////            Vector3d boxCentreBottom = new Vector3d(modelContainer.getTransformedCentreX(), -modelContainer.getTransformedHeight() * 0.25, modelContainer.getTransformedCentreDepth());
 ////            csgTimer.timerStop(this, "cut");
 ////            steno.info("Time to cut " + csgTimer.timeTimeSoFar_ms(this, "cut"));
 ////

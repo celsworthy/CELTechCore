@@ -161,9 +161,10 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
     /**
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the
      * original model dimensions before any transforms).
+     * @return 
      */
     @Override
-    RectangularBounds calculateBoundsInLocal()
+    protected RectangularBounds calculateBoundsInLocal()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -264,10 +265,10 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
 //        for (ModelContainer modelContainer : getChildModelContainers())
 //        {
 //            modelContainer.setRotationTurn(value);
-//            Point3D newPosition = turnRotate.deltaTransform(modelContainer.getTransformedCentreX(), modelContainer.getTransformedCentreY(), modelContainer.getTransformedCentreZ());
+//            Point3D newPosition = turnRotate.deltaTransform(modelContainer.getTransformedCentreX(), modelContainer.getTransformedCentreY(), modelContainer.getTransformedCentreDepth());
 //            double newX = newPosition.getX() - modelContainer.getTransformedCentreX();
 //            double newY = newPosition.getY() - modelContainer.getTransformedCentreY();
-//            double newZ = newPosition.getZ() - modelContainer.getTransformedCentreZ();
+//            double newZ = newPosition.getZ() - modelContainer.getTransformedCentreDepth();
 //            modelContainer.translateBy(newX, newY, newZ);
 //        }
 //

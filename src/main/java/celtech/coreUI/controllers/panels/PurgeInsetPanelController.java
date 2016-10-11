@@ -397,7 +397,7 @@ public class PurgeInsetPanelController implements Initializable
         showAppropriateButtons(state);
         resettingPrinter.setVisible(false);
         purgeStatus.setVisible(true);
-        purgeStatus.setText(Lookup.i18n(state.getStepTitle()));
+        purgeStatus.setText(state.getStepTitle());
         purgeTemperature0.valueChangedProperty().removeListener(purgeTempEntryListener0);
         if (purgeTwoNozzleHeaters.get())
         {

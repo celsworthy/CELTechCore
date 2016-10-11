@@ -313,7 +313,7 @@ public class ProjectSelection implements ProjectChangesListener
         // initing values to -1 forces a change update when value first set to 0 (e.g. rotY)
         private final DoubleProperty width = new SimpleDoubleProperty(-1);
         private final DoubleProperty centreX = new SimpleDoubleProperty(-1);
-        private final DoubleProperty centreZ = new SimpleDoubleProperty(-1);
+        private final DoubleProperty centreDepth = new SimpleDoubleProperty(-1);
         private final DoubleProperty height = new SimpleDoubleProperty(-1);
         private final DoubleProperty depth = new SimpleDoubleProperty(-1);
         private final DoubleProperty scaleX = new SimpleDoubleProperty(-1);
@@ -347,14 +347,14 @@ public class ProjectSelection implements ProjectChangesListener
                     width.set(((ShapeProviderTwoD) boundModelContainer).getScaledWidth());
                     height.set(((ShapeProviderTwoD) boundModelContainer).getScaledHeight());
                     depth.set(((ShapeProviderThreeD) boundModelContainer).getScaledDepth());
-                    centreX.set(((ModelContainer) boundModelContainer).getTransformedCentreX());
-                    centreZ.set(((ModelContainer) boundModelContainer).getTransformedCentreZ());
+                    centreX.set(boundModelContainer.getTransformedCentreX());
+                    centreDepth.set(boundModelContainer.getTransformedCentreDepth());
                 } else if (boundModelContainer instanceof ShapeProviderTwoD)
                 {
                     width.set(((ShapeProviderTwoD) boundModelContainer).getScaledWidth());
                     height.set(((ShapeProviderTwoD) boundModelContainer).getScaledHeight());
-                    centreX.set(((ShapeProviderTwoD) boundModelContainer).getCentreX());
-                    centreZ.set(((ShapeProviderTwoD) boundModelContainer).getCentreY());
+                    centreX.set(boundModelContainer.getTransformedCentreX());
+                    centreDepth.set(boundModelContainer.getTransformedCentreDepth());
                 }
 
                 if (boundModelContainer instanceof ScaleableThreeD)
@@ -380,9 +380,9 @@ public class ProjectSelection implements ProjectChangesListener
             }
         }
 
-        public DoubleProperty getCentreZ()
+        public DoubleProperty getCentreDepth()
         {
-            return centreZ;
+            return centreDepth;
         }
 
         public DoubleProperty getCentreX()
