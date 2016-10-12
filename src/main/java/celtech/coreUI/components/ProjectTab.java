@@ -147,7 +147,6 @@ public class ProjectTab extends Tab implements ProjectCallback
         overlayPane.setMouseTransparent(true);
         overlayPane.setPickOnBounds(false);
 
-
         basePane.getChildren().add(nonSpecificModelIndicator);
 
         setupDragHandlers();
@@ -229,6 +228,8 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             setupSVGView();
         }
+        
+        fireProjectSelected();
     }
 
     private void setup3DView()
@@ -507,7 +508,10 @@ public class ProjectTab extends Tab implements ProjectCallback
 
     public void fireProjectSelected()
     {
-        Lookup.setSelectedProject(project);
+        if (project != null)
+        {
+            Lookup.setSelectedProject(project);
+        }
     }
 
     @Override
@@ -527,7 +531,6 @@ public class ProjectTab extends Tab implements ProjectCallback
             ModelContainerProject newProject = new ModelContainerProject();
             this.project = newProject;
             initialiseWithProject();
-            fireProjectSelected();
         }
     }
 
@@ -538,7 +541,6 @@ public class ProjectTab extends Tab implements ProjectCallback
             SVGProject newProject = new SVGProject();
             this.project = newProject;
             initialiseWithProject();
-            fireProjectSelected();
         }
     }
 }
