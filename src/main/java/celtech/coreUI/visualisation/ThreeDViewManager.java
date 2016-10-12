@@ -769,11 +769,10 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private void updateCurrentPrinter(Printer printer)
     {
+
         if (printer != null
                 && printer.printerConfigurationProperty().get() != null)
         {
-            deselectAllModels();
-
             currentPrinterConfiguration = printer.printerConfigurationProperty().get();
 
             defaultXTranslate = -currentPrinterConfiguration.getPrintVolumeWidth() / 2;
@@ -785,10 +784,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() - 200;
                 defaultDistance = 800;
             }
-
-            addPrintVolumeBoundingBox();
-            transitionCameraToDefaults();
+        } else
+        {
+            //Default view
+            PrinterDefinitionFile defaultPrinterDefinition = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
+            defaultXTranslate = -defaultPrinterDefinition.getPrintVolumeWidth() / 2;
+            defaultYTranslate = defaultPrinterDefinition.getPrintVolumeHeight() - 80;
+            defaultDistance = initialCameraDistance;            
         }
+
+        deselectAllModels();
+        addPrintVolumeBoundingBox();
+        transitionCameraToDefaults();
     }
 
     public ThreeDViewManager(ModelContainerProject project,
@@ -863,15 +870,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             }
         });
 
-        if (Lookup.getSelectedPrinterProperty().get() != null)
-        {
-            updateCurrentPrinter(Lookup.getSelectedPrinterProperty().get());
-        } else
-        {
-            // Update using the defaults
-            addPrintVolumeBoundingBox();
-            transitionCameraToDefaults();
-        }
+        updateCurrentPrinter(Lookup.getSelectedPrinterProperty().get());
 
         translationDragPlane.setId("DragPlane");
         translationDragPlane.setOpacity(0.0);
