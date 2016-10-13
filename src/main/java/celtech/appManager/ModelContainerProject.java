@@ -20,9 +20,15 @@ import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.utils.Math.newPacking.core.Bin;
+import celtech.roboxbase.utils.Math.newPacking.core.BinPacking;
+import celtech.roboxbase.utils.Math.newPacking.primitives.MArea;
 import celtech.roboxbase.utils.Math.packing.PackableItem;
 import celtech.roboxbase.utils.Math.packing.PackingThing;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.utils.threed.MeshUtils;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -271,7 +277,7 @@ public class ModelContainerProject extends Project
         {
             if (loadedModel instanceof ModelContainer)
             {
-                getUsedExtruders((ModelContainer)loadedModel, localUsedExtruders, printer);
+                getUsedExtruders((ModelContainer) loadedModel, localUsedExtruders, printer);
             }
         }
 
@@ -742,14 +748,14 @@ public class ModelContainerProject extends Project
     @Override
     public void autoLayout()
     {
-        List<PackableItem> sortedPackables = new ArrayList<>();
-
-        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
-
-        sortedContainers.stream().forEach(model ->
-        {
-            sortedPackables.add((PackableItem) model);
-        });
+//        List<PackableItem> sortedPackables = new ArrayList<>();
+//
+//        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
+//
+//        sortedContainers.stream().forEach(model ->
+//        {
+//            sortedPackables.add((PackableItem) model);
+//        });
 
         double printVolumeWidth = 0;
         double printVolumeDepth = 0;
@@ -766,13 +772,29 @@ public class ModelContainerProject extends Project
             printVolumeDepth = defaultPrinterConfiguration.getPrintVolumeDepth();
         }
 
+//        Dimension binDimension = new Dimension((int) (printVolumeWidth * 10.0), (int) (printVolumeDepth * 10.0));
+//
+//        MArea[] pieces = new MArea[topLevelThings.size()];
+//
+//        for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
+//        {
+//            RectangularBounds pieceBounds = ((ModelContainer) topLevelThings).calculateBoundsInBedCoordinateSystem();
+//            Rectangle pieceRect = new Rectangle((int) (pieceBounds.getMinX() * 10.0),
+//                    (int) (pieceBounds.getMinZ() * 10.0),
+//                    (int) (pieceBounds.getWidth() * 10.0),
+//                    (int) (pieceBounds.getHeight() * 10.0));
+//            MArea piece = new MArea(pieceRect, topLevelThings.get(thingIndex).getModelId());
+//            pieces[thingIndex] = piece;
+//        }
+//
+//        Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
+
         PackingThing thing = new PackingThing((int) printVolumeWidth,
                 (int) printVolumeDepth);
 
         thing.reference(sortedPackables, 10);
         thing.pack();
         thing.relocateBlocks();
-
         projectModified();
         fireWhenAutoLaidOut();
     }
