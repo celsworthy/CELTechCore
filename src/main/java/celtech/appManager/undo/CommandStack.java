@@ -56,7 +56,7 @@ public class CommandStack
         clearEndOfList();
         commands.add(command);
         command.do_();
-        steno.info("Asked to do- " + command.toString());
+//        steno.info("Asked to do- " + command.toString());
 //        if (index.get() < commands.size() - 1)
 //        {
         index.set(index.get() + 1);

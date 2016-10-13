@@ -29,6 +29,7 @@ import celtech.roboxbase.utils.RectangularBounds;
 import celtech.utils.threed.MeshUtils;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -748,14 +749,14 @@ public class ModelContainerProject extends Project
     @Override
     public void autoLayout()
     {
-        List<PackableItem> sortedPackables = new ArrayList<>();
-
-        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
-
-        sortedContainers.stream().forEach(model ->
-        {
-            sortedPackables.add((PackableItem) model);
-        });
+//        List<PackableItem> sortedPackables = new ArrayList<>();
+//
+//        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
+//
+//        sortedContainers.stream().forEach(model ->
+//        {
+//            sortedPackables.add((PackableItem) model);
+//        });
 
         double printVolumeWidth = 0;
         double printVolumeDepth = 0;
@@ -772,29 +773,63 @@ public class ModelContainerProject extends Project
             printVolumeDepth = defaultPrinterConfiguration.getPrintVolumeDepth();
         }
 
-//        Dimension binDimension = new Dimension((int) (printVolumeWidth * 10.0), (int) (printVolumeDepth * 10.0));
-//
-//        MArea[] pieces = new MArea[topLevelThings.size()];
-//
-//        for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
-//        {
-//            RectangularBounds pieceBounds = ((ModelContainer) topLevelThings).calculateBoundsInBedCoordinateSystem();
-//            Rectangle pieceRect = new Rectangle((int) (pieceBounds.getMinX() * 10.0),
-//                    (int) (pieceBounds.getMinZ() * 10.0),
-//                    (int) (pieceBounds.getWidth() * 10.0),
-//                    (int) (pieceBounds.getHeight() * 10.0));
-//            MArea piece = new MArea(pieceRect, topLevelThings.get(thingIndex).getModelId());
-//            pieces[thingIndex] = piece;
-//        }
-//
-//        Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
+        Dimension binDimension = new Dimension((int) printVolumeWidth, (int) printVolumeDepth);
 
-        PackingThing thing = new PackingThing((int) printVolumeWidth,
-                (int) printVolumeDepth);
+        MArea[] pieces = new MArea[topLevelThings.size()];
+        for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
+        {
+            RectangularBounds pieceBounds = ((ModelContainer) topLevelThings.get(thingIndex)).calculateBoundsInBedCoordinateSystem();
+            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX(), printVolumeDepth - pieceBounds.getMaxZ(), pieceBounds.getWidth(), pieceBounds.getDepth());
+            MArea piece = new MArea(rectangle, thingIndex);
+            pieces[thingIndex] = piece;
+            ModelContainer container = (ModelContainer) topLevelThings.get(thingIndex);
+            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+        }
+        steno.info("started with");
+        for (MArea area : pieces)
+        {
+            steno.info("Piece " + area.getID()
+                    + " X" + area.getBoundingBox2D().getX()
+                    + " Y" + area.getBoundingBox2D().getY()
+                    + " W" + area.getBoundingBox2D().getWidth()
+                    + " H" + area.getBoundingBox2D().getHeight()
+                    + " R" + area.getRotation()
+            );
+        }
+        Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
 
-        thing.reference(sortedPackables, 10);
-        thing.pack();
-        thing.relocateBlocks();
+        steno.info("ended with");
+        for (MArea area : bins[0].getPlacedPieces())
+        {
+            steno.info("Piece " + area.getID()
+                    + " X" + area.getBoundingBox2D().getX()
+                    + " Y" + area.getBoundingBox2D().getY()
+                    + " W" + area.getBoundingBox2D().getWidth()
+                    + " H" + area.getBoundingBox2D().getHeight()
+                    + " R" + area.getRotation()
+            );
+
+            ModelContainer container = (ModelContainer) topLevelThings.get(area.getID());
+
+//            double xDiff = pieces[area.getID()].getBoundingBox2D().getX() - area.getBoundingBox2D().get
+            double newRotation = container.getRotationTurn() + area.getRotation();
+            if (newRotation >= 360.0)
+            {
+                newRotation -= 360.0;
+            }
+            
+            double newDepth = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight()/ 2.0;
+            container.setRotationTurn(newRotation);
+            container.translateFrontLeftTo(area.getBoundingBox2D().getMinX(), newDepth);
+            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+        }
+
+//        PackingThing thing = new PackingThing((int) printVolumeWidth,
+//                (int) printVolumeDepth);
+//
+//        thing.reference(sortedPackables, 10);
+//        thing.pack();
+//        thing.relocateBlocks();
         projectModified();
         fireWhenAutoLaidOut();
     }
