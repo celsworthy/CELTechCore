@@ -748,14 +748,14 @@ public class ModelContainerProject extends Project
     @Override
     public void autoLayout()
     {
-//        List<PackableItem> sortedPackables = new ArrayList<>();
-//
-//        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
-//
-//        sortedContainers.stream().forEach(model ->
-//        {
-//            sortedPackables.add((PackableItem) model);
-//        });
+        List<PackableItem> sortedPackables = new ArrayList<>();
+
+        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
+
+        sortedContainers.stream().forEach(model ->
+        {
+            sortedPackables.add((PackableItem) model);
+        });
 
         double printVolumeWidth = 0;
         double printVolumeDepth = 0;
