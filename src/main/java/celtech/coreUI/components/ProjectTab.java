@@ -230,6 +230,8 @@ public class ProjectTab extends Tab implements ProjectCallback
         }
         
         fireProjectSelected();
+        
+        projectManager.projectOpened(project);
     }
 
     private void setup3DView()
