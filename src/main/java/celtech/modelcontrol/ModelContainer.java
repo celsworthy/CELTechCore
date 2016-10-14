@@ -12,7 +12,6 @@ import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
 import celtech.roboxbase.utils.Math.MathUtils;
-import celtech.roboxbase.utils.Math.packing.PackableItem;
 import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
@@ -72,7 +71,6 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
 public class ModelContainer extends ProjectifiableThing implements Serializable,
         Comparable,
         CameraViewChangeListener,
-        PackableItem,
         MeshToWorldTransformer,
         ScaleableThreeD,
         TranslateableThreeD,
