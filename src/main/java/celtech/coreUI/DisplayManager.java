@@ -601,6 +601,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 tabDisplay.heightProperty());
         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
         tabDisplaySelectionModel.select(projectTab);
+        Lookup.setSelectedProject(null);
         return projectTab;
     }
 
