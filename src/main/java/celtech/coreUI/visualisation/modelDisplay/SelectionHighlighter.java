@@ -138,7 +138,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
             selectionBoxFrontRightTop.setTy(minY);
 
             //Place the scale boxes
-            scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
+//            scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
         }
     }
 
