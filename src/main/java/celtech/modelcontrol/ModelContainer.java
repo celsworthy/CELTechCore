@@ -1161,9 +1161,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
         double epsilon = 0.001;
 
-        if (MathUtils.compareDouble(bounds.getMinY(),
-                printVolumeHeight + heightOffset,
-                epsilon) == MathUtils.LESS_THAN)
+        if (MathUtils.compareDouble(-bounds.getMinY(),
+                printVolumeHeight - heightOffset,
+                epsilon) == MathUtils.MORE_THAN)
         {
             isOutOfPrintVolume = true;
         }
