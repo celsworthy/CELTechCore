@@ -783,31 +783,31 @@ public class ModelContainerProject extends Project
             MArea piece = new MArea(rectangle, thingIndex);
             pieces[thingIndex] = piece;
             ModelContainer container = (ModelContainer) topLevelThings.get(thingIndex);
-            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+//            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
         }
-        steno.info("started with");
+//        steno.info("started with");
         for (MArea area : pieces)
         {
-            steno.info("Piece " + area.getID()
-                    + " X" + area.getBoundingBox2D().getX()
-                    + " Y" + area.getBoundingBox2D().getY()
-                    + " W" + area.getBoundingBox2D().getWidth()
-                    + " H" + area.getBoundingBox2D().getHeight()
-                    + " R" + area.getRotation()
-            );
+//            steno.info("Piece " + area.getID()
+//                    + " X" + area.getBoundingBox2D().getX()
+//                    + " Y" + area.getBoundingBox2D().getY()
+//                    + " W" + area.getBoundingBox2D().getWidth()
+//                    + " H" + area.getBoundingBox2D().getHeight()
+//                    + " R" + area.getRotation()
+//            );
         }
         Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
 
-        steno.info("ended with");
+//        steno.info("ended with");
         for (MArea area : bins[0].getPlacedPieces())
         {
-            steno.info("Piece " + area.getID()
-                    + " X" + area.getBoundingBox2D().getX()
-                    + " Y" + area.getBoundingBox2D().getY()
-                    + " W" + area.getBoundingBox2D().getWidth()
-                    + " H" + area.getBoundingBox2D().getHeight()
-                    + " R" + area.getRotation()
-            );
+//            steno.info("Piece " + area.getID()
+//                    + " X" + area.getBoundingBox2D().getX()
+//                    + " Y" + area.getBoundingBox2D().getY()
+//                    + " W" + area.getBoundingBox2D().getWidth()
+//                    + " H" + area.getBoundingBox2D().getHeight()
+//                    + " R" + area.getRotation()
+//            );
 
             ModelContainer container = (ModelContainer) topLevelThings.get(area.getID());
 
@@ -821,15 +821,9 @@ public class ModelContainerProject extends Project
             double newDepth = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight()/ 2.0;
             container.setRotationTurn(newRotation);
             container.translateFrontLeftTo(area.getBoundingBox2D().getMinX(), newDepth);
-            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+//            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
         }
 
-//        PackingThing thing = new PackingThing((int) printVolumeWidth,
-//                (int) printVolumeDepth);
-//
-//        thing.reference(sortedPackables, 10);
-//        thing.pack();
-//        thing.relocateBlocks();
         projectModified();
         fireWhenAutoLaidOut();
     }
