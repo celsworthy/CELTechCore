@@ -10,6 +10,7 @@ import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
@@ -30,7 +31,10 @@ import javafx.animation.Timeline;
 import javafx.animation.Transition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -170,10 +174,10 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private ConditionalNotificationBar oneExtruderNoFilamentSelectedNotificationBar;
     private ConditionalNotificationBar oneExtruderNoFilamentNotificationBar;
-    private ConditionalNotificationBar twoExtrudersNoFilament0SelectedNotificationBar;
-    private ConditionalNotificationBar twoExtrudersNoFilament0NotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1SelectedNotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1NotificationBar;
+    private ConditionalNotificationBar twoExtrudersNoFilament2SelectedNotificationBar;
+    private ConditionalNotificationBar twoExtrudersNoFilament2NotificationBar;
 
     private ConditionalNotificationBar cantCalibrateHeadIsDetachedNotificationBar;
 
@@ -269,12 +273,12 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         applicationStatus = ApplicationStatus.getInstance();
 
-        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationType.CAUTION);
+        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintAttachRoboxReelMessage", NotificationType.CAUTION);
         oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationType.CAUTION);
-        twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationType.CAUTION);
-        twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
-        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationType.CAUTION);
-        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
+        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintAttachRoboxReelMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament2SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintAttachRoboxReelMessage1", NotificationType.CAUTION);
+        twoExtrudersNoFilament2NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
 
         cantCalibrateHeadIsDetachedNotificationBar = new ConditionalNotificationBar("dialogs.cantCalibrateHeadIsDetached", NotificationType.CAUTION);
 
@@ -446,32 +450,33 @@ public class CalibrationInsetPanelController implements Initializable,
 
         BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(0).isFittedProperty().not();
         BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
-        BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
-        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
+        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.reelsProperty(), 0).isNull();
+        BooleanBinding noFilament2Selected = Bindings.valueAt(printer.reelsProperty(), 1).isNull();
         noFilament1Selected.get();
+        noFilament2Selected.get();
 
         oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(
-                noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+                noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
         oneExtruderNoFilamentNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        twoExtrudersNoFilament0SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
-                noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+        twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
+                noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        twoExtrudersNoFilament0NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
+        twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
         if (printer.headProperty().get() != null)
         {
-            twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
+            twoExtrudersNoFilament2SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
                     .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
-                    .and(noFilament1Selected)
+                    .and(noFilament2Selected)
                     .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-            twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter
+            twoExtrudersNoFilament2NotificationBar.setAppearanceCondition(twoExtruderPrinter
                     .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
                     .and(printer.extrudersProperty().get(1).
                             filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
