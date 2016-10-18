@@ -41,7 +41,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     private DoubleProperty boxScaleProperty = new SimpleDoubleProperty(1.0);
 
-    private final ScaleControls scaleControls;
+//    private final ScaleControls scaleControls;
 
     /**
      *
@@ -58,7 +58,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
         }
         buildSelectionBox();
 
-        scaleControls = new ScaleControls(this);
+//        scaleControls = new ScaleControls(this);
         modelContainer.addShapeChangeListener(this);
     }
 
