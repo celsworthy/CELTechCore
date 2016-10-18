@@ -96,7 +96,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private Printer currentPrinter;
     private String currentHeadType;
 
-    private final TimeCostThreadManager timeCostThreadManager = new TimeCostThreadManager();
+    private final TimeCostThreadManager timeCostThreadManager = TimeCostThreadManager.getInstance();
 
     private MapChangeListener<Integer, Filament> effectiveFilamentListener = new MapChangeListener<Integer, Filament>()
     {
