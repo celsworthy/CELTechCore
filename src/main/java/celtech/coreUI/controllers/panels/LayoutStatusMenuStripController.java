@@ -219,9 +219,20 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar modelsOffBedWithRaftNotificationBar;
     private ConditionalNotificationBar modelOffBedWithSpiralNotificationBar;
 
+    private TimeCostThreadManager timeCostThreadManager;
+
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
         whenProjectOrSettingsPrinterChange();
+    };
+
+    private ChangeListener<Boolean> outOfBoundsModelListener = new ChangeListener<Boolean>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+        {
+            timeCostThreadManager.cancelRunningTimeCostTasks();
+        }
     };
 
     @FXML
@@ -837,6 +848,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void initialize()
     {
+        timeCostThreadManager = TimeCostThreadManager.getInstance();
+
+        modelsOffBed.addListener(outOfBoundsModelListener);
+        modelOffBedWithSpiral.addListener(outOfBoundsModelListener);
+        modelsOffBedWithRaft.addListener(outOfBoundsModelListener);
+
         oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationType.CAUTION);
         oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationType.CAUTION);
         twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationType.CAUTION);

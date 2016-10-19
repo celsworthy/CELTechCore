@@ -772,53 +772,86 @@ public class ModelContainerProject extends Project
 
         Dimension binDimension = new Dimension((int) printVolumeWidth, (int) printVolumeDepth);
 
+        final double spacing = 5.0;
+        final double halfSpacing = spacing / 2.0;
+        
         MArea[] pieces = new MArea[topLevelThings.size()];
         for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
         {
             RectangularBounds pieceBounds = ((ModelContainer) topLevelThings.get(thingIndex)).calculateBoundsInBedCoordinateSystem();
-            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX(), printVolumeDepth - pieceBounds.getMaxZ(), pieceBounds.getWidth(), pieceBounds.getDepth());
+            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
+                    printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
+                    pieceBounds.getWidth() + halfSpacing,
+                    pieceBounds.getDepth() + halfSpacing);
             MArea piece = new MArea(rectangle, thingIndex);
             pieces[thingIndex] = piece;
+            
             ModelContainer container = (ModelContainer) topLevelThings.get(thingIndex);
-//            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
         }
 //        steno.info("started with");
         for (MArea area : pieces)
         {
-//            steno.info("Piece " + area.getID()
-//                    + " X" + area.getBoundingBox2D().getX()
-//                    + " Y" + area.getBoundingBox2D().getY()
-//                    + " W" + area.getBoundingBox2D().getWidth()
-//                    + " H" + area.getBoundingBox2D().getHeight()
-//                    + " R" + area.getRotation()
-//            );
+            steno.info("Piece " + area.getID()
+                    + " X" + area.getBoundingBox2D().getX()
+                    + " Y" + area.getBoundingBox2D().getY()
+                    + " W" + area.getBoundingBox2D().getWidth()
+                    + " H" + area.getBoundingBox2D().getHeight()
+                    + " R" + area.getRotation()
+            );
         }
         Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
 
-//        steno.info("ended with");
-        for (MArea area : bins[0].getPlacedPieces())
-        {
-//            steno.info("Piece " + area.getID()
-//                    + " X" + area.getBoundingBox2D().getX()
-//                    + " Y" + area.getBoundingBox2D().getY()
-//                    + " W" + area.getBoundingBox2D().getWidth()
-//                    + " H" + area.getBoundingBox2D().getHeight()
-//                    + " R" + area.getRotation()
-//            );
+        double newXPosition[] = new double[pieces.length];
+        double newDepthPosition[] = new double[pieces.length];
+        double newRotation[] = new double[pieces.length];
+        double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
 
+        steno.info("ended with " + bins.length + " bins");
+        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+        {
+            MArea area = bins[0].getPlacedPieces()[pieceNumber];
+
+            steno.info("Piece " + area.getID()
+                    + " X" + area.getBoundingBox2D().getX()
+                    + " Y" + area.getBoundingBox2D().getY()
+                    + " W" + area.getBoundingBox2D().getWidth()
+                    + " H" + area.getBoundingBox2D().getHeight()
+                    + " R" + area.getRotation()
+            );
+
+            newRotation[pieceNumber] = area.getRotation();
+
+            newDepthPosition[pieceNumber] = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
+            newXPosition[pieceNumber] = area.getBoundingBox2D().getMinX() + (area.getBoundingBox2D().getWidth() / 2.0);
+
+            maxLayoutX = Math.max(maxLayoutX, area.getBoundingBox2D().getMaxX());
+            minLayoutX = Math.min(minLayoutX, area.getBoundingBox2D().getMinX());
+            maxLayoutY = Math.max(maxLayoutY, area.getBoundingBox2D().getMaxY());
+            minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
+        }
+
+        steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
+        steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
+
+        double xCentringOffset = (printVolumeWidth - (maxLayoutX - minLayoutX)) / 2.0;
+        double yCentringOffset = (printVolumeDepth - (maxLayoutY - minLayoutY)) / 2.0;
+
+        steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
+        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+        {
+            MArea area = bins[0].getPlacedPieces()[pieceNumber];
             ModelContainer container = (ModelContainer) topLevelThings.get(area.getID());
 
-//            double xDiff = pieces[area.getID()].getBoundingBox2D().getX() - area.getBoundingBox2D().get
-            double newRotation = container.getRotationTurn() + area.getRotation();
-            if (newRotation >= 360.0)
+            double rotation = newRotation[pieceNumber] + container.getRotationTurn();
+            if (rotation >= 360.0)
             {
-                newRotation -= 360.0;
+                rotation -= 360.0;
             }
-            
-            double newDepth = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight()/ 2.0;
-            container.setRotationTurn(newRotation);
-            container.translateFrontLeftTo(area.getBoundingBox2D().getMinX(), newDepth);
-//            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+            container.setRotationTurn(rotation);
+
+            container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
+            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
         }
 
         projectModified();
