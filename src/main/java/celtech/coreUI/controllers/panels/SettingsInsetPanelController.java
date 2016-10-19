@@ -601,8 +601,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             @Override
             public void changed(ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue)
             {
+                populatingForProject = true;
                 supportComboBox.getSelectionModel().select(newValue);
                 updateSupportCombo(currentPrinter);
+                populatingForProject = false;
             }
         });
 
