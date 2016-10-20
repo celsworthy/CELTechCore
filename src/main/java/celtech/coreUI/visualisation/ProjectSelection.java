@@ -15,7 +15,9 @@ import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.utils.threed.importers.svg.ShapeContainer;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.DoubleProperty;
@@ -238,7 +240,9 @@ public class ProjectSelection implements ProjectChangesListener
     @Override
     public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThings)
     {
-        for (ProjectifiableThing modelContainer : modelContainers)
+        List<ProjectifiableThing> thingsToRemove = new ArrayList<>();
+        thingsToRemove.addAll(modelContainers);
+        for (ProjectifiableThing modelContainer : thingsToRemove)
         {
             removeModelContainer(modelContainer);
         }
