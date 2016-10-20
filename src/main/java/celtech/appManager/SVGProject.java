@@ -49,15 +49,10 @@ public class SVGProject extends Project
             ShapeContainer modelContainer = (ShapeContainer) projectifiableThing;
             topLevelThings.add(modelContainer);
             projectModified();
-            fireWhenModelAdded(modelContainer);
-        }
-    }
-
-    private void fireWhenModelAdded(ShapeContainer modelContainer)
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelAdded(modelContainer);
+            projectChangesListeners.stream().forEach((projectChangesListener) ->
+            {
+                projectChangesListener.whenModelAdded(modelContainer);
+            });
         }
     }
 
@@ -72,17 +67,11 @@ public class SVGProject extends Project
         }
 
         topLevelThings.removeAll(modelContainers);
-
-//        for (RenderableSVG modelContainer : modelContainers)
-//        {
-//            removeModelListeners(modelContainer);
-//            for (RenderableSVG childModelContainer : modelContainer.getChildModelContainers())
-//            {
-//                removeModelListeners(childModelContainer);
-//            }
-//        }
         projectModified();
-//        fireWhenModelsRemoved(projectifiableThings);
+        projectChangesListeners.stream().forEach((projectChangesListener) ->
+        {
+            projectChangesListener.whenModelsRemoved(projectifiableThings);
+        });
     }
 
     @Override

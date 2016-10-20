@@ -130,7 +130,10 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public ProjectifiableThing makeCopy()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ShapeContainer copy = new ShapeContainer(getModelName(), shapes);
+        copy.setState(this.getState());
+        copy.recalculateScreenExtents();
+        return copy;
     }
 
     @Override
@@ -398,8 +401,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
 
-        bedCentreOffsetX = -printableBoundingBox.getMinX();
-        bedCentreOffsetY = -printableBoundingBox.getMinY();
+        bedCentreOffsetX = -printableBoundingBox.getMinX() + printableBoundingBox.getWidth() / 2.0;
+        bedCentreOffsetY = -printableBoundingBox.getMinY() + printableBoundingBox.getHeight() / 2.0;
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
@@ -472,7 +475,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
-    {        
+    {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE;
