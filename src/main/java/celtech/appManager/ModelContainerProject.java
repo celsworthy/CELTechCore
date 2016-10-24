@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +53,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -746,15 +744,12 @@ public class ModelContainerProject extends Project
     @Override
     public void autoLayout()
     {
-//        List<PackableItem> sortedPackables = new ArrayList<>();
-//
-//        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
-//
-//        sortedContainers.stream().forEach(model ->
-//        {
-//            sortedPackables.add((PackableItem) model);
-//        });
+        autoLayout(topLevelThings);
+    }
 
+    @Override
+    public void autoLayout(List<ProjectifiableThing> thingsToLayout)
+    {
         double printVolumeWidth = 0;
         double printVolumeDepth = 0;
 
@@ -771,55 +766,99 @@ public class ModelContainerProject extends Project
         }
 
         Dimension binDimension = new Dimension((int) printVolumeWidth, (int) printVolumeDepth);
+        Bin layoutBin = null;
 
-        final double spacing = 5.0;
+        final double spacing = 2.5;
         final double halfSpacing = spacing / 2.0;
-        
-        MArea[] pieces = new MArea[topLevelThings.size()];
-        for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
+
+        Map<Integer, ProjectifiableThing> partMap = new HashMap<>();
+
+        int numberOfPartsNotToLayout = topLevelThings.size() - thingsToLayout.size();
+
+        if (numberOfPartsNotToLayout > 0)
         {
-            RectangularBounds pieceBounds = ((ModelContainer) topLevelThings.get(thingIndex)).calculateBoundsInBedCoordinateSystem();
-            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
-                    printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
-                    pieceBounds.getWidth() + halfSpacing,
-                    pieceBounds.getDepth() + halfSpacing);
-            MArea piece = new MArea(rectangle, thingIndex);
-            pieces[thingIndex] = piece;
-            
-            ModelContainer container = (ModelContainer) topLevelThings.get(thingIndex);
-            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+            MArea[] existingPieces = new MArea[numberOfPartsNotToLayout];
+            int existingPartCounter = 0;
+            for (ProjectifiableThing thingToConsider : topLevelThings)
+            {
+                if (!thingsToLayout.contains(thingToConsider))
+                {
+                    //We need to stop this part from being laid out
+                    RectangularBounds pieceBounds = thingToConsider.calculateBoundsInBedCoordinateSystem();
+                    Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
+                            printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
+                            pieceBounds.getWidth() + halfSpacing,
+                            pieceBounds.getDepth() + halfSpacing);
+                    MArea piece = new MArea(rectangle, existingPartCounter, ((ModelContainer) thingToConsider).getRotationTurn());
+                    existingPieces[existingPartCounter] = piece;
+                    partMap.put(existingPartCounter, thingToConsider);
+                    existingPartCounter++;
+                }
+            }
+            layoutBin = new Bin(binDimension, existingPieces);
+        }
+
+        int startingIndexForPartsToLayout = (numberOfPartsNotToLayout == 0) ? 0 : numberOfPartsNotToLayout - 1;
+
+        MArea[] partsToLayout = new MArea[thingsToLayout.size()];
+        int partsToLayoutCounter = 0;
+        for (ProjectifiableThing thingToLayout : thingsToLayout)
+        {
+            RectangularBounds pieceBounds = thingToLayout.calculateBoundsInBedCoordinateSystem();
+            //Change the coords so that every part is in the bottom left corner
+            Rectangle2D.Double rectangle = new Rectangle2D.Double(0,0,
+                    pieceBounds.getWidth() + spacing,
+                    pieceBounds.getDepth() + spacing);
+//            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
+//                    printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
+//                    pieceBounds.getWidth() + halfSpacing,
+//                    pieceBounds.getDepth() + halfSpacing);
+            MArea piece = new MArea(rectangle, partsToLayoutCounter + startingIndexForPartsToLayout, 0);
+            partsToLayout[partsToLayoutCounter] = piece;
+            partMap.put(partsToLayoutCounter + startingIndexForPartsToLayout, thingToLayout);
+            partsToLayoutCounter++;
         }
 //        steno.info("started with");
-        for (MArea area : pieces)
-        {
-            steno.info("Piece " + area.getID()
-                    + " X" + area.getBoundingBox2D().getX()
-                    + " Y" + area.getBoundingBox2D().getY()
-                    + " W" + area.getBoundingBox2D().getWidth()
-                    + " H" + area.getBoundingBox2D().getHeight()
-                    + " R" + area.getRotation()
-            );
-        }
-        Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
+//        for (MArea area : partsToLayout)
+//        {
+//            steno.info("Piece " + area.getID()
+//                    + " X" + area.getBoundingBox2D().getX()
+//                    + " Y" + area.getBoundingBox2D().getY()
+//                    + " W" + area.getBoundingBox2D().getWidth()
+//                    + " H" + area.getBoundingBox2D().getHeight()
+//                    + " R" + area.getRotation()
+//            );
+//
+//        }
 
-        double newXPosition[] = new double[pieces.length];
-        double newDepthPosition[] = new double[pieces.length];
-        double newRotation[] = new double[pieces.length];
+        if (layoutBin != null)
+        {
+            MArea[] unplacedParts = null;
+            unplacedParts = layoutBin.BBCompleteStrategy(partsToLayout);
+            steno.info("Unplaced = " + unplacedParts.length);
+        } else
+        {
+            Bin[] bins = BinPacking.BinPackingStrategy(partsToLayout, binDimension, binDimension);
+            layoutBin = bins[0];
+        }
+
+        int numberOfPartsInTotal = layoutBin.getPlacedPieces().length;
+        double newXPosition[] = new double[numberOfPartsInTotal];
+        double newDepthPosition[] = new double[numberOfPartsInTotal];
+        double newRotation[] = new double[numberOfPartsInTotal];
         double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
 
-        steno.info("ended with " + bins.length + " bins");
-        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+        for (int pieceNumber = 0; pieceNumber < numberOfPartsInTotal; pieceNumber++)
         {
-            MArea area = bins[0].getPlacedPieces()[pieceNumber];
+            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
 
-            steno.info("Piece " + area.getID()
-                    + " X" + area.getBoundingBox2D().getX()
-                    + " Y" + area.getBoundingBox2D().getY()
-                    + " W" + area.getBoundingBox2D().getWidth()
-                    + " H" + area.getBoundingBox2D().getHeight()
-                    + " R" + area.getRotation()
-            );
-
+//            steno.info("Piece " + area.getID()
+//                    + " X" + area.getBoundingBox2D().getX()
+//                    + " Y" + area.getBoundingBox2D().getY()
+//                    + " W" + area.getBoundingBox2D().getWidth()
+//                    + " H" + area.getBoundingBox2D().getHeight()
+//                    + " R" + area.getRotation()
+//            );
             newRotation[pieceNumber] = area.getRotation();
 
             newDepthPosition[pieceNumber] = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
@@ -831,27 +870,36 @@ public class ModelContainerProject extends Project
             minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
         }
 
-        steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
-        steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
-
+//        steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
+//        steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
         double xCentringOffset = (printVolumeWidth - (maxLayoutX - minLayoutX)) / 2.0;
         double yCentringOffset = (printVolumeDepth - (maxLayoutY - minLayoutY)) / 2.0;
 
-        steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
-        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+//        steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
+        for (int pieceNumber = 0; pieceNumber < layoutBin.getPlacedPieces().length; pieceNumber++)
         {
-            MArea area = bins[0].getPlacedPieces()[pieceNumber];
-            ModelContainer container = (ModelContainer) topLevelThings.get(area.getID());
+            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
+            ModelContainer container = (ModelContainer) partMap.get(area.getID());
 
-            double rotation = newRotation[pieceNumber] + container.getRotationTurn();
-            if (rotation >= 360.0)
+            if (thingsToLayout.contains(container))
             {
-                rotation -= 360.0;
-            }
-            container.setRotationTurn(rotation);
+                double rotation = newRotation[pieceNumber] + container.getRotationTurn();
+                if (rotation >= 360.0)
+                {
+                    rotation -= 360.0;
+                }
+                container.setRotationTurn(rotation);
 
-            container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
-            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+                //Only auto centre if we're laying out all of the parts
+                if (numberOfPartsNotToLayout == 0)
+                {
+                    container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
+                } else
+                {
+                    container.translateTo(newXPosition[pieceNumber], newDepthPosition[pieceNumber]);
+                }
+//                steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+            }
         }
 
         projectModified();

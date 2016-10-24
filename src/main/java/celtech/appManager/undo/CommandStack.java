@@ -85,7 +85,7 @@ public class CommandStack
         }
         Command currentCommand = commands.get(index.get());
         currentCommand.undo();
-        steno.info("Asked to undo - " + currentCommand.toString());
+//        steno.info("Asked to undo - " + currentCommand.toString());
         index.set(index.get() - 1);
     }
 
@@ -97,7 +97,7 @@ public class CommandStack
         }
         Command followingCommand = commands.get(index.get() + 1);
         followingCommand.redo();
-        steno.info("Asked to redo- " + followingCommand.toString());
+//        steno.info("Asked to redo- " + followingCommand.toString());
         index.set(index.get() + 1);
     }
 

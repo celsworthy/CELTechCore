@@ -1272,6 +1272,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      * Calculate max/min X,Y,Z after all the transforms have been applied all
      * the way to the bed coordinate system.
      */
+    @Override
     public RectangularBounds calculateBoundsInBedCoordinateSystem()
     {
         double minX = Double.MAX_VALUE;

@@ -40,7 +40,7 @@ public class AddModelCommand extends Command
     @Override
     public void undo()
     {
-        modelContainer.clearElements();
+//        modelContainer.clearElements();
         Set<ProjectifiableThing> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);
         project.removeModels(modelContainers);

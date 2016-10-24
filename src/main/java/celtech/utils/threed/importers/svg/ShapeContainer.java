@@ -472,7 +472,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
-    {        
+    {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE;
@@ -505,6 +505,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         return new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
                 newheight, 0, newcentreX, newcentreY,
                 0);
+    }
+
+    @Override
+    public RectangularBounds calculateBoundsInBedCoordinateSystem()
+    {
+        return calculateBoundsInParentCoordinateSystem();
     }
 
     @Override
