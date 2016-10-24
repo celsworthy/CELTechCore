@@ -251,6 +251,7 @@ public class ProjectSelection implements ProjectChangesListener
     @Override
     public void whenAutoLaidOut()
     {
+        updateSelectedValues();
     }
 
     @Override
