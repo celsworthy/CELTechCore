@@ -265,7 +265,7 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     public void setBedReference(Group bed)
     {
         this.bed = bed;
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        getLastTransformedBounds();
     }
 
     public abstract void setBedCentreOffsetTransform();
@@ -350,15 +350,25 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     {
         if (this instanceof TranslateableThreeD)
         {
-            return lastTransformedBoundsInParent.getCentreZ();
+            return getLastTransformedBounds().getCentreZ();
         } else
         {
-            return lastTransformedBoundsInParent.getCentreY();
+            return getLastTransformedBounds().getCentreY();
         }
     }
 
     public double getTransformedCentreX()
     {
-        return lastTransformedBoundsInParent.getCentreX();
+        return getLastTransformedBounds().getCentreX();
+    }
+    
+    protected RectangularBounds getLastTransformedBounds()
+    {
+        if (lastTransformedBoundsInParent == null)
+        {
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        }
+        
+        return lastTransformedBoundsInParent;
     }
 }

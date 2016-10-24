@@ -257,9 +257,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private void setupSVGView()
     {
         nonSpecificModelIndicator.setVisible(false);
-        svgViewManager = new SVGViewManager(project);
-        svgViewManager.setMaxWidth(basePane.getWidth());
-        svgViewManager.setMaxHeight(basePane.getHeight());
+        svgViewManager = new SVGViewManager(project, basePane.getWidth(), basePane.getHeight());
 
         AnchorPane.setBottomAnchor(svgViewManager, 0.0);
         AnchorPane.setTopAnchor(svgViewManager, 0.0);

@@ -5,14 +5,12 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
-import celtech.coreUI.visualisation.svg.PrintableShape;
 import celtech.coreUI.visualisation.svg.TextPath;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
-import celtech.roboxbase.importers.twod.svg.SVGConverterConfiguration;
 import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.StylusLiftNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.StylusPlungeNode;
@@ -96,8 +94,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     private boolean justEnteredDragMode;
 
     private ContextMenu bedContextMenu = null;
-    
-    public SVGViewManager(Project project)
+
+    public SVGViewManager(Project project, double parentWidth, double parentHeight)
     {
         this.project = project;
         this.undoableProject = new UndoableProject(project);
@@ -105,7 +103,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         parentPane = this;
 
         this.setPickOnBounds(false);
-
+        
         createBed();
 
         partsAndBed.getChildren().addAll(bed, parts);
@@ -115,7 +113,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         jfxToRealWorld.appendScale(1, -1);
         jfxToRealWorld.appendTranslation(0, -bedHeight);
 
-        gCodeOverlay.getTransforms().addAll(bedTranslate, bedScale, jfxToRealWorld);
+        gCodeOverlay.getTransforms().addAll(bedScale, bedTranslate, jfxToRealWorld);
 
         getChildren().add(partsAndBed);
         getChildren().add(gCodeOverlay);
@@ -147,7 +145,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 resizeBed();
             }
         });
-
+        
+        this.setMaxWidth(parentWidth);
+        this.setMaxHeight(parentHeight);
+        
         /**
          * Listen for adding and removing of models from the project
          */
@@ -155,8 +156,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         for (ProjectifiableThing projectifiableThing : project.getAllModels())
         {
-            projectifiableThing.setBedReference(gCodeOverlay);
             parts.getChildren().add(projectifiableThing);
+            projectifiableThing.setBedReference(partsAndBed);
 //            projectifiableThing.shrinkToFitBed();
         }
     }
@@ -292,8 +293,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
         steno.info("Bounds are " + projectifiableThing.getBoundsInLocal());
-        projectifiableThing.setBedReference(gCodeOverlay);
         parts.getChildren().add(projectifiableThing);
+        projectifiableThing.setBedReference(partsAndBed);
 //        projectifiableThing.shrinkToFitBed();
     }
 

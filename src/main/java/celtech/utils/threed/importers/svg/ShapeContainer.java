@@ -121,7 +121,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
             preferredRotationTurn.set(convertedState.preferredRotationTurn);
 
-            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+            getLastTransformedBounds();
             notifyScreenExtentsChange();
             notifyShapeChange();
         }
@@ -164,7 +164,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void translateXTo(double xPosition)
     {
-        RectangularBounds bounds = lastTransformedBoundsInParent;
+        RectangularBounds bounds = getLastTransformedBounds();
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
@@ -179,7 +179,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             finalXPosition -= (newMaxX - printVolumeWidth);
         }
 
-        double currentXPosition = lastTransformedBoundsInParent.getCentreX();
+        double currentXPosition = getLastTransformedBounds().getCentreX();
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
@@ -192,7 +192,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void translateDepthPositionTo(double yPosition)
     {
-        RectangularBounds bounds = lastTransformedBoundsInParent;
+        RectangularBounds bounds = getLastTransformedBounds();
 
         double newMaxY = yPosition + bounds.getDepth() / 2;
         double newMinY = yPosition - bounds.getDepth() / 2;
@@ -207,7 +207,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             finalYPosition -= (newMaxY - printVolumeDepth);
         }
 
-        double currentYPosition = lastTransformedBoundsInParent.getCentreY();
+        double currentYPosition = getLastTransformedBounds().getCentreY();
         double requiredTranslation = finalYPosition - currentYPosition;
         transformMoveToPreferred.setY(transformMoveToPreferred.getY() + requiredTranslation);
 
@@ -313,7 +313,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getTransformedWidth()
     {
-        return lastTransformedBoundsInParent.getWidth();
+        return getLastTransformedBounds().getWidth();
     }
 
     @Override
@@ -331,13 +331,13 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getCentreX()
     {
-        return lastTransformedBoundsInParent.getMinX() + lastTransformedBoundsInParent.getWidth() / 2.0;
+        return getLastTransformedBounds().getMinX() + getLastTransformedBounds().getWidth() / 2.0;
     }
 
     @Override
     public double getCentreY()
     {
-        return lastTransformedBoundsInParent.getMinY() + lastTransformedBoundsInParent.getHeight() / 2.0;
+        return getLastTransformedBounds().getMinY() + getLastTransformedBounds().getHeight() / 2.0;
     }
 
     @Override
@@ -393,7 +393,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             transformScalePreferred.setY(scaling);
         }
 
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        getLastTransformedBounds();
     }
 
     @Override
@@ -432,7 +432,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
         updateOriginalModelBounds();
 
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+//        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -526,9 +526,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     private void updateLastTransformedBoundsInParentForTranslateByX(double deltaCentreX)
     {
-        if (lastTransformedBoundsInParent != null)
+        if (getLastTransformedBounds() != null)
         {
-            lastTransformedBoundsInParent.translateX(deltaCentreX);
+            getLastTransformedBounds().translateX(deltaCentreX);
         }
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -536,9 +536,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     private void updateLastTransformedBoundsInParentForTranslateByY(double deltaCentreY)
     {
-        if (lastTransformedBoundsInParent != null)
+        if (getLastTransformedBounds() != null)
         {
-            lastTransformedBoundsInParent.translateY(deltaCentreY);
+            getLastTransformedBounds().translateY(deltaCentreY);
         }
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -549,6 +549,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         translateTo(bedCentreOffsetX, bedCentreOffsetY);
 
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        getLastTransformedBounds();
     }
 }
