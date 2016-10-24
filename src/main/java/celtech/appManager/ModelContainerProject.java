@@ -813,7 +813,7 @@ public class ModelContainerProject extends Project
 //                    printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
 //                    pieceBounds.getWidth() + halfSpacing,
 //                    pieceBounds.getDepth() + halfSpacing);
-            MArea piece = new MArea(rectangle, partsToLayoutCounter + startingIndexForPartsToLayout, ((ModelContainer) thingToLayout).getRotationTurn());
+            MArea piece = new MArea(rectangle, partsToLayoutCounter + startingIndexForPartsToLayout, 0);
             partsToLayout[partsToLayoutCounter] = piece;
             partMap.put(partsToLayoutCounter + startingIndexForPartsToLayout, thingToLayout);
             partsToLayoutCounter++;
