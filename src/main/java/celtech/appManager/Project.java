@@ -24,8 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -290,6 +292,8 @@ public abstract class Project
     }
 
     public abstract void autoLayout();
+    //This carries out the same function but leaves the existing things in place
+    public abstract void autoLayout(List<ProjectifiableThing> thingsToLayout);
 
     /**
      * Scale X, Y and Z by the given factor, apply the given ratio to the given
@@ -603,6 +607,8 @@ public abstract class Project
 
     public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
+        List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
+        
         for (ModelContainer modelContainer : modelContainers)
         {
             if (modelContainer instanceof ModelGroup)
@@ -617,9 +623,12 @@ public abstract class Project
                     childModelContainer.setBedCentreOffsetTransform();
                     childModelContainer.applyGroupTransformToThis(modelGroup);
                     childModelContainer.checkOffBed();
+                    ungroupedModels.add(childModelContainer);
                 }
             }
         }
+        
+        autoLayout(ungroupedModels);
     }
 
     /**

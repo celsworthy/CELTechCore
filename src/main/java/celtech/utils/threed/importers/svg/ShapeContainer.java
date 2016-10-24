@@ -511,6 +511,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
+    public RectangularBounds calculateBoundsInBedCoordinateSystem()
+    {
+        return calculateBoundsInParentCoordinateSystem();
+    }
+
+    @Override
     protected void updateScaleTransform()
     {
         checkOffBed();
