@@ -100,7 +100,7 @@ public class ModelLoaderTask extends Task<ModelLoadResults>
                 ModelLoadResult loadResult = loadTheFile(filenameToLoad);
                 if (loadResult != null)
                 {
-                    modelLoadResultList.add(loadTheFile(filenameToLoad));
+                    modelLoadResultList.add(loadResult);
                 } else
                 {
                     steno.warning("Failed to load model: " + filenameToLoad);
