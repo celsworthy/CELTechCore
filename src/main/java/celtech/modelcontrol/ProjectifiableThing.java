@@ -3,7 +3,6 @@ package celtech.modelcontrol;
 import celtech.Lookup;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
-import celtech.coreUI.visualisation.ScreenExtentsProviderThreeD;
 import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.coreUI.visualisation.ShapeProviderTwoD;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
@@ -279,6 +278,8 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     public abstract void shrinkToFitBed();
 
     protected abstract RectangularBounds calculateBoundsInLocal();
+
+    public abstract RectangularBounds calculateBoundsInBedCoordinateSystem();
 
     protected final void setScalePivotToCentreOfModel()
     {

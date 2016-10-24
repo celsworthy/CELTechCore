@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +53,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
@@ -66,43 +64,43 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ModelContainerProject extends Project
 {
-
+    
     private int version = -1;
-
+    
     private Filament DEFAULT_FILAMENT;
-
+    
     private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(ModelContainerProject.class.getName());
-
+    
     private ObjectProperty<Filament> extruder0Filament;
     private ObjectProperty<Filament> extruder1Filament;
     private BooleanProperty modelColourChanged;
     private BooleanBinding hasInvalidMeshes;
-
+    
     private FilamentContainer filamentContainer;
 
     //Changed to make this list always include both extruders
     private ObservableList<Boolean> lastCalculatedUsedExtruders;
-
+    
     public ModelContainerProject()
     {
         super();
     }
-
+    
     @Override
     protected void initialise()
     {
         lastCalculatedUsedExtruders = FXCollections.observableArrayList();
         lastCalculatedUsedExtruders.add(0, false);
         lastCalculatedUsedExtruders.add(1, false);
-
+        
         hasInvalidMeshes = new BooleanBinding()
         {
             {
                 super.bind(topLevelThings);
             }
-
+            
             @Override
             protected boolean computeValue()
             {
@@ -120,10 +118,10 @@ public class ModelContainerProject extends Project
         modelColourChanged = new SimpleBooleanProperty();
         filamentContainer = BaseLookup.getFilamentContainer();
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
-
+        
         initialiseExtruderFilaments();
     }
-
+    
     public Set<ModelContainer> getModelContainersWithInvalidMesh()
     {
         Set<ModelContainer> invalidModelContainers = new HashSet<>();
@@ -134,27 +132,27 @@ public class ModelContainerProject extends Project
                 });
         return invalidModelContainers;
     }
-
+    
     public BooleanBinding hasInvalidMeshes()
     {
         return hasInvalidMeshes;
     }
-
+    
     protected void load(ProjectFile projectFile, String basePath) throws ProjectLoadException
     {
         suppressProjectChanged = true;
-
+        
         if (projectFile instanceof ModelContainerProjectFile)
         {
             ModelContainerProjectFile mcProjectFile = (ModelContainerProjectFile) projectFile;
             try
             {
                 version = projectFile.getVersion();
-
+                
                 projectNameProperty.set(projectFile.getProjectName());
                 lastModifiedDate.set(projectFile.getLastModifiedDate());
                 lastPrintJobID = projectFile.getLastPrintJobID();
-
+                
                 String filamentID0 = mcProjectFile.getExtruder0FilamentID();
                 String filamentID1 = mcProjectFile.getExtruder1FilamentID();
                 if (!filamentID0.equals("NULL"))
@@ -173,7 +171,7 @@ public class ModelContainerProject extends Project
                         extruder1Filament.set(filament1);
                     }
                 }
-
+                
                 printerSettings.setSettingsName(mcProjectFile.getSettingsName());
                 printerSettings.setPrintQuality(mcProjectFile.getPrintQuality());
                 printerSettings.setBrimOverride(mcProjectFile.getBrimOverride());
@@ -182,11 +180,11 @@ public class ModelContainerProject extends Project
                 printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
                 printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
                 printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
-
+                
                 loadModels(basePath);
-
+                
                 recreateGroups(mcProjectFile.getGroupStructure(), mcProjectFile.getGroupState());
-
+                
             } catch (IOException ex)
             {
                 steno.exception("Failed to load project " + basePath, ex);
@@ -195,10 +193,10 @@ public class ModelContainerProject extends Project
                 steno.exception("Failed to load project " + basePath, ex);
             }
         }
-
+        
         suppressProjectChanged = false;
     }
-
+    
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
     {
         FileInputStream fileInputStream = new FileInputStream(basePath
@@ -206,7 +204,7 @@ public class ModelContainerProject extends Project
         BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
         ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
         int numModels = modelsInput.readInt();
-
+        
         for (int i = 0; i < numModels; i++)
         {
             ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
@@ -220,27 +218,27 @@ public class ModelContainerProject extends Project
             addModel(modelContainer);
         }
     }
-
+    
     public static void saveProject(ModelContainerProject project)
     {
         String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
                 + project.getProjectName();
         project.save(basePath);
     }
-
+    
     private void saveModels(String path) throws IOException
     {
         ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
-
+        
         Set<ModelContainer> modelsHoldingMeshViews = getModelsHoldingMeshViews();
-
+        
         modelsOutput.writeInt(modelsHoldingMeshViews.size());
         for (ModelContainer modelsHoldingMeshView : modelsHoldingMeshViews)
         {
             modelsOutput.writeObject(modelsHoldingMeshView);
         }
     }
-
+    
     @Override
     protected void save(String basePath)
     {
@@ -264,13 +262,13 @@ public class ModelContainerProject extends Project
             }
         }
     }
-
+    
     public List<Boolean> getPrintingExtruders(Printer printer)
     {
         List<Boolean> localUsedExtruders = new ArrayList<>();
         localUsedExtruders.add(false);
         localUsedExtruders.add(false);
-
+        
         for (ProjectifiableThing loadedModel : topLevelThings)
         {
             if (loadedModel instanceof ModelContainer)
@@ -278,7 +276,7 @@ public class ModelContainerProject extends Project
                 getUsedExtruders((ModelContainer) loadedModel, localUsedExtruders, printer);
             }
         }
-
+        
         return localUsedExtruders;
     }
 
@@ -290,7 +288,7 @@ public class ModelContainerProject extends Project
         List<Boolean> extruders = getPrintingExtruders(printer);
         return !(extruders.get(0) && extruders.get(1));
     }
-
+    
     private void getUsedExtruders(ModelContainer modelContainer, List<Boolean> usedExtruders, Printer printer)
     {
         if (modelContainer instanceof ModelGroup)
@@ -351,7 +349,7 @@ public class ModelContainerProject extends Project
                 }
             }
         }
-
+        
         lastCalculatedUsedExtruders.setAll(localUsedExtruders);
         return lastCalculatedUsedExtruders;
     }
@@ -372,43 +370,43 @@ public class ModelContainerProject extends Project
         }
         return allModelContainers;
     }
-
+    
     @Override
     public String toString()
     {
         return projectNameProperty.get();
     }
-
+    
     public void setLastPrintJobID(String printJobID)
     {
         lastPrintJobID = printJobID;
     }
-
+    
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
     }
-
+    
     public ReadOnlyBooleanProperty getModelColourChanged()
     {
         return modelColourChanged;
     }
-
+    
     public void setExtruder0Filament(Filament filament)
     {
         extruder0Filament.set(filament);
     }
-
+    
     public void setExtruder1Filament(Filament filament)
     {
         extruder1Filament.set(filament);
     }
-
+    
     public ObjectProperty<Filament> getExtruder0FilamentProperty()
     {
         return extruder0Filament;
     }
-
+    
     public ObjectProperty<Filament> getExtruder1FilamentProperty()
     {
         return extruder1Filament;
@@ -423,7 +421,7 @@ public class ModelContainerProject extends Project
         // set defaults in case of no printer or reel
         extruder0Filament.set(DEFAULT_FILAMENT);
         extruder1Filament.set(DEFAULT_FILAMENT);
-
+        
         Printer printer = Lookup.getSelectedPrinterProperty().get();
         if (printer != null)
         {
@@ -439,7 +437,7 @@ public class ModelContainerProject extends Project
             }
         }
     }
-
+    
     @Override
     public void addModel(ProjectifiableThing projectifiableThing)
     {
@@ -456,7 +454,7 @@ public class ModelContainerProject extends Project
             fireWhenModelAdded(modelContainer);
         }
     }
-
+    
     private void fireWhenModelAdded(ModelContainer modelContainer)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -464,7 +462,7 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenModelAdded(modelContainer);
         }
     }
-
+    
     @Override
     protected void fireWhenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
@@ -473,19 +471,19 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenPrinterSettingsChanged(printerSettings);
         }
     }
-
+    
     @Override
     public void removeModels(Set<ProjectifiableThing> projectifiableThings)
     {
         Set<ModelContainer> modelContainers = (Set) projectifiableThings;
-
+        
         for (ModelContainer modelContainer : modelContainers)
         {
             assert modelContainer != null;
         }
-
+        
         topLevelThings.removeAll(modelContainers);
-
+        
         for (ModelContainer modelContainer : modelContainers)
         {
             removeModelListeners(modelContainer);
@@ -493,7 +491,7 @@ public class ModelContainerProject extends Project
         projectModified();
         fireWhenModelsRemoved(projectifiableThings);
     }
-
+    
     private void fireWhenModelsRemoved(Set<ProjectifiableThing> modelContainers)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -501,9 +499,9 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenModelsRemoved(modelContainers);
         }
     }
-
+    
     private Map<ModelContainer, ChangeListener<Number>> modelExtruderNumberListener = new HashMap<>();
-
+    
     private void addModelListeners(ModelContainer modelContainer)
     {
         if (!(modelContainer instanceof ModelGroup)
@@ -518,12 +516,12 @@ public class ModelContainerProject extends Project
                     modelColourChanged.set(!modelColourChanged.get());
                 }
             };
-
+            
             modelExtruderNumberListener.put(modelContainer, changeListener);
             modelContainer.getAssociateWithExtruderNumberProperty().addListener(changeListener);
         }
     }
-
+    
     public void removeModelListeners(ModelContainer modelContainer)
     {
         if (!(modelContainer instanceof ModelGroup))
@@ -532,7 +530,7 @@ public class ModelContainerProject extends Project
             modelExtruderNumberListener.remove(modelContainer);
         }
     }
-
+    
     private Set<ModelContainer> getModelsHoldingMeshViews()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
@@ -542,7 +540,7 @@ public class ModelContainerProject extends Project
         }
         return modelsHoldingMeshViews;
     }
-
+    
     private Set<ModelContainer> getModelsHoldingModels()
     {
         Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
@@ -686,7 +684,7 @@ public class ModelContainerProject extends Project
                     modelFound = true;
                     break;
                 }
-
+                
             }
             if (!modelFound)
             {
@@ -719,7 +717,7 @@ public class ModelContainerProject extends Project
         }
         return modelContainers;
     }
-
+    
     private Optional<ModelContainer> getModelContainerOfModelId(int modelId)
     {
         for (ProjectifiableThing modelContainer : topLevelThings)
@@ -730,7 +728,7 @@ public class ModelContainerProject extends Project
             }
         }
         return Optional.empty();
-
+        
     }
 
     /**
@@ -740,24 +738,122 @@ public class ModelContainerProject extends Project
     {
         group.setState(groupStates.get(group.getModelId()));
         group.checkOffBed();
-
+        
     }
-
+    
     @Override
     public void autoLayout()
     {
-//        List<PackableItem> sortedPackables = new ArrayList<>();
+        autoLayout(topLevelThings);
+//        double printVolumeWidth = 0;
+//        double printVolumeDepth = 0;
 //
-//        SortedList<ProjectifiableThing> sortedContainers = topLevelThings.sorted();
-//
-//        sortedContainers.stream().forEach(model ->
+//        if (Lookup.getSelectedPrinterProperty().get() != null
+//                && Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get() != null)
 //        {
-//            sortedPackables.add((PackableItem) model);
-//        });
-
+//            printVolumeWidth = Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeWidth();
+//            printVolumeDepth = Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeDepth();
+//        } else
+//        {
+//            PrinterDefinitionFile defaultPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
+//            printVolumeWidth = defaultPrinterConfiguration.getPrintVolumeWidth();
+//            printVolumeDepth = defaultPrinterConfiguration.getPrintVolumeDepth();
+//        }
+//
+//        Dimension binDimension = new Dimension((int) printVolumeWidth, (int) printVolumeDepth);
+//
+//        final double spacing = 5.0;
+//        final double halfSpacing = spacing / 2.0;
+//
+//        MArea[] pieces = new MArea[topLevelThings.size()];
+//        for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
+//        {
+//            RectangularBounds pieceBounds = ((ModelContainer) topLevelThings.get(thingIndex)).calculateBoundsInBedCoordinateSystem();
+//            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
+//                    printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
+//                    pieceBounds.getWidth() + halfSpacing,
+//                    pieceBounds.getDepth() + halfSpacing);
+//            MArea piece = new MArea(rectangle, thingIndex);
+//            pieces[thingIndex] = piece;
+//
+//            ModelContainer container = (ModelContainer) topLevelThings.get(thingIndex);
+//            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+//        }
+////        steno.info("started with");
+//        for (MArea area : pieces)
+//        {
+//            steno.info("Piece " + area.getID()
+//                    + " X" + area.getBoundingBox2D().getX()
+//                    + " Y" + area.getBoundingBox2D().getY()
+//                    + " W" + area.getBoundingBox2D().getWidth()
+//                    + " H" + area.getBoundingBox2D().getHeight()
+//                    + " R" + area.getRotation()
+//            );
+//        }
+//        Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
+//
+//        double newXPosition[] = new double[pieces.length];
+//        double newDepthPosition[] = new double[pieces.length];
+//        double newRotation[] = new double[pieces.length];
+//        double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
+//
+//        steno.info("ended with " + bins.length + " bins");
+//        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+//        {
+//            MArea area = bins[0].getPlacedPieces()[pieceNumber];
+//
+//            steno.info("Piece " + area.getID()
+//                    + " X" + area.getBoundingBox2D().getX()
+//                    + " Y" + area.getBoundingBox2D().getY()
+//                    + " W" + area.getBoundingBox2D().getWidth()
+//                    + " H" + area.getBoundingBox2D().getHeight()
+//                    + " R" + area.getRotation()
+//            );
+//
+//            newRotation[pieceNumber] = area.getRotation();
+//
+//            newDepthPosition[pieceNumber] = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
+//            newXPosition[pieceNumber] = area.getBoundingBox2D().getMinX() + (area.getBoundingBox2D().getWidth() / 2.0);
+//
+//            maxLayoutX = Math.max(maxLayoutX, area.getBoundingBox2D().getMaxX());
+//            minLayoutX = Math.min(minLayoutX, area.getBoundingBox2D().getMinX());
+//            maxLayoutY = Math.max(maxLayoutY, area.getBoundingBox2D().getMaxY());
+//            minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
+//        }
+//
+//        steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
+//        steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
+//
+//        double xCentringOffset = (printVolumeWidth - (maxLayoutX - minLayoutX)) / 2.0;
+//        double yCentringOffset = (printVolumeDepth - (maxLayoutY - minLayoutY)) / 2.0;
+//
+//        steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
+//        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+//        {
+//            MArea area = bins[0].getPlacedPieces()[pieceNumber];
+//            ModelContainer container = (ModelContainer) topLevelThings.get(area.getID());
+//
+//            double rotation = newRotation[pieceNumber] + container.getRotationTurn();
+//            if (rotation >= 360.0)
+//            {
+//                rotation -= 360.0;
+//            }
+//            container.setRotationTurn(rotation);
+//
+//            container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
+//            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+//        }
+//
+//        projectModified();
+//        fireWhenAutoLaidOut();
+    }
+    
+    @Override
+    public void autoLayout(List<ProjectifiableThing> thingsToLayout)
+    {
         double printVolumeWidth = 0;
         double printVolumeDepth = 0;
-
+        
         if (Lookup.getSelectedPrinterProperty().get() != null
                 && Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get() != null)
         {
@@ -769,28 +865,64 @@ public class ModelContainerProject extends Project
             printVolumeWidth = defaultPrinterConfiguration.getPrintVolumeWidth();
             printVolumeDepth = defaultPrinterConfiguration.getPrintVolumeDepth();
         }
-
+        
         Dimension binDimension = new Dimension((int) printVolumeWidth, (int) printVolumeDepth);
+        Bin layoutBin = null;
+//        aBin.Bin[] bins = BinPacking.BinPackingStrategy(partsToLayout, binDimension, binDimension);
 
         final double spacing = 5.0;
         final double halfSpacing = spacing / 2.0;
         
-        MArea[] pieces = new MArea[topLevelThings.size()];
-        for (int thingIndex = 0; thingIndex < topLevelThings.size(); thingIndex++)
+        Map<Integer, ProjectifiableThing> partMap = new HashMap<>();
+        
+        int numberOfPartsNotToLayout = topLevelThings.size() - thingsToLayout.size();
+        
+        if (numberOfPartsNotToLayout > 0)
         {
-            RectangularBounds pieceBounds = ((ModelContainer) topLevelThings.get(thingIndex)).calculateBoundsInBedCoordinateSystem();
+            MArea[] existingPieces = new MArea[numberOfPartsNotToLayout];
+            int existingPartCounter = 0;
+            for (ProjectifiableThing thingToConsider : topLevelThings)
+            {
+                if (!thingsToLayout.contains(thingToConsider))
+                {
+                    //We need to stop this part from being laid out
+                    RectangularBounds pieceBounds = thingToConsider.calculateBoundsInBedCoordinateSystem();
+                    Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
+                            printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
+                            pieceBounds.getWidth() + halfSpacing,
+                            pieceBounds.getDepth() + halfSpacing);
+                    MArea piece = new MArea(rectangle, existingPartCounter, ((ModelContainer) thingToConsider).getRotationTurn());
+                    existingPieces[existingPartCounter] = piece;
+                    partMap.put(existingPartCounter, thingToConsider);
+                    existingPartCounter++;
+                }
+            }
+            layoutBin = new Bin(binDimension, existingPieces);
+        }
+        
+        int startingIndexForPartsToLayout = (numberOfPartsNotToLayout == 0)?0:numberOfPartsNotToLayout - 1;
+        
+        if (layoutBin == null)
+        {
+            layoutBin = new Bin(binDimension);
+        }
+        
+        MArea[] partsToLayout = new MArea[thingsToLayout.size()];
+        int partsToLayoutCounter = 0;
+        for (ProjectifiableThing thingToLayout : thingsToLayout)
+        {
+            RectangularBounds pieceBounds = thingToLayout.calculateBoundsInBedCoordinateSystem();
             Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
                     printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
                     pieceBounds.getWidth() + halfSpacing,
                     pieceBounds.getDepth() + halfSpacing);
-            MArea piece = new MArea(rectangle, thingIndex);
-            pieces[thingIndex] = piece;
-            
-            ModelContainer container = (ModelContainer) topLevelThings.get(thingIndex);
-            steno.info("Thing " + thingIndex + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
+            MArea piece = new MArea(rectangle, partsToLayoutCounter + startingIndexForPartsToLayout, ((ModelContainer) thingToLayout).getRotationTurn());
+            partsToLayout[partsToLayoutCounter] = piece;
+            partMap.put(partsToLayoutCounter + startingIndexForPartsToLayout, thingToLayout);
+            partsToLayoutCounter++;
         }
 //        steno.info("started with");
-        for (MArea area : pieces)
+        for (MArea area : partsToLayout)
         {
             steno.info("Piece " + area.getID()
                     + " X" + area.getBoundingBox2D().getX()
@@ -799,19 +931,29 @@ public class ModelContainerProject extends Project
                     + " H" + area.getBoundingBox2D().getHeight()
                     + " R" + area.getRotation()
             );
+            
         }
-        Bin[] bins = BinPacking.BinPackingStrategy(pieces, binDimension, binDimension);
-
-        double newXPosition[] = new double[pieces.length];
-        double newDepthPosition[] = new double[pieces.length];
-        double newRotation[] = new double[pieces.length];
-        double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
-
-        steno.info("ended with " + bins.length + " bins");
-        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+        
+        MArea[] unplacedParts = null;
+        
+        if (numberOfPartsNotToLayout > 0)
         {
-            MArea area = bins[0].getPlacedPieces()[pieceNumber];
-
+            unplacedParts = layoutBin.dropPieces(partsToLayout);
+        } else
+        {
+            unplacedParts = layoutBin.BBCompleteStrategy(partsToLayout);
+        }
+        
+        int numberOfPartsInTotal = layoutBin.getPlacedPieces().length;
+        double newXPosition[] = new double[numberOfPartsInTotal];
+        double newDepthPosition[] = new double[numberOfPartsInTotal];
+        double newRotation[] = new double[numberOfPartsInTotal];
+        double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
+        
+        for (int pieceNumber = 0; pieceNumber < numberOfPartsInTotal; pieceNumber++)
+        {
+            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
+            
             steno.info("Piece " + area.getID()
                     + " X" + area.getBoundingBox2D().getX()
                     + " Y" + area.getBoundingBox2D().getY()
@@ -819,45 +961,48 @@ public class ModelContainerProject extends Project
                     + " H" + area.getBoundingBox2D().getHeight()
                     + " R" + area.getRotation()
             );
-
+            
             newRotation[pieceNumber] = area.getRotation();
-
+            
             newDepthPosition[pieceNumber] = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
             newXPosition[pieceNumber] = area.getBoundingBox2D().getMinX() + (area.getBoundingBox2D().getWidth() / 2.0);
-
+            
             maxLayoutX = Math.max(maxLayoutX, area.getBoundingBox2D().getMaxX());
             minLayoutX = Math.min(minLayoutX, area.getBoundingBox2D().getMinX());
             maxLayoutY = Math.max(maxLayoutY, area.getBoundingBox2D().getMaxY());
             minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
         }
-
+        
         steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
         steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
-
+        
         double xCentringOffset = (printVolumeWidth - (maxLayoutX - minLayoutX)) / 2.0;
         double yCentringOffset = (printVolumeDepth - (maxLayoutY - minLayoutY)) / 2.0;
-
+        
         steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
-        for (int pieceNumber = 0; pieceNumber < bins[0].getPlacedPieces().length; pieceNumber++)
+        for (int pieceNumber = 0; pieceNumber < layoutBin.getPlacedPieces().length; pieceNumber++)
         {
-            MArea area = bins[0].getPlacedPieces()[pieceNumber];
-            ModelContainer container = (ModelContainer) topLevelThings.get(area.getID());
-
-            double rotation = newRotation[pieceNumber] + container.getRotationTurn();
-            if (rotation >= 360.0)
+            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
+            ModelContainer container = (ModelContainer) partMap.get(area.getID());
+            
+            if (thingsToLayout.contains(container))
             {
-                rotation -= 360.0;
+                double rotation = newRotation[pieceNumber] + container.getRotationTurn();
+                if (rotation >= 360.0)
+                {
+                    rotation -= 360.0;
+                }
+                container.setRotationTurn(rotation);
+                
+                container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
+                steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
             }
-            container.setRotationTurn(rotation);
-
-            container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
-            steno.info("Thing " + area.getID() + " is at cX" + container.getTransformedCentreX() + " cY" + container.getTransformedCentreDepth() + " r" + container.getRotationTurn());
         }
-
+        
         projectModified();
         fireWhenAutoLaidOut();
     }
-
+    
     private void fireWhenAutoLaidOut()
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -865,7 +1010,7 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenAutoLaidOut();
         }
     }
-
+    
     public void rotateLeanModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
         for (RotatableThreeD model : modelContainers)
@@ -873,10 +1018,10 @@ public class ModelContainerProject extends Project
             model.setRotationLean(rotation);
         }
         projectModified();
-
+        
         fireWhenModelsTransformed((Set) modelContainers);
     }
-
+    
     public void rotateTwistModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
         for (RotatableThreeD model : modelContainers)
@@ -884,10 +1029,10 @@ public class ModelContainerProject extends Project
             model.setRotationTwist(rotation);
         }
         projectModified();
-
+        
         fireWhenModelsTransformed((Set) modelContainers);
     }
-
+    
     public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
     {
         for (RotatableTwoD model : modelContainers)
@@ -895,10 +1040,10 @@ public class ModelContainerProject extends Project
             model.setRotationTurn(rotation);
         }
         projectModified();
-
+        
         fireWhenModelsTransformed((Set) modelContainers);
     }
-
+    
     public void dropToBed(Set<ModelContainer> modelContainers)
     {
         for (ModelContainer model : modelContainers)
@@ -909,22 +1054,22 @@ public class ModelContainerProject extends Project
             }
         }
         projectModified();
-
+        
         Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
         fireWhenModelsTransformed(projectifiableThings);
     }
-
+    
     public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
     {
         modelContainer.snapToGround(pickedMesh, faceNumber);
         projectModified();
         Set<ModelContainer> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);
-
+        
         Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
         fireWhenModelsTransformed(projectifiableThings);
     }
-
+    
     @Override
     protected void fireWhenModelsTransformed(Set<ProjectifiableThing> modelContainers)
     {
@@ -933,7 +1078,7 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
     }
-
+    
     private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
@@ -941,14 +1086,14 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenModelChanged(modelContainer, propertyName);
         }
     }
-
+    
     public void setAssociatedExtruder(Set<ModelContainer> modelContainers, boolean useExtruder0)
     {
         for (ModelContainer modelContainer : modelContainers)
         {
             modelContainer.setUseExtruder0(useExtruder0);
         }
-
+        
         boolean usingDifferentExtruders = false;
         int lastExtruder = -1;
         for (ProjectifiableThing projectifiableThing : getAllModels())
@@ -963,7 +1108,7 @@ public class ModelContainerProject extends Project
             }
             lastExtruder = thisExtruder;
         }
-
+        
         if (!usingDifferentExtruders)
         {
             printerSettings.getPrintSupportTypeOverrideProperty().set(
@@ -972,10 +1117,10 @@ public class ModelContainerProject extends Project
                             : SlicerParametersFile.SupportType.MATERIAL_2);
             fireWhenPrinterSettingsChanged(printerSettings);
         }
-
+        
         projectModified();
     }
-
+    
     @Override
     protected void checkNotAlreadyInGroup(Set<Groupable> modelContainers)
     {
@@ -1009,5 +1154,5 @@ public class ModelContainerProject extends Project
         modelGroup.checkOffBed();
         return modelGroup;
     }
-
+    
 }

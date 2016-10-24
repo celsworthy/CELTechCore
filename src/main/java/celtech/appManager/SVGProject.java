@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -165,6 +166,12 @@ public class SVGProject extends Project
 
     @Override
     public ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void autoLayout(List<ProjectifiableThing> thingsToLayout)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
