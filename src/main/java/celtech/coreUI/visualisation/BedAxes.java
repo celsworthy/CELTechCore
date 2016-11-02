@@ -22,7 +22,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class BedAxes extends Pane implements CameraViewChangeListener
+public class BedAxes extends Pane implements ViewChangeListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(BedAxes.class.getName());
@@ -201,14 +201,7 @@ public class BedAxes extends Pane implements CameraViewChangeListener
     }
 
     @Override
-    public void heresYourCamera(Camera camera
-    )
-    {
-    }
-
-    @Override
-    public void cameraViewOfYouHasChanged(double cameraDistance
-    )
+    public void viewOfYouHasChanged(double viewDistance)
     {
         updateArrowAndTextPosition();
     }

@@ -136,7 +136,7 @@ public class ModelLoader
             addToProject(project, allProjectifiableThings, shouldCentre, dontGroupModelsOverride, printer);
             if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
             {
-//            project.autoLayout();
+                project.autoLayout();
             }
         } else if (loadResults.getType() == ModelLoadResultType.SVG)
         {
@@ -262,17 +262,17 @@ public class ModelLoader
             boolean shouldCentre,
             Printer printer)
     {
+        shrinkIfRequested(projectifiableThing, printer);
+        undoableProject.addModel(projectifiableThing);
         if (shouldCentre)
         {
             projectifiableThing.moveToCentre();
             if (projectifiableThing instanceof ModelContainer)
             {
-                ((ModelContainer)projectifiableThing).dropToBed();
+                ((ModelContainer) projectifiableThing).dropToBed();
             }
         }
-        shrinkIfRequested(projectifiableThing, printer);
         projectifiableThing.checkOffBed();
-        undoableProject.addModel(projectifiableThing);
     }
 
     private void shrinkIfRequested(ProjectifiableThing projectifiableThing, Printer printer)

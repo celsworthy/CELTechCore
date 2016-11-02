@@ -245,9 +245,9 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         zCutEntryBox = new ZCutEntryBox(overlayPane, layoutSubmode, viewManager, (ModelContainerProject) project);
         bedAxes = new BedAxes(viewManager);
-        viewManager.addCameraViewChangeListener(bedAxes);
+        viewManager.addViewPortChangeListener(bedAxes);
 
-        basePane.getChildren().add(0, viewManager.getSubScene());
+        basePane.getChildren().add(0, viewManager.getDisplayableComponent());
         overlayPane.getChildren().add(bedAxes);
 
         hideDimensions.bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
@@ -259,12 +259,12 @@ public class ProjectTab extends Tab implements ProjectCallback
         nonSpecificModelIndicator.setVisible(false);
         svgViewManager = new SVGViewManager(project, basePane.getWidth(), basePane.getHeight());
 
-        AnchorPane.setBottomAnchor(svgViewManager, 0.0);
-        AnchorPane.setTopAnchor(svgViewManager, 0.0);
-        AnchorPane.setLeftAnchor(svgViewManager, 0.0);
-        AnchorPane.setRightAnchor(svgViewManager, 0.0);
+        AnchorPane.setBottomAnchor(svgViewManager.getDisplayableComponent(), 0.0);
+        AnchorPane.setTopAnchor(svgViewManager.getDisplayableComponent(), 0.0);
+        AnchorPane.setLeftAnchor(svgViewManager.getDisplayableComponent(), 0.0);
+        AnchorPane.setRightAnchor(svgViewManager.getDisplayableComponent(), 0.0);
 
-        basePane.getChildren().add(0, svgViewManager);
+        basePane.getChildren().add(0, svgViewManager.getDisplayableComponent());
     }
 
     private Node loadInsetPanel(String innerPanelFXMLName, Project project)

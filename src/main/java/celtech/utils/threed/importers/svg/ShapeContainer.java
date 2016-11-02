@@ -2,6 +2,8 @@ package celtech.utils.threed.importers.svg;
 
 import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
+import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
+import celtech.coreUI.visualisation.ViewChangeListener;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.ResizeableTwoD;
@@ -20,6 +22,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.shape.Shape;
+import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -34,13 +37,17 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         ScaleableTwoD,
         TranslateableTwoD,
         ResizeableTwoD,
-        ShapeToWorldTransformer
+        ShapeToWorldTransformer,
+        ScreenExtentsProviderTwoD,
+        ViewChangeListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(ShapeContainer.class.getName());
     private static final long serialVersionUID = 1L;
 
     private List<Shape> shapes = new ArrayList<>();
+
+    Affine jfxToRealWorld = new Affine();
 
     public ShapeContainer()
     {
@@ -88,6 +95,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     private void initialise()
     {
+        jfxToRealWorld.appendScale(1, -1);
+        jfxToRealWorld.appendTranslation(0, -printVolumeDepth);
+
         preferredXScale = new SimpleDoubleProperty(1);
         preferredYScale = new SimpleDoubleProperty(1);
         preferredRotationTurn = new SimpleDoubleProperty(0);
@@ -307,7 +317,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getTransformedHeight()
     {
-        return getBoundsInParent().getHeight();
+        return getLastTransformedBounds().getHeight();
     }
 
     @Override
@@ -343,6 +353,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     protected void printVolumeBoundsUpdated()
     {
+        jfxToRealWorld = new Affine();
+        jfxToRealWorld.appendScale(1, -1);
+        jfxToRealWorld.appendTranslation(0, -printVolumeDepth);
     }
 
     @Override
@@ -353,7 +366,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public Point2D transformShapeToRealWorldCoordinates(float vertexX, float vertexY)
     {
-        return bed.sceneToLocal(localToScene(vertexX, vertexY));
+        //In our 2D world up is down and down is up...
+        return jfxToRealWorld.transform(bed.sceneToLocal(localToScene(vertexX, vertexY)));
     }
 
     public List<Shape> getShapes()
@@ -389,8 +403,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
         if (scaling != 1.0f)
         {
-            transformScalePreferred.setX(scaling);
-            transformScalePreferred.setY(scaling);
+            setXScale(scaling);
+            setYScale(scaling);
         }
 
         getLastTransformedBounds();
@@ -399,10 +413,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setBedCentreOffsetTransform()
     {
-        BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
-
-        bedCentreOffsetX = -printableBoundingBox.getMinX() + printableBoundingBox.getWidth() / 2.0;
-        bedCentreOffsetY = -printableBoundingBox.getMinY() + printableBoundingBox.getHeight() / 2.0;
+        bedCentreOffsetX = printVolumeWidth / 2;
+        bedCentreOffsetY = printVolumeDepth / 2;
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
@@ -429,10 +441,15 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 transformRotateTurnPreferred,
                 transformScalePreferred
         );
+//        getTransforms().addAll(
+//                transformBedCentre,
+//                transformRotateTurnPreferred,
+//                transformScalePreferred
+//        );
 
         updateOriginalModelBounds();
 
-//        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -550,5 +567,11 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         translateTo(bedCentreOffsetX, bedCentreOffsetY);
 
         getLastTransformedBounds();
+    }
+
+    @Override
+    public void viewOfYouHasChanged(double cameraDistance)
+    {
+        notifyScreenExtentsChange();
     }
 }

@@ -60,14 +60,13 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class SVGViewManager extends Pane implements Project.ProjectChangesListener
+public class SVGViewManager extends ViewManager implements Project.ProjectChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(SVGViewManager.class.getName());
     private final Project project;
     private final UndoableProject undoableProject;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private final ProjectSelection projectSelection;
     private ObservableList<ProjectifiableThing> loadedModels;
 
     private Shape shapeBeingDragged = null;
@@ -88,7 +87,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     private final Group parts = new Group();
     private final Group gCodeOverlay = new Group();
 
-    private Pane parentPane = null;
+    private Pane parentPane = new Pane();
 
     private final ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
     private boolean justEnteredDragMode;
@@ -97,28 +96,28 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     public SVGViewManager(Project project, double parentWidth, double parentHeight)
     {
+        super(project);
         this.project = project;
         this.undoableProject = new UndoableProject(project);
 
-        parentPane = this;
+        parentPane.setPickOnBounds(false);
 
-        this.setPickOnBounds(false);
-        
         createBed();
-
-        partsAndBed.getChildren().addAll(bed, parts);
-        partsAndBed.getTransforms().addAll(bedTranslate, bedScale);
 
         Affine jfxToRealWorld = new Affine();
         jfxToRealWorld.appendScale(1, -1);
         jfxToRealWorld.appendTranslation(0, -bedHeight);
 
-        gCodeOverlay.getTransforms().addAll(bedScale, bedTranslate, jfxToRealWorld);
+//        bedScale.setPivotX(bedWidth / 2.0);
+//        bedScale.setPivotY(bedHeight / 2.0);
+        partsAndBed.getChildren().addAll(bed, parts);
+//        getTransforms().addAll(bedTranslate, bedScale);
+        partsAndBed.getTransforms().addAll(bedTranslate, bedScale);
 
-        getChildren().add(partsAndBed);
-        getChildren().add(gCodeOverlay);
+        gCodeOverlay.getTransforms().addAll(bedTranslate, bedScale, jfxToRealWorld);
+        parentPane.getChildren().add(partsAndBed);
+        parentPane.getChildren().add(gCodeOverlay);
 
-        projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         loadedModels = project.getTopLevelThings();
 
         applicationStatus.modeProperty().addListener(applicationModeListener);
@@ -128,7 +127,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         parentPane.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
 
 //        setStyle("-fx-background-color: blue;");
-        this.maxWidthProperty().addListener(new ChangeListener<Number>()
+        parentPane.maxWidthProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
@@ -137,7 +136,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             }
         });
 
-        this.maxHeightProperty().addListener(new ChangeListener<Number>()
+        parentPane.maxHeightProperty().addListener(new ChangeListener<Number>()
         {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue)
@@ -145,10 +144,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 resizeBed();
             }
         });
-        
-        this.setMaxWidth(parentWidth);
-        this.setMaxHeight(parentHeight);
-        
+
+        parentPane.setMaxWidth(parentWidth);
+        parentPane.setMaxHeight(parentHeight);
+
         /**
          * Listen for adding and removing of models from the project
          */
@@ -161,6 +160,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 //            projectifiableThing.shrinkToFitBed();
         }
     }
+
+    private final List<ViewChangeListener> viewChangeListeners = new ArrayList<>();
 
     private void createBed()
     {
@@ -187,9 +188,9 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
             Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
 
-            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
-
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
+
+            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
         });
 
         addRectangleMenuItem.setOnAction((ActionEvent e) ->
@@ -200,9 +201,9 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
             Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
 
-            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
-
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
+
+            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
         });
 
         addCircleMenuItem.setOnAction((ActionEvent e) ->
@@ -214,9 +215,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             ShapeContainer newShapeContainer = new ShapeContainer("Circle", newShape);
 
             Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
 
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
+
+            newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
         });
 
         generateGCodeMenuItem.setOnAction((ActionEvent e) ->
@@ -258,8 +260,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void resizeBed()
     {
-        double viewAreaWidth = maxWidthProperty().get();
-        double viewAreaHeight = maxHeightProperty().get();
+        double viewAreaWidth = parentPane.maxWidthProperty().get();
+        double viewAreaHeight = parentPane.maxHeightProperty().get();
         double displayAspect = viewAreaWidth / viewAreaHeight;
         double aspect = bedWidth / bedHeight;
 
@@ -287,6 +289,8 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         bedTranslate.setX(xOffset);
         bedTranslate.setY(yOffset);
+
+        notifyModelsAndListenersOfViewPortChange();
     }
 
     @Override
@@ -363,6 +367,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
             bedScale.setX(newScale);
             bedScale.setY(newScale);
+            notifyModelsAndListenersOfViewPortChange();
         }
     };
 
@@ -371,6 +376,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         double newScale = bedScale.getX() + (0.01 * event.getDeltaY());
         bedScale.setX(newScale);
         bedScale.setY(newScale);
+        notifyModelsAndListenersOfViewPortChange();
     };
 
     private ShapeContainer findShapeContainerParent(Node shape)
@@ -609,5 +615,17 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                 gCodeOverlay.getChildren().add(newLine);
             }
         }
+    }
+
+    @Override
+    public Node getDisplayableComponent()
+    {
+        return parentPane;
+    }
+
+    @Override
+    protected double getViewPortDistance()
+    {
+        return 0;
     }
 }

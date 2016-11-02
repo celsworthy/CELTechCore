@@ -1,11 +1,12 @@
 package celtech.modelcontrol;
 
 import celtech.coreUI.visualisation.ApplicationMaterials;
-import celtech.coreUI.visualisation.CameraViewChangeListener;
 import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProviderThreeD;
 import celtech.coreUI.visualisation.ShapeProviderThreeD;
+import celtech.coreUI.visualisation.SupportsMaterialSelection;
+import celtech.coreUI.visualisation.ViewChangeListener;
 import celtech.coreUI.visualisation.collision.CollisionShapeListener;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
@@ -70,7 +71,7 @@ import org.apache.commons.math3.optim.univariate.UnivariatePointValuePair;
  */
 public class ModelContainer extends ProjectifiableThing implements Serializable,
         Comparable,
-        CameraViewChangeListener,
+        ViewChangeListener,
         MeshToWorldTransformer,
         ScaleableThreeD,
         TranslateableThreeD,
@@ -78,7 +79,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         RotatableThreeD,
         Groupable,
         ScreenExtentsProviderThreeD,
-        ShapeProviderThreeD
+        ShapeProviderThreeD,
+        SupportsMaterialSelection
 {
 
     private static final long serialVersionUID = 1L;
@@ -115,8 +117,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     protected IntegerProperty associateWithExtruderNumber = new SimpleIntegerProperty(0);
 
     private double cameraDistance = 1;
-
-    private Camera cameraViewingMe = null;
 
     private MeshView collisionShape = null;
     private List<CollisionShapeListener> collisionShapeListeners = new ArrayList<>();
@@ -1895,13 +1895,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public void heresYourCamera(Camera camera)
-    {
-        this.cameraViewingMe = camera;
-    }
-
-    @Override
-    public void cameraViewOfYouHasChanged(double cameraDistance)
+    public void viewOfYouHasChanged(double cameraDistance)
     {
         this.cameraDistance = cameraDistance;
         if (selectionHighlighter != null)

@@ -5,6 +5,7 @@ import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.coreUI.visualisation.ShapeProviderTwoD;
+import celtech.coreUI.visualisation.ViewChangeListener;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -30,7 +31,7 @@ import javafx.scene.transform.Translate;
  *
  * @author ianhudson
  */
-public abstract class ProjectifiableThing extends Group implements ScreenExtentsProviderTwoD, ShapeProviderTwoD
+public abstract class ProjectifiableThing extends Group implements ScreenExtentsProviderTwoD, ShapeProviderTwoD, ViewChangeListener
 {
 
     private File modelFile;
@@ -361,14 +362,14 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     {
         return getLastTransformedBounds().getCentreX();
     }
-    
+
     protected RectangularBounds getLastTransformedBounds()
     {
-        if (lastTransformedBoundsInParent == null)
-        {
-            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        }
-        
+//        if (lastTransformedBoundsInParent == null)
+//        {
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+//        }
+
         return lastTransformedBoundsInParent;
     }
 }

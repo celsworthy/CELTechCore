@@ -14,6 +14,7 @@ import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.coreUI.visualisation.ShapeProviderThreeD;
+import celtech.coreUI.visualisation.SupportsMaterialSelection;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -44,6 +45,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -168,6 +170,9 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     @FXML
     private Group unlinkIcon;
+    
+    @FXML
+    private VBox materialArea;
 
     private Project currentProject;
     private UndoableProject undoableProject;
@@ -269,22 +274,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
     };
 
-    private void updateProportionalLabels(boolean proportionalOn)
-    {
-        scaleTextDepthField.setVisible(proportionalOn);
-        scaleTextHeightField.setVisible(proportionalOn);
-        scaleTextWidthField.setVisible(proportionalOn);
-        depthTextField.setVisible(!proportionalOn);
-        heightTextField.setVisible(!proportionalOn);
-        widthTextField.setVisible(!proportionalOn);
-        scaleXCaption.setVisible(proportionalOn);
-        scaleYCaption.setVisible(proportionalOn);
-        scaleZCaption.setVisible(proportionalOn);
-        depthCaption.setVisible(!proportionalOn);
-        heightCaption.setVisible(!proportionalOn);
-        widthCaption.setVisible(!proportionalOn);
-    }
-
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -319,14 +308,13 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                 });
 
         useProportionalScaleSwitch.setSelected(false);
-        updateProportionalLabels(false);
 
         useProportionalScaleSwitch.selectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                updateProportionalLabels(newValue);
+                updateDisplay();
             }
         });
 
@@ -459,26 +447,27 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                     rotationXTextField.setVisible(isThreeDRotatable);
                     rotationYTextField.setVisible(isThreeDRotatable);
                     rotationZTextField.setVisible(isTwoDRotatable || isThreeDRotatable);
-                }
-
-                if (displayMaterialButtons)
-                {
-                    setMaterial0Button.setVisible(true);
-                    setMaterial1Button.setVisible(true);
-                    if (foundMaterial0 && !foundMaterial1)
+                    
+                    boolean supportsMaterialSelection = SupportsMaterialSelection.class.isInstance(firstModel);
+                    if (displayMaterialButtons && supportsMaterialSelection)
                     {
-                        materialButtons.selectToggle(setMaterial0Button);
-                    } else if (!foundMaterial0 && foundMaterial1)
-                    {
-                        materialButtons.selectToggle(setMaterial1Button);
+                        materialArea.setVisible(true);
+                        materialArea.setPrefHeight(-1);
+                        if (foundMaterial0 && !foundMaterial1)
+                        {
+                            materialButtons.selectToggle(setMaterial0Button);
+                        } else if (!foundMaterial0 && foundMaterial1)
+                        {
+                            materialButtons.selectToggle(setMaterial1Button);
+                        } else
+                        {
+                            materialButtons.selectToggle(null);
+                        }
                     } else
                     {
-                        materialButtons.selectToggle(null);
+                        materialArea.setVisible(false);
+                        materialArea.setPrefHeight(0);
                     }
-                } else
-                {
-                    setMaterial0Button.setVisible(false);
-                    setMaterial1Button.setVisible(false);
                 }
             }
         }
@@ -1143,18 +1132,15 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         if (inFixedAR())
         {
             ProjectifiableThing modelContainer = getSingleSelection();
-            if (modelContainer instanceof ModelContainer)
+            double ratio = newHeight / modelContainer.getScaledHeight();
+            if (selectedThreeDShapes.size() > 0)
             {
-                double ratio = newHeight / ((ModelContainer) modelContainer).getScaledHeight();
-                if (selectedThreeDShapes.size() > 0)
-                {
-                    undoableProject.scaleXYZRatioSelection(
-                            selectedThreeDShapes, ratio);
-                } else
-                {
-                    undoableProject.scaleXYRatioSelection(
-                            projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
-                }
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes, ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
             }
         } else
         {

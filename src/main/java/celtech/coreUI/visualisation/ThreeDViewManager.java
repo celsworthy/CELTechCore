@@ -77,9 +77,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager implements Project.ProjectChangesListener, ScreenCoordinateConverter
+public class ThreeDViewManager extends ViewManager implements Project.ProjectChangesListener, ScreenCoordinateConverter
 {
-
     private static final Stenographer steno = StenographerFactory.getStenographer(
             ThreeDViewManager.class.getName());
 
@@ -137,14 +136,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
-    private List<CameraViewChangeListener> cameraViewChangeListeners = new ArrayList<>();
 
     private double mousePosX;
     private double mousePosY;
     private double mouseOldX;
     private double mouseOldY;
-
-    private final ProjectSelection projectSelection;
 
     private long lastAnimationTrigger = 0;
 
@@ -243,28 +239,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
         demandedCameraRotationX.set(xAxisRotation);
 
-        notifyModelsOfCameraViewChange();
+        notifyModelsAndListenersOfViewPortChange();
 //        refreshCameraPosition();
-    }
-
-    private void notifyListenersOfCameraViewChange()
-    {
-        for (CameraViewChangeListener listener : cameraViewChangeListeners)
-        {
-            listener.cameraViewOfYouHasChanged(cameraDistance.get());
-        }
-    }
-
-    private void notifyModelsOfCameraViewChange()
-    {
-        Set<ProjectifiableThing> selectedModels = projectSelection.getSelectedModelsSnapshot();
-        Set<ModelContainer> modelContainers = (Set) selectedModels;
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
-        }
-
-        notifyListenersOfCameraViewChange();
     }
 
     private void rotateCameraAroundAxesTo(double xangle, double yangle)
@@ -290,7 +266,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
         demandedCameraRotationX.set(xAxisRotation);
 
-        notifyModelsOfCameraViewChange();
+        notifyModelsAndListenersOfViewPortChange();
 
 //        refreshCameraPosition();
     }
@@ -597,12 +573,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             bedTranslateXform.setTx(bedTranslateXform.getTx() + mouseDeltaX * 0.3);  // -
             bedTranslateXform.setTy(bedTranslateXform.getTy() + mouseDeltaY * 0.3);  // -
-            notifyModelsOfCameraViewChange();
+            notifyModelsAndListenersOfViewPortChange();
         } else if (event.isAltDown())
         {
             double z = bedTranslateXform.getTz() + (mouseDeltaY * 0.2);
             cameraDistance.set(z);
-            notifyModelsOfCameraViewChange();
+            notifyModelsAndListenersOfViewPortChange();
         } else if (event.isSecondaryButtonDown())
         {
             rotateCameraAroundAxes(-mouseDeltaY * 2.0, mouseDeltaX * 2.0);
@@ -719,7 +695,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 //            cameraDistance.set(cameraDistance.get() - (event.getDeltaY() * 0.2));
 //            refreshCameraPosition();
         }
-        notifyModelsOfCameraViewChange();
+        notifyModelsAndListenersOfViewPortChange();
     };
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
@@ -728,7 +704,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             double z = bedTranslateXform.getTz() / event.getZoomFactor();
             cameraDistance.set(z);
-            notifyModelsOfCameraViewChange();
+            notifyModelsAndListenersOfViewPortChange();
 //            cameraDistance.set(cameraDistance.get() / event.getZoomFactor());
 //            refreshCameraPosition();
         }
@@ -754,7 +730,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
                             subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
                             subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            notifyModelsOfCameraViewChange();
+                            notifyModelsAndListenersOfViewPortChange();
 //                            stopSettingsAnimation();
                             break;
                     }
@@ -790,7 +766,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             PrinterDefinitionFile defaultPrinterDefinition = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
             defaultXTranslate = -defaultPrinterDefinition.getPrintVolumeWidth() / 2;
             defaultYTranslate = defaultPrinterDefinition.getPrintVolumeHeight() - 80;
-            defaultDistance = initialCameraDistance;            
+            defaultDistance = initialCameraDistance;
         }
 
         deselectAllModels();
@@ -801,13 +777,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     public ThreeDViewManager(ModelContainerProject project,
             ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
+        super(project);
         this.project = project;
         this.undoableProject = new UndoableProject(project);
 
         currentPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
 
         loadedModels = project.getTopLevelThings();
-        projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
         inSelectedGroupButNotSelected = Lookup.getProjectGUIState(project).getExcludedFromSelection();
         projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
@@ -820,7 +796,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                notifyListenersOfCameraViewChange();
+                notifyModelsAndListenersOfViewPortChange();
             }
         });
 
@@ -829,7 +805,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             @Override
             public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
             {
-                notifyListenersOfCameraViewChange();
+                notifyModelsAndListenersOfViewPortChange();
             }
         });
 
@@ -981,8 +957,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             models.getChildren().add(model);
 
             addBedReferenceToModel((ModelContainer) model);
-            ((ModelContainer) model).cameraViewOfYouHasChanged(cameraDistance.get());
-            ((ModelContainer) model).heresYourCamera(camera);
+            ((ModelContainer) model).viewOfYouHasChanged(cameraDistance.get());
         }
     }
 
@@ -1173,7 +1148,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         updateGroupSelectionList();
     }
 
-    public SubScene getSubScene()
+    @Override
+    public Node getDisplayableComponent()
     {
         return subScene;
     }
@@ -1458,14 +1434,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             model.setBedReference(bed);
             model.checkOffBed();
-            model.heresYourCamera(camera);
         }
         updateModelColours();
 
         collisionManager.addModel(modelContainer);
 
-        modelContainer.cameraViewOfYouHasChanged(cameraDistance.get());
-        notifyListenersOfCameraViewChange();
+        notifyModelsAndListenersOfViewPortChange();
     }
 
     @Override
@@ -1640,14 +1614,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         verticalDragPlane.setRotate(-demandedCameraRotationY.get());
     }
 
-    public void addCameraViewChangeListener(CameraViewChangeListener listener)
-    {
-        if (!cameraViewChangeListeners.contains(listener))
-        {
-            cameraViewChangeListeners.add(listener);
-        }
-    }
-
     @Override
     public Point2D convertWorldCoordinatesToScreen(double worldX, double worldY, double worldZ)
     {
@@ -1679,5 +1645,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 30,
                 0,
                 defaultDistance);
+    }
+
+    @Override
+    protected double getViewPortDistance()
+    {
+        return cameraDistance.get();
     }
 }
