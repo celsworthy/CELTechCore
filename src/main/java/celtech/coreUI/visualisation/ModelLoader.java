@@ -10,6 +10,7 @@ import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectMode;
 import celtech.appManager.SVGProject;
 import celtech.appManager.undo.UndoableProject;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.modelcontrol.Groupable;
@@ -18,7 +19,10 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.utils.Math.MathUtils;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import celtech.utils.threed.MeshUtils;
@@ -60,7 +64,7 @@ public class ModelLoader
 
         if (loadResults.getType() == ModelLoadResultType.Mesh)
         {
-            project.setMode(ProjectMode.MESH);
+//            project.setMode(ProjectMode.MESH);
             // validate incoming meshes
             // Associate the loaded meshes with extruders in turn, respecting the original groups / model files
             int numExtruders = 1;
@@ -141,7 +145,7 @@ public class ModelLoader
         } else if (loadResults.getType() == ModelLoadResultType.SVG)
         {
 
-            project.setMode(ProjectMode.SVG);
+//            project.setMode(ProjectMode.SVG);
             Set<ProjectifiableThing> allProjectifiableThings = new HashSet<>();
             for (ModelLoadResult result : loadResults.getResults())
             {
@@ -203,10 +207,12 @@ public class ModelLoader
                     switch (loadResults.getType())
                     {
                         case Mesh:
-                            projectToUse = new ModelContainerProject();
+                            DisplayManager.getInstance().initialiseBlank3DProject();
+                            projectToUse = Lookup.getSelectedProjectProperty().get();
                             break;
                         case SVG:
-                            projectToUse = new SVGProject();
+                            DisplayManager.getInstance().initialiseBlank2DProject();
+                            projectToUse = Lookup.getSelectedProjectProperty().get();
                             break;
                     }
                 }
@@ -279,15 +285,37 @@ public class ModelLoader
     {
         boolean shrinkModel = false;
         RectangularBounds originalBounds = projectifiableThing.getOriginalModelBounds();
+        boolean modelIsTooLarge = false;
 
         if (printer != null)
         {
-            boolean modelIsTooLarge = printer.isBiggerThanPrintVolume(originalBounds);
-            if (modelIsTooLarge)
+            modelIsTooLarge = printer.isBiggerThanPrintVolume(originalBounds);
+        } else
+        {
+            //Apply default printer bounds checking
+            PrinterDefinitionFile printerConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
+
+            if (printerConfiguration != null)
             {
-                shrinkModel = BaseLookup.getSystemNotificationHandler().
-                        showModelTooBigDialog(projectifiableThing.getModelName());
+                double xSize = originalBounds.getWidth();
+                double ySize = originalBounds.getHeight();
+                double zSize = originalBounds.getDepth();
+
+                double epsilon = 0.001;
+
+                if (MathUtils.compareDouble(xSize, printerConfiguration.getPrintVolumeWidth(), epsilon) == MathUtils.MORE_THAN
+                        || MathUtils.compareDouble(ySize, printerConfiguration.getPrintVolumeHeight(), epsilon) == MathUtils.MORE_THAN
+                        || MathUtils.compareDouble(zSize, printerConfiguration.getPrintVolumeDepth(), epsilon) == MathUtils.MORE_THAN)
+                {
+                    modelIsTooLarge = true;
+                }
             }
+        }
+
+        if (modelIsTooLarge)
+        {
+            shrinkModel = BaseLookup.getSystemNotificationHandler().
+                    showModelTooBigDialog(projectifiableThing.getModelName());
             if (shrinkModel)
             {
                 projectifiableThing.shrinkToFitBed();

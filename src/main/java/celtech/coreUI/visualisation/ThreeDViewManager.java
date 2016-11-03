@@ -5,7 +5,6 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
-import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
@@ -46,7 +45,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
@@ -77,12 +75,12 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class ThreeDViewManager extends ViewManager implements Project.ProjectChangesListener, ScreenCoordinateConverter
+public class ThreeDViewManager extends ViewManager implements ScreenCoordinateConverter
 {
+
     private static final Stenographer steno = StenographerFactory.getStenographer(
             ThreeDViewManager.class.getName());
 
-    private ObservableList<ProjectifiableThing> loadedModels;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
     private final Group root3D = new Group();
@@ -158,8 +156,6 @@ public class ThreeDViewManager extends ViewManager implements Project.ProjectCha
         }
     };
 
-    private final ModelContainerProject project;
-    private final UndoableProject undoableProject;
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     private boolean justEnteredDragMode;
     private final ProjectGUIRules projectGUIRules;
@@ -774,19 +770,14 @@ public class ThreeDViewManager extends ViewManager implements Project.ProjectCha
         transitionCameraToDefaults();
     }
 
-    public ThreeDViewManager(ModelContainerProject project,
+    public ThreeDViewManager(ModelContainerProject inboundProject,
             ReadOnlyDoubleProperty widthProperty, ReadOnlyDoubleProperty heightProperty)
     {
-        super(project);
-        this.project = project;
-        this.undoableProject = new UndoableProject(project);
-
         currentPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
 
-        loadedModels = project.getTopLevelThings();
-        layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
-        inSelectedGroupButNotSelected = Lookup.getProjectGUIState(project).getExcludedFromSelection();
-        projectGUIRules = Lookup.getProjectGUIState(project).getProjectGUIRules();
+        layoutSubmode = Lookup.getProjectGUIState(inboundProject).getLayoutSubmodeProperty();
+        inSelectedGroupButNotSelected = Lookup.getProjectGUIState(inboundProject).getExcludedFromSelection();
+        projectGUIRules = Lookup.getProjectGUIState(inboundProject).getProjectGUIRules();
 
         widthPropertyToFollow = widthProperty;
         heightPropertyToFollow = heightProperty;
@@ -845,8 +836,6 @@ public class ThreeDViewManager extends ViewManager implements Project.ProjectCha
                 updateCurrentPrinter(t1);
             }
         });
-
-        updateCurrentPrinter(Lookup.getSelectedPrinterProperty().get());
 
         translationDragPlane.setId("DragPlane");
         translationDragPlane.setOpacity(0.0);
@@ -914,11 +903,13 @@ public class ThreeDViewManager extends ViewManager implements Project.ProjectCha
         dragMode.addListener(dragModeListener);
         layoutSubmode.addListener(layoutSubmodeListener);
 
+        associateWithProject(inboundProject);
+
         /**
          * Set up filament, application mode and printer listeners so that the
          * correct model colours are displayed.
          */
-        setupFilamentListeners(project);
+        setupFilamentListeners(inboundProject);
         updateModelColours();
 
         if (Lookup.getSelectedPrinterProperty().get() != null
@@ -941,24 +932,13 @@ public class ThreeDViewManager extends ViewManager implements Project.ProjectCha
                     updateModelColours();
                 });
 
-        project.getPrinterSettings().getPrintSupportTypeOverrideProperty().addListener(
+        inboundProject.getPrinterSettings().getPrintSupportTypeOverrideProperty().addListener(
                 (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
                 {
                     updateModelColours();
                 });
 
-        /**
-         * Listen for adding and removing of models from the project
-         */
-        project.addProjectChangesListener(this);
-
-        for (ProjectifiableThing model : loadedModels)
-        {
-            models.getChildren().add(model);
-
-            addBedReferenceToModel((ModelContainer) model);
-            ((ModelContainer) model).viewOfYouHasChanged(cameraDistance.get());
-        }
+        updateCurrentPrinter(Lookup.getSelectedPrinterProperty().get());
     }
 
     private void addBedReferenceToModel(ModelContainer model)
@@ -1651,5 +1631,14 @@ public class ThreeDViewManager extends ViewManager implements Project.ProjectCha
     protected double getViewPortDistance()
     {
         return cameraDistance.get();
+    }
+
+    @Override
+    protected void addModelAction(ProjectifiableThing projectifiableThing)
+    {
+        models.getChildren().add(projectifiableThing);
+
+        addBedReferenceToModel((ModelContainer) projectifiableThing);
+        projectifiableThing.viewOfYouHasChanged(cameraDistance.get());
     }
 }

@@ -381,10 +381,10 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
 
         double scaling = 1.0;
+        double border = 5;
 
-        double relativeXSize = printableBoundingBox.getWidth() / printVolumeWidth;
-        double relativeYSize = printableBoundingBox.getHeight() / printVolumeDepth;
-        steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize);
+        double relativeXSize = printableBoundingBox.getWidth() / (printVolumeWidth - border);
+        double relativeYSize = printableBoundingBox.getHeight() / (printVolumeDepth - border);
 
         if (relativeXSize > relativeYSize)
         {

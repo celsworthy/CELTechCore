@@ -257,7 +257,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private void setupSVGView()
     {
         nonSpecificModelIndicator.setVisible(false);
-        svgViewManager = new SVGViewManager(project, basePane.getWidth(), basePane.getHeight());
+        svgViewManager = new SVGViewManager(basePane.getWidth(), basePane.getHeight());
 
         AnchorPane.setBottomAnchor(svgViewManager.getDisplayableComponent(), 0.0);
         AnchorPane.setTopAnchor(svgViewManager.getDisplayableComponent(), 0.0);
@@ -265,6 +265,8 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setRightAnchor(svgViewManager.getDisplayableComponent(), 0.0);
 
         basePane.getChildren().add(0, svgViewManager.getDisplayableComponent());
+        
+        svgViewManager.associateWithProject(project);
     }
 
     private Node loadInsetPanel(String innerPanelFXMLName, Project project)

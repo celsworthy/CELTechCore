@@ -60,50 +60,43 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class SVGViewManager extends ViewManager implements Project.ProjectChangesListener
+public class SVGViewManager extends ViewManager
 {
-
+    
     private final Stenographer steno = StenographerFactory.getStenographer(SVGViewManager.class.getName());
-    private final Project project;
-    private final UndoableProject undoableProject;
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
-    private ObservableList<ProjectifiableThing> loadedModels;
-
+    
     private Shape shapeBeingDragged = null;
     private Point2D lastDragPosition = null;
     private double mousePosX;
     private double mousePosY;
     private double mouseOldX;
     private double mouseOldY;
-
+    
     private final double bedWidth = 210;
     private final double bedHeight = 150;
     private final double bedBorder = 10;
-
+    
     private Group partsAndBed = new Group();
     private final Translate bedTranslate = new Translate();
     private final Scale bedScale = new Scale();
     private final Rectangle bed = new Rectangle(bedWidth, bedHeight);
     private final Group parts = new Group();
     private final Group gCodeOverlay = new Group();
-
+    
     private Pane parentPane = new Pane();
-
+    
     private final ObjectProperty<DragMode> dragMode = new SimpleObjectProperty(DragMode.IDLE);
     private boolean justEnteredDragMode;
-
+    
     private ContextMenu bedContextMenu = null;
-
-    public SVGViewManager(Project project, double parentWidth, double parentHeight)
+    
+    public SVGViewManager(double parentWidth, double parentHeight)
     {
-        super(project);
-        this.project = project;
-        this.undoableProject = new UndoableProject(project);
-
         parentPane.setPickOnBounds(false);
-
+        
         createBed();
-
+        
         Affine jfxToRealWorld = new Affine();
         jfxToRealWorld.appendScale(1, -1);
         jfxToRealWorld.appendTranslation(0, -bedHeight);
@@ -113,15 +106,13 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
         partsAndBed.getChildren().addAll(bed, parts);
 //        getTransforms().addAll(bedTranslate, bedScale);
         partsAndBed.getTransforms().addAll(bedTranslate, bedScale);
-
+        
         gCodeOverlay.getTransforms().addAll(bedTranslate, bedScale, jfxToRealWorld);
         parentPane.getChildren().add(partsAndBed);
         parentPane.getChildren().add(gCodeOverlay);
-
-        loadedModels = project.getTopLevelThings();
-
+        
         applicationStatus.modeProperty().addListener(applicationModeListener);
-
+        
         parentPane.addEventHandler(MouseEvent.ANY, mouseEventHandler);
         parentPane.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
         parentPane.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
@@ -135,7 +126,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
                 resizeBed();
             }
         });
-
+        
         parentPane.maxHeightProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -144,83 +135,69 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
                 resizeBed();
             }
         });
-
+        
         parentPane.setMaxWidth(parentWidth);
         parentPane.setMaxHeight(parentHeight);
-
-        /**
-         * Listen for adding and removing of models from the project
-         */
-        project.addProjectChangesListener(this);
-
-        for (ProjectifiableThing projectifiableThing : project.getAllModels())
-        {
-            parts.getChildren().add(projectifiableThing);
-            projectifiableThing.setBedReference(partsAndBed);
-//            projectifiableThing.shrinkToFitBed();
-        }
     }
-
-    private final List<ViewChangeListener> viewChangeListeners = new ArrayList<>();
-
+    
     private void createBed()
     {
         bed.setFill(Color.ANTIQUEWHITE);
         // The bed is in mm units
 
         bedContextMenu = new ContextMenu();
-
+        
         String cm1Text = "Add Text";
         String cm2Text = "Add Box";
         String cm3Text = "Add Circle";
         String cm4Text = "Generate GCode";
-
+        
         MenuItem addTextMenuItem = new MenuItem(cm1Text);
         MenuItem addRectangleMenuItem = new MenuItem(cm2Text);
         MenuItem addCircleMenuItem = new MenuItem(cm3Text);
         MenuItem generateGCodeMenuItem = new MenuItem(cm4Text);
-
+        
         addTextMenuItem.setOnAction((ActionEvent e) ->
         {
             TextPath newPath = new TextPath();
-
+            
             ShapeContainer newShapeContainer = new ShapeContainer("Text", newPath);
-
+            
             Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-
+            
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
-
+            
             newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
         });
-
+        
         addRectangleMenuItem.setOnAction((ActionEvent e) ->
         {
             Rectangle newShape = new Rectangle(10, 10);
-
+            
             ShapeContainer newShapeContainer = new ShapeContainer("Rectangle", newShape);
-
+            
             Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-
+            
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
-
+            
             newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
         });
-
+        
         addCircleMenuItem.setOnAction((ActionEvent e) ->
         {
-
+            
             Circle newShape = new Circle(10);
             newShape.setSmooth(true);
-
+            
             ShapeContainer newShapeContainer = new ShapeContainer("Circle", newShape);
-
+            
             Point2D pointToPlaceAt = partsAndBed.screenToLocal(bedContextMenu.getAnchorX(), bedContextMenu.getAnchorY());
-
+            
             Lookup.getSelectedProjectProperty().get().addModel(newShapeContainer);
-
+            
             newShapeContainer.translateTo(pointToPlaceAt.getX(), pointToPlaceAt.getY());
         });
-
+        
         generateGCodeMenuItem.setOnAction((ActionEvent e) ->
         {
             List<ShapeForProcessing> shapes = new ArrayList<>();
@@ -235,7 +212,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
                     });
                 }
             });
-
+            
             PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
             List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
             DragKnifeCompensator dnc = new DragKnifeCompensator();
@@ -244,9 +221,9 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestCompensated.gcode", dragKnifeCompensatedGCodeNodes);
             renderGCode(dragKnifeCompensatedGCodeNodes);
         });
-
+        
         bedContextMenu.getItems().addAll(addTextMenuItem, addRectangleMenuItem, addCircleMenuItem, generateGCodeMenuItem);
-
+        
         bed.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>()
         {
             @Override
@@ -257,14 +234,14 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             }
         });
     }
-
+    
     private void resizeBed()
     {
         double viewAreaWidth = parentPane.maxWidthProperty().get();
         double viewAreaHeight = parentPane.maxHeightProperty().get();
         double displayAspect = viewAreaWidth / viewAreaHeight;
         double aspect = bedWidth / bedHeight;
-
+        
         double newWidth = 0;
         double newHeight = 0;
         if (displayAspect >= aspect)
@@ -278,67 +255,64 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             newHeight = (viewAreaWidth / aspect) - bedBorder;
             newWidth = viewAreaWidth - bedBorder;
         }
-
+        
         double scale = newWidth / bedWidth;
-
+        
         bedScale.setX(scale);
         bedScale.setY(scale);
-
+        
         double xOffset = ((viewAreaWidth - newWidth) / 2);
         double yOffset = ((viewAreaHeight - newHeight) / 2);
-
+        
         bedTranslate.setX(xOffset);
         bedTranslate.setY(yOffset);
-
+        
         notifyModelsAndListenersOfViewPortChange();
     }
-
+    
     @Override
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
-        steno.info("Bounds are " + projectifiableThing.getBoundsInLocal());
-        parts.getChildren().add(projectifiableThing);
-        projectifiableThing.setBedReference(partsAndBed);
-//        projectifiableThing.shrinkToFitBed();
+        addModelAction(projectifiableThing);
     }
-
+    
     @Override
     public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing)
     {
         parts.getChildren().removeAll(projectifiableThing);
     }
-
+    
     @Override
     public void whenAutoLaidOut()
     {
     }
-
+    
     @Override
     public void whenModelsTransformed(Set<ProjectifiableThing> projectifiableThing
     )
     {
     }
-
+    
     @Override
     public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName
     )
     {
     }
-
+    
     @Override
     public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings
     )
     {
     }
-
+    
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
-
+        
         mouseOldX = mousePosX;
         mouseOldY = mousePosY;
         mousePosX = event.getSceneX();
         mousePosY = event.getSceneY();
-
+        
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
             if (event.isPrimaryButtonDown()
@@ -346,31 +320,31 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             {
                 handleMouseSingleClickedEvent(event);
             }
-
+            
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED)
         {
             dragShape(shapeBeingDragged, event);
-
+            
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
             shapeBeingDragged = null;
             dragMode.set(DragMode.IDLE);
         }
     };
-
+    
     private final EventHandler<ZoomEvent> zoomEventHandler = event ->
     {
         if (!Double.isNaN(event.getZoomFactor()) && event.getZoomFactor() > 0.8
                 && event.getZoomFactor() < 1.2)
         {
             double newScale = bedScale.getX() * event.getZoomFactor();
-
+            
             bedScale.setX(newScale);
             bedScale.setY(newScale);
             notifyModelsAndListenersOfViewPortChange();
         }
     };
-
+    
     private final EventHandler<ScrollEvent> scrollEventHandler = event ->
     {
         double newScale = bedScale.getX() + (0.01 * event.getDeltaY());
@@ -378,12 +352,12 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
         bedScale.setY(newScale);
         notifyModelsAndListenersOfViewPortChange();
     };
-
+    
     private ShapeContainer findShapeContainerParent(Node shape)
     {
         ShapeContainer sc = null;
         Node currentNode = shape;
-
+        
         while (currentNode != null)
         {
             if (currentNode instanceof ShapeContainer)
@@ -392,10 +366,10 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             }
             currentNode = currentNode.getParent();
         }
-
+        
         return sc;
     }
-
+    
     private void handleMouseSingleClickedEvent(MouseEvent event)
     {
         boolean handleThisEvent = true;
@@ -405,9 +379,9 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
         steno.info("picked was " + pickResult.getIntersectedNode());
         Point3D pickedPoint = pickResult.getIntersectedPoint();
         Node intersectedNode = pickResult.getIntersectedNode();
-
+        
         boolean shortcut = event.isShortcutDown();
-
+        
         if (intersectedNode != bed)
         {
             bedContextMenu.hide();
@@ -447,7 +421,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
 ////                    pickResult));
 //        }
     }
-
+    
     private void dragShape(Shape shapeToDrag, MouseEvent event)
     {
         Point2D newPosition = new Point2D(event.getSceneX(), event.getSceneY());
@@ -462,17 +436,17 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
 //                bedTranslate.setY(bedTranslate.getY() + resultantPosition.getY());
 //            } else
             {
-
+                
                 undoableProject.translateModelsBy(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), resultantPosition.getX(), resultantPosition.getY(),
                         !justEnteredDragMode);
             }
-
+            
             justEnteredDragMode = false;
         }
         shapeBeingDragged = shapeToDrag;
         lastDragPosition = newPosition;
     }
-
+    
     private final ChangeListener<ApplicationMode> applicationModeListener
             = (ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode) ->
             {
@@ -493,7 +467,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
 //                    updateModelColours();
                 }
             };
-
+    
     private void selectModel(ShapeContainer selectedNode, boolean multiSelect)
     {
         if (selectedNode == null)
@@ -508,7 +482,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             projectSelection.addSelectedItem(selectedNode);
         }
     }
-
+    
     private void deselectAllModels()
     {
         for (ProjectifiableThing modelContainer : loadedModels)
@@ -516,7 +490,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             deselectModel((ShapeContainer) modelContainer);
         }
     }
-
+    
     public void deselectModel(ShapeContainer pickedModel)
     {
         if (pickedModel.isSelected())
@@ -524,15 +498,15 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             projectSelection.removeModelContainer(pickedModel);
         }
     }
-
+    
     private void renderGCode(List<GCodeEventNode> gcodeNodes)
     {
         gCodeOverlay.getChildren().clear();
-
+        
         double currentX = 0;
         double currentY = 0;
         boolean isInContact = false;
-
+        
         for (GCodeEventNode node : gcodeNodes)
         {
             if (node instanceof StylusLiftNode)
@@ -564,7 +538,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
                 newLine.setStrokeWidth(0.1);
-
+                
                 if (isInContact)
                 {
                     newLine.setStroke(Color.GREEN);
@@ -584,7 +558,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
                 newLine.setStrokeWidth(0.1);
-
+                
                 if (isInContact)
                 {
                     newLine.setStroke(Color.PURPLE);
@@ -604,7 +578,7 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
                 newLine.setEndX(currentX);
                 newLine.setEndY(currentY);
                 newLine.setStrokeWidth(0.5);
-
+                
                 if (isInContact)
                 {
                     newLine.setStroke(Color.GREEN);
@@ -616,16 +590,25 @@ public class SVGViewManager extends ViewManager implements Project.ProjectChange
             }
         }
     }
-
+    
     @Override
     public Node getDisplayableComponent()
     {
         return parentPane;
     }
-
+    
     @Override
     protected double getViewPortDistance()
     {
         return 0;
+    }
+    
+    @Override
+    protected void addModelAction(ProjectifiableThing projectifiableThing)
+    {
+        parts.getChildren().add(projectifiableThing);
+        projectifiableThing.setBedReference(partsAndBed);
+        projectifiableThing.viewOfYouHasChanged(0);
+//            projectifiableThing.shrinkToFitBed();
     }
 }
