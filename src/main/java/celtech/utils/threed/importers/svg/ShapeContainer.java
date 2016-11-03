@@ -505,9 +505,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 Bounds boundsInLocal = shape.getBoundsInLocal();
                 Bounds worldBounds = bed.sceneToLocal(localToScene(boundsInLocal));
 
-                steno.info("Started with local bounds: " + boundsInLocal);
-                steno.info("Finished with bed bounds: " + worldBounds);
-
                 minX = Math.min(worldBounds.getMinX(), minX);
                 minY = Math.min(worldBounds.getMinY(), minY);
 
