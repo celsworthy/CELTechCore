@@ -3,9 +3,9 @@ package celtech.coreUI.visualisation;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
-import celtech.appManager.undo.UndoableProject;
-import celtech.coreUI.visualisation.svg.TextPath;
+import celtech.coreUI.visualisation.twoD.CopiableCircle;
+import celtech.coreUI.visualisation.twoD.CopiableRectangle;
+import celtech.coreUI.visualisation.twoD.TextPath;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.BaseConfiguration;
@@ -25,14 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.geometry.Side;
@@ -61,10 +58,10 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class SVGViewManager extends ViewManager
+public class TwoDViewManager extends ViewManager
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(SVGViewManager.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(TwoDViewManager.class.getName());
     private final ApplicationStatus applicationStatus = ApplicationStatus.getInstance();
 
     private Shape shapeBeingDragged = null;
@@ -94,7 +91,7 @@ public class SVGViewManager extends ViewManager
 
     private double zoomFactor = 1.0;
 
-    public SVGViewManager(double parentWidth, double parentHeight)
+    public TwoDViewManager(double parentWidth, double parentHeight)
     {
         parentPane.setPickOnBounds(false);
 
@@ -172,7 +169,7 @@ public class SVGViewManager extends ViewManager
 
         addRectangleMenuItem.setOnAction((ActionEvent e) ->
         {
-            Rectangle newShape = new Rectangle(10, 10);
+            CopiableRectangle newShape = new CopiableRectangle(10, 10);
 
             ShapeContainer newShapeContainer = new ShapeContainer("Rectangle", newShape);
 
@@ -186,7 +183,7 @@ public class SVGViewManager extends ViewManager
         addCircleMenuItem.setOnAction((ActionEvent e) ->
         {
 
-            Circle newShape = new Circle(10);
+            CopiableCircle newShape = new CopiableCircle(10);
             newShape.setSmooth(true);
 
             ShapeContainer newShapeContainer = new ShapeContainer("Circle", newShape);
@@ -425,9 +422,7 @@ public class SVGViewManager extends ViewManager
         Point2D newPosition = new Point2D(event.getSceneX(), event.getSceneY());
         if (shapeBeingDragged != null)
         {
-            steno.info("New position = " + newPosition);
             Point2D resultantPosition = partsAndBed.sceneToLocal(newPosition).subtract(partsAndBed.sceneToLocal(lastDragPosition));
-            steno.info("Resultant " + resultantPosition);
 //            if (shapeBeingDragged == bed)
 //            {
 //                bedTranslate.setX(bedTranslate.getX() + resultantPosition.getX());

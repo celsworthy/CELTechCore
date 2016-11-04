@@ -4,9 +4,12 @@ import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.coreUI.visualisation.ViewChangeListener;
+import celtech.coreUI.visualisation.twoD.Copiable;
+import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.modelcontrol.TwoDItemState;
@@ -37,6 +40,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         ScaleableTwoD,
         TranslateableTwoD,
         ResizeableTwoD,
+        RotatableTwoD,
+        Groupable,
         ShapeToWorldTransformer,
         ScreenExtentsProviderTwoD,
         ViewChangeListener
@@ -140,7 +145,15 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public ProjectifiableThing makeCopy()
     {
-        ShapeContainer copy = new ShapeContainer(getModelName(), shapes);
+        List<Shape> copiedShapes = new ArrayList<>();
+        shapes.forEach(shape ->
+        {
+            if (shape instanceof Copiable)
+            {
+                copiedShapes.add(((Copiable) shape).createCopy());
+            }
+        });
+        ShapeContainer copy = new ShapeContainer(getModelName(), copiedShapes);
         copy.setState(this.getState());
         copy.recalculateScreenExtents();
         return copy;
@@ -570,5 +583,27 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     public void viewOfYouHasChanged(double cameraDistance)
     {
         notifyScreenExtentsChange();
+    }
+
+    @Override
+    public void setRotationTurn(double value)
+    {
+        preferredRotationTurn.set(value);
+        // Turn - around Z axis
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTurnPreferred.setPivotZ(originalModelBounds.getCentreZ());
+        transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
+        transformRotateTurnPreferred.setAxis(Z_AXIS);
+
+        checkOffBed();
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
+    @Override
+    public double getRotationTurn()
+    {
+        return preferredRotationTurn.get();
     }
 }

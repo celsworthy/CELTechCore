@@ -1,4 +1,4 @@
-package celtech.coreUI.visualisation.svg;
+package celtech.coreUI.visualisation.twoD;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -11,20 +11,18 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
-import javafx.scene.transform.Affine;
 import org.controlsfx.control.PopOver;
 
 /**
  *
  * @author Ian
  */
-public class TextPath extends SVGPath implements PrintableShape
+public class TextPath extends SVGPath implements Copiable
 {
 
     private String textToDisplay = "Text";
@@ -44,7 +42,7 @@ public class TextPath extends SVGPath implements PrintableShape
 
         VBox editBox = new VBox();
         editBox.setSpacing(5);
-        
+
         textEditor.setText(textToDisplay);
         textEditor.textProperty().addListener(new ChangeListener<String>()
         {
@@ -67,7 +65,7 @@ public class TextPath extends SVGPath implements PrintableShape
                 updateFont();
             }
         });
-        
+
         String[] fontStyles =
         {
             "Plain", "Bold", "Italic"
@@ -82,7 +80,7 @@ public class TextPath extends SVGPath implements PrintableShape
                 updateFont();
             }
         });
-        
+
         ObservableList<Integer> fontSizes = FXCollections.observableArrayList();
         fontSizes.addAll(18, 20, 24, 28, 33, 36, 40, 44, 48, 52, 56);
         fontSizeChooser.setItems(fontSizes);
@@ -95,7 +93,7 @@ public class TextPath extends SVGPath implements PrintableShape
                 updateFont();
             }
         });
-        
+
         editBox.getChildren().addAll(textEditor, fontChooser, fontStyleChooser, fontSizeChooser);
 
         PopOver popOver = new PopOver(editBox);
@@ -116,14 +114,19 @@ public class TextPath extends SVGPath implements PrintableShape
         });
     }
 
+    public void setFont(Font font)
+    {
+        frc = new FontRenderContext(font.getTransform(), true, true);
+        updateTextPath();
+    }
+
     private void updateFont()
     {
         Font fontWeWishToUse = new Font(fontChooser.getSelectionModel().getSelectedItem(),
                 fontStyleChooser.getSelectionModel().getSelectedIndex(),
                 fontSizeChooser.getSelectionModel().getSelectedItem());
         fontInUse = fontWeWishToUse;
-        frc = new FontRenderContext(fontInUse.getTransform(), true, true);
-        updateTextPath();
+        setFont(fontInUse);
     }
 
     private void updateTextPath()
@@ -217,15 +220,13 @@ public class TextPath extends SVGPath implements PrintableShape
     }
 
     @Override
-    public void relativeTranslate(double x, double y)
+    public TextPath createCopy()
     {
-        setTranslateX(getTranslateX() + x);
-        setTranslateY(getTranslateY() + y);
+        TextPath newTextPath = new TextPath();
+        newTextPath.setText(textToDisplay);
+        newTextPath.setFont(fontInUse);
+
+        return newTextPath;
     }
 
-    @Override
-    public String getSVGPathContent()
-    {
-        return getContent();
-    }
 }

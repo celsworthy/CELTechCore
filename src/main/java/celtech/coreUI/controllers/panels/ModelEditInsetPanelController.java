@@ -130,6 +130,12 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private RestrictedNumberField yAxisTextField;
 
     @FXML
+    private Label rotationXTextTitle;
+    
+    @FXML
+    private Label rotationYTextTitle;
+    
+    @FXML
     private RestrictedNumberField rotationXTextField;
 
     @FXML
@@ -444,6 +450,8 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
                     boolean isTwoDRotatable = RotatableTwoD.class.isInstance(firstModel);
                     boolean isThreeDRotatable = RotatableThreeD.class.isInstance(firstModel);
 
+                    rotationXTextTitle.setVisible(isThreeDRotatable);
+                    rotationYTextTitle.setVisible(isThreeDRotatable);
                     rotationXTextField.setVisible(isThreeDRotatable);
                     rotationYTextField.setVisible(isThreeDRotatable);
                     rotationZTextField.setVisible(isTwoDRotatable || isThreeDRotatable);

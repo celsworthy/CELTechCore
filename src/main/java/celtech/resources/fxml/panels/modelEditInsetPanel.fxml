@@ -184,8 +184,8 @@
                     <children>
                         <GridPane alignment="CENTER" hgap="5.0" vgap="0.0" VBox.vgrow="ALWAYS">
                             <children>
-                                <Label text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <Label text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <Label fx:id="rotationXTextTitle" text="%modelEdit.lean" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <Label fx:id="rotationYTextTitle" text="%modelEdit.twist" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                                 <Label text="%modelEdit.turn" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                                 <RestrictedNumberField fx:id="rotationXTextField" allowNegative="true" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" />
                                 <RestrictedNumberField fx:id="rotationYTextField" allowNegative="true" allowedDecimalPlaces="2" drivesUndoableOperation="true" maxLength="7" prefColumnCount="4" text="100" GridPane.columnIndex="1" GridPane.rowIndex="1" />

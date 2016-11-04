@@ -16,7 +16,7 @@ import celtech.coreUI.visualisation.BedAxes;
 import celtech.coreUI.visualisation.DimensionLineManager;
 import celtech.coreUI.visualisation.DragMode;
 import celtech.coreUI.visualisation.ModelLoader;
-import celtech.coreUI.visualisation.SVGViewManager;
+import celtech.coreUI.visualisation.TwoDViewManager;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -71,7 +71,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private AnchorPane basePane = null;
     private AnchorPane overlayPane = null;
     private ThreeDViewManager viewManager = null;
-    private SVGViewManager svgViewManager = null;
+    private TwoDViewManager svgViewManager = null;
     private final ProjectManager projectManager = ProjectManager.getInstance();
     private boolean titleBeingEdited = false;
     private final ModelLoader modelLoader = new ModelLoader();
@@ -257,7 +257,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private void setupSVGView()
     {
         nonSpecificModelIndicator.setVisible(false);
-        svgViewManager = new SVGViewManager(basePane.getWidth(), basePane.getHeight());
+        svgViewManager = new TwoDViewManager(basePane.getWidth(), basePane.getHeight());
 
         AnchorPane.setBottomAnchor(svgViewManager.getDisplayableComponent(), 0.0);
         AnchorPane.setTopAnchor(svgViewManager.getDisplayableComponent(), 0.0);

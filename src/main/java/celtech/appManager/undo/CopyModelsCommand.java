@@ -6,7 +6,9 @@ package celtech.appManager.undo;
 import celtech.appManager.Project;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -38,10 +40,6 @@ public class CopyModelsCommand extends Command
         for (ProjectifiableThing modelContainer : modelContainers)
         {
             ProjectifiableThing newModel = modelContainer.makeCopy();
-            if (TranslateableTwoD.class.isInstance(newModel))
-            {
-                ((TranslateableTwoD) newModel).translateBy(20, 20);
-            }
             newProjectifiableThings.add(newModel);
         }
         redo();
@@ -60,6 +58,8 @@ public class CopyModelsCommand extends Command
         {
             project.addModel(modelContainer);
         }
+        List<ProjectifiableThing> thingsToLayout = new ArrayList<>(newProjectifiableThings);
+        project.autoLayout(thingsToLayout);
     }
 
     @Override

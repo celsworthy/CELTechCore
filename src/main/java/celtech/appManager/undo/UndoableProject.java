@@ -173,13 +173,10 @@ public class UndoableProject
 
     public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
     {
-        if (project instanceof ModelContainerProject)
+        doTransformCommand(() ->
         {
-            doTransformCommand(() ->
-            {
-                ((ModelContainerProject) project).rotateTurnModels(modelContainers, rotation);
-            });
-        }
+            project.rotateTurnModels(modelContainers, rotation);
+        });
     }
 
     public void translateModelsBy(Set<TranslateableTwoD> modelContainers, double x, double y,
@@ -253,7 +250,7 @@ public class UndoableProject
     {
         if (project instanceof ModelContainerProject)
         {
-            Command setUserExtruder0Command = new AssignModelToExtruderCommand((ModelContainerProject)project,
+            Command setUserExtruder0Command = new AssignModelToExtruderCommand((ModelContainerProject) project,
                     modelContainer,
                     assignToExtruder0);
             commandStack.do_(setUserExtruder0Command);
@@ -263,7 +260,7 @@ public class UndoableProject
     public void assignModelsToExtruders(Set<ModelContainer> modelContainersToAssignToExtruder0,
             Set<ModelContainer> modelContainersToAssignToExtruder1)
     {
-        Command setUserExtruder0Command = new AssignModelToExtruderCommand((ModelContainerProject)project,
+        Command setUserExtruder0Command = new AssignModelToExtruderCommand((ModelContainerProject) project,
                 modelContainersToAssignToExtruder0,
                 modelContainersToAssignToExtruder1);
         commandStack.do_(setUserExtruder0Command);
@@ -271,20 +268,14 @@ public class UndoableProject
 
     public void group(Set<Groupable> modelContainers)
     {
-        if (project instanceof ModelContainerProject)
-        {
-            Command groupCommand = new GroupCommand(((ModelContainerProject) project), modelContainers);
-            commandStack.do_(groupCommand);
-        }
+        Command groupCommand = new GroupCommand(project, modelContainers);
+        commandStack.do_(groupCommand);
     }
 
-    public void ungroup(Set<ModelContainer> modelContainers)
+    public void ungroup(Set<ProjectifiableThing> modelContainers)
     {
-        if (project instanceof ModelContainerProject)
-        {
-            Command ungroupCommand = new UngroupCommand(((ModelContainerProject) project), modelContainers);
-            commandStack.do_(ungroupCommand);
-        }
+        Command ungroupCommand = new UngroupCommand(project, modelContainers);
+        commandStack.do_(ungroupCommand);
     }
 
     public void cut(Set<ModelContainer> modelContainers, float cutHeightValue)

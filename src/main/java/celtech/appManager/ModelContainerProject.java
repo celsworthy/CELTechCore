@@ -769,17 +769,6 @@ public class ModelContainerProject extends Project
         fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
-    {
-        for (RotatableTwoD model : modelContainers)
-        {
-            model.setRotationTurn(rotation);
-        }
-        projectModified();
-
-        fireWhenModelsTransformed((Set) modelContainers);
-    }
-
     public void dropToBed(Set<ModelContainer> modelContainers)
     {
         for (ModelContainer model : modelContainers)

@@ -347,7 +347,14 @@ public abstract class Project
                             printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
                             pieceBounds.getWidth() + halfSpacing,
                             pieceBounds.getDepth() + halfSpacing);
-                    MArea piece = new MArea(rectangle, existingPartCounter, ((ModelContainer) thingToConsider).getRotationTurn());
+
+                    double currentRotation = 0;
+                    if (thingToConsider instanceof RotatableTwoD)
+                    {
+                        currentRotation = ((RotatableTwoD) thingToConsider).getRotationTurn();
+                    }
+
+                    MArea piece = new MArea(rectangle, existingPartCounter, currentRotation);
                     existingPieces[existingPartCounter] = piece;
                     partMap.put(existingPartCounter, thingToConsider);
                     existingPartCounter++;
@@ -363,10 +370,20 @@ public abstract class Project
         for (ProjectifiableThing thingToLayout : thingsToLayout)
         {
             RectangularBounds pieceBounds = thingToLayout.calculateBoundsInBedCoordinateSystem();
+            double width = pieceBounds.getWidth();
+            double depth = 0;
+
+            if (thingToLayout instanceof TranslateableThreeD)
+            {
+                depth = pieceBounds.getDepth();
+            } else
+            {
+                depth = pieceBounds.getHeight();
+            }
             //Change the coords so that every part is in the bottom left corner
             Rectangle2D.Double rectangle = new Rectangle2D.Double(0, 0,
-                    pieceBounds.getWidth() + spacing,
-                    pieceBounds.getDepth() + spacing);
+                    width + spacing,
+                    depth + spacing);
 //            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
 //                    printVolumeDepth - pieceBounds.getMaxZ() - halfSpacing,
 //                    pieceBounds.getWidth() + halfSpacing,
@@ -376,18 +393,18 @@ public abstract class Project
             partMap.put(partsToLayoutCounter + startingIndexForPartsToLayout, thingToLayout);
             partsToLayoutCounter++;
         }
-//        steno.info("started with");
-//        for (MArea area : partsToLayout)
-//        {
-//            steno.info("Piece " + area.getID()
-//                    + " X" + area.getBoundingBox2D().getX()
-//                    + " Y" + area.getBoundingBox2D().getY()
-//                    + " W" + area.getBoundingBox2D().getWidth()
-//                    + " H" + area.getBoundingBox2D().getHeight()
-//                    + " R" + area.getRotation()
-//            );
-//
-//        }
+        steno.info("started with");
+        for (MArea area : partsToLayout)
+        {
+            steno.info("Piece " + area.getID()
+                    + " X" + area.getBoundingBox2D().getX()
+                    + " Y" + area.getBoundingBox2D().getY()
+                    + " W" + area.getBoundingBox2D().getWidth()
+                    + " H" + area.getBoundingBox2D().getHeight()
+                    + " R" + area.getRotation()
+            );
+
+        }
 
         if (layoutBin != null)
         {
@@ -410,13 +427,13 @@ public abstract class Project
         {
             MArea area = layoutBin.getPlacedPieces()[pieceNumber];
 
-//            steno.info("Piece " + area.getID()
-//                    + " X" + area.getBoundingBox2D().getX()
-//                    + " Y" + area.getBoundingBox2D().getY()
-//                    + " W" + area.getBoundingBox2D().getWidth()
-//                    + " H" + area.getBoundingBox2D().getHeight()
-//                    + " R" + area.getRotation()
-//            );
+            steno.info("Piece " + area.getID()
+                    + " X" + area.getBoundingBox2D().getX()
+                    + " Y" + area.getBoundingBox2D().getY()
+                    + " W" + area.getBoundingBox2D().getWidth()
+                    + " H" + area.getBoundingBox2D().getHeight()
+                    + " R" + area.getRotation()
+            );
             newRotation[pieceNumber] = area.getRotation();
 
             newDepthPosition[pieceNumber] = printVolumeDepth - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
@@ -428,12 +445,12 @@ public abstract class Project
             minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
         }
 
-//        steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
-//        steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
+        steno.info("minx " + minLayoutX + " maxX " + maxLayoutX);
+        steno.info("miny " + minLayoutY + " maxY " + maxLayoutY);
         double xCentringOffset = (printVolumeWidth - (maxLayoutX - minLayoutX)) / 2.0;
         double yCentringOffset = (printVolumeDepth - (maxLayoutY - minLayoutY)) / 2.0;
 
-//        steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
+        steno.info("Centring offset x  " + xCentringOffset + " y " + yCentringOffset);
         for (int pieceNumber = 0; pieceNumber < layoutBin.getPlacedPieces().length; pieceNumber++)
         {
             MArea area = layoutBin.getPlacedPieces()[pieceNumber];
@@ -454,10 +471,10 @@ public abstract class Project
                 //Only auto centre if we're laying out all of the parts
                 if (container instanceof TranslateableTwoD)
                 {
-                    if (numberOfPartsNotToLayout == 0)
-                    {
-                        ((TranslateableTwoD) container).translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
-                    } else
+//                    if (numberOfPartsNotToLayout == 0)
+//                    {
+//                        ((TranslateableTwoD) container).translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
+//                    } else
                     {
                         ((TranslateableTwoD) container).translateTo(newXPosition[pieceNumber], newDepthPosition[pieceNumber]);
                     }
@@ -840,5 +857,16 @@ public abstract class Project
     public void invalidate()
     {
         projectModified();
+    }
+
+    public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
+    {
+        for (RotatableTwoD model : modelContainers)
+        {
+            model.setRotationTurn(rotation);
+        }
+        projectModified();
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 }

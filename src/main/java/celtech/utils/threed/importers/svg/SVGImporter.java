@@ -5,6 +5,8 @@ import celtech.roboxbase.importers.twod.svg.PointParserThing;
 import celtech.roboxbase.importers.twod.svg.PathParserThing;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
+import celtech.coreUI.visualisation.twoD.CopiablePolygon;
+import celtech.coreUI.visualisation.twoD.CopiableSVGPath;
 import celtech.modelcontrol.ProjectifiableThing;
 
 import celtech.services.modelLoader.ModelLoaderTask;
@@ -129,12 +131,9 @@ public class SVGImporter
                 Node pathNode = paths.item(pathIndex);
                 NamedNodeMap nodeMap = pathNode.getAttributes();
                 Node dNode = nodeMap.getNamedItem("d");
-                System.out.println(dNode.getNodeValue());
-//                pathParser.parse(dNode.getNodeValue());
-                SVGPath displayablePath = new SVGPath();
-//                displayablePath.scaleXProperty().set(converterConfiguration.getxPointCoefficient());
-//                displayablePath.scaleYProperty().set(converterConfiguration.getyPointCoefficient());
-//                displayablePath.
+
+                CopiableSVGPath displayablePath = new CopiableSVGPath();
+
                 displayablePath.setContent(dNode.getNodeValue());
                 shapes.add(displayablePath);
             }
@@ -170,7 +169,7 @@ public class SVGImporter
                         + (threeDPformatter.format(-hValue)) + ' ';
 
 //                pathParser.parse(synthPath);
-                SVGPath displayablePath = new SVGPath();
+                CopiableSVGPath displayablePath = new CopiableSVGPath();
                 displayablePath.setContent(synthPath);
                 shapes.add(displayablePath);
             }
@@ -186,7 +185,7 @@ public class SVGImporter
                 Node points = nodeMap.getNamedItem("points");
 
 //                pp.parse(points.getNodeValue());
-                Polygon displayablePoly = new Polygon();
+                CopiablePolygon displayablePoly = new CopiablePolygon();
                 String[] pointPairs = points.getNodeValue().split(" ");
                 for (String pointPair : pointPairs)
                 {

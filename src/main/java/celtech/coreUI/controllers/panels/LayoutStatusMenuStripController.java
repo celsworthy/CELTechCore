@@ -240,25 +240,22 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
-        if (currentProject instanceof ModelContainerProject)
-        {
-            ModelContainerProject projectToWorkOn = (ModelContainerProject) currentProject;
-            Set<ProjectifiableThing> modelGroups = projectToWorkOn.getTopLevelThings().stream().filter(
-                    mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
-            Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
-            Set<Groupable> thingsToGroup = (Set) modelContainers;
-            undoableSelectedProject.group(thingsToGroup);
-            Set<ModelContainer> changedModelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
-                    mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
-            changedModelGroups.removeAll(modelGroups);
+        Project projectToWorkOn = currentProject;
+        Set<ProjectifiableThing> modelGroups = projectToWorkOn.getTopLevelThings().stream().filter(
+                mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
+        Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<Groupable> thingsToGroup = (Set) modelContainers;
+        undoableSelectedProject.group(thingsToGroup);
+        Set<ModelContainer> changedModelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
+                mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
+        changedModelGroups.removeAll(modelGroups);
 
-            Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
-            if (changedModelGroups.size() == 1)
-            {
-                changedModelGroups.iterator().next().notifyScreenExtentsChange();
-                Lookup.getProjectGUIState(currentProject).getProjectSelection().addSelectedItem(
-                        changedModelGroups.iterator().next());
-            }
+        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
+        if (changedModelGroups.size() == 1)
+        {
+            changedModelGroups.iterator().next().notifyScreenExtentsChange();
+            Lookup.getProjectGUIState(currentProject).getProjectSelection().addSelectedItem(
+                    changedModelGroups.iterator().next());
         }
     }
 
@@ -267,14 +264,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
-        if (currentProject instanceof ModelContainerProject)
-        {
-            Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
 
-            Set<ModelContainer> thingsToUngroup = (Set) modelContainers;
-            undoableSelectedProject.ungroup(thingsToUngroup);
-            Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
-        }
+        Set<ProjectifiableThing> thingsToUngroup = (Set) modelContainers;
+        undoableSelectedProject.ungroup(thingsToUngroup);
+        Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
     }
 
     @FXML

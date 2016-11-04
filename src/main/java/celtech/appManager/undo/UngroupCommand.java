@@ -3,16 +3,13 @@
  */
 package celtech.appManager.undo;
 
-import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
+import celtech.appManager.Project;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.modelcontrol.TranslateableTwoD;
-import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
-import celtech.roboxbase.printerControl.model.Printer;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,21 +27,21 @@ public class UngroupCommand extends Command
     private final Stenographer steno = StenographerFactory.getStenographer(
             UngroupCommand.class.getName());
 
-    ModelContainerProject project;
+    Project project;
     Map<Integer, Set<Groupable>> groupIds;
     private Set<ItemState> originalStates;
     private Set<ItemState> newStates;
-    private Set<ModelContainer> containersToRecentre = new HashSet<>();
+    private Set<ProjectifiableThing> containersToRecentre = new HashSet<>();
 
-    public UngroupCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
+    public UngroupCommand(Project project, Set<ProjectifiableThing> modelContainers)
     {
         this.project = project;
         groupIds = new HashMap<>();
-        for (ModelContainer modelContainer : modelContainers)
+        for (ProjectifiableThing modelContainer : modelContainers)
         {
             if (modelContainer instanceof ModelGroup)
             {
-                containersToRecentre.addAll(modelContainer.getChildModelContainers());
+                containersToRecentre.addAll(((ModelContainer)modelContainer).getChildModelContainers());
                 groupIds.put(modelContainer.getModelId(), (Set) ((ModelGroup) modelContainer).getChildModelContainers());
             }
         }
@@ -74,7 +71,7 @@ public class UngroupCommand extends Command
         {
             try
             {
-                project.ungroup(project.getModelContainersOfIds(groupIds.keySet()));
+                project.ungroup(((ModelContainerProject)project).getModelContainersOfIds(groupIds.keySet()));
             } catch (ModelContainerProject.ProjectLoadException ex)
             {
                 steno.exception("Could not ungroup", ex);
