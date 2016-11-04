@@ -78,6 +78,7 @@ public class SVGProject extends Project
     @Override
     public void autoLayout()
     {
+        autoLayout(topLevelThings);
     }
 
     @Override
@@ -155,12 +156,6 @@ public class SVGProject extends Project
 
     @Override
     public ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void autoLayout(List<ProjectifiableThing> thingsToLayout)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
