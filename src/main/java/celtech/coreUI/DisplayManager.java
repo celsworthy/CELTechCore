@@ -646,7 +646,13 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 {
                     case DELETE:
                     case BACK_SPACE:
-                        deleteSelectedModels(project, undoableProject);
+                          if (Lookup.getProjectGUIState(project) != null)
+                        {
+                            if (Lookup.getProjectGUIState(project).getProjectGUIRules().canRemoveOrDuplicateSelection().get())
+                            {
+                                deleteSelectedModels(project, undoableProject);
+                            }
+                        }
                         event.consume();
                         break;
                     case A:
