@@ -208,32 +208,21 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             rhPanel.getChildren().add(0, projectTabPaneHolder);
 
-            ProjectTab projectTab = null;
-
-            //Create a tab if one doesn't already exist
-            if (tabDisplay.getTabs().size() <= 1)
+            //Switch tabs if necessary
+            if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
+                    == false)
             {
-                projectTab = new ProjectTab(tabDisplay.widthProperty(),
-                        tabDisplay.heightProperty());
-                tabDisplay.getTabs().add(projectTab);
-                tabDisplaySelectionModel.select(projectTab);
-            } else
-            {
-                //Switch tabs if necessary
-                if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
-                        == false)
+                if (lastLayoutTab != null
+                        && tabDisplay.getTabs().contains(lastLayoutTab))
                 {
-                    //Select the second tab (first is always status)
-                    if (lastLayoutTab != null)
-                    {
-                        tabDisplaySelectionModel.select(lastLayoutTab);
-                    } else
-                    {
-                        tabDisplaySelectionModel.select(1);
-                    }
+                    //Select the last project tab
+                    tabDisplaySelectionModel.select(lastLayoutTab);
+                } else
+                {
+                    //Select either the first tab or the the + tab (so that a new project is added)
+                    tabDisplaySelectionModel.select(1);
                 }
             }
-
         } else if (newMode == ApplicationMode.SETTINGS)
         {
             rhPanel.getChildren().add(0, projectTabPaneHolder);
@@ -418,11 +407,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                             }
                         } else
                         {
+                            //Going to status
                             if (lastTab instanceof ProjectTab)
                             {
                                 lastLayoutTab = lastTab;
                             }
-                            //Must have clicked on the status tab
+
                             if (applicationStatus.getMode() != ApplicationMode.STATUS)
                             {
                                 applicationStatus.setMode(ApplicationMode.STATUS);
