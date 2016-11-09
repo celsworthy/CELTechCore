@@ -929,7 +929,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 db.getFiles().forEach(file ->
                 {
                     Project newProject = ProjectManager.loadProject(file.getAbsolutePath());
-                    ProjectManager.getInstance().projectOpened(newProject);
+                    //TODO Remove this once ARR-58 has been implemented (merge of statistics and gcode files)
+                    newProject.invalidate();
                     if (newProject != null)
                     {
                         ProjectTab newProjectTab = new ProjectTab(newProject,
@@ -938,6 +939,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
                         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
                         tabDisplaySelectionModel.select(newProjectTab);
+                        newProjectTab.fireProjectSelected();
 
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                         {
