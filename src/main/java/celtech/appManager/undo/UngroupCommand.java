@@ -3,16 +3,11 @@
  */
 package celtech.appManager.undo;
 
-import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.modelcontrol.TranslateableTwoD;
-import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
-import celtech.roboxbase.printerControl.model.Printer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

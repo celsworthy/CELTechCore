@@ -1141,7 +1141,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
                 modelGroup.getTransformedCentreDepth());
         
         Point3D modelCentre = new Point3D(getTransformedCentreX() + modelGroup.transformMoveToPreferred.getX(),
-                getTransformedCentreY() + modelGroup.transformDropToBedYAdjust.getY(),
+//                getTransformedCentreY() + modelGroup.transformDropToBedYAdjust.getY(),
+                modelGroup.transformDropToBedYAdjust.getY(),
                 getTransformedCentreDepth() + modelGroup.transformMoveToPreferred.getZ());
 
         Point3D groupCentreToModelCentre = modelCentre.subtract(groupCentre);
@@ -1150,14 +1151,14 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
                 groupCentreToModelCentre.getY() * yScaleFactor,
                 groupCentreToModelCentre.getZ() * zScaleFactor);
 
-        Point3D turnedModelCentrePoint = modelGroup.getRotationTransforms().get(0).transform(scaledGroupCentreToModelCentre);
-        Point3D leanedModelCentrePoint = modelGroup.getRotationTransforms().get(1).transform(turnedModelCentrePoint);
-        Point3D twistedModelCentrePoint = modelGroup.getRotationTransforms().get(2).transform(leanedModelCentrePoint);
+        Point3D twistedModelCentrePoint = modelGroup.getRotationTransforms().get(2).transform(scaledGroupCentreToModelCentre);
+        Point3D leanedModelCentrePoint = modelGroup.getRotationTransforms().get(1).transform(twistedModelCentrePoint);
+        Point3D turnedModelCentrePoint = modelGroup.getRotationTransforms().get(0).transform(leanedModelCentrePoint);
 
         Point3D newModelCentre = new Point3D(
-                groupCentre.getX() + twistedModelCentrePoint.getX(),
-                groupCentre.getY() + twistedModelCentrePoint.getY(),
-                groupCentre.getZ() + twistedModelCentrePoint.getZ());
+                groupCentre.getX() + turnedModelCentrePoint.getX(),
+                groupCentre.getY() + turnedModelCentrePoint.getY(),
+                groupCentre.getZ() + turnedModelCentrePoint.getZ());
 
         translateTo(newModelCentre.getX(), newModelCentre.getZ());
         translateYPositionTo(newModelCentre.getY());
