@@ -79,19 +79,6 @@ public class UngroupCommand extends Command
             {
                 steno.exception("Could not ungroup", ex);
             }
-//            Set<TranslateableTwoD> recentreThese = (Set) containersToRecentre;
-//            Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
-//            if (selectedPrinter != null
-//                    && selectedPrinter.printerConfigurationProperty().get() != null)
-//            {
-//                project.translateModelsTo(recentreThese, Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeWidth(),
-//                        Lookup.getSelectedPrinterProperty().get().printerConfigurationProperty().get().getPrintVolumeDepth());
-//            } else
-//            {
-//                PrinterDefinitionFile defaultPrinterConfiguration = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
-//                project.translateModelsTo(recentreThese, defaultPrinterConfiguration.getPrintVolumeWidth(),
-//                        defaultPrinterConfiguration.getPrintVolumeDepth());
-//            }
             newStates = project.getModelStates();
         } catch (Exception ex)
         {

@@ -292,6 +292,7 @@ public abstract class Project
     }
 
     public abstract void autoLayout();
+
     //This carries out the same function but leaves the existing things in place
     public abstract void autoLayout(List<ProjectifiableThing> thingsToLayout);
 
@@ -514,6 +515,7 @@ public abstract class Project
                 if (model.getModelId() == modelState.modelId)
                 {
                     model.setState(modelState);
+                    model.updateOriginalModelBounds();
                     modelContainers.add(model);
                 }
             }
@@ -602,33 +604,8 @@ public abstract class Project
         checkNotAlreadyInGroup(modelContainers);
         ModelGroup modelGroup = new ModelGroup((Set) modelContainers, groupModelId);
         modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
         return modelGroup;
-    }
-
-    public void ungroup(Set<? extends ModelContainer> modelContainers)
-    {
-        List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
-        
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            if (modelContainer instanceof ModelGroup)
-            {
-                ModelGroup modelGroup = (ModelGroup) modelContainer;
-                Set<ProjectifiableThing> modelGroups = new HashSet<>();
-                modelGroups.add(modelGroup);
-                removeModels(modelGroups);
-                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
-                {
-                    addModel(childModelContainer);
-                    childModelContainer.setBedCentreOffsetTransform();
-                    childModelContainer.applyGroupTransformToThis(modelGroup);
-                    childModelContainer.checkOffBed();
-                    ungroupedModels.add(childModelContainer);
-                }
-            }
-        }
-        
-        autoLayout(ungroupedModels);
     }
 
     /**
@@ -645,6 +622,32 @@ public abstract class Project
         modelGroup.checkOffBed();
         modelGroup.notifyScreenExtentsChange();
         return modelGroup;
+    }
+    
+    public void ungroup(Set<? extends ModelContainer> modelContainers)
+    {
+        List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
+
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            if (modelContainer instanceof ModelGroup)
+            {
+                ModelGroup modelGroup = (ModelGroup) modelContainer;
+                Set<ProjectifiableThing> modelGroups = new HashSet<>();
+                modelGroups.add(modelGroup);
+                removeModels(modelGroups);
+                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
+                {
+                    addModel(childModelContainer);
+                    childModelContainer.setBedCentreOffsetTransform();
+                    childModelContainer.applyGroupTransformToThis(modelGroup);
+                    childModelContainer.updateLastTransformedBoundsInParent();
+                    ungroupedModels.add(childModelContainer);
+                }
+                Set<ProjectifiableThing> changedModels = new HashSet<>(modelGroup.getChildModelContainers());
+                fireWhenModelsTransformed(changedModels);
+            }
+        }
     }
 
     protected abstract void checkNotAlreadyInGroup(Set<Groupable> modelContainers);

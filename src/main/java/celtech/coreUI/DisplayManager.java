@@ -690,7 +690,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         ProjectSelection projectSelection
                 = Lookup.getProjectGUIState(project).getProjectSelection();
-        for (ProjectifiableThing modelContainer : project.getAllModels())
+        for (ProjectifiableThing modelContainer : project.getTopLevelThings())
         {
             projectSelection.addSelectedItem(modelContainer);
         }

@@ -981,7 +981,7 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
     }
-
+    
     private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
