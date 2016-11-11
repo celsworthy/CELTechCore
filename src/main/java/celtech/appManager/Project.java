@@ -709,6 +709,7 @@ public abstract class Project
                 if (model.getModelId() == modelState.modelId)
                 {
                     model.setState(modelState);
+                    model.updateOriginalModelBounds();
                     modelContainers.add(model);
                 }
             }
@@ -797,9 +798,26 @@ public abstract class Project
         checkNotAlreadyInGroup(modelContainers);
         ModelGroup modelGroup = new ModelGroup((Set) modelContainers, groupModelId);
         modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
         return modelGroup;
     }
 
+    /**
+     * Create a new group from models that are not yet in the project.
+     *
+     * @param modelContainers
+     * @return
+     */
+    public ModelGroup createNewGroup(Set<Groupable> modelContainers)
+    {
+        checkNotAlreadyInGroup(modelContainers);
+
+        ModelGroup modelGroup = new ModelGroup((Set) modelContainers);
+        modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
+        return modelGroup;
+    }
+    
     public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
         List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
@@ -817,29 +835,13 @@ public abstract class Project
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
                     childModelContainer.applyGroupTransformToThis(modelGroup);
-                    childModelContainer.checkOffBed();
+                    childModelContainer.updateLastTransformedBoundsInParent();
                     ungroupedModels.add(childModelContainer);
                 }
+                Set<ProjectifiableThing> changedModels = new HashSet<>(modelGroup.getChildModelContainers());
+                fireWhenModelsTransformed(changedModels);
             }
         }
-
-        autoLayout(ungroupedModels);
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project.
-     *
-     * @param modelContainers
-     * @return
-     */
-    public ModelGroup createNewGroup(Set<Groupable> modelContainers)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-
-        ModelGroup modelGroup = new ModelGroup((Set) modelContainers);
-        modelGroup.checkOffBed();
-        modelGroup.notifyScreenExtentsChange();
-        return modelGroup;
     }
 
     protected abstract void checkNotAlreadyInGroup(Set<Groupable> modelContainers);

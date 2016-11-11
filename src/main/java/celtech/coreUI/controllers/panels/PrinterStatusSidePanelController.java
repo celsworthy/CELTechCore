@@ -369,8 +369,11 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void unbindHeadProperties(Head head)
     {
-        head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
-                graphDataPointChangeListener);
+        if (head.getNozzleHeaters().size() > 0)
+        {
+            head.getNozzleHeaters().get(0).getNozzleTemperatureHistory().getData().removeListener(
+                    graphDataPointChangeListener);
+        }
         chartManager.removeAllNozzles();
 
         graphAlternativeMaterial1Temp.textProperty().unbind();

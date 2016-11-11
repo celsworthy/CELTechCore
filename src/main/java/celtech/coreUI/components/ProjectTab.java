@@ -485,12 +485,10 @@ public class ProjectTab extends Tab implements ProjectCallback
     {
         if (titleBeingEdited == true)
         {
-            projectManager.projectClosed(project);
             String newProjectName = editableProjectNameField.getText();
             Set<String> currentProjectNames = projectManager.getOpenAndAvailableProjectNames();
             newProjectName = suggestNonDuplicateName(newProjectName, currentProjectNames);
             project.setProjectName(newProjectName);
-            projectManager.projectOpened(project);
             setGraphic(nonEditableProjectNameField);
             titleBeingEdited = false;
         }

@@ -74,7 +74,6 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     public ProjectifiableThing()
     {
         initialise();
-
     }
 
     public ProjectifiableThing(File modelFile)
