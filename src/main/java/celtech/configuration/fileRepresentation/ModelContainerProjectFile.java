@@ -13,7 +13,7 @@ import java.util.Set;
 public class ModelContainerProjectFile extends ProjectFile
 {
 
-    private int subVersion = 3;
+    private int subVersion = 1;
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
     private boolean printSupportOverride = false;
@@ -27,6 +27,11 @@ public class ModelContainerProjectFile extends ProjectFile
 
     private Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
     private Map<Integer, ItemState> groupState = new HashMap<>();
+
+    public ModelContainerProjectFile()
+    {
+        setProjectType(ProjectFileTypeEnum.MODEL);
+    }
 
     public String getSettingsName()
     {

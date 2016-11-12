@@ -8,7 +8,7 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectMode;
-import celtech.appManager.SVGProject;
+import celtech.appManager.ShapeContainerProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
@@ -206,7 +206,7 @@ public class ModelLoader
                             projectToUse = new ModelContainerProject();
                             break;
                         case SVG:
-                            projectToUse = new SVGProject();
+                            projectToUse = new ShapeContainerProject();
                             break;
                     }
                 }

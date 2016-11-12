@@ -25,6 +25,8 @@ import celtech.roboxbase.utils.Math.packing.core.BinPacking;
 import celtech.roboxbase.utils.Math.packing.primitives.MArea;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.utils.threed.MeshUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.io.BufferedInputStream;
@@ -249,6 +251,8 @@ public class ModelContainerProject extends Project
                 ProjectFile projectFile = new ModelContainerProjectFile();
                 projectFile.populateFromProject(this);
                 File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
                 mapper.writeValue(file, projectFile);
                 saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
             } catch (FileNotFoundException ex)
@@ -806,7 +810,7 @@ public class ModelContainerProject extends Project
         {
             RectangularBounds pieceBounds = thingToLayout.calculateBoundsInBedCoordinateSystem();
             //Change the coords so that every part is in the bottom left corner
-            Rectangle2D.Double rectangle = new Rectangle2D.Double(0,0,
+            Rectangle2D.Double rectangle = new Rectangle2D.Double(0, 0,
                     pieceBounds.getWidth() + spacing,
                     pieceBounds.getDepth() + spacing);
 //            Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
@@ -981,7 +985,7 @@ public class ModelContainerProject extends Project
             projectChangesListener.whenModelsTransformed(modelContainers);
         }
     }
-    
+
     private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
     {
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
