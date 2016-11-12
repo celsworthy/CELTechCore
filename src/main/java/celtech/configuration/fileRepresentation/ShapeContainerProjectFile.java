@@ -1,10 +1,15 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
-import celtech.appManager.SVGProject;
+import celtech.appManager.ShapeContainerProject;
 
-public class SVGProjectFile extends ProjectFile
+public class ShapeContainerProjectFile extends ProjectFile
 {
+
+    public ShapeContainerProjectFile()
+    {
+        setProjectType(ProjectFileTypeEnum.SHAPE);
+    }
 
     private int subVersion = 1;
 
@@ -18,7 +23,7 @@ public class SVGProjectFile extends ProjectFile
         this.subVersion = version;
     }
 
-    public void populateFromProject(SVGProject project)
+    public void populateFromProject(ShapeContainerProject project)
     {
     }
 

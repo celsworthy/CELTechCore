@@ -8,7 +8,7 @@ import celtech.appManager.Project;
 import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
-import celtech.appManager.SVGProject;
+import celtech.appManager.ShapeContainerProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.controllers.ProjectAwareController;
@@ -224,7 +224,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         if (project instanceof ModelContainerProject)
         {
             setup3DView();
-        } else if (project instanceof SVGProject)
+        } else if (project instanceof ShapeContainerProject)
         {
             setupSVGView();
         }
@@ -538,7 +538,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     {
         if (this.project == null)
         {
-            SVGProject newProject = new SVGProject();
+            ShapeContainerProject newProject = new ShapeContainerProject();
             this.project = newProject;
             initialiseWithProject();
         }

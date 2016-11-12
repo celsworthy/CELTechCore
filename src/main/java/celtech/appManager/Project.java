@@ -4,6 +4,8 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.configuration.fileRepresentation.ProjectFileDeserialiser;
+import celtech.configuration.fileRepresentation.ShapeContainerProjectFile;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
@@ -28,8 +30,10 @@ import celtech.roboxbase.utils.Math.packing.core.BinPacking;
 import celtech.roboxbase.utils.Math.packing.primitives.MArea;
 import celtech.roboxbase.utils.RectangularBounds;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
@@ -73,7 +77,6 @@ public abstract class Project
     private int version = -1;
 
     private static final Stenographer steno = StenographerFactory.getStenographer(Project.class.getName());
-    protected static final ObjectMapper mapper = new ObjectMapper();
 
     protected Set<ProjectChangesListener> projectChangesListeners;
 
@@ -110,7 +113,6 @@ public abstract class Project
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
                 + formatter.format(now));
         lastModifiedDate.set(now);
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 
         customSettingsNotChosen.bind(
                 printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
@@ -166,17 +168,26 @@ public abstract class Project
 
         try
         {
+            ProjectFileDeserialiser deserializer
+                    = new ProjectFileDeserialiser();
+            SimpleModule module
+                    = new SimpleModule("LegacyProjectFileDeserialiserModule",
+                            new Version(1, 0, 0, null));
+            module.addDeserializer(ProjectFile.class, deserializer);
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(module);
             ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
 
             if (projectFile instanceof ModelContainerProjectFile)
             {
                 project = new ModelContainerProject();
                 project.load(projectFile, basePath);
+            } else if (projectFile instanceof ShapeContainerProjectFile)
+            {
+                project = new ShapeContainerProject();
+                project.load(projectFile, basePath);
             }
-//            else if (projectFile instanceof SVG)
-//            {
-//                
-//            }
         } catch (Exception ex)
         {
             steno.exception("Unable to load project file at " + basePath, ex);
@@ -817,7 +828,7 @@ public abstract class Project
         modelGroup.notifyScreenExtentsChange();
         return modelGroup;
     }
-    
+
     public void ungroup(Set<? extends ModelContainer> modelContainers)
     {
         List<ProjectifiableThing> ungroupedModels = new ArrayList<>();

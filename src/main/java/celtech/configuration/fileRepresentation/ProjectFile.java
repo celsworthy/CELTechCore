@@ -1,17 +1,29 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Date;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+//@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+//@JsonDeserialize(using = ProjectFileDeserialiser.class)
 public abstract class ProjectFile
 {
-    private int version = 3;
+    private ProjectFileTypeEnum projectType;
+    private int version = 4;
     private String projectName;
     private Date lastModifiedDate;
     private String lastPrintJobID = "";
 
+    public ProjectFileTypeEnum getProjectType()
+    {
+        return projectType;
+    }
+
+    public void setProjectType(ProjectFileTypeEnum projectType)
+    {
+        this.projectType = projectType;
+    }
+    
     public final Date getLastModifiedDate()
     {
         return lastModifiedDate;
