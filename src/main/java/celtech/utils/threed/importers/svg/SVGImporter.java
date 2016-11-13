@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.shape.Shape;
@@ -86,11 +87,20 @@ public class SVGImporter
 
             NodeList svgData = doc.getElementsByTagName("svg");
             NamedNodeMap svgAttributes = svgData.item(0).getAttributes();
-            String widthString = svgAttributes.getNamedItem("width").getNodeValue();
-            Units fileUnits = Units.getUnitType(widthString);
-            float documentWidth = Float.valueOf(widthString.replaceAll("[a-zA-Z]+", ""));
-            String heightString = svgAttributes.getNamedItem("height").getNodeValue();
-            float documentHeight = Float.valueOf(heightString.replaceAll("[a-zA-Z]+", ""));
+            Node widthNode = svgAttributes.getNamedItem("width");
+            Node heightNode = svgAttributes.getNamedItem("height");
+            float documentWidth = -1;
+            float documentHeight = -1;
+
+            if (widthNode != null && heightNode != null)
+            {
+                String widthString = widthNode.getNodeValue();
+                documentWidth = Float.valueOf(widthString.replaceAll("[a-zA-Z]+", ""));
+
+                Units fileUnits = Units.getUnitType(widthString);
+                String heightString = heightNode.getNodeValue();
+                documentHeight = Float.valueOf(heightString.replaceAll("[a-zA-Z]+", ""));
+            }
 
             float viewBoxOriginX = 0;
             float viewBoxOriginY = 0;
@@ -110,8 +120,16 @@ public class SVGImporter
                     viewBoxWidth = Float.valueOf(viewBoxParts[2]);
                     viewBoxHeight = Float.valueOf(viewBoxParts[3]);
 
-                    converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
-                    converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
+                    if (documentWidth > 0 && documentHeight > 0)
+                    {
+                        converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
+                        converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
+                    }
+                    else
+                    {
+                        converterConfiguration.setxPointCoefficient(1);
+                        converterConfiguration.setyPointCoefficient(1);
+                    }
                 } else
                 {
                     steno.warning("Got viewBox directive but had wrong number of parts");
@@ -135,6 +153,8 @@ public class SVGImporter
                 CopiableSVGPath displayablePath = new CopiableSVGPath();
 
                 displayablePath.setContent(dNode.getNodeValue());
+                displayablePath.setStroke(Color.BLACK);
+                displayablePath.setFill(Color.WHITE);
                 shapes.add(displayablePath);
             }
 
