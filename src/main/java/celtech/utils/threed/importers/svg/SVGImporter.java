@@ -1,8 +1,6 @@
 package celtech.utils.threed.importers.svg;
 
 import celtech.roboxbase.importers.twod.svg.SVGConverterConfiguration;
-import celtech.roboxbase.importers.twod.svg.PointParserThing;
-import celtech.roboxbase.importers.twod.svg.PathParserThing;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.coreUI.visualisation.twoD.CopiablePolygon;
@@ -10,7 +8,6 @@ import celtech.coreUI.visualisation.twoD.CopiableSVGPath;
 import celtech.modelcontrol.ProjectifiableThing;
 
 import celtech.services.modelLoader.ModelLoaderTask;
-import celtech.roboxbase.importers.twod.svg.metadata.SVGMetaPart;
 import celtech.roboxbase.importers.twod.svg.metadata.Units;
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +20,6 @@ import java.util.Locale;
 import java.util.Set;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.SVGPath;
 import javafx.scene.shape.Shape;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -34,8 +29,6 @@ import org.apache.batik.bridge.DocumentLoader;
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.bridge.UserAgent;
 import org.apache.batik.bridge.UserAgentAdapter;
-import org.apache.batik.parser.PathParser;
-import org.apache.batik.parser.PointsParser;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
