@@ -7,6 +7,7 @@ import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.fileRepresentation.StylusSettings;
 import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -25,10 +26,12 @@ public class ShapeContainerProject extends Project
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainerProject.class.getName());
-
+    private final StylusSettings settings = new StylusSettings();
+    
     public ShapeContainerProject()
     {
         super();
+        canPrint.set(true);
     }
 
     @Override
@@ -157,5 +160,10 @@ public class ShapeContainerProject extends Project
     public ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public StylusSettings getSettings()
+    {
+        return settings;
     }
 }

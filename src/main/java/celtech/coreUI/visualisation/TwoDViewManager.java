@@ -3,6 +3,7 @@ package celtech.coreUI.visualisation;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ShapeContainerProject;
 import celtech.coreUI.visualisation.twoD.CopiableCircle;
 import celtech.coreUI.visualisation.twoD.CopiableRectangle;
 import celtech.coreUI.visualisation.twoD.TextPath;
@@ -210,10 +211,10 @@ public class TwoDViewManager extends ViewManager
                 }
             });
 
-            PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
+            PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D", false, ((ShapeContainerProject)project).getSettings());
             List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
             DragKnifeCompensator dnc = new DragKnifeCompensator();
-            List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2);
+            List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2, 2, 0.3f);
             PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestRaw.gcode", gcodeData);
             PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestCompensated.gcode", dragKnifeCompensatedGCodeNodes);
             renderGCode(dragKnifeCompensatedGCodeNodes);

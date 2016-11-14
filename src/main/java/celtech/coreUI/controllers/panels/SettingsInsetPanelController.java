@@ -128,7 +128,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private Slider fillDensitySlider;
 
     private Printer currentPrinter;
-    private Project currentProject;
+    private ModelContainerProject currentProject;
     private PrinterSettingsOverrides printerSettings;
     private String currentHeadType = HeadContainer.defaultHeadID;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
@@ -561,70 +561,73 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         populatingForProject = true;
 
-        currentProject = project;
-        printerSettings = project.getPrinterSettings();
-        printQuality = printerSettings.printQualityProperty();
+        if (project instanceof ModelContainerProject)
+        {
+            currentProject = (ModelContainerProject)project;
+            printerSettings = currentProject.getPrinterSettings();
+            printQuality = printerSettings.printQualityProperty();
 
-        int saveBrim = printerSettings.getBrimOverride();
-        float saveFillDensity = printerSettings.getFillDensityOverride();
-        boolean autoSupport = printerSettings.getPrintSupportOverride();
-        SupportType saveSupports = printerSettings.getPrintSupportTypeOverride();
-        boolean savePrintRaft = printerSettings.getRaftOverride();
-        boolean saveSpiralPrint = printerSettings.getSpiralPrintOverride();
-        boolean saveSupportGapEnabled = printerSettings.getPrintSupportGapEnabledOverride();
+            int saveBrim = printerSettings.getBrimOverride();
+            float saveFillDensity = printerSettings.getFillDensityOverride();
+            boolean autoSupport = printerSettings.getPrintSupportOverride();
+            SupportType saveSupports = printerSettings.getPrintSupportTypeOverride();
+            boolean savePrintRaft = printerSettings.getRaftOverride();
+            boolean saveSpiralPrint = printerSettings.getSpiralPrintOverride();
+            boolean saveSupportGapEnabled = printerSettings.getPrintSupportGapEnabledOverride();
 
-        // printer settings name is cleared by combo population so must be saved
-        String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
+            // printer settings name is cleared by combo population so must be saved
+            String savePrinterSettingsName = currentProject.getPrinterSettings().getSettingsName();
 
-        printQuality.addListener(
-                (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) ->
+            printQuality.addListener(
+                    (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) ->
+                    {
+                        printQualityWidgetsUpdate(newValue);
+                    });
+            printQualityWidgetsUpdate(printQuality.get());
+
+            // just in case custom settings are changing through some other mechanism
+            printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
+            {
+                selectCurrentCustomSettings();
+            });
+
+            brimSlider.setValue(saveBrim);
+            fillDensitySlider.setValue(saveFillDensity * 100);
+
+            raftButton.setSelected(savePrintRaft);
+
+            supportComboBox.setValue(saveSupports);
+
+            printerSettings.getPrintSupportTypeOverrideProperty().addListener(new ChangeListener<SupportType>()
+            {
+                @Override
+                public void changed(ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue)
                 {
-                    printQualityWidgetsUpdate(newValue);
-                });
-        printQualityWidgetsUpdate(printQuality.get());
+                    populatingForProject = true;
+                    supportComboBox.getSelectionModel().select(newValue);
+                    updateSupportCombo(currentPrinter);
+                    populatingForProject = false;
+                }
+            });
 
-        // just in case custom settings are changing through some other mechanism
-        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-        {
-            selectCurrentCustomSettings();
-        });
+            supportButton.setSelected(autoSupport);
 
-        brimSlider.setValue(saveBrim);
-        fillDensitySlider.setValue(saveFillDensity * 100);
-
-        raftButton.setSelected(savePrintRaft);
-
-        supportComboBox.setValue(saveSupports);
-
-        printerSettings.getPrintSupportTypeOverrideProperty().addListener(new ChangeListener<SupportType>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue)
+            if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
             {
-                populatingForProject = true;
-                supportComboBox.getSelectionModel().select(newValue);
-                updateSupportCombo(currentPrinter);
-                populatingForProject = false;
+                if (savePrinterSettingsName.length() > 0)
+                {
+                    SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettings(
+                            savePrinterSettingsName, currentHeadType);
+                    customProfileChooser.getSelectionModel().select(chosenProfile);
+                }
             }
-        });
 
-        supportButton.setSelected(autoSupport);
+            spiralPrintCheckbox.setSelected(saveSpiralPrint);
 
-        if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
-        {
-            if (savePrinterSettingsName.length() > 0)
-            {
-                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettings(
-                        savePrinterSettingsName, currentHeadType);
-                customProfileChooser.getSelectionModel().select(chosenProfile);
-            }
+            supportGapButton.setSelected(saveSupportGapEnabled);
+
+            dealWithPrintOptimisation();
         }
-
-        spiralPrintCheckbox.setSelected(saveSpiralPrint);
-
-        supportGapButton.setSelected(saveSupportGapEnabled);
-
-        dealWithPrintOptimisation();
 
         populatingForProject = false;
     }
@@ -673,8 +676,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 && (currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.PLA || currentPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.PLA)
                 //Both materials are required for the print
                 && currentProject instanceof ModelContainerProject
-                && ((ModelContainerProject)currentProject).getPrintingExtruders(currentPrinter).get(0)
-                && ((ModelContainerProject)currentProject).getPrintingExtruders(currentPrinter).get(1);
+                && ((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(0)
+                && ((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(1);
 
         if (triggerPLAIncompatibility)
         {
@@ -682,7 +685,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             raftButton.setSelected(true);
             supportComboBox.getSelectionModel().select(requiredSupportType);
         }
-        
+
         if (triggerPLAIncompatibility != inPLACompatibilityMode.get())
         {
             inPLACompatibilityMode.set(triggerPLAIncompatibility);

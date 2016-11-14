@@ -91,7 +91,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     private ToggleGroup qualityToggleGroup;
 
-    private Project currentProject;
+    private ModelContainerProject currentProject;
     private PrinterSettingsOverrides printerSettings;
     private Printer currentPrinter;
     private String currentHeadType;
@@ -241,7 +241,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     Project.ProjectChangesListener projectChangesListener;
 
-    private void bindProject(Project project)
+    private void bindProject(ModelContainerProject project)
     {
         printerSettings = project.getPrinterSettings();
 
@@ -292,21 +292,23 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     @Override
     public void setProject(Project project)
     {
-        currentProject = project;
         whenProjectChanged(project);
     }
 
     private void whenProjectChanged(Project project)
     {
-        currentProject = project;
+        if (currentProject != null)
+        {
+            unbindProject(currentProject);
+        }
+        
         if (project != null)
         {
-            if (currentProject != null)
+            if (project instanceof ModelContainerProject)
             {
-                unbindProject(currentProject);
+                currentProject = (ModelContainerProject)project;
+                bindProject(currentProject);
             }
-            bindProject(project);
-            currentProject = project;
         }
     }
 

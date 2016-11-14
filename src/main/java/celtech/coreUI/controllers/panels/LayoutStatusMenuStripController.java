@@ -7,6 +7,7 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.ShapeContainerProject;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
@@ -32,7 +33,6 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
-import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
@@ -43,9 +43,12 @@ import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.utils.PrinterUtils;
 import celtech.roboxbase.utils.models.MeshForProcessing;
+import celtech.roboxbase.utils.models.PrintableShapes;
+import celtech.roboxbase.utils.models.ShapeForProcessing;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import celtech.roboxbase.utils.threed.CentreCalculations;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.File;
 import static java.lang.Double.max;
 import java.util.ArrayList;
@@ -73,7 +76,6 @@ import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -302,8 +304,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         if (currentProject instanceof ModelContainerProject)
         {
+            ModelContainerProject modelContainerProject = (ModelContainerProject) currentProject;
+
             PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
-                    ((ModelContainerProject) currentProject).getUsedExtruders(printer));
+                    modelContainerProject.getUsedExtruders(printer));
 
             List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
             List<Integer> extruderForModel = new ArrayList<>();
@@ -349,10 +353,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     ((ModelContainerProject) currentProject).getUsedExtruders(printer),
                     extruderForModel,
                     currentProject.getProjectName(),
-                    ((ModelContainerProject) currentProject).getLastPrintJobID(),
-                    currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get()),
-                    currentProject.getPrinterSettings(),
-                    currentProject.getPrintQuality(),
+                    currentProject.getLastPrintJobID(),
+                    modelContainerProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get()),
+                    modelContainerProject.getPrinterSettings(),
+                    modelContainerProject.getPrintQuality(),
                     Lookup.getUserPreferences().getSlicerType(),
                     centreOfPrintedObject,
                     Lookup.getUserPreferences().isSafetyFeaturesOn(),
@@ -398,6 +402,29 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             {
                 steno.error("Error during print project " + ex.getMessage());
             }
+        } else if (currentProject instanceof ShapeContainerProject)
+        {
+            List<ShapeForProcessing> shapes = new ArrayList<>();
+            currentProject.getAllModels().forEach(child ->
+            {
+                if (child instanceof ShapeContainer)
+                {
+                    ShapeContainer shapeContainer = (ShapeContainer) child;
+                    shapeContainer.getShapes().forEach((shape) ->
+                    {
+                        shapes.add(new ShapeForProcessing(shape, shapeContainer));
+                    });
+                }
+            });
+
+            PrintableShapes ps = new PrintableShapes(shapes,
+                    Lookup.getSelectedProjectProperty().get().getProjectName(),
+                    currentProject.getLastPrintJobID(),
+                    false,
+                    ((ShapeContainerProject) currentProject).getSettings());
+
+            printer.printShapes(ps);
+            applicationStatus.setMode(ApplicationMode.STATUS);
         }
     }
 
@@ -997,8 +1024,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 printer.getPrinterAncillarySystems().doorOpenProperty()
                 .and(Lookup.getUserPreferences().safetyFeaturesOnProperty())
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
-        chooseACustomProfileNotificationBar.setAppearanceCondition(project.customSettingsNotChosenProperty()
-                .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+        if (project instanceof ModelContainerProject)
+        {
+            chooseACustomProfileNotificationBar.setAppearanceCondition(((ModelContainerProject) project).customSettingsNotChosenProperty()
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+        }
         printHeadPowerOffNotificationBar.setAppearanceCondition(printer.headPowerOnFlagProperty().not()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
                 .and(printer.headProperty().isNotNull()));
@@ -1223,61 +1253,70 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private void dealWithOutOfBoundsModels()
     {
-        boolean aModelIsOffTheBed = false;
-        boolean aModelIsOffTheBedWithRaft = false;
-        boolean aModelIsOffTheBedWithSpiral = false;
-
-        if (selectedProject != null
-                && currentPrinter != null
-                && currentPrinter.headProperty().get() != null)
+        if (selectedProject != null)
         {
-            SlicerParametersFile slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
-
-            for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
+            if (selectedProject instanceof ModelContainerProject)
             {
-                if (projectifiableThing instanceof ModelContainer)
+                boolean aModelIsOffTheBed = false;
+                boolean aModelIsOffTheBedWithRaft = false;
+                boolean aModelIsOffTheBedWithSpiral = false;
+
+                if (currentPrinter != null
+                        && currentPrinter.headProperty().get() != null)
                 {
-                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-                    aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
+                    SlicerParametersFile slicerParameters = ((ModelContainerProject) selectedProject).getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
 
-                    //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-                    double raftOffset = slicerParameters.getRaftBaseThickness_mm()
-                            //Raft interface thickness
-                            + 0.28
-                            //Raft surface layer thickness * surface layers
-                            + (slicerParameters.getInterfaceLayers() * 0.27)
-                            + slicerParameters.getRaftAirGapLayer0_mm();
-
-                    if (selectedProject.getPrinterSettings().getRaftOverride()
-                            && modelContainer.isModelTooHighWithOffset(raftOffset))
+                    for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
                     {
-                        aModelIsOffTheBedWithRaft = true;
-                    }
+                        if (projectifiableThing instanceof ModelContainer)
+                        {
+                            ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+                            aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
 
-                    //TODO use settings derived offset values
-                    if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
-                            && modelContainer.isModelTooHighWithOffset(0.5))
-                    {
-                        aModelIsOffTheBedWithSpiral = true;
+                            //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+                            double raftOffset = slicerParameters.getRaftBaseThickness_mm()
+                                    //Raft interface thickness
+                                    + 0.28
+                                    //Raft surface layer thickness * surface layers
+                                    + (slicerParameters.getInterfaceLayers() * 0.27)
+                                    + slicerParameters.getRaftAirGapLayer0_mm();
+
+                            if (((ModelContainerProject) selectedProject).getPrinterSettings().getRaftOverride()
+                                    && modelContainer.isModelTooHighWithOffset(raftOffset))
+                            {
+                                aModelIsOffTheBedWithRaft = true;
+                            }
+
+                            //TODO use settings derived offset values
+                            if (((ModelContainerProject) selectedProject).getPrinterSettings().getSpiralPrintOverride()
+                                    && modelContainer.isModelTooHighWithOffset(0.5))
+                            {
+                                aModelIsOffTheBedWithSpiral = true;
+                            }
+                        }
                     }
                 }
+
+                if (aModelIsOffTheBed != modelsOffBed.get())
+                {
+                    modelsOffBed.set(aModelIsOffTheBed);
+                }
+
+                if (aModelIsOffTheBedWithRaft != modelsOffBedWithRaft.get())
+                {
+                    modelsOffBedWithRaft.set(aModelIsOffTheBedWithRaft);
+                }
+
+                if (aModelIsOffTheBedWithSpiral != modelOffBedWithSpiral.get())
+                {
+                    modelOffBedWithSpiral.set(aModelIsOffTheBedWithSpiral);
+                }
+            } else if (selectedProject instanceof ShapeContainerProject)
+            {
+
             }
         }
 
-        if (aModelIsOffTheBed != modelsOffBed.get())
-        {
-            modelsOffBed.set(aModelIsOffTheBed);
-        }
-
-        if (aModelIsOffTheBedWithRaft != modelsOffBedWithRaft.get())
-        {
-            modelsOffBedWithRaft.set(aModelIsOffTheBedWithRaft);
-        }
-
-        if (aModelIsOffTheBedWithSpiral != modelOffBedWithSpiral.get())
-        {
-            modelOffBedWithSpiral.set(aModelIsOffTheBedWithSpiral);
-        }
     }
 
     private void whenProjectOrSettingsPrinterChange()
@@ -1310,7 +1349,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             selectedProject = project;
             undoableSelectedProject = new UndoableProject(project);
-            printerSettings = project.getPrinterSettings();
+            if (project instanceof ModelContainerProject)
+            {
+                printerSettings = ((ModelContainerProject) project).getPrinterSettings();
+            } else
+            {
+                printerSettings = null;
+            }
             currentPrinter = Lookup.getSelectedPrinterProperty().get();
             projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
             layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -1325,9 +1370,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
      */
     private void updateCanPrintProjectBindings(Printer printer, Project project)
     {
-        if (project instanceof ModelContainerProject)
+        if (printer != null && project != null)
         {
-            if (printer != null && project != null)
+            if (project instanceof ModelContainerProject)
             {
                 printButton.disableProperty().unbind();
 
@@ -1374,6 +1419,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(modelOffBedWithSpiral.not())
                     );
                 }
+                printButton.disableProperty().bind(canPrintProject.not());
+            } else if (project instanceof ShapeContainerProject)
+            {
+                printButton.disableProperty().unbind();
+
+                canPrintProject.bind(
+                        Bindings.isNotEmpty(project.getTopLevelThings())
+                        .and(printer.canPrintProperty())
+                        .and(project.canPrintProperty())
+                        .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                );
                 printButton.disableProperty().bind(canPrintProject.not());
             }
         }

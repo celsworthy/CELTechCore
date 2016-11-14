@@ -81,9 +81,6 @@ public abstract class Project
     protected Set<ProjectChangesListener> projectChangesListeners;
 
     protected BooleanProperty canPrint;
-    protected BooleanProperty customSettingsNotChosen;
-
-    protected final PrinterSettingsOverrides printerSettings;
 
     protected final StringProperty projectNameProperty;
     protected ObjectProperty<Date> lastModifiedDate;
@@ -103,29 +100,14 @@ public abstract class Project
         initialise();
 
         canPrint = new SimpleBooleanProperty(true);
-        customSettingsNotChosen = new SimpleBooleanProperty(true);
         lastModifiedDate = new SimpleObjectProperty<>();
         projectChangesListeners = new HashSet<>();
 
-        printerSettings = new PrinterSettingsOverrides();
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
                 + formatter.format(now));
         lastModifiedDate.set(now);
-
-        customSettingsNotChosen.bind(
-                printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
-                .and(printerSettings.getSettingsNameProperty().isEmpty()));
-        // Cannot print if quality is CUSTOM and no custom settings have been chosen
-        canPrint.bind(customSettingsNotChosen.not());
-
-        printerSettings.getDataChanged().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    projectModified();
-                    fireWhenPrinterSettingsChanged(printerSettings);
-                });
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(
                 (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
@@ -213,25 +195,6 @@ public abstract class Project
         return projectNameProperty.get();
     }
 
-    public final PrintQualityEnumeration getPrintQuality()
-    {
-        return printerSettings.getPrintQuality();
-    }
-
-    public final void setPrintQuality(PrintQualityEnumeration printQuality)
-    {
-        if (printerSettings.getPrintQuality() != printQuality)
-        {
-            projectModified();
-            printerSettings.setPrintQuality(printQuality);
-        }
-    }
-
-    public final PrinterSettingsOverrides getPrinterSettings()
-    {
-        return printerSettings;
-    }
-
     public abstract void addModel(ProjectifiableThing projectifiableThing);
 
     public abstract void removeModels(Set<ProjectifiableThing> projectifiableThings);
@@ -254,11 +217,6 @@ public abstract class Project
     public final BooleanProperty canPrintProperty()
     {
         return canPrint;
-    }
-
-    public final BooleanProperty customSettingsNotChosenProperty()
-    {
-        return customSettingsNotChosen;
     }
 
     /**

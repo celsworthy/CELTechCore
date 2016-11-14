@@ -20,6 +20,7 @@ import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.Math.packing.core.Bin;
 import celtech.roboxbase.utils.Math.packing.core.BinPacking;
 import celtech.roboxbase.utils.Math.packing.primitives.MArea;
@@ -79,6 +80,8 @@ public class ModelContainerProject extends Project
     private ObjectProperty<Filament> extruder1Filament;
     private BooleanProperty modelColourChanged;
     private BooleanBinding hasInvalidMeshes;
+    private final PrinterSettingsOverrides printerSettings;
+    protected BooleanProperty customSettingsNotChosen;
 
     private FilamentContainer filamentContainer;
 
@@ -88,6 +91,23 @@ public class ModelContainerProject extends Project
     public ModelContainerProject()
     {
         super();
+        printerSettings = new PrinterSettingsOverrides();
+
+        customSettingsNotChosen = new SimpleBooleanProperty(true);
+
+        customSettingsNotChosen.bind(
+                printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
+                .and(printerSettings.getSettingsNameProperty().isEmpty()));
+
+        printerSettings.getDataChanged().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    projectModified();
+                    fireWhenPrinterSettingsChanged(printerSettings);
+                });
+
+        // Cannot print if quality is CUSTOM and no custom settings have been chosen
+        canPrint.bind(customSettingsNotChosen.not());
     }
 
     @Override
@@ -1051,4 +1071,27 @@ public class ModelContainerProject extends Project
         return modelGroup;
     }
 
+    public final PrintQualityEnumeration getPrintQuality()
+    {
+        return printerSettings.getPrintQuality();
+    }
+
+    public final void setPrintQuality(PrintQualityEnumeration printQuality)
+    {
+        if (printerSettings.getPrintQuality() != printQuality)
+        {
+            projectModified();
+            printerSettings.setPrintQuality(printQuality);
+        }
+    }
+
+    public final PrinterSettingsOverrides getPrinterSettings()
+    {
+        return printerSettings;
+    }
+
+    public final BooleanProperty customSettingsNotChosenProperty()
+    {
+        return customSettingsNotChosen;
+    }
 }

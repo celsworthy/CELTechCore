@@ -161,9 +161,19 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         VBox rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
-        Node settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
-        Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
-        rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
+        Node settingsInsetPanel = null;
+
+        if (project instanceof ModelContainerProject)
+        {
+            settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
+            Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
+            rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
+            timeCostInsetPanel.setVisible(false);
+        } else if (project instanceof ShapeContainerProject)
+        {
+            settingsInsetPanel = loadInsetPanel("twoDSettingsInsetPanel.fxml", project);
+            rhInsetContainer.getChildren().add(settingsInsetPanel);
+        }
 
         rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
@@ -208,8 +218,6 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         settingsInsetPanel.setVisible(
                 false);
-        timeCostInsetPanel.setVisible(
-                false);
         AnchorPane.setTopAnchor(rhInsetContainer,
                 30.0);
         AnchorPane.setRightAnchor(rhInsetContainer,
@@ -228,9 +236,9 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             setupSVGView();
         }
-        
+
         fireProjectSelected();
-        
+
         projectManager.projectOpened(project);
     }
 
@@ -265,7 +273,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setRightAnchor(svgViewManager.getDisplayableComponent(), 0.0);
 
         basePane.getChildren().add(0, svgViewManager.getDisplayableComponent());
-        
+
         svgViewManager.associateWithProject(project);
     }
 
