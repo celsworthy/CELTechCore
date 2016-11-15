@@ -74,7 +74,7 @@
                                     <children>
                                         <GraphicButtonWithLabel fx:id="undoButton" fxmlFileName="undoButton" labelText="%buttonText.undo" onAction="#undo" />
                                         <GraphicButtonWithLabel fx:id="redoButton" fxmlFileName="redoButton" labelText="%buttonText.redo" onAction="#redo" />
-                                        <GraphicButtonWithLabel fx:id="addModelButton" fxmlFileName="addToProjectButton" labelText="%buttonText.addModel" onAction="#addModel" onContextMenuRequested="#addModelContext" />
+                                        <GraphicButtonWithLabel fx:id="addModelButton" fxmlFileName="addToProjectButton" labelText="%buttonText.addModel" onAction="#addModel" />
                                         <GraphicButtonWithLabel fx:id="addCloudModelButton" fxmlFileName="addCloudModelToProjectButton" labelText="%buttonText.addModelFromCloud" onAction="#addCloudModel" />
                                         <GraphicButtonWithLabel fx:id="deleteModelButton" fxmlFileName="deleteModelButton" labelText="%buttonText.removeModel" onAction="#deleteModel" />
                                         <GraphicButtonWithLabel fx:id="duplicateModelButton" fxmlFileName="copyModelButton" labelText="%buttonText.duplicateModel" onAction="#copyModel" />
