@@ -35,6 +35,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableFloatArray;
 import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.Camera;
@@ -57,6 +58,7 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.univariate.BrentOptimizer;
@@ -86,7 +88,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     private Stenographer steno;
     private boolean isInvalidMesh = false;
 
-    private Translate transformDropToBedYAdjust;
+    protected Translate transformDropToBedYAdjust;
     private Rotate transformRotateTwistPreferred;
     private Rotate transformRotateLeanPreferred;
 
@@ -248,7 +250,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     @Override
     protected void setRotationPivotsToCentreOfModel()
     {
-
 
         transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
         transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
@@ -441,8 +442,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     /**
-     * N.BÃ¯Â¼Å½It only works for top level objects ieÃ¯Â¼Å½top level groups or
-     * ungrouped models.
+     * N.BÃƒÂ¯Ã‚Â¼Ã…Â½It only works for top level objects ieÃƒÂ¯Ã‚Â¼Ã…Â½top
+     * level groups or ungrouped models.
      */
     public void translateFrontLeftTo(double xPosition, double zPosition)
     {
@@ -704,10 +705,18 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setRotationTwist(double value)
     {
+        setRotationTwist(value, true);
+    }
+
+    public void setRotationTwist(double value, boolean dropToBed)
+    {
         preferredRotationTwist.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
-        dropToBed();
+        if (dropToBed)
+        {
+            dropToBed();
+        }
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -722,10 +731,18 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setRotationTurn(double value)
     {
+        setRotationTurn(value, true);
+    }
+
+    public void setRotationTurn(double value, boolean dropToBed)
+    {
         preferredRotationTurn.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
-        dropToBed();
+        if (dropToBed)
+        {
+            dropToBed();
+        }
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -740,10 +757,18 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setRotationLean(double value)
     {
+        setRotationLean(value, true);
+    }
+
+    public void setRotationLean(double value, boolean dropToBed)
+    {
         preferredRotationLean.set(value);
         updateTransformsFromLeanTwistTurnAngles();
 
-        dropToBed();
+        if (dropToBed)
+        {
+            dropToBed();
+        }
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
@@ -1076,6 +1101,17 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         notifyScreenExtentsChange();
     }
 
+    void translateYPositionTo(double yPosition)
+    {
+        double currentYPosition = getTransformedCentreY();
+        double requiredTranslation = yPosition - currentYPosition;
+        transformDropToBedYAdjust.setY(yPosition);
+        updateLastTransformedBoundsInParentForTranslateByY(yPosition);
+        checkOffBed();
+        notifyShapeChange();
+        notifyScreenExtentsChange();
+    }
+
     public double getYAdjust()
     {
         return transformDropToBedYAdjust.getY();
@@ -1087,31 +1123,55 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
      */
     public void applyGroupTransformToThis(ModelGroup modelGroup)
     {
-        double scaleFactor = getXScale() * modelGroup.getXScale();
-        preferredXScale.set(scaleFactor);
-        transformScalePreferred.setX(scaleFactor);
+        double xScaleFactor = getXScale() * modelGroup.getXScale();
+        preferredXScale.set(xScaleFactor);
+        transformScalePreferred.setX(xScaleFactor);
 
-        scaleFactor = getYScale() * modelGroup.getYScale();
-        preferredYScale.set(scaleFactor);
-        transformScalePreferred.setY(scaleFactor);
+        double yScaleFactor = getYScale() * modelGroup.getYScale();
+        preferredYScale.set(yScaleFactor);
+        transformScalePreferred.setY(yScaleFactor);
 
-        scaleFactor = getZScale() * modelGroup.getZScale();
-        preferredZScale.set(scaleFactor);
-        transformScalePreferred.setZ(scaleFactor);
+        double zScaleFactor = getZScale() * modelGroup.getZScale();
+        preferredZScale.set(zScaleFactor);
+        transformScalePreferred.setZ(zScaleFactor);
 
-        // if scale was applied then this is wrong. Scale of group has moved subgroup towards/away
-        // from centre of group and up/down, which needs to be taken into account
-        translateBy(modelGroup.getMoveToPreferredX(),
-                modelGroup.getMoveToPreferredZ());
+        //Calculate the centre of the group in world co-ords
+        Point3D groupCentre = new Point3D(modelGroup.getTransformedCentreX(),
+                modelGroup.getTransformedCentreY(),
+                modelGroup.getTransformedCentreDepth());
+        
+        Point3D modelCentre = new Point3D(getTransformedCentreX() + modelGroup.transformMoveToPreferred.getX(),
+//                getTransformedCentreY() + modelGroup.transformDropToBedYAdjust.getY(),
+                modelGroup.transformDropToBedYAdjust.getY(),
+                getTransformedCentreDepth() + modelGroup.transformMoveToPreferred.getZ());
 
-        transformDropToBedYAdjust.setY(modelGroup.getYAdjust());
+        Point3D groupCentreToModelCentre = modelCentre.subtract(groupCentre);
 
+        Point3D scaledGroupCentreToModelCentre = new Point3D(groupCentreToModelCentre.getX() * xScaleFactor,
+                groupCentreToModelCentre.getY() * yScaleFactor,
+                groupCentreToModelCentre.getZ() * zScaleFactor);
+
+        Point3D twistedModelCentrePoint = modelGroup.getRotationTransforms().get(2).transform(scaledGroupCentreToModelCentre);
+        Point3D leanedModelCentrePoint = modelGroup.getRotationTransforms().get(1).transform(twistedModelCentrePoint);
+        Point3D turnedModelCentrePoint = modelGroup.getRotationTransforms().get(0).transform(leanedModelCentrePoint);
+
+        Point3D newModelCentre = new Point3D(
+                groupCentre.getX() + turnedModelCentrePoint.getX(),
+                groupCentre.getY() + turnedModelCentrePoint.getY(),
+                groupCentre.getZ() + turnedModelCentrePoint.getZ());
+
+        translateTo(newModelCentre.getX(), newModelCentre.getZ());
+        translateYPositionTo(newModelCentre.getY());
+        setRotationTurn(getRotationTurn() + modelGroup.getRotationTurn(), false);
+        setRotationLean(getRotationLean() + modelGroup.getRotationLean(), false);
+        setRotationTwist(getRotationTwist() + modelGroup.getRotationTwist(), false);
     }
 
     /**
      * Check if this object is off the bed. N.B. It only works for top level
      * objects i.e. top level groups or ungrouped models.
      */
+    @Override
     public void checkOffBed()
     {
         RectangularBounds bounds = lastTransformedBoundsInParent;
@@ -2031,5 +2091,10 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         sb.append("\n");
 
         return sb.toString();
+    }
+    
+    public void updateLastTransformedBoundsInParent()
+    {
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 }

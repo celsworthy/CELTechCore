@@ -2,7 +2,7 @@ package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ProjectFile;
-import celtech.configuration.fileRepresentation.SVGProjectFile;
+import celtech.configuration.fileRepresentation.ShapeContainerProjectFile;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -22,12 +22,12 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author ianhudson
  */
-public class SVGProject extends Project
+public class ShapeContainerProject extends Project
 {
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(SVGProject.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainerProject.class.getName());
 
-    public SVGProject()
+    public ShapeContainerProject()
     {
         super();
     }
@@ -121,7 +121,7 @@ public class SVGProject extends Project
     {
         suppressProjectChanged = true;
 
-        if (projectFile instanceof SVGProjectFile)
+        if (projectFile instanceof ShapeContainerProjectFile)
         {
             try
             {

@@ -47,6 +47,7 @@ public class GroupCommand extends Command
         modelContainers.add(group);
         project.ungroup(modelContainers);
         project.setModelStates(states);
+        group.updateLastTransformedBoundsInParent();
     }
 
     @Override

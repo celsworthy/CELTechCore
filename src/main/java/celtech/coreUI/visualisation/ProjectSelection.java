@@ -13,8 +13,6 @@ import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
-import celtech.modelcontrol.TranslateableTwoD;
-import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

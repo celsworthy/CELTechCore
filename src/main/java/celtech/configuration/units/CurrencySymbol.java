@@ -15,6 +15,7 @@ public enum CurrencySymbol
     KRONA("kr"),
     INDIAN_RUPEE("₹"),
     BAHT("฿"),
+    SWISS_FRANC("CHF"),
     RAND("R");
 
     private final String currencySymbol;
