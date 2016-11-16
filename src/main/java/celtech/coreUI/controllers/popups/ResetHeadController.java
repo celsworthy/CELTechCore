@@ -85,28 +85,31 @@ public class ResetHeadController implements Initializable
                 //Retain the last filament temperature and hours if they are available
                 if (currentPrinter.getHeadEEPROMStateProperty().get() == EEPROMState.PROGRAMMED)
                 {
-                    head.headHoursProperty().set(currentPrinter.headProperty().get().headHoursProperty().get());
-
-                    for (int nozzleHeaterCounter = 0; nozzleHeaterCounter < currentPrinter.headProperty().get().getNozzleHeaters().size(); nozzleHeaterCounter++)
+                    if (currentPrinter.headProperty().get() != null)
                     {
-                        if (head.getNozzleHeaters().size() > nozzleHeaterCounter)
+                        head.headHoursProperty().set(currentPrinter.headProperty().get().headHoursProperty().get());
+
+                        for (int nozzleHeaterCounter = 0; nozzleHeaterCounter < currentPrinter.headProperty().get().getNozzleHeaters().size(); nozzleHeaterCounter++)
                         {
-                            head.getNozzleHeaters().get(nozzleHeaterCounter)
-                                    .lastFilamentTemperatureProperty().set(currentPrinter.headProperty().get()
-                                            .getNozzleHeaters().get(nozzleHeaterCounter).lastFilamentTemperatureProperty().get());
+                            if (head.getNozzleHeaters().size() > nozzleHeaterCounter)
+                            {
+                                head.getNozzleHeaters().get(nozzleHeaterCounter)
+                                        .lastFilamentTemperatureProperty().set(currentPrinter.headProperty().get()
+                                                .getNozzleHeaters().get(nozzleHeaterCounter).lastFilamentTemperatureProperty().get());
+                            }
                         }
-                    }
 
-                    if (currentPrinter.headProperty().get().typeCodeProperty().get().equals(head.typeCodeProperty().get())
-                            && currentPrinter.headProperty().get().getChecksum() != null
-                            && !currentPrinter.headProperty().get().getChecksum().equals(""))
-                    {
-                        head.setUniqueID(currentPrinter.headProperty().get().typeCodeProperty().get(),
-                                currentPrinter.headProperty().get().getWeekNumber(),
-                                currentPrinter.headProperty().get().getYearNumber(),
-                                currentPrinter.headProperty().get().getPONumber(),
-                                currentPrinter.headProperty().get().getSerialNumber(),
-                                currentPrinter.headProperty().get().getChecksum());
+                        if (currentPrinter.headProperty().get().typeCodeProperty().get().equals(head.typeCodeProperty().get())
+                                && currentPrinter.headProperty().get().getChecksum() != null
+                                && !currentPrinter.headProperty().get().getChecksum().equals(""))
+                        {
+                            head.setUniqueID(currentPrinter.headProperty().get().typeCodeProperty().get(),
+                                    currentPrinter.headProperty().get().getWeekNumber(),
+                                    currentPrinter.headProperty().get().getYearNumber(),
+                                    currentPrinter.headProperty().get().getPONumber(),
+                                    currentPrinter.headProperty().get().getSerialNumber(),
+                                    currentPrinter.headProperty().get().getChecksum());
+                        }
                     }
                 }
 
