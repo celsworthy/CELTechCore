@@ -21,7 +21,6 @@ import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.printerControl.model.Printer;
 import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +48,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -225,13 +223,9 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
-//        settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
-//        timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
-//        rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
 
         rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
-//        modelActionsInsetPanelData = loadInsetPanel("modelEditInsetPanel.fxml", project);
         VBox dimensionContainer = new VBox();
         dimensionContainer.setMouseTransparent(true);
         AnchorPane.setBottomAnchor(dimensionContainer, 0.0);
@@ -246,7 +240,6 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setLeftAnchor(modelActionsInsetPanelData.getNode(), 30.0);
         basePane.getChildren().add(modelActionsInsetPanelData.getNode());
 
-//        basePane.getChildren().addAll(rhInsetContainer, modelActionsInsetPanelData.getNode());
         dimensionLineManager = new DimensionLineManager(basePane, project, hideDimensions);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -279,10 +272,6 @@ public class ProjectTab extends Tab implements ProjectCallback
                 30.0);
         AnchorPane.setRightAnchor(rhInsetContainer,
                 30.0);
-//        AnchorPane.setTopAnchor(modelActionsInsetPanelData.getNode(),
-//                30.0);
-//        AnchorPane.setLeftAnchor(modelActionsInsetPanelData.getNode(),
-//                30.0);
 
         setupNameFields();
 
