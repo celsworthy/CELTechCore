@@ -26,6 +26,8 @@ import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -137,7 +139,74 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private final BooleanProperty inPLACompatibilityMode = new SimpleBooleanProperty(false);
     private ConditionalNotificationBar PLACompatibilityModeNotificationBar;
 
-    private MapChangeListener<Integer, Filament> filamentListener = new MapChangeListener<Integer, Filament>()
+    private final ChangeListener<Printer> selectedPrinterChangeListener = new ChangeListener<Printer>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+        {
+            whenPrinterChanged(newValue);
+        }
+    };
+
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+        {
+            steno.info("Fired from " + this + " project " + currentProject);
+            if (newValue == ApplicationMode.SETTINGS)
+            {
+                settingsInsetRoot.setVisible(true);
+                settingsInsetRoot.setMouseTransparent(false);
+                if (currentProject != null
+                        && currentPrinter != null)
+                {
+                    dealWithPrintOptimisation();
+                }
+            } else
+            {
+                settingsInsetRoot.setVisible(false);
+                settingsInsetRoot.setMouseTransparent(true);
+            }
+        }
+    };
+
+    private final ListChangeListener<SlicerParametersFile> slicerParamChangeListener = new ListChangeListener<SlicerParametersFile>()
+    {
+
+        @Override
+        public void onChanged(ListChangeListener.Change<? extends SlicerParametersFile> c)
+        {
+            populateCustomProfileChooser();
+            showPleaseCreateProfile(
+                    SlicerParametersContainer.getUserProfileList().isEmpty());
+        }
+    };
+
+    private final PrinterListChangesListener printerListChangesListener = new PrinterListChangesAdapter()
+    {
+        @Override
+        public void whenHeadAdded(Printer printer)
+        {
+            if (printer == currentPrinter)
+            {
+                whenPrinterChanged(printer);
+                updateSupportCombo(printer);
+            }
+        }
+
+        @Override
+        public void whenExtruderAdded(Printer printer, int extruderIndex)
+        {
+            if (printer == currentPrinter)
+            {
+                updateSupportCombo(printer);
+            }
+        }
+
+    };
+
+    private final MapChangeListener<Integer, Filament> filamentListener = new MapChangeListener<Integer, Filament>()
     {
         @Override
         public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
@@ -164,62 +233,18 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             setupOverrides();
 
-            Lookup.getSelectedPrinterProperty().addListener(
-                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                    {
-                        whenPrinterChanged(newValue);
-                    });
+            Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
 
-            ApplicationStatus.getInstance().modeProperty().addListener(
-                    (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-                    {
-                        if (newValue == ApplicationMode.SETTINGS)
-                        {
-                            settingsInsetRoot.setVisible(true);
-                            settingsInsetRoot.setMouseTransparent(false);
-                        } else
-                        {
-                            settingsInsetRoot.setVisible(false);
-                            settingsInsetRoot.setMouseTransparent(true);
-                        }
-                    });
+            ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
 
-            SlicerParametersContainer.getUserProfileList().addListener(
-                    (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-                    {
-                        populateCustomProfileChooser();
-                        showPleaseCreateProfile(
-                                SlicerParametersContainer.getUserProfileList().isEmpty());
-                    });
+            SlicerParametersContainer.getUserProfileList().addListener(slicerParamChangeListener);
 
             showPleaseCreateProfile(
                     SlicerParametersContainer.getUserProfileList().isEmpty());
 
             whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
 
-            BaseLookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
-            {
-
-                @Override
-                public void whenHeadAdded(Printer printer)
-                {
-                    if (printer == currentPrinter)
-                    {
-                        whenPrinterChanged(printer);
-                        updateSupportCombo(printer);
-                    }
-                }
-
-                @Override
-                public void whenExtruderAdded(Printer printer, int extruderIndex)
-                {
-                    if (printer == currentPrinter)
-                    {
-                        updateSupportCombo(printer);
-                    }
-                }
-
-            });
+            BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
 
         } catch (Exception ex)
         {
@@ -267,22 +292,21 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
         });
 
-        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
-            {
-                if (t1 == ApplicationMode.SETTINGS)
-                {
-                    if (currentProject != null
-                            && currentPrinter != null)
-                    {
-                        dealWithPrintOptimisation();
-                    }
-                }
-            }
-        });
-
+//        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
+//        {
+//            @Override
+//            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
+//            {
+//                if (t1 == ApplicationMode.SETTINGS)
+//                {
+//                    if (currentProject != null
+//                            && currentPrinter != null)
+//                    {
+//                        dealWithPrintOptimisation();
+//                    }
+//                }
+//            }
+//        });
         raftSupportBrimChooserBox.disableProperty().bind(spiralPrintCheckbox.selectedProperty()
                 .or(supportButton.selectedProperty().not()
                         .and(brimSlider.valueProperty().lessThanOrEqualTo(0))
@@ -673,8 +697,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 && (currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.PLA || currentPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.PLA)
                 //Both materials are required for the print
                 && currentProject instanceof ModelContainerProject
-                && ((ModelContainerProject)currentProject).getPrintingExtruders(currentPrinter).get(0)
-                && ((ModelContainerProject)currentProject).getPrintingExtruders(currentPrinter).get(1);
+                && ((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(0)
+                && ((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(1);
 
         if (triggerPLAIncompatibility)
         {
@@ -682,7 +706,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             raftButton.setSelected(true);
             supportComboBox.getSelectionModel().select(requiredSupportType);
         }
-        
+
         if (triggerPLAIncompatibility != inPLACompatibilityMode.get())
         {
             inPLACompatibilityMode.set(triggerPLAIncompatibility);
@@ -810,4 +834,28 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
     }
 
+    @Override
+    public void shutdownController()
+    {
+        if (currentPrinter != null)
+        {
+            currentPrinter.effectiveFilamentsProperty().removeListener(filamentListener);
+        }
+
+        if (currentProject != null)
+        {
+            currentProject.removeProjectChangesListener(this);
+        }
+        currentProject = null;
+
+        Lookup.getSelectedPrinterProperty().removeListener(selectedPrinterChangeListener);
+
+        ApplicationStatus.getInstance().modeProperty().removeListener(applicationModeChangeListener);
+
+        SlicerParametersContainer.getUserProfileList().removeListener(slicerParamChangeListener);
+
+        BaseLookup.getPrinterListChangesNotifier().removeListener(printerListChangesListener);
+
+        PLACompatibilityModeNotificationBar.destroyBar();
+    }
 }
