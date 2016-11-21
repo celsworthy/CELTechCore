@@ -20,6 +20,7 @@ import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.Set;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
@@ -108,6 +110,72 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
     };
 
+    private final PrinterListChangesListener printerListChangesListener = new PrinterListChangesAdapter()
+    {
+        @Override
+        public void whenHeadAdded(Printer printer)
+        {
+            if (printer == currentPrinter)
+            {
+                updateHeadType(currentPrinter);
+            }
+        }
+
+        @Override
+        public void whenHeadRemoved(Printer printer, Head head)
+        {
+            if (printer == currentPrinter)
+            {
+                updateHeadType(currentPrinter);
+            }
+        }
+    };
+
+    private final ChangeListener<Printer> selectedPrinterChangeListener = new ChangeListener<Printer>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+        {
+            if (currentPrinter != null)
+            {
+                currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+            }
+            if (newValue != null)
+            {
+                newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+            }
+            updateHeadType(newValue);
+
+            if (currentPrinter != newValue)
+            {
+                updateFields(currentProject);
+            }
+            currentPrinter = newValue;
+        }
+    };
+
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+        {
+            if (newValue == ApplicationMode.SETTINGS)
+            {
+                timeCostInsetRoot.setVisible(true);
+                timeCostInsetRoot.setMouseTransparent(false);
+                if (Lookup.getSelectedProjectProperty().get() == currentProject)
+                {
+                    updateFields(currentProject);
+                }
+            } else
+            {
+                timeCostInsetRoot.setVisible(false);
+                timeCostInsetRoot.setMouseTransparent(true);
+                timeCostThreadManager.cancelRunningTimeCostTasks();
+            }
+        }
+    };
+
     /**
      * Initialises the controller class.
      */
@@ -116,49 +184,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     {
         try
         {
-            BaseLookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
-            {
+            BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
 
-                @Override
-                public void whenHeadAdded(Printer printer)
-                {
-                    if (printer == currentPrinter)
-                    {
-                        updateHeadType(currentPrinter);
-                    }
-                }
-
-                @Override
-                public void whenHeadRemoved(Printer printer, Head head)
-                {
-                    if (printer == currentPrinter)
-                    {
-                        updateHeadType(currentPrinter);
-                    }
-                }
-
-            });
-
-            Lookup.getSelectedPrinterProperty().addListener(
-                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                    {
-                        if (currentPrinter != null)
-                        {
-                            currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
-                        }
-                        if (newValue != null)
-                        {
-                            newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
-                        }
-                        updateHeadType(newValue);
-
-                        if (currentPrinter != newValue)
-                        {
-                            updateFields(currentProject);
-                        }
-                        currentPrinter = newValue;
-                    }
-            );
+            Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
 
             if (Lookup.getSelectedPrinterProperty().get() != null)
             {
@@ -169,26 +197,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
 
             ApplicationStatus.getInstance()
-                    .modeProperty().addListener(
-                            (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-                            {
-                                if (newValue == ApplicationMode.SETTINGS)
-                                {
-                                    timeCostInsetRoot.setVisible(true);
-                                    timeCostInsetRoot.setMouseTransparent(false);
-                                    if (Lookup.getSelectedProjectProperty().get() == currentProject)
-                                    {
-                                        updateFields(currentProject);
-                                    }
-                                } else
-                                {
-                                    timeCostInsetRoot.setVisible(false);
-                                    timeCostInsetRoot.setMouseTransparent(true);
-                                    timeCostThreadManager.cancelRunningTimeCostTasks();
-                                }
-
-                            }
-                    );
+                    .modeProperty().addListener(applicationModeChangeListener);
 
             setupQualityRadioButtons();
 
@@ -531,4 +540,26 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
     }
 
+    @Override
+    public void shutdownController()
+    {
+
+        if (currentPrinter != null)
+        {
+            currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+        }
+
+        if (currentProject != null)
+        {
+            unbindProject(currentProject);
+        }
+        currentProject = null;
+
+        BaseLookup.getPrinterListChangesNotifier().removeListener(printerListChangesListener);
+
+        Lookup.getSelectedPrinterProperty().removeListener(selectedPrinterChangeListener);
+
+        ApplicationStatus.getInstance()
+                .modeProperty().removeListener(applicationModeChangeListener);
+    }
 }

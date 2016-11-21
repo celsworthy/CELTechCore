@@ -81,14 +81,40 @@ public class ProjectTab extends Tab implements ProjectCallback
     private ObjectProperty<LayoutSubmode> layoutSubmode;
     private ProjectAwareController projectAwareController = null;
 
-    private ReadOnlyDoubleProperty tabDisplayWidthProperty;
-    private ReadOnlyDoubleProperty tabDisplayHeightProperty;
+    private final ReadOnlyDoubleProperty tabDisplayWidthProperty;
+    private final ReadOnlyDoubleProperty tabDisplayHeightProperty;
 
-    private Node modelActionsInsetPanel;
+    private final BooleanProperty hideDimensions = new SimpleBooleanProperty(false);
 
-    private BooleanProperty hideDimensions = new SimpleBooleanProperty(false);
+    private final VBox nonSpecificModelIndicator = new VBox();
 
-    private VBox nonSpecificModelIndicator = new VBox();
+    private VBox rhInsetContainer = null;
+    private LoadedPanelData settingsInsetPanelData = null;
+    private LoadedPanelData timeCostInsetPanelData = null;
+    private LoadedPanelData modelActionsInsetPanelData = null;
+
+    private class LoadedPanelData
+    {
+
+        private final Node node;
+        private final ProjectAwareController controller;
+
+        public LoadedPanelData(Node node, ProjectAwareController controller)
+        {
+            this.node = node;
+            this.controller = controller;
+        }
+
+        public Node getNode()
+        {
+            return node;
+        }
+
+        public ProjectAwareController getController()
+        {
+            return controller;
+        }
+    }
 
     public ProjectTab(
             ReadOnlyDoubleProperty tabDisplayWidthProperty,
@@ -154,31 +180,58 @@ public class ProjectTab extends Tab implements ProjectCallback
         this.setContent(basePane);
 
         this.setGraphic(nonEditableProjectNameField);
+
+        this.selectedProperty().addListener(new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+            {
+                if (newValue == false)
+                {
+                    if (settingsInsetPanelData != null)
+                    {
+                        settingsInsetPanelData.getController().shutdownController();
+                        rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
+                        settingsInsetPanelData = null;
+                    }
+                    if (timeCostInsetPanelData != null)
+                    {
+                        timeCostInsetPanelData.getController().shutdownController();
+                        rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
+                        timeCostInsetPanelData = null;
+                    }
+                } else
+                {
+                    if (project instanceof ModelContainerProject)
+                    {
+                        settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
+                        timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+                        settingsInsetPanelData.getNode().setVisible(false);
+                        timeCostInsetPanelData.getNode().setVisible(false);
+                        rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
+                    } else if (project instanceof ShapeContainerProject)
+                    {
+                        settingsInsetPanelData = loadInsetPanel("twoDSettingsInsetPanel.fxml", project);
+                        settingsInsetPanelData.getNode().setVisible(false);
+                        rhInsetContainer.getChildren().add(settingsInsetPanelData.getNode());
+                    }
+                }
+            }
+        });
     }
 
     private void initialiseWithProject()
     {
 
-        VBox rhInsetContainer = new VBox();
+        rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
-        Node settingsInsetPanel = null;
-
-        if (project instanceof ModelContainerProject)
-        {
-            settingsInsetPanel = loadInsetPanel("settingsInsetPanel.fxml", project);
-            Node timeCostInsetPanel = loadInsetPanel("timeCostInsetPanel.fxml", project);
-            rhInsetContainer.getChildren().addAll(timeCostInsetPanel, settingsInsetPanel);
-            timeCostInsetPanel.setVisible(false);
-        } else if (project instanceof ShapeContainerProject)
-        {
-            settingsInsetPanel = loadInsetPanel("twoDSettingsInsetPanel.fxml", project);
-            rhInsetContainer.getChildren().add(settingsInsetPanel);
-        }
+//        settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
+//        timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+//        rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
 
         rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
 
-        modelActionsInsetPanel = loadInsetPanel("modelEditInsetPanel.fxml", project);
-
+//        modelActionsInsetPanelData = loadInsetPanel("modelEditInsetPanel.fxml", project);
         VBox dimensionContainer = new VBox();
         dimensionContainer.setMouseTransparent(true);
         AnchorPane.setBottomAnchor(dimensionContainer, 0.0);
@@ -186,8 +239,14 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setRightAnchor(dimensionContainer, 0.0);
         AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
 
-        basePane.getChildren().addAll(rhInsetContainer, modelActionsInsetPanel);
+        basePane.getChildren().add(rhInsetContainer);
 
+        modelActionsInsetPanelData = loadInsetPanel("modelEditInsetPanel.fxml", project);
+        AnchorPane.setTopAnchor(modelActionsInsetPanelData.getNode(), 30.0);
+        AnchorPane.setLeftAnchor(modelActionsInsetPanelData.getNode(), 30.0);
+        basePane.getChildren().add(modelActionsInsetPanelData.getNode());
+
+//        basePane.getChildren().addAll(rhInsetContainer, modelActionsInsetPanelData.getNode());
         dimensionLineManager = new DimensionLineManager(basePane, project, hideDimensions);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
@@ -216,16 +275,14 @@ public class ProjectTab extends Tab implements ProjectCallback
             }
         });
 
-        settingsInsetPanel.setVisible(
-                false);
         AnchorPane.setTopAnchor(rhInsetContainer,
                 30.0);
         AnchorPane.setRightAnchor(rhInsetContainer,
                 30.0);
-        AnchorPane.setTopAnchor(modelActionsInsetPanel,
-                30.0);
-        AnchorPane.setLeftAnchor(modelActionsInsetPanel,
-                30.0);
+//        AnchorPane.setTopAnchor(modelActionsInsetPanelData.getNode(),
+//                30.0);
+//        AnchorPane.setLeftAnchor(modelActionsInsetPanelData.getNode(),
+//                30.0);
 
         setupNameFields();
 
@@ -249,7 +306,7 @@ public class ProjectTab extends Tab implements ProjectCallback
                 tabDisplayWidthProperty,
                 tabDisplayHeightProperty);
 
-        modelActionsInsetPanel.mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
+        modelActionsInsetPanelData.getNode().mouseTransparentProperty().bind(viewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
 
         zCutEntryBox = new ZCutEntryBox(overlayPane, layoutSubmode, viewManager, (ModelContainerProject) project);
         bedAxes = new BedAxes(viewManager);
@@ -277,7 +334,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         svgViewManager.associateWithProject(project);
     }
 
-    private Node loadInsetPanel(String innerPanelFXMLName, Project project)
+    private LoadedPanelData loadInsetPanel(String innerPanelFXMLName, Project project)
     {
         URL settingsInsetPanelURL = getClass().getResource(
                 ApplicationConfiguration.fxmlPanelResourcePath + innerPanelFXMLName);
@@ -292,7 +349,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             steno.error("Unable to load inset panel: " + innerPanelFXMLName + "  " + ex);
         }
-        return insetPanel;
+        return new LoadedPanelData(insetPanel, projectAwareController);
     }
 
     private void setupNameFields()
