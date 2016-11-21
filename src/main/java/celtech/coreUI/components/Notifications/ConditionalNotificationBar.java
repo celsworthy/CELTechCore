@@ -98,4 +98,11 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
 
         return theSame;
     }
+
+    @Override
+    public void destroyBar()
+    {
+        clearAppearanceCondition();
+        finishedSlidingOutOfView();
+    }
 }

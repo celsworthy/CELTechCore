@@ -12,4 +12,5 @@ import celtech.appManager.Project;
 public interface ProjectAwareController
 {
     public void setProject(Project project);
+    public void shutdownController();
 }
