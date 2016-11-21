@@ -1410,5 +1410,9 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
         updateDisplay();
     }
-
+    
+    @Override
+    public void shutdownController()
+    {
+    }
 }

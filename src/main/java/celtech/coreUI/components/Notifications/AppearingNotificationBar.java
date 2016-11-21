@@ -306,4 +306,6 @@ public abstract class AppearingNotificationBar extends StackPane implements Init
     public abstract void finishedSlidingOutOfView();
     
     public abstract boolean isSameAs(AppearingNotificationBar bar);
+    
+    public abstract void destroyBar();
 }

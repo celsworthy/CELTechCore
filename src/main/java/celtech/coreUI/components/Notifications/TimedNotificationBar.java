@@ -74,8 +74,15 @@ public class TimedNotificationBar extends AppearingNotificationBar
                 && this.notificationDescription.getText().equals(bar.notificationDescription.getText()))
         {
             theSame = true;
-}
+        }
 
         return theSame;
     }
+
+    @Override
+    public void destroyBar()
+    {
+        finishedSlidingOutOfView();
+    }
+
 }

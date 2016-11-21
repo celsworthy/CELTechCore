@@ -1016,9 +1016,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             ModelContainerProject mcProject = (ModelContainerProject) project;
 
             BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
+            oneExtruderPrinter.get();
             BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
+            twoExtruderPrinter.get();
             BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
+            noFilament0Selected.get();
             BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
+            noFilament1Selected.get();
 
             ObservableList<Boolean> usedExtruders = ((ModelContainerProject) project).getUsedExtruders(printer);
 

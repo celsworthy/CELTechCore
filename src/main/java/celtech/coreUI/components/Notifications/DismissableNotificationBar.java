@@ -67,4 +67,10 @@ public class DismissableNotificationBar extends AppearingNotificationBar
 
         return theSame;
     }
+
+    @Override
+    public void destroyBar()
+    {
+        finishedSlidingOutOfView();
+    }
 }
