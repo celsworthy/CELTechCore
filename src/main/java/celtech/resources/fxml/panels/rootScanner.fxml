@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.web.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -7,9 +8,16 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="400.0" spacing="10" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+
+<HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="LEFT_TO_RIGHT" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <ListView fx:id="scannedRoots" />
-      <Button fx:id="scanButton" mnemonicParsing="false" onAction="#scanForRoots" text="%rootScanner.scan" />
+      <TableView fx:id="scannedRoots" minWidth="300.0">
+        <columns>
+          <TableColumn fx:id="nameColumn" editable="false" prefWidth="120.0" resizable="false" text="Name" />
+          <TableColumn fx:id="pinColumn" resizable="false" text="PIN" />
+            <TableColumn fx:id="statusColumn" editable="false" minWidth="30.0" prefWidth="100.0" resizable="false" text="Status" />
+        </columns>
+      </TableView>
+      <WebView fx:id="rootWebView" minWidth="300.0" prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
    </children>
-</VBox>
+</HBox>
