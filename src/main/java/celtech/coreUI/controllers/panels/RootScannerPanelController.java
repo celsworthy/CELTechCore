@@ -32,6 +32,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableCell;
 import javafx.scene.input.ContextMenuEvent;
 
 /**
@@ -65,8 +66,37 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     private TableColumn statusColumn;
 
     private ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
-    
+
     private ContextMenu scannedRootContextMenu = new ContextMenu();
+
+//    private static final class DetectedServerCell extends TableCell<DetectedServer, DetectedServer>
+//    {
+//
+//        private DetectedServer lastServer = null;
+//        private ChangeListener<Boolean> changeListener;
+//
+//        @Override
+//        protected void updateItem(DetectedServer item, boolean empty)
+//        {
+//            if (lastServer != null)
+//            {
+//                lastServer.dataChangedProperty().removeListener(changeListener);
+//            }
+//            
+//            if (!empty)
+//            {
+//                changeListener = new ChangeListener<Boolean>()
+//                {
+//                    @Override
+//                    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
+//                    {
+//                        
+//                    }
+//                };
+//            }
+//        }
+//
+//    }
 
 //    class ServerListCell extends TableListCell<DetectedServer>
 //    {
