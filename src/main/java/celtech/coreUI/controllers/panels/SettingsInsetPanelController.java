@@ -577,7 +577,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             currentProject.removeProjectChangesListener(this);
         }
-        project.addProjectChangesListener(this);
+
+        if (project != null)
+        {
+            project.addProjectChangesListener(this);
+        }
+
         whenProjectChanged(project);
     }
 

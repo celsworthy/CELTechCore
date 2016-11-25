@@ -29,7 +29,7 @@
                                     <children>
                                     </children>
                                 </VBox>
-                                <VBox fx:id="insetNodeContainer" minHeight="-Infinity">
+                                <VBox fx:id="insetNodeContainer" minHeight="-Infinity" maxHeight="100000000000" VBox.vgrow="ALWAYS">
                                     <children>
                                     </children>
                                 </VBox>
