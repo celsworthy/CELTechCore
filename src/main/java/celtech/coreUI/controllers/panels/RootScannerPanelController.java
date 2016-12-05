@@ -118,6 +118,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     }
 
     private TableColumn nameColumn;
+    private TableColumn ipAddressColumn;
     private TableColumn<DetectedServer, ServerStatus> statusColumn;
 
     private WebView rootWebView;
@@ -233,9 +234,16 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         nameColumn = new TableColumn<>();
         nameColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("name"));
         nameColumn.setText(Lookup.i18n("rootScanner.name"));
-        nameColumn.setPrefWidth(180);
+        nameColumn.setPrefWidth(160);
         nameColumn.setResizable(false);
         nameColumn.setStyle("-fx-alignment: CENTER_LEFT;");
+
+        ipAddressColumn = new TableColumn<>();
+        ipAddressColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("serverIP"));
+        ipAddressColumn.setText(Lookup.i18n("rootScanner.ipAddress"));
+        ipAddressColumn.setPrefWidth(85);
+        ipAddressColumn.setResizable(false);
+        ipAddressColumn.setStyle("-fx-alignment: CENTER;");
 
         statusColumn = new TableColumn<>();
         statusColumn.setCellFactory(statusCell -> new RootTableCell());
@@ -244,8 +252,9 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         statusColumn.setResizable(false);
 
         scannedRoots.getColumns().add(nameColumn);
+        scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(statusColumn);
-        scannedRoots.setMaxWidth(220);
+        scannedRoots.setMaxWidth(285);
 
         rootWebView = new WebView();
         rootWebView.setMaxHeight(1000000);
@@ -342,7 +351,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
         serversToCheck.forEach((server) ->
         {
-            if (!server.whoAmI())
+            if (!server.whoAreYou())
             {
                 rootsToInhibit.add(server);
             } else
