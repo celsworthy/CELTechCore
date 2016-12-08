@@ -154,25 +154,38 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
      * Write the values from the text fields onto the actual head. If the unique
      * id is already stored on the head then do not overwrite it.
      */
+    private float getFloatValueOrZero(RestrictedTextField field)
+    {
+        float returnValue = 0;
+        try
+        {
+            returnValue = field.getFloatValue();
+        }
+        catch (ParseException ex)
+        {
+        }
+        return returnValue;
+    }
+    
     void whenSavePressed()
     {
         try
         {
             String headTypeCodeText = headTypeCode.getText();
-            float headMaxTemperatureVal = headMaxTemperature.getFloatValue();
-            Float headThermistorBetaVal = headThermistorBeta.getFloatValue();
-            Float headThermistorTCalVal = headThermistorTCal.getFloatValue();
+            float headMaxTemperatureVal = getFloatValueOrZero(headMaxTemperature);
+            Float headThermistorBetaVal = getFloatValueOrZero(headThermistorBeta);
+            Float headThermistorTCalVal = getFloatValueOrZero(headThermistorTCal);
             Float nozzle1XOffsetVal = nozzle1XOffset.getFloatValue();
             Float nozzle1YOffsetVal = nozzle1YOffset.getFloatValue();
             Float nozzle1BOffsetVal = nozzle1BOffset.getFloatValue();
             Float nozzle2XOffsetVal = nozzle2XOffset.getFloatValue();
             Float nozzle2YOffsetVal = nozzle2YOffset.getFloatValue();
             Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
-            float lastFilamentTemperatureVal0 = lastFilamentTemperature0.getFloatValue();
+            float lastFilamentTemperatureVal0 = getFloatValueOrZero(lastFilamentTemperature0);
             float lastFilamentTemperatureVal1 = 0;
             if (lastFilamentTemperature1.isVisible())
             {
-                lastFilamentTemperatureVal1 = lastFilamentTemperature1.getFloatValue();
+                lastFilamentTemperatureVal1 = getFloatValueOrZero(lastFilamentTemperature1);
             }
             Float headHourCounterVal = headHourCounter.getFloatValue();
 
