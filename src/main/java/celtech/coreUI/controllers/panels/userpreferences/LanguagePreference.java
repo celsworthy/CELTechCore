@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.configuration.BaseConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
