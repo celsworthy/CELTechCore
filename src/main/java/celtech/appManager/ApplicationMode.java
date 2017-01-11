@@ -2,6 +2,7 @@ package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.controllers.MyMiniFactoryLoaderController;
+import celtech.coreUI.controllers.NewsController;
 import celtech.coreUI.controllers.panels.AboutPanelController;
 import celtech.coreUI.controllers.panels.CalibrationInsetPanelController;
 import celtech.coreUI.controllers.panels.ExtrasMenuPanelController;
@@ -40,6 +41,7 @@ public enum ApplicationMode
      */
     SETTINGS(null, null),
     LIBRARY("extrasMenu", LibraryMenuPanelController.class);
+//    NEWS("news", NewsController.class);
 
     private final String insetPanelFXMLPrefix;
     private final Class controllerClass;
