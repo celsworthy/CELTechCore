@@ -9,13 +9,18 @@ import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.controllers.PrinterSettings;
+import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.printerControl.model.Head.HeadType;
 import celtech.printerControl.model.Printer;
 import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.Math.Packing.PackingThing;
+import celtech.utils.Math.Packing.core.Bin;
+import celtech.utils.Math.Packing.core.BinPacking;
+import celtech.utils.Math.Packing.primitives.MArea;
 import celtech.utils.threed.MeshUtils;
+import java.awt.Dimension;
+import java.awt.geom.Rectangle2D;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -1049,13 +1054,119 @@ public class Project
 
     public void autoLayout()
     {
-        Collections.sort(topLevelModels);
-        PackingThing thing = new PackingThing((int) PrintBed.maxPrintableXSize,
-                (int) PrintBed.maxPrintableZSize);
+        autoLayout(topLevelModels);
+    }
 
-        thing.reference(topLevelModels, 10);
-        thing.pack();
-        thing.relocateBlocks();
+    public void autoLayout(List<ModelContainer> thingsToLayout)
+    {
+        Dimension binDimension = new Dimension((int) PrintBed.maxPrintableXSize, (int) PrintBed.maxPrintableZSize);
+        Bin layoutBin = null;
+
+        final double spacing = 2.5;
+        final double halfSpacing = spacing / 2.0;
+
+        Map<Integer, ModelContainer> partMap = new HashMap<>();
+
+        int numberOfPartsNotToLayout = topLevelModels.size() - thingsToLayout.size();
+
+        if (numberOfPartsNotToLayout > 0)
+        {
+            MArea[] existingPieces = new MArea[numberOfPartsNotToLayout];
+            int existingPartCounter = 0;
+            for (ModelContainer thingToConsider : topLevelModels)
+            {
+                if (!thingsToLayout.contains(thingToConsider))
+                {
+                    //We need to stop this part from being laid out
+                    ModelBounds pieceBounds = thingToConsider.calculateBoundsInBedCoordinateSystem();
+                    Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
+                            PrintBed.maxPrintableZSize - pieceBounds.getMaxZ() - halfSpacing,
+                            pieceBounds.getWidth() + halfSpacing,
+                            pieceBounds.getDepth() + halfSpacing);
+                    MArea piece = new MArea(rectangle, existingPartCounter, ((ModelContainer) thingToConsider).getRotationTurn());
+                    existingPieces[existingPartCounter] = piece;
+                    partMap.put(existingPartCounter, thingToConsider);
+                    existingPartCounter++;
+                }
+            }
+            layoutBin = new Bin(binDimension, existingPieces);
+        }
+
+        int startingIndexForPartsToLayout = (numberOfPartsNotToLayout == 0) ? 0 : numberOfPartsNotToLayout - 1;
+
+        MArea[] partsToLayout = new MArea[thingsToLayout.size()];
+        int partsToLayoutCounter = 0;
+        for (ModelContainer thingToLayout : thingsToLayout)
+        {
+            ModelBounds pieceBounds = thingToLayout.calculateBoundsInBedCoordinateSystem();
+            //Change the coords so that every part is in the bottom left corner
+            Rectangle2D.Double rectangle = new Rectangle2D.Double(0, 0,
+                    pieceBounds.getWidth() + spacing,
+                    pieceBounds.getDepth() + spacing);
+            MArea piece = new MArea(rectangle, partsToLayoutCounter + startingIndexForPartsToLayout, 0);
+            partsToLayout[partsToLayoutCounter] = piece;
+            partMap.put(partsToLayoutCounter + startingIndexForPartsToLayout, thingToLayout);
+            partsToLayoutCounter++;
+        }
+
+        if (layoutBin != null)
+        {
+            MArea[] unplacedParts = null;
+            unplacedParts = layoutBin.BBCompleteStrategy(partsToLayout);
+        } else
+        {
+            Bin[] bins = BinPacking.BinPackingStrategy(partsToLayout, binDimension, binDimension);
+            layoutBin = bins[0];
+        }
+
+        int numberOfPartsInTotal = layoutBin.getPlacedPieces().length;
+        double newXPosition[] = new double[numberOfPartsInTotal];
+        double newDepthPosition[] = new double[numberOfPartsInTotal];
+        double newRotation[] = new double[numberOfPartsInTotal];
+        double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
+
+        for (int pieceNumber = 0; pieceNumber < numberOfPartsInTotal; pieceNumber++)
+        {
+            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
+
+            newRotation[pieceNumber] = area.getRotation();
+
+            newDepthPosition[pieceNumber] = PrintBed.maxPrintableZSize - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
+            newXPosition[pieceNumber] = area.getBoundingBox2D().getMinX() + (area.getBoundingBox2D().getWidth() / 2.0);
+
+            maxLayoutX = Math.max(maxLayoutX, area.getBoundingBox2D().getMaxX());
+            minLayoutX = Math.min(minLayoutX, area.getBoundingBox2D().getMinX());
+            maxLayoutY = Math.max(maxLayoutY, area.getBoundingBox2D().getMaxY());
+            minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
+        }
+
+        double xCentringOffset = (PrintBed.maxPrintableXSize - (maxLayoutX - minLayoutX)) / 2.0;
+        double yCentringOffset = (PrintBed.maxPrintableZSize - (maxLayoutY - minLayoutY)) / 2.0;
+
+        for (int pieceNumber = 0; pieceNumber < layoutBin.getPlacedPieces().length; pieceNumber++)
+        {
+            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
+            ModelContainer container = (ModelContainer) partMap.get(area.getID());
+
+            if (thingsToLayout.contains(container))
+            {
+                double rotation = newRotation[pieceNumber] + container.getRotationTurn();
+                if (rotation >= 360.0)
+                {
+                    rotation -= 360.0;
+                }
+                container.setRotationTurn(rotation);
+
+                //Only auto centre if we're laying out all of the parts
+                if (numberOfPartsNotToLayout == 0)
+                {
+                    container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
+                } else
+                {
+                    container.translateTo(newXPosition[pieceNumber], newDepthPosition[pieceNumber]);
+                }
+            }
+        }
 
         projectModified();
         fireWhenAutoLaidOut();
