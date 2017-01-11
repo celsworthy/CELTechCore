@@ -40,6 +40,8 @@ public enum ApplicationMode
      */
     SETTINGS(null, null),
     LIBRARY("extrasMenu", LibraryMenuPanelController.class);
+    
+    //    NEWS("news", NewsController.class);
 
     private final String insetPanelFXMLPrefix;
     private final Class controllerClass;
