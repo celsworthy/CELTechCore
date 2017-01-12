@@ -39,9 +39,9 @@ public class NewsBot
     private final List<NewsArticle> unreadNewsArticles = new ArrayList<>();
     private String lastTimeThereWasNewNewsDateString = null;
     private int strikes = 0;
-    private final int NORMAL_FREQUENCY_POLLING_PERIOD_MS = 60000;
+    private final int NORMAL_FREQUENCY_POLLING_PERIOD_MS = 120000;
     private final int LOWER_FREQUENCY_POLLING_THRESHOLD = 3;
-    private final int LOWER_FREQUENCY_POLLING_PERIOD_MS = 120000;
+    private final int LOWER_FREQUENCY_POLLING_PERIOD_MS = 240000;
     private final int STRIKES_AND_YOURE_OUT = 6;
 
     public class NewsArticle
