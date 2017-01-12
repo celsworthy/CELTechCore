@@ -762,19 +762,7 @@ public class ApplicationConfiguration
                 input = new FileInputStream(inputFile);
 
                 // load a properties file
-                applicationMemoryProperties.load(input);
-                
-                for (DirectoryMemoryProperty directoryMemory : DirectoryMemoryProperty.values())
-                {
-                    String directory = getLastDirectory(directoryMemory);
-                    
-                    File directoryFile = new File(directory);
-                    if (directoryFile.exists() == false)
-                    {
-                        setLastDirectory(directoryMemory, getUserStorageDirectory());
-                    }
-                }
-                
+                applicationMemoryProperties.load(input);                
             }
         } catch (IOException ex)
         {
@@ -803,6 +791,12 @@ public class ApplicationConfiguration
         
         String directory = applicationMemoryProperties.getProperty(fileMemoryItem
                 + whichProperty.name());
+        
+        if (directory == null)
+        {
+            directory = getUserStorageDirectory();
+            applicationMemoryProperties.setProperty(whichProperty.name(), directory);
+        }
         
         return directory;
     }
