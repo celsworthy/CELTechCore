@@ -12,7 +12,7 @@
    <graphic>
       <StackPane>
          <children>
-            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 36; -fx-font-style: italic;" text="i" textAlignment="CENTER" translateX="-1.0" />
+            <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-font-size: 40; -fx-font-style: italic;" text="i" textAlignment="CENTER" translateX="-1.0" />
             <StackPane fx:id="newsCounterContainer" translateX="13.0" translateY="12.0">
                <children>
                   <Circle fill="#cd3838" radius="8.0" stroke="BLACK" strokeType="INSIDE" />

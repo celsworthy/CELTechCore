@@ -807,6 +807,7 @@ public class Project
                     addModel(childModelContainer);
                     childModelContainer.setBedCentreOffsetTransform();
                     childModelContainer.applyGroupTransformToThis(modelGroup);
+                    childModelContainer.updateLastTransformedBoundsInParent();
                     childModelContainer.checkOffBed();
                 }
             }

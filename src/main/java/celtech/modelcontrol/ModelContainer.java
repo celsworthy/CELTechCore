@@ -1251,7 +1251,6 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
                 modelGroup.getMoveToPreferredZ());
 
         transformDropToBedYAdjust.setY(modelGroup.getYAdjust());
-
     }
 
     /**
@@ -2335,5 +2334,10 @@ public class ModelContainer extends Group implements Serializable, Comparable, S
     public void removeCollisionShapeListener(CollisionShapeListener collisionShapeListener)
     {
         collisionShapeListeners.remove(collisionShapeListener);
+    }
+
+    public void updateLastTransformedBoundsInParent()
+    {
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 }
