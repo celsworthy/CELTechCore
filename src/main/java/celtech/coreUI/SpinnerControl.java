@@ -11,8 +11,14 @@ import javafx.scene.layout.Region;
  */
 public interface SpinnerControl
 {
-        /**
+    /**
+     * Show the spinner, centred on the right hand panel
+     */
+    public void startSpinning();
+
+    /**
      * Show the spinner, and keep it centred on the given region.
+     * @param centreRegion
      */
     public void startSpinning(Region centreRegion);
 

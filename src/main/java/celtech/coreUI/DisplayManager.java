@@ -261,6 +261,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     }
 
     /**
+     * Show the spinner, and keep it centred on the middle of the screen.
+     */
+    @Override
+    public void startSpinning()
+    {
+        spinner.setVisible(true);
+        spinner.startSpinning();
+        spinner.setCentreNode(rhPanel);
+    }
+
+    /**
      * Stop and hide the spinner.
      */
     @Override

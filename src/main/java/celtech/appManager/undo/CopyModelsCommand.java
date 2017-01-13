@@ -5,7 +5,9 @@ package celtech.appManager.undo;
 
 import celtech.appManager.Project;
 import celtech.modelcontrol.ModelContainer;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -56,6 +58,8 @@ public class CopyModelsCommand extends Command
         {
             project.addModel(modelContainer);
         }
+        List<ModelContainer> modelContainersToLayout = new ArrayList<>(newModelContainers);
+        project.autoLayout(modelContainersToLayout);
     }
 
     @Override

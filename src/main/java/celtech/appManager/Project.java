@@ -1060,6 +1060,7 @@ public class Project
 
     public void autoLayout(List<ModelContainer> thingsToLayout)
     {
+//        steno.info("Start layout");
         Dimension binDimension = new Dimension((int) PrintBed.maxPrintableXSize, (int) PrintBed.maxPrintableZSize);
         Bin layoutBin = null;
 
@@ -1070,6 +1071,7 @@ public class Project
 
         int numberOfPartsNotToLayout = topLevelModels.size() - thingsToLayout.size();
 
+//        steno.info("Stage 1");
         if (numberOfPartsNotToLayout > 0)
         {
             MArea[] existingPieces = new MArea[numberOfPartsNotToLayout];
@@ -1093,6 +1095,7 @@ public class Project
             layoutBin = new Bin(binDimension, existingPieces);
         }
 
+//        steno.info("Stage 2");
         int startingIndexForPartsToLayout = (numberOfPartsNotToLayout == 0) ? 0 : numberOfPartsNotToLayout - 1;
 
         MArea[] partsToLayout = new MArea[thingsToLayout.size()];
@@ -1110,6 +1113,7 @@ public class Project
             partsToLayoutCounter++;
         }
 
+//        steno.info("Stage 3");
         if (layoutBin != null)
         {
             MArea[] unplacedParts = null;
@@ -1120,6 +1124,7 @@ public class Project
             layoutBin = bins[0];
         }
 
+//        steno.info("Stage 4");
         int numberOfPartsInTotal = layoutBin.getPlacedPieces().length;
         double newXPosition[] = new double[numberOfPartsInTotal];
         double newDepthPosition[] = new double[numberOfPartsInTotal];
@@ -1143,6 +1148,7 @@ public class Project
 
         double xCentringOffset = (PrintBed.maxPrintableXSize - (maxLayoutX - minLayoutX)) / 2.0;
         double yCentringOffset = (PrintBed.maxPrintableZSize - (maxLayoutY - minLayoutY)) / 2.0;
+//        steno.info("Stage 5");
 
         for (int pieceNumber = 0; pieceNumber < layoutBin.getPlacedPieces().length; pieceNumber++)
         {
@@ -1168,9 +1174,12 @@ public class Project
                 }
             }
         }
+//        steno.info("Stage 6");
 
         projectModified();
         fireWhenAutoLaidOut();
+//        steno.info("Stage 7");
+
     }
 
     private void fireWhenAutoLaidOut()

@@ -441,7 +441,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void copyModel(ActionEvent event)
     {
+        Platform.runLater(() ->
+        {
+            Lookup.getSpinnerControl().startSpinning();
+        });
         undoableSelectedProject.copyModels(projectSelection.getSelectedModelsSnapshot());
+        Platform.runLater(() ->
+        {
+            Lookup.getSpinnerControl().stopSpinning();
+        });
     }
 
     @FXML
