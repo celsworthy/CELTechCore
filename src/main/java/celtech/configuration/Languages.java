@@ -89,13 +89,14 @@ public class Languages
     {
 
         /**
-         * for all elements of java.class.path get a Collection of resources Pattern pattern = Pattern.compile(".*"); gets all resources
+         * for all elements of java.class.path get a Collection of resources
+         * Pattern pattern = Pattern.compile(".*"); gets all resources
          *
          * @param pattern the pattern to match
          * @return the resources in the order they are found
          */
         public static Collection<String> getResources(
-            final Pattern pattern)
+                final Pattern pattern)
         {
             final ArrayList<String> retval = new ArrayList<String>();
             final String classPath = System.getProperty("java.class.path", ".");
@@ -104,28 +105,40 @@ public class Languages
             {
                 retval.addAll(getResources(element, pattern));
             }
+
+            if (classPathElements.length == 1
+                    && classPathElements[0].matches(".*jar"))
+            {
+                //Add in any lib directories under the 
+                final String libDir = ApplicationConfiguration.getApplicationInstallDirectory(null) + "lib";
+                retval.addAll(getResources(libDir, pattern));
+            }
+
             return retval;
         }
 
         private static Collection<String> getResources(
-            final String element,
-            final Pattern pattern)
+                final String element,
+                final Pattern pattern)
         {
             final ArrayList<String> retval = new ArrayList<String>();
             final File file = new File(element);
-            if (file.isDirectory())
+            if (file.exists())
             {
-                retval.addAll(getResourcesFromDirectory(file, pattern));
-            } else
-            {
-                retval.addAll(getResourcesFromJarFile(file, pattern));
+                if (file.isDirectory())
+                {
+                    retval.addAll(getResourcesFromDirectory(file, pattern));
+                } else
+                {
+                    retval.addAll(getResourcesFromJarFile(file, pattern));
+                }
             }
             return retval;
         }
 
         private static Collection<String> getResourcesFromJarFile(
-            final File file,
-            final Pattern pattern)
+                final File file,
+                final Pattern pattern)
         {
             final ArrayList<String> retval = new ArrayList<>();
             ZipFile zf;
@@ -161,8 +174,8 @@ public class Languages
         }
 
         private static Collection<String> getResourcesFromDirectory(
-            final File directory,
-            final Pattern pattern)
+                final File directory,
+                final Pattern pattern)
         {
             final ArrayList<String> retval = new ArrayList<>();
             final File[] fileList = directory.listFiles();
@@ -173,44 +186,27 @@ public class Languages
                     retval.addAll(getResourcesFromDirectory(file, pattern));
                 } else
                 {
-                    try
+                    if (file.getName().endsWith("jar"))
                     {
-                        final String fileName = file.getCanonicalPath();
-                        final boolean accept = pattern.matcher(fileName).matches();
-                        if (accept)
+                        retval.addAll(getResourcesFromJarFile(file, pattern));
+                    } else
+                    {
+                        try
                         {
-                            retval.add(fileName);
+                            final String fileName = file.getCanonicalPath();
+                            final boolean accept = pattern.matcher(fileName).matches();
+                            if (accept)
+                            {
+                                retval.add(fileName);
+                            }
+                        } catch (final IOException e)
+                        {
+                            throw new Error(e);
                         }
-                    } catch (final IOException e)
-                    {
-                        throw new Error(e);
                     }
                 }
             }
             return retval;
         }
-
-        /**
-         * list the resources that match args[0]
-         *
-         * @param args args[0] is the pattern to match, or list all resources if there are no args
-         */
-        public static void main(final String[] args)
-        {
-            Pattern pattern;
-            if (args.length < 1)
-            {
-                pattern = Pattern.compile(".*");
-            } else
-            {
-                pattern = Pattern.compile(args[0]);
-            }
-            final Collection<String> list = ResourceList.getResources(pattern);
-            for (final String name : list)
-            {
-                System.out.println(name);
-            }
-        }
     }
-
 }
