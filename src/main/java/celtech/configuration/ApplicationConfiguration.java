@@ -225,13 +225,20 @@ public class ApplicationConfiguration
         BaseConfiguration.setApplicationMemory(userLocaleItem, locale.getLanguage());
     }
 
+    public static String resetLastDirectoryToDefaults(DirectoryMemoryProperty whichProperty)
+    {
+        String defaultDirectory = BaseConfiguration.getUserStorageDirectory();
+        setLastDirectory(whichProperty, defaultDirectory);
+        
+        return defaultDirectory;
+    }
+    
     public static String getLastDirectory(DirectoryMemoryProperty memoryProperty)
     {
         String directory = BaseConfiguration.getApplicationMemory(memoryProperty.name());
         if (directory == null)
         {
-            directory = BaseConfiguration.getUserStorageDirectory();
-            BaseConfiguration.setApplicationMemory(memoryProperty.name(), directory);
+            directory = resetLastDirectoryToDefaults(memoryProperty);
         }
 
         return directory;

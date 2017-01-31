@@ -510,7 +510,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         ApplicationConfiguration.
                         getSupportedFileExtensionWildcards(
                                 currentProjectMode)));
-        modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY)));
+        File modelDirectory = new File(ApplicationConfiguration.getLastDirectory(
+                DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
+
+        if (!modelDirectory.exists())
+        {
+            modelDirectory = new File(ApplicationConfiguration.resetLastDirectoryToDefaults(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
+        }
+        modelFileChooser.setInitialDirectory(modelDirectory);
         List<File> files;
 
         files = modelFileChooser.showOpenMultipleDialog(displayManager.getMainStage());

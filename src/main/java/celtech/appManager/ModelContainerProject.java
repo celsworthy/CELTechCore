@@ -118,7 +118,7 @@ public class ModelContainerProject extends Project
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
         modelColourChanged = new SimpleBooleanProperty();
-        filamentContainer = BaseLookup.getFilamentContainer();
+        filamentContainer = FilamentContainer.getInstance();
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
 
         initialiseExtruderFilaments();

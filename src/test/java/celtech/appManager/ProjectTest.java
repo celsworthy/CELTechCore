@@ -16,6 +16,7 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -52,8 +53,8 @@ public class ProjectTest extends JavaFXConfiguredTest
         SlicerParametersFile.SupportType PRINT_SUPPORT = SlicerParametersFile.SupportType.MATERIAL_2;
         String PRINT_JOB_ID = "PJ1";
 
-        Filament FILAMENT_0 = BaseLookup.getFilamentContainer().getFilamentByID("RBX-ABS-GR499");
-        Filament FILAMENT_1 = BaseLookup.getFilamentContainer().getFilamentByID("RBX-PLA-PP157");
+        Filament FILAMENT_0 = FilamentContainer.getInstance().getFilamentByID("RBX-ABS-GR499");
+        Filament FILAMENT_1 = FilamentContainer.getInstance().getFilamentByID("RBX-PLA-PP157");
 
         ModelContainerProject project = new ModelContainerProject();
         project.setProjectName(PROJECT_NAME);
