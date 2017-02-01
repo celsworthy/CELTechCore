@@ -2,7 +2,6 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.WebEngineFix.AMURLStreamHandlerFactory;
-import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.RootTableCell;
 import celtech.roboxbase.comms.DetectedDevice;
 import celtech.roboxbase.comms.DetectedServer;
@@ -15,9 +14,6 @@ import celtech.roboxbase.configuration.CoreMemory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -38,14 +34,8 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -378,37 +368,44 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             {
                 while (!isCancelled())
                 {
-                    List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
-                    Platform.runLater(() ->
+                    try
                     {
-                        List<DetectedServer> serversToAdd = new ArrayList<>();
-                        List<DetectedServer> serversToRemove = new ArrayList<>();
+                        List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
 
-                        for (DetectedServer server : foundServers)
+                        Platform.runLater(() ->
                         {
-                            if (!currentServers.contains(server))
+                            List<DetectedServer> serversToAdd = new ArrayList<>();
+                            List<DetectedServer> serversToRemove = new ArrayList<>();
+
+                            for (DetectedServer server : foundServers)
                             {
-                                serversToAdd.add(server);
+                                if (!currentServers.contains(server))
+                                {
+                                    serversToAdd.add(server);
+                                }
                             }
-                        }
 
-                        for (DetectedServer server : currentServers)
-                        {
-                            if (!foundServers.contains(server))
+                            for (DetectedServer server : currentServers)
                             {
-                                serversToRemove.add(server);
+                                if (!foundServers.contains(server))
+                                {
+                                    serversToRemove.add(server);
+                                }
                             }
-                        }
 
-                        for (DetectedServer server : serversToAdd)
-                        {
-                            currentServers.add(server);
-                        }
-                        for (DetectedServer server : serversToRemove)
-                        {
-                            currentServers.remove(server);
-                        }
-                    });
+                            for (DetectedServer server : serversToAdd)
+                            {
+                                currentServers.add(server);
+                            }
+                            for (DetectedServer server : serversToRemove)
+                            {
+                                currentServers.remove(server);
+                            }
+                        });
+                    } catch (IOException ex)
+                    {
+                        Thread.sleep(1000);
+                    }
                 }
 
                 return null;
