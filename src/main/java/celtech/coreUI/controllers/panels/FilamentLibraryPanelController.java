@@ -833,7 +833,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         filamentMenuButton.deleteSpecialMenuItem(reel1MenuItemTitle);
         filamentMenuButton.deleteSpecialMenuItem(reel2MenuItemTitle);
 
-        if (currentPrinter != null)
+        if (currentPrinter != null
+                && currentPrinter.get() != null)
         {
             if (currentPrinter.get().reelsProperty().size() > 1)
             {

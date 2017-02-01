@@ -160,12 +160,6 @@ public class PrinterTest extends JavaFXConfiguredTest implements PrinterStatusCo
     }
 
     @Override
-    public void failedToConnect(DetectedDevice printerHandle)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void disconnected(DetectedDevice printerHandle)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

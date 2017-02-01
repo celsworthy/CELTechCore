@@ -215,7 +215,7 @@ public class ModelContainerProject extends Project
             if (error.isPresent())
             {
                 modelContainer.setIsInvalidMesh(true);
-                steno.info("Model load - " + error.get().name());
+                steno.debug("Model load - " + error.get().name());
             }
             addModel(modelContainer);
         }
