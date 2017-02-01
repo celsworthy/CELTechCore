@@ -84,7 +84,7 @@ public class ModelLoader
                     {
                         invalidModelNames.add(modelContainer.getModelName());
                         modelContainer.setIsInvalidMesh(true);
-                        steno.info("Model load - " + error.get().name());
+                        steno.debug("Model load - " + error.get().name());
                     }
 
                     //Assign the models incrementally to the extruders

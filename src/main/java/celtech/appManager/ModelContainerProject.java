@@ -118,7 +118,7 @@ public class ModelContainerProject extends Project
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
         modelColourChanged = new SimpleBooleanProperty();
-        filamentContainer = BaseLookup.getFilamentContainer();
+        filamentContainer = FilamentContainer.getInstance();
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
 
         initialiseExtruderFilaments();
@@ -215,7 +215,7 @@ public class ModelContainerProject extends Project
             if (error.isPresent())
             {
                 modelContainer.setIsInvalidMesh(true);
-                steno.info("Model load - " + error.get().name());
+                steno.debug("Model load - " + error.get().name());
             }
             addModel(modelContainer);
         }

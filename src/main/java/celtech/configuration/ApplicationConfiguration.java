@@ -112,6 +112,8 @@ public class ApplicationConfiguration
     public static final int xPrintOffset = 6;
     public static final int yPrintOffset = 6;
 
+    public static final String timeOfLastNewsRetrievalItem = "LastSuccessfulNewsRetrieval";
+
     public static String getProjectDirectory()
     {
 
@@ -223,21 +225,39 @@ public class ApplicationConfiguration
         BaseConfiguration.setApplicationMemory(userLocaleItem, locale.getLanguage());
     }
 
+    public static String resetLastDirectoryToDefaults(DirectoryMemoryProperty whichProperty)
+    {
+        String defaultDirectory = BaseConfiguration.getUserStorageDirectory();
+        setLastDirectory(whichProperty, defaultDirectory);
+        
+        return defaultDirectory;
+    }
+    
     public static String getLastDirectory(DirectoryMemoryProperty memoryProperty)
     {
         String directory = BaseConfiguration.getApplicationMemory(memoryProperty.name());
         if (directory == null)
         {
-            directory = BaseConfiguration.getUserStorageDirectory();
-            BaseConfiguration.setApplicationMemory(memoryProperty.name(), directory);
+            directory = resetLastDirectoryToDefaults(memoryProperty);
         }
-        
+
         return directory;
     }
 
     public static void setLastDirectory(DirectoryMemoryProperty memoryProperty, String value)
     {
         BaseConfiguration.setApplicationMemory(memoryProperty.name(), value);
+    }
+
+    public static String getLastNewsRetrievalTimeAsString()
+    {
+        String retrievalTime = BaseConfiguration.getApplicationMemory(timeOfLastNewsRetrievalItem);
+        return retrievalTime;
+    }
+
+    public static void setLastNewsRetrievalTime(String dateString)
+    {
+        BaseConfiguration.setApplicationMemory(timeOfLastNewsRetrievalItem, dateString);
     }
 
     /**
