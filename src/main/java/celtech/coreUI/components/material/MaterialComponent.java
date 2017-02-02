@@ -118,7 +118,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         setUpFilamentLoadedListener();
         configureDisplay();
 
-        filamentMenuButton.initialiseButton(this, null);
+        filamentMenuButton.initialiseButton(this, null, true);
     }
 
     private boolean filamentLoaded()

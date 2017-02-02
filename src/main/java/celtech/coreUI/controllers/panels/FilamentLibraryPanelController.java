@@ -206,7 +206,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
 
-        filamentMenuButton.initialiseButton(this, this);
+        filamentMenuButton.initialiseButton(this, this, false);
     }
 
     private void setupPrinterChangesListener()
