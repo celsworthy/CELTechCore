@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.roboxbase.MaterialType;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
     private FilamentOnReelDisplay filamentOnReelDisplayNode = new FilamentOnReelDisplay();
     private FilamentSelectionListener filamentSelectionListener = null;
     private SpecialItemSelectionListener specialItemSelectionListener = null;
+    private boolean dontDisplayDuplicateNamedFilaments = false;
 
     private Map<String, CustomMenuItem> permanentMenuItems = new TreeMap<>();
     private Map<String, Filament> permanentMenuFilaments = new HashMap<>();
@@ -88,10 +90,13 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         });
     }
 
-    public void initialiseButton(FilamentSelectionListener filamentSelectionListener, SpecialItemSelectionListener specialItemSelectionListener)
+    public void initialiseButton(FilamentSelectionListener filamentSelectionListener,
+            SpecialItemSelectionListener specialItemSelectionListener,
+            boolean dontDisplayDuplicateNamedFilaments)
     {
         this.filamentSelectionListener = filamentSelectionListener;
         this.specialItemSelectionListener = specialItemSelectionListener;
+        this.dontDisplayDuplicateNamedFilaments = dontDisplayDuplicateNamedFilaments;
         repopulateFilaments();
         displayFirstFilament();
     }
@@ -104,9 +109,34 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
     private void repopulateFilaments()
     {
-        Map<String, Map<MaterialType, List<Filament>>> filamentMap = FilamentContainer.getInstance().getAppFilamentList()
+        List<String> allTheFilamentNamesIHaveEverLoaded = new ArrayList<>();
+
+        Map<String, Map<MaterialType, List<Filament>>> filamentMap = FilamentContainer.getInstance().getCompleteFilamentList()
                 .stream()
                 .collect(Collectors.groupingBy(Filament::getCategory, () -> new TreeMap(byCategoryName), Collectors.groupingBy(Filament::getMaterial)));
+
+        if (dontDisplayDuplicateNamedFilaments)
+        {
+            for (Map.Entry<String, Map<MaterialType, List<Filament>>> categoryEntry : filamentMap.entrySet())
+            {
+                for (Map.Entry<MaterialType, List<Filament>> materialEntry : categoryEntry.getValue().entrySet())
+                {
+                    List<Filament> filamentsToDelete = new ArrayList<>();
+                    for (Filament filament : materialEntry.getValue())
+                    {
+                        if (allTheFilamentNamesIHaveEverLoaded.contains(filament.getFriendlyFilamentName()))
+                        {
+                            filamentsToDelete.add(filament);
+                        }
+                        allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
+                    }
+                    filamentsToDelete.forEach((filament) ->
+                    {
+                        materialEntry.getValue().remove(filament);
+                    });
+                }
+            }
+        }
 
         getItems().clear();
 
