@@ -32,7 +32,6 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
-import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
@@ -73,7 +72,6 @@ import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -218,6 +216,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar modelsOffBedNotificationBar;
     private ConditionalNotificationBar modelsOffBedWithRaftNotificationBar;
     private ConditionalNotificationBar modelOffBedWithSpiralNotificationBar;
+
+    private ConditionalNotificationBar notEnoughFilamentForPrintNotificationBar;
+    private final BooleanProperty notEnoughFilamentForPrint = new SimpleBooleanProperty(false);
+    private ConditionalNotificationBar notEnoughFilament1ForPrintNotificationBar;
+    private final BooleanProperty notEnoughFilament1ForPrint = new SimpleBooleanProperty(false);
+    private ConditionalNotificationBar notEnoughFilament2ForPrintNotificationBar;
+    private final BooleanProperty notEnoughFilament2ForPrint = new SimpleBooleanProperty(false);
 
     private TimeCostThreadManager timeCostThreadManager;
 
@@ -882,6 +887,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         modelsOffBedWithRaftNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBedWithRaft));
         modelOffBedWithSpiralNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelOffBedWithSpiral));
 
+        notEnoughFilamentForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilamentToCompletePrint", NotificationType.CAUTION);
+        notEnoughFilamentForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilamentForPrint));
+        notEnoughFilament1ForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilament2ToCompletePrint", NotificationType.CAUTION);
+        notEnoughFilament1ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilament1ForPrint));
+        notEnoughFilament2ForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilament2ToCompletePrint", NotificationType.CAUTION);
+        notEnoughFilament2ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilament2ForPrint));
+
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
         printerUtils = PrinterUtils.getInstance();
@@ -1297,6 +1309,34 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     }
 
+    private void checkRemainingFilament()
+    {
+        boolean thereIsNotEnoughFilament = false;
+        boolean thereIsNotEnoughFilament1 = false;
+        boolean thereIsNotEnoughFilament2 = false;
+
+        if (currentPrinter != null
+                && selectedProject != null)
+        {
+//if (timeCostThreadManager.)
+        }
+
+        if (thereIsNotEnoughFilament != notEnoughFilamentForPrint.get())
+        {
+            notEnoughFilamentForPrint.set(thereIsNotEnoughFilament);
+        }
+
+        if (thereIsNotEnoughFilament1 != notEnoughFilament1ForPrint.get())
+        {
+            notEnoughFilament1ForPrint.set(thereIsNotEnoughFilament1);
+        }
+
+        if (thereIsNotEnoughFilament2 != notEnoughFilament2ForPrint.get())
+        {
+            notEnoughFilament2ForPrint.set(thereIsNotEnoughFilament2);
+        }
+    }
+
     private void whenProjectOrSettingsPrinterChange()
     {
         try
@@ -1304,6 +1344,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             updateCanPrintProjectBindings(currentPrinter, selectedProject);
             updatePrintButtonConditionalText(currentPrinter, selectedProject);
             dealWithOutOfBoundsModels();
+            checkRemainingFilament();
         } catch (Exception ex)
         {
             steno.warning("Error updating can print or print button conditionals: " + ex);
