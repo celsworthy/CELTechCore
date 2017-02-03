@@ -3,10 +3,6 @@ package celtech.coreUI.components.material;
 import celtech.JavaFXConfiguredTest;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -16,6 +12,7 @@ import static org.junit.Assert.*;
  */
 public class FilamentMenuButtonTest extends JavaFXConfiguredTest
 {
+
     @Test
     public void testCategoryComparator()
     {
@@ -26,7 +23,9 @@ public class FilamentMenuButtonTest extends JavaFXConfiguredTest
         aCategory.setCategory("A Category");
         Filament zCategory = FilamentContainer.UNKNOWN_FILAMENT.clone();
         zCategory.setCategory("Z Category");
-        
+        Filament customCategory = FilamentContainer.UNKNOWN_FILAMENT.clone();
+        customCategory.setCategory("Custom");
+
         //Basic alpha sort check
         assertTrue(componentUnderTest.byCategory.compare(aCategory, zCategory) < 0);
         assertTrue(componentUnderTest.byCategory.compare(aCategory, aCategory) == 0);
@@ -36,7 +35,14 @@ public class FilamentMenuButtonTest extends JavaFXConfiguredTest
         assertTrue(componentUnderTest.byCategory.compare(roboxCategory, aCategory) < 0);
         assertTrue(componentUnderTest.byCategory.compare(zCategory, roboxCategory) > 0);
         assertTrue(componentUnderTest.byCategory.compare(aCategory, roboxCategory) > 0);
+        assertTrue(componentUnderTest.byCategory.compare(customCategory, roboxCategory) > 0);
         assertTrue(componentUnderTest.byCategory.compare(roboxCategory, roboxCategory) == 0);
+        //Check Custom always comes last
+        assertTrue(componentUnderTest.byCategory.compare(customCategory, zCategory) > 0);
+        assertTrue(componentUnderTest.byCategory.compare(customCategory, aCategory) > 0);
+        assertTrue(componentUnderTest.byCategory.compare(zCategory, customCategory) < 0);
+        assertTrue(componentUnderTest.byCategory.compare(aCategory, customCategory) < 0);
+        assertTrue(componentUnderTest.byCategory.compare(customCategory, customCategory) == 0);
     }
 
     @Test
@@ -46,7 +52,8 @@ public class FilamentMenuButtonTest extends JavaFXConfiguredTest
         String roboxCategory = "Robox";
         String aCategory = "A Category";
         String zCategory = "Z Category";
-        
+        String customCategory = "Custom";
+
         //Basic alpha sort check
         assertTrue(componentUnderTest.byCategoryName.compare(aCategory, zCategory) < 0);
         assertTrue(componentUnderTest.byCategoryName.compare(aCategory, aCategory) == 0);
@@ -56,7 +63,14 @@ public class FilamentMenuButtonTest extends JavaFXConfiguredTest
         assertTrue(componentUnderTest.byCategoryName.compare(roboxCategory, aCategory) < 0);
         assertTrue(componentUnderTest.byCategoryName.compare(zCategory, roboxCategory) > 0);
         assertTrue(componentUnderTest.byCategoryName.compare(aCategory, roboxCategory) > 0);
+        assertTrue(componentUnderTest.byCategoryName.compare(customCategory, roboxCategory) > 0);
         assertTrue(componentUnderTest.byCategoryName.compare(roboxCategory, roboxCategory) == 0);
+        //Check Custom always comes last
+        assertTrue(componentUnderTest.byCategoryName.compare(customCategory, zCategory) > 0);
+        assertTrue(componentUnderTest.byCategoryName.compare(customCategory, aCategory) > 0);
+        assertTrue(componentUnderTest.byCategoryName.compare(zCategory, customCategory) < 0);
+        assertTrue(componentUnderTest.byCategoryName.compare(aCategory, customCategory) < 0);
+        assertTrue(componentUnderTest.byCategoryName.compare(customCategory, customCategory) == 0);
     }
 
 }
