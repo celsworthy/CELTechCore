@@ -3,6 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.WebEngineFix.AMURLStreamHandlerFactory;
 import celtech.coreUI.components.RootTableCell;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DetectedDevice;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
@@ -40,6 +41,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
@@ -109,6 +111,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     private TableColumn nameColumn;
     private TableColumn ipAddressColumn;
+    private TableColumn versionColumn;
     private TableColumn<DetectedServer, ServerStatus> statusColumn;
 
     private WebView rootWebView;
@@ -235,6 +238,13 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         ipAddressColumn.setResizable(false);
         ipAddressColumn.setStyle("-fx-alignment: CENTER;");
 
+        versionColumn = new TableColumn<>();
+        versionColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("version"));
+        versionColumn.setText(Lookup.i18n("rootScanner.version"));
+        versionColumn.setPrefWidth(85);
+        versionColumn.setResizable(false);
+        versionColumn.setStyle("-fx-alignment: CENTER;");
+
         statusColumn = new TableColumn<>();
         statusColumn.setCellFactory(statusCell -> new RootTableCell());
         statusColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, ServerStatus>("serverStatus"));
@@ -243,8 +253,9 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
         scannedRoots.getColumns().add(nameColumn);
         scannedRoots.getColumns().add(ipAddressColumn);
+        scannedRoots.getColumns().add(versionColumn);
         scannedRoots.getColumns().add(statusColumn);
-        scannedRoots.setMaxWidth(285);
+        scannedRoots.setMaxWidth(370);
 
         rootWebView = new WebView();
         rootWebView.setMaxHeight(1000000);
@@ -293,6 +304,8 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRoots.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         scannedRoots.setItems(currentServers);
+        
+        scannedRoots.setPlaceholder(new Text(BaseLookup.i18n("rootScanner.noRemoteServersFound")));
 
         hideEverything();
 
