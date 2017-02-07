@@ -184,27 +184,30 @@ public class ProjectTab extends Tab implements ProjectCallback
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                if (newValue == false)
+                if (rhInsetContainer != null)
                 {
-                    if (settingsInsetPanelData != null)
+                    if (newValue == false)
                     {
-                        settingsInsetPanelData.getController().shutdownController();
-                        rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
-                        settingsInsetPanelData = null;
-                    }
-                    if (timeCostInsetPanelData != null)
+                        if (settingsInsetPanelData != null)
+                        {
+                            settingsInsetPanelData.getController().shutdownController();
+                            rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
+                            settingsInsetPanelData = null;
+                        }
+                        if (timeCostInsetPanelData != null)
+                        {
+                            timeCostInsetPanelData.getController().shutdownController();
+                            rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
+                            timeCostInsetPanelData = null;
+                        }
+                    } else
                     {
-                        timeCostInsetPanelData.getController().shutdownController();
-                        rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
-                        timeCostInsetPanelData = null;
+                        settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
+                        timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+                        settingsInsetPanelData.getNode().setVisible(false);
+                        timeCostInsetPanelData.getNode().setVisible(false);
+                        rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
                     }
-                } else
-                {
-                    settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
-                    timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
-                    settingsInsetPanelData.getNode().setVisible(false);
-                    timeCostInsetPanelData.getNode().setVisible(false);
-                    rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
                 }
             }
         });
@@ -359,17 +362,17 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         editableProjectNameField.focusedProperty().addListener(
                 new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> ov,
+                    Boolean t, Boolean t1)
+            {
+                if (!t1)
                 {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> ov,
-                            Boolean t, Boolean t1)
-                    {
-                        if (!t1)
-                        {
-                            switchToNonEditableTitle();
-                        }
-                    }
-                });
+                    switchToNonEditableTitle();
+                }
+            }
+        });
 
         editableProjectNameField.setOnAction((ActionEvent event) ->
         {
@@ -438,7 +441,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             public void handle(DragEvent event)
             {
                 /* the drag-and-drop gesture entered the target */
-                /* show to the user that it is an actual gesture target */
+ /* show to the user that it is an actual gesture target */
                 if (ApplicationStatus.getInstance().modeProperty().getValue()
                         == ApplicationMode.LAYOUT)
                 {
