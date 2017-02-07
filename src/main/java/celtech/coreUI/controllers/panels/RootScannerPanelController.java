@@ -304,7 +304,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRoots.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         scannedRoots.setItems(currentServers);
-        
+
         scannedRoots.setPlaceholder(new Text(BaseLookup.i18n("rootScanner.noRemoteServersFound")));
 
         hideEverything();
@@ -344,41 +344,30 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             }
         });
 
-        if (currentServers.size() > 0)
-        {
-            scannedRoots.getSelectionModel().selectFirst();
-        }
-
-        List<DetectedServer> rootsToInhibit = new ArrayList<>();
-
-        List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
-        serversToCheck.forEach((server) ->
-        {
-            if (!server.whoAreYou())
-            {
-                rootsToInhibit.add(server);
-            } else
-            {
-                server.connect();
-                currentServers.add(server);
-            }
-        });
-
-        if (currentServers.size() > 0)
-        {
-            scannedRoots.getSelectionModel().selectFirst();
-        }
-
-        rootsToInhibit.forEach(server ->
-        {
-            CoreMemory.getInstance().deactivateRoboxRoot(server);
-        });
-
         Task<Void> scannerTask = new Task<Void>()
         {
+            private List<DetectedServer> currentServerList = new ArrayList<>();
+
             @Override
             protected Void call() throws Exception
             {
+                List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
+                serversToCheck.forEach((server) ->
+                {
+                    if (!server.whoAreYou())
+                    {
+                        CoreMemory.getInstance().deactivateRoboxRoot(server);
+                    } else
+                    {
+                        server.connect();
+                        Platform.runLater(() ->
+                        {
+                            currentServerList.add(server);
+                            currentServers.add(server);
+                        });
+                    }
+                });
+
                 while (!isCancelled())
                 {
                     try
@@ -392,13 +381,13 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
                             for (DetectedServer server : foundServers)
                             {
-                                if (!currentServers.contains(server))
+                                if (!currentServerList.contains(server))
                                 {
                                     serversToAdd.add(server);
                                 }
                             }
 
-                            for (DetectedServer server : currentServers)
+                            for (DetectedServer server : currentServerList)
                             {
                                 if (!foundServers.contains(server))
                                 {
@@ -408,10 +397,12 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
                             for (DetectedServer server : serversToAdd)
                             {
+                                currentServerList.add(server);
                                 currentServers.add(server);
                             }
                             for (DetectedServer server : serversToRemove)
                             {
+                                currentServerList.remove(server);
                                 currentServers.remove(server);
                             }
                         });
@@ -427,11 +418,11 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
         Thread scannerThread = new Thread(scannerTask);
         scannerThread.setDaemon(true);
+        scannerThread.setName("RootScanner");
         scannerThread.start();
     }
 
     @Override
-
     public String getMenuTitle()
     {
         return "preferences.root";
