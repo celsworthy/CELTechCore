@@ -105,12 +105,19 @@ public class NotificationDisplay extends VBox
     {
         //Check to see if any other identical notifications are on display
         TimedNotificationBar notificationBar = new TimedNotificationBar();
-        notificationBar.setMessage(title + " - " + message);
+        if (title != null
+                && !title.equals(""))
+        {
+            notificationBar.setMessage(title + " - " + message);
+        } else
+        {
+            notificationBar.setMessage(message);
+        }
         notificationBar.setType(notificationType);
         if (!isThisADuplicateBar(notificationBar))
         {
-        notificationBar.show();
-    }
+            notificationBar.show();
+        }
     }
 
     private boolean isThisADuplicateBar(AppearingNotificationBar notificationBar)
