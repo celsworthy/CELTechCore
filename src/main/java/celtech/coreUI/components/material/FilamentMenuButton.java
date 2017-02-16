@@ -37,35 +37,45 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
     private Map<String, Filament> permanentMenuFilaments = new HashMap<>();
 
     private static final String roboxCategoryPrefix = "Robox";
+    private static final String customCategoryPrefix = "Custom";
 
-    protected Comparator<Filament> byCategory = ((Filament o1, Filament o2) ->
+    protected static Comparator<Filament> byCategory = ((Filament o1, Filament o2) ->
     {
         int comparisonStatus = o1.getCategory().compareTo(o2.getCategory());
         if (comparisonStatus > 0
-                && o1.getCategory().startsWith(roboxCategoryPrefix)
+                && (o1.getCategory().startsWith(roboxCategoryPrefix)
                 && !o2.getCategory().startsWith(roboxCategoryPrefix))
+                || (!o1.getCategory().startsWith(customCategoryPrefix)
+                && o2.getCategory().startsWith(customCategoryPrefix)))
+        
         {
             comparisonStatus = -1;
         } else if (comparisonStatus < 0
-                && !o1.getCategory().startsWith(roboxCategoryPrefix)
+                && (!o1.getCategory().startsWith(roboxCategoryPrefix)
                 && o2.getCategory().startsWith(roboxCategoryPrefix))
+                || (o1.getCategory().startsWith(customCategoryPrefix)
+                && !o2.getCategory().startsWith(customCategoryPrefix)))
         {
             comparisonStatus = 1;
         }
         return comparisonStatus;
     });
 
-    protected Comparator<String> byCategoryName = ((String o1, String o2) ->
+    protected static Comparator<String> byCategoryName = ((String o1, String o2) ->
     {
         int comparisonStatus = o1.compareTo(o2);
         if (comparisonStatus > 0
-                && o1.startsWith(roboxCategoryPrefix)
+                && (o1.startsWith(roboxCategoryPrefix)
                 && !o2.startsWith(roboxCategoryPrefix))
+                || (!o1.startsWith(customCategoryPrefix)
+                && o2.startsWith(customCategoryPrefix)))
         {
             comparisonStatus = -1;
         } else if (comparisonStatus < 0
-                && !o1.startsWith(roboxCategoryPrefix)
+                && (!o1.startsWith(roboxCategoryPrefix)
                 && o2.startsWith(roboxCategoryPrefix))
+                || (o1.startsWith(customCategoryPrefix)
+                && !o2.startsWith(customCategoryPrefix)))
         {
             comparisonStatus = 1;
         }

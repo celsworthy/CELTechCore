@@ -1,36 +1,52 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
+import celtech.WebEngineFix.AMURLStreamHandlerFactory;
+import celtech.coreUI.components.RootTableCell;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DetectedDevice;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.DeviceDetectionListener;
 import celtech.roboxbase.comms.RemoteServerDetector;
+import celtech.roboxbase.comms.remote.Configuration;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.CoreMemory;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.controlsfx.glyphfont.Glyph;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.web.WebView;
+import netscape.javascript.JSObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.html.HTMLFormElement;
+import org.w3c.dom.html.HTMLInputElement;
 
 /**
  * FXML Controller class
@@ -44,141 +60,156 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     private final RemoteServerDetector remoteServerDetector = RemoteServerDetector.getInstance();
 
-    @FXML
-    private Button scanButton;
+    public static String pinForCurrentServer = "";
 
     @FXML
-    private ListView<DetectedServer> scannedRoots;
+    private HBox scannerHolder;
 
     @FXML
-    void scanForRoots(ActionEvent event)
+    private TableView<DetectedServer> scannedRoots;
+
+    @FXML
+    private VBox webViewHolder;
+
+    @FXML
+    private VBox connectPage;
+
+    @FXML
+    private VBox wrongVersionBox;
+
+    @FXML
+    private Button disconnectButton;
+
+    @FXML
+    private TextField pinEntryField;
+
+    @FXML
+    private Label incorrectPINLabel;
+
+    @FXML
+    void connectToServer(ActionEvent event)
     {
-        scannedRoots.setItems(null);
-        Platform.runLater(() ->
+        DetectedServer server = scannedRoots.getSelectionModel().getSelectedItem();
+        if (server != null
+                && server.getServerStatus() != ServerStatus.CONNECTED)
         {
-            List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
-            if (foundServers.isEmpty())
-            {
-                scannedRoots.setItems(null);
-            } else
-            {
-                scannedRoots.setItems(FXCollections.observableArrayList(foundServers));
-            }
-        });
+            server.setPin(pinEntryField.getText());
+            server.connect();
+        }
     }
 
-    class ServerListCell extends ListCell<DetectedServer>
+    @FXML
+    void disconnectFromServer(ActionEvent event)
+    {
+        DetectedServer server = scannedRoots.getSelectionModel().getSelectedItem();
+        if (server != null
+                && server.getServerStatus() == ServerStatus.CONNECTED)
+        {
+            server.disconnect();
+        }
+    }
+
+    private TableColumn nameColumn;
+    private TableColumn ipAddressColumn;
+    private TableColumn versionColumn;
+    private TableColumn<DetectedServer, ServerStatus> statusColumn;
+
+    private WebView rootWebView;
+
+    private ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
+
+    private ChangeListener<ServerStatus> serverStatusListener = new ChangeListener<ServerStatus>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends ServerStatus> observable, ServerStatus oldValue, ServerStatus newValue)
+        {
+            processStatus(newValue);
+        }
+    };
+
+    private void openWebViewOnRoot(DetectedServer server)
+    {
+        String url = "http://" + server.getAddress().getHostAddress() + ":" + Configuration.remotePort + "/login.html";
+
+        pinForCurrentServer = server.getPin();
+
+        rootWebView.getEngine().load(url);
+    }
+
+    public class JavaBridge
     {
 
-        private final BorderPane cellContainer;
-        private final Label label;
-        private final StackPane buttonContainer;
-        private Circle statusBlob;
-        private final Button connectButton;
-        private final Button disconnectButton;
-        private final Button upgradeButton;
-        private DetectedServer detectedServer;
-
-        private final ChangeListener<ServerStatus> statusChangeListener = (ObservableValue<? extends ServerStatus> ov, ServerStatus t, ServerStatus t1) ->
+        public void log(String text)
         {
-            switch (t1)
-            {
-                case NOT_THERE:
-                    statusBlob.setFill(Color.RED);
-                    break;
-                case OK:
-                    statusBlob.setFill(Color.GREEN);
-                    break;
-                case UNKNOWN:
-                    statusBlob.setFill(Color.YELLOW);
-                    break;
-                case WRONG_VERSION:
-                    statusBlob.setFill(Color.BLACK);
-                    break;
-            }
-        };
-
-        public ServerListCell()
-        {
-            cellContainer = new BorderPane();
-            cellContainer.setPrefWidth(USE_COMPUTED_SIZE);
-
-            HBox statusBlobHolder = new HBox();
-            statusBlobHolder.alignmentProperty().set(Pos.CENTER);
-            statusBlob = new Circle(10);
-            statusBlob.setFill(Color.YELLOW);
-            statusBlobHolder.getChildren().add(statusBlob);
-            cellContainer.leftProperty().set(statusBlobHolder);
-
-            label = new Label();
-            cellContainer.centerProperty().set(label);
-
-            connectButton = new Button("Connect");
-            connectButton.setOnAction((ActionEvent t) ->
-            {
-                if (detectedServer != null)
-                {
-                    detectedServer.connect();
-                }
-            });
-
-            disconnectButton = new Button("Disconnect");
-            disconnectButton.setVisible(false);
-            disconnectButton.setOnAction((ActionEvent t) ->
-            {
-                if (detectedServer != null)
-                {
-                    detectedServer.disconnect();
-                }
-            });
-
-            upgradeButton = new Button("Upgrade");
-            upgradeButton.setVisible(false);
-            upgradeButton.setOnAction((ActionEvent t) ->
-            {
-                if (detectedServer != null)
-                {
-                }
-            });
-
-            buttonContainer = new StackPane();
-            buttonContainer.getChildren().addAll(connectButton, disconnectButton);
-
-            cellContainer.rightProperty().set(buttonContainer);
+            steno.info(text);
         }
+    }
 
-        @Override
-        protected void updateItem(DetectedServer item, boolean empty)
+    private void hideEverything()
+    {
+        webViewHolder.setVisible(false);
+        webViewHolder.setMouseTransparent(true);
+        connectPage.setVisible(false);
+        connectPage.setMouseTransparent(true);
+        disconnectButton.setVisible(false);
+        disconnectButton.setMouseTransparent(true);
+        incorrectPINLabel.setVisible(false);
+        wrongVersionBox.setVisible(false);
+        wrongVersionBox.setMouseTransparent(true);
+    }
+
+    private void processStatus(ServerStatus status)
+    {
+        switch (status)
         {
-            DetectedServer oldItem = getItem();
-
-            if (oldItem != null)
-            {
-                oldItem.getServerStatusProperty().removeListener(statusChangeListener);
-            }
-
-            super.updateItem(item, empty);
-
-            if (item != null && !empty)
-            {
-                detectedServer = item;
-                setGraphic(cellContainer);
-                label.setText(detectedServer.getName() + "@" + detectedServer.getAddress().getHostAddress() + " v" + detectedServer.getVersion());
-
-                item.getServerStatusProperty().addListener(statusChangeListener);
-
-                connectButton.visibleProperty().unbind();
-                connectButton.visibleProperty().bind(item.getServerStatusProperty().isNotEqualTo(ServerStatus.OK)
-                        .and(item.getServerStatusProperty().isNotEqualTo(ServerStatus.WRONG_VERSION)));
-
-                disconnectButton.visibleProperty().unbind();
-                disconnectButton.visibleProperty().bind(detectedServer.getServerStatusProperty().isEqualTo(ServerStatus.OK));
-            } else
-            {
-                setGraphic(null);
-                label.setText("");
-            }
-            detectedServer = item;
+            case CONNECTED:
+                webViewHolder.setVisible(true);
+                webViewHolder.setMouseTransparent(false);
+                connectPage.setVisible(false);
+                connectPage.setMouseTransparent(true);
+                disconnectButton.setVisible(true);
+                disconnectButton.setMouseTransparent(false);
+                incorrectPINLabel.setVisible(false);
+                wrongVersionBox.setVisible(false);
+                wrongVersionBox.setMouseTransparent(true);
+                openWebViewOnRoot(scannedRoots.getSelectionModel().getSelectedItem());
+                break;
+            case WRONG_PIN:
+                webViewHolder.setVisible(false);
+                webViewHolder.setMouseTransparent(true);
+                connectPage.setVisible(true);
+                connectPage.setMouseTransparent(false);
+                disconnectButton.setVisible(false);
+                disconnectButton.setMouseTransparent(true);
+                incorrectPINLabel.setVisible(true);
+                wrongVersionBox.setVisible(false);
+                wrongVersionBox.setMouseTransparent(true);
+                break;
+            case WRONG_VERSION:
+                webViewHolder.setVisible(false);
+                webViewHolder.setMouseTransparent(true);
+                connectPage.setVisible(false);
+                connectPage.setMouseTransparent(true);
+                disconnectButton.setVisible(false);
+                disconnectButton.setMouseTransparent(true);
+                incorrectPINLabel.setVisible(false);
+                wrongVersionBox.setVisible(true);
+                wrongVersionBox.setMouseTransparent(false);
+                break;
+            case NOT_CONNECTED:
+                webViewHolder.setVisible(false);
+                webViewHolder.setMouseTransparent(true);
+                connectPage.setVisible(true);
+                connectPage.setMouseTransparent(false);
+                disconnectButton.setVisible(false);
+                disconnectButton.setMouseTransparent(true);
+                incorrectPINLabel.setVisible(false);
+                wrongVersionBox.setVisible(false);
+                wrongVersionBox.setMouseTransparent(true);
+                break;
+            default:
+                hideEverything();
+                break;
         }
     }
 
@@ -191,10 +222,204 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
-        scannedRoots.setCellFactory(
-                (ListView<DetectedServer> param) -> new ServerListCell());
+        URL.setURLStreamHandlerFactory(new AMURLStreamHandlerFactory());
 
-        scannedRoots.setItems(FXCollections.observableArrayList(CoreMemory.getInstance().getActiveRoboxRoots()));
+        nameColumn = new TableColumn<>();
+        nameColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("name"));
+        nameColumn.setText(Lookup.i18n("rootScanner.name"));
+        nameColumn.setPrefWidth(160);
+        nameColumn.setResizable(false);
+        nameColumn.setStyle("-fx-alignment: CENTER_LEFT;");
+
+        ipAddressColumn = new TableColumn<>();
+        ipAddressColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("serverIP"));
+        ipAddressColumn.setText(Lookup.i18n("rootScanner.ipAddress"));
+        ipAddressColumn.setPrefWidth(85);
+        ipAddressColumn.setResizable(false);
+        ipAddressColumn.setStyle("-fx-alignment: CENTER;");
+
+        versionColumn = new TableColumn<>();
+        versionColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("version"));
+        versionColumn.setText(Lookup.i18n("rootScanner.version"));
+        versionColumn.setPrefWidth(85);
+        versionColumn.setResizable(false);
+        versionColumn.setStyle("-fx-alignment: CENTER;");
+
+        statusColumn = new TableColumn<>();
+        statusColumn.setCellFactory(statusCell -> new RootTableCell());
+        statusColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, ServerStatus>("serverStatus"));
+        statusColumn.setPrefWidth(40);
+        statusColumn.setResizable(false);
+
+        scannedRoots.getColumns().add(nameColumn);
+        scannedRoots.getColumns().add(ipAddressColumn);
+        scannedRoots.getColumns().add(versionColumn);
+        scannedRoots.getColumns().add(statusColumn);
+        scannedRoots.setMaxWidth(370);
+
+        rootWebView = new WebView();
+        rootWebView.setMaxHeight(1000000);
+        webViewHolder.getChildren().add(rootWebView);
+
+        VBox.setVgrow(webViewHolder, Priority.ALWAYS);
+
+        AnchorPane.setBottomAnchor(rootWebView, 0.0);
+        AnchorPane.setLeftAnchor(rootWebView, 0.0);
+        AnchorPane.setRightAnchor(rootWebView, 0.0);
+        AnchorPane.setTopAnchor(rootWebView, 0.0);
+        rootWebView.getEngine().setJavaScriptEnabled(true);
+        rootWebView.getEngine().setUserDataDirectory(new File(BaseConfiguration.getUserStorageDirectory()));
+
+        rootWebView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
+        {
+            JSObject window = (JSObject) rootWebView.getEngine().executeScript("window");
+            JavaBridge bridge = new JavaBridge();
+            window.setMember("java", bridge);
+            rootWebView.getEngine().executeScript("console.log = function(message)\n"
+                    + "{\n"
+                    + "    java.log(message);\n"
+                    + "};");
+        });
+
+        rootWebView.getEngine().documentProperty().addListener(new ChangeListener<Document>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends Document> ov, Document oldDoc, Document doc)
+            {
+                if (doc != null)
+                {
+                    if (doc.getDocumentURI().endsWith("login.html"))
+                    {
+                        HTMLFormElement pinInputForm = (HTMLFormElement) doc.getElementById("pinInputForm");
+                        HTMLInputElement pinInput = (HTMLInputElement) doc.getElementById("application-pin-value");
+
+                        pinInput.setValue(pinForCurrentServer);
+                        pinInputForm.submit();
+                    }
+
+                }
+            }
+        });
+
+        scannedRoots.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+        scannedRoots.setItems(currentServers);
+
+        scannedRoots.setPlaceholder(new Text(BaseLookup.i18n("rootScanner.noRemoteServersFound")));
+
+        hideEverything();
+
+        currentServers.addListener(new ListChangeListener<DetectedServer>()
+        {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends DetectedServer> change)
+            {
+                if (currentServers.size() > 0)
+                {
+                    scannedRoots.getSelectionModel().selectFirst();
+                } else
+                {
+                    scannedRoots.getSelectionModel().clearSelection();
+                }
+            }
+        });
+
+        scannedRoots.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DetectedServer>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends DetectedServer> observable, DetectedServer oldValue, DetectedServer newValue)
+            {
+                if (oldValue != null)
+                {
+                    oldValue.serverStatusProperty().removeListener(serverStatusListener);
+                }
+                if (newValue != null)
+                {
+                    newValue.serverStatusProperty().addListener(serverStatusListener);
+                    processStatus(newValue.getServerStatus());
+                } else
+                {
+                    hideEverything();
+                }
+            }
+        });
+
+        Task<Void> scannerTask = new Task<Void>()
+        {
+            private List<DetectedServer> currentServerList = new ArrayList<>();
+
+            @Override
+            protected Void call() throws Exception
+            {
+                List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
+                serversToCheck.forEach((server) ->
+                {
+                    if (!server.whoAreYou())
+                    {
+                        CoreMemory.getInstance().deactivateRoboxRoot(server);
+                    } else
+                    {
+                        server.connect();
+                        Platform.runLater(() ->
+                        {
+                            currentServerList.add(server);
+                            currentServers.add(server);
+                        });
+                    }
+                });
+
+                while (!isCancelled())
+                {
+                    try
+                    {
+                        List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
+
+                        Platform.runLater(() ->
+                        {
+                            List<DetectedServer> serversToAdd = new ArrayList<>();
+                            List<DetectedServer> serversToRemove = new ArrayList<>();
+
+                            for (DetectedServer server : foundServers)
+                            {
+                                if (!currentServerList.contains(server))
+                                {
+                                    serversToAdd.add(server);
+                                }
+                            }
+
+                            for (DetectedServer server : currentServerList)
+                            {
+                                if (!foundServers.contains(server))
+                                {
+                                    serversToRemove.add(server);
+                                }
+                            }
+
+                            for (DetectedServer server : serversToAdd)
+                            {
+                                currentServerList.add(server);
+                                currentServers.add(server);
+                            }
+                            for (DetectedServer server : serversToRemove)
+                            {
+                                currentServerList.remove(server);
+                                currentServers.remove(server);
+                            }
+                        });
+                    } catch (IOException ex)
+                    {
+                        Thread.sleep(1000);
+                    }
+                }
+
+                return null;
+            }
+        };
+
+        Thread scannerThread = new Thread(scannerTask);
+        scannerThread.setDaemon(true);
+        scannerThread.setName("RootScanner");
+        scannerThread.start();
     }
 
     @Override
