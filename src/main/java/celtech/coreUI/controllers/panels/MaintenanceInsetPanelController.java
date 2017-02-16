@@ -362,6 +362,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                     {
                         if (connectedPrinter != null)
                         {
+                            currentFirmwareField.textProperty().unbind();
                             sendGCodeSDButton.disableProperty().unbind();
                             loadFirmwareButton.disableProperty().unbind();
 
@@ -386,7 +387,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
 
                         if (connectedPrinter != null)
                         {
-                            currentFirmwareField.setText(connectedPrinter.getPrinterIdentity().firmwareVersionProperty().get());
+                            currentFirmwareField.textProperty().bind(connectedPrinter.getPrinterIdentity().firmwareVersionProperty());
 
                             printingDisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
                                             PrinterStatus.IDLE));
@@ -412,6 +413,10 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                                     connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not()
                                     .and(
                                             connectedPrinter.extrudersProperty().get(1).filamentLoadedProperty().not()));
+                        }
+                        else
+                        {
+                            currentFirmwareField.setText("-");
                         }
                     });
         } catch (Exception ex)
