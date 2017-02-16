@@ -134,6 +134,35 @@ public class ProjectTab extends Tab implements ProjectCallback
         initialiseWithProject();
     }
 
+    private void primeTabInsetPanels(boolean tabIsSelected)
+    {
+        if (rhInsetContainer != null)
+        {
+            if (tabIsSelected == false)
+            {
+                if (settingsInsetPanelData != null)
+                {
+                    settingsInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
+                    settingsInsetPanelData = null;
+                }
+                if (timeCostInsetPanelData != null)
+                {
+                    timeCostInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
+                    timeCostInsetPanelData = null;
+                }
+            } else
+            {
+                settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
+                timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+                settingsInsetPanelData.getNode().setVisible(false);
+                timeCostInsetPanelData.getNode().setVisible(false);
+                rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
+            }
+        }
+    }
+
     private void coreInitialisation()
     {
         setOnClosed((Event t) ->
@@ -184,31 +213,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
             {
-                if (rhInsetContainer != null)
-                {
-                    if (newValue == false)
-                    {
-                        if (settingsInsetPanelData != null)
-                        {
-                            settingsInsetPanelData.getController().shutdownController();
-                            rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
-                            settingsInsetPanelData = null;
-                        }
-                        if (timeCostInsetPanelData != null)
-                        {
-                            timeCostInsetPanelData.getController().shutdownController();
-                            rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
-                            timeCostInsetPanelData = null;
-                        }
-                    } else
-                    {
-                        settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
-                        timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
-                        settingsInsetPanelData.getNode().setVisible(false);
-                        timeCostInsetPanelData.getNode().setVisible(false);
-                        rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
-                    }
-                }
+                primeTabInsetPanels(newValue);
             }
         });
     }
@@ -281,6 +286,8 @@ public class ProjectTab extends Tab implements ProjectCallback
         fireProjectSelected();
 
         projectManager.projectOpened(project);
+        
+        primeTabInsetPanels(true);
     }
 
     private void setup3DView()
