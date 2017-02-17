@@ -209,6 +209,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar printHeadPowerOffNotificationBar;
     private ConditionalNotificationBar noHeadNotificationBar;
     private ConditionalNotificationBar noModelsNotificationBar;
+    private ConditionalNotificationBar dmHeadOnSingleExtruderMachineNotificationBar;
+    private final BooleanProperty dualMaterialHeadAttachedToSingleMaterialMachine = new SimpleBooleanProperty(false);
 
     private final BooleanProperty modelsOffBed = new SimpleBooleanProperty(false);
     private final BooleanProperty modelsOffBedWithRaft = new SimpleBooleanProperty(false);
@@ -513,8 +515,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(descriptionOfFile,
                         ApplicationConfiguration.
-                        getSupportedFileExtensionWildcards(
-                                currentProjectMode)));
+                                getSupportedFileExtensionWildcards(
+                                        currentProjectMode)));
         File modelDirectory = new File(ApplicationConfiguration.getLastDirectory(
                 DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
 
@@ -879,6 +881,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         noHeadNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoHeadMessage", NotificationType.CAUTION);
         noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationType.CAUTION);
 
+        dmHeadOnSingleExtruderMachineNotificationBar = new ConditionalNotificationBar("dialogs.dualMaterialHeadOnSingleExtruderMachine", NotificationType.WARNING);
+        dmHeadOnSingleExtruderMachineNotificationBar.setAppearanceCondition(dualMaterialHeadAttachedToSingleMaterialMachine.not().not());
+
         modelsOffBedNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBed", NotificationType.CAUTION);
         modelsOffBedWithRaftNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithRaft", NotificationType.CAUTION);
         modelOffBedWithSpiralNotificationBar = new ConditionalNotificationBar("dialogs.modelOffBedWithSpiral", NotificationType.CAUTION);
@@ -913,18 +918,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    currentPrinter = newValue;
-                    if (oldValue != null)
-                    {
-                        oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
-                    }
+        {
+            currentPrinter = newValue;
+            if (oldValue != null)
+            {
+                oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+            }
 
-                    if (newValue != null)
-                    {
-                        newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
-                    }
-                });
+            if (newValue != null)
+            {
+                newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+            }
+        });
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
 
         BaseLookup.getPrinterListChangesNotifier().addListener(this);
@@ -977,10 +982,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         modelFileChooser.setTitle(Lookup.i18n("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(Lookup.i18n(
-                                "dialogs.modelFileChooserDescription"),
+                        "dialogs.modelFileChooserDescription"),
                         ApplicationConfiguration.
-                        getSupportedFileExtensionWildcards(
-                                ProjectMode.NONE)));
+                                getSupportedFileExtensionWildcards(
+                                        ProjectMode.NONE)));
 
         forwardButtonSettings.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
                 ApplicationMode.LAYOUT));
@@ -1020,8 +1025,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         doorOpenConditionalNotificationBar.setAppearanceCondition(
                 printer.getPrinterAncillarySystems().doorOpenProperty()
-                .and(Lookup.getUserPreferences().safetyFeaturesOnProperty())
-                .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+                        .and(Lookup.getUserPreferences().safetyFeaturesOnProperty())
+                        .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         chooseACustomProfileNotificationBar.setAppearanceCondition(project.customSettingsNotChosenProperty()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         printHeadPowerOffNotificationBar.setAppearanceCondition(printer.headPowerOnFlagProperty().not()
@@ -1050,21 +1055,21 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             oneExtruderNoFilamentNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
                     printer.extrudersProperty().get(0).
-                    filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
             twoExtrudersNoFilament0SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
                     noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
             twoExtrudersNoFilament0NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
                     printer.extrudersProperty().get(0).
-                    filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
             twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 1)).and(
                     noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
             twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 1)).and(
                     printer.extrudersProperty().get(1).
-                    filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
             invalidMeshInProjectNotificationBar.setAppearanceCondition(mcProject.hasInvalidMeshes().
                     and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
@@ -1119,16 +1124,16 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 // These buttons should only be available in advanced mode
                 fineNozzleButton.disableProperty().bind(
                         newValue.canOpenCloseNozzleProperty().not()
-                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not()));
                 fillNozzleButton.disableProperty().bind(
                         newValue.canOpenCloseNozzleProperty().
-                        not().or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                                not().or(Lookup.getUserPreferences().advancedModeProperty().not()));
                 openNozzleButton.disableProperty().bind(
                         newValue.canOpenCloseNozzleProperty().not()
-                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not()));
                 closeNozzleButton.disableProperty().bind(
                         newValue.canOpenCloseNozzleProperty().not()
-                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not()));
                 homeButton.disableProperty().bind(newValue.canPrintProperty().not()
                         .or(Lookup.getUserPreferences().advancedModeProperty().not()));
 
@@ -1398,18 +1403,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                     canPrintProject.bind(
                             Bindings.isNotEmpty(project.getTopLevelThings())
-                            .and(printer.canPrintProperty())
-                            .and(project.canPrintProperty())
-                            .and(filament0Selected)
-                            .and(filament1Selected)
-                            .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                                    .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                            .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
-                            .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
-                                    .and(printer.headPowerOnFlagProperty()))
-                            .and(modelsOffBed.not())
-                            .and(modelsOffBedWithRaft.not())
-                            .and(modelOffBedWithSpiral.not())
+                                    .and(printer.canPrintProperty())
+                                    .and(project.canPrintProperty())
+                                    .and(filament0Selected)
+                                    .and(filament1Selected)
+                                    .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                            .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                                    .and(printer.extrudersProperty().get(0).filamentLoadedProperty())
+                                    .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
+                                            .and(printer.headPowerOnFlagProperty()))
+                                    .and(modelsOffBed.not())
+                                    .and(modelsOffBedWithRaft.not())
+                                    .and(modelOffBedWithSpiral.not())
                     );
                 } else
                 {
@@ -1419,17 +1424,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                     canPrintProject.bind(
                             Bindings.isNotEmpty(project.getTopLevelThings())
-                            .and(printer.canPrintProperty())
-                            .and(project.canPrintProperty())
-                            .and(filamentPresentBinding)
-                            .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
-                                    .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
-                            .and(printer.extrudersProperty().get(extruderNumber).
-                                    filamentLoadedProperty()
-                                    .and(printer.headPowerOnFlagProperty()))
-                            .and(modelsOffBed.not())
-                            .and(modelsOffBedWithRaft.not())
-                            .and(modelOffBedWithSpiral.not())
+                                    .and(printer.canPrintProperty())
+                                    .and(project.canPrintProperty())
+                                    .and(filamentPresentBinding)
+                                    .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                            .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                                    .and(printer.extrudersProperty().get(extruderNumber).
+                                            filamentLoadedProperty()
+                                            .and(printer.headPowerOnFlagProperty()))
+                                    .and(modelsOffBed.not())
+                                    .and(modelsOffBedWithRaft.not())
+                                    .and(modelOffBedWithSpiral.not())
                     );
                 }
                 printButton.disableProperty().bind(canPrintProject.not());
@@ -1495,13 +1500,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 //                noLoadedModels.or(projectGUIRules.canCutModel().not()));
         ChangeListener<LayoutSubmode> whenSubModeChanges
                 = (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode oldMode, LayoutSubmode newMode) ->
-                {
-                    if (oldMode.equals(LayoutSubmode.SNAP_TO_GROUND) && newMode.equals(
-                            LayoutSubmode.SELECT))
-                    {
-                        snapToGroundButton.setSelected(false);
-                    }
-                };
+        {
+            if (oldMode.equals(LayoutSubmode.SNAP_TO_GROUND) && newMode.equals(
+                    LayoutSubmode.SELECT))
+            {
+                snapToGroundButton.setSelected(false);
+            }
+        };
         layoutSubmodeProperty.addListener(whenSubModeChanges);
 
     }
@@ -1522,6 +1527,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (printer == currentPrinter)
         {
             bindNozzleControls(printer);
+        }
+
+        if (printer != null)
+        {
+            dualMaterialHeadAttachedToSingleMaterialMachine.set((printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                    && (!printer.extrudersProperty().get(0).isFittedProperty().get() || !printer.extrudersProperty().get(1).isFittedProperty().get()));
+        } else
+        {
+            dualMaterialHeadAttachedToSingleMaterialMachine.set(false);
         }
     }
 
@@ -1548,6 +1562,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         fineNozzleButton.setVisible(false);
         fillNozzleButton.visibleProperty().unbind();
         fillNozzleButton.setVisible(false);
+
+        dualMaterialHeadAttachedToSingleMaterialMachine.set(false);
     }
 
     @Override

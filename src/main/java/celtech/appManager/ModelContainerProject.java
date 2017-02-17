@@ -129,9 +129,9 @@ public class ModelContainerProject extends Project
         Set<ModelContainer> invalidModelContainers = new HashSet<>();
         getAllModels().stream().map(ModelContainer.class::cast).filter((modelContainer)
                 -> (modelContainer.isInvalidMesh())).forEach((modelContainer) ->
-                        {
-                            invalidModelContainers.add(modelContainer);
-                });
+        {
+            invalidModelContainers.add(modelContainer);
+        });
         return invalidModelContainers;
     }
 
@@ -312,7 +312,22 @@ public class ModelContainerProject extends Project
                     usedExtruders.set(0, true);
                 } else if (printer.headProperty().get().headTypeProperty().get() == HeadType.DUAL_MATERIAL_HEAD)
                 {
-                    usedExtruders.set(modelContainer.getAssociateWithExtruderNumberProperty().get(), true);
+                    if (printer.extrudersProperty().get(0).isFittedProperty().get() && printer.extrudersProperty().get(1).isFittedProperty().get())
+                    {
+                        usedExtruders.set(modelContainer.getAssociateWithExtruderNumberProperty().get(), true);
+                    } else
+                    {
+//Yikes - DM head with less than 2 extruders...
+                        if (printer.extrudersProperty().get(0).isFittedProperty().get())
+                        {
+                            //We have to use extruder 0
+                            usedExtruders.set(0, true);
+                        } else
+                        {
+                            //We have to use extruder 1
+                            usedExtruders.set(1, true);
+                        }
+                    }
                 }
             } else
             {

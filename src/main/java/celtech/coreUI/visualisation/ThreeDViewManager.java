@@ -391,12 +391,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             Set<ModelContainer> selectedModelContainers = (Set) selectedProjectifiableThings;
             Set<MeshView> selectedMeshViews
                     = selectedModelContainers.stream().
-                    map(mc -> mc.descendentMeshViews()).
-                    reduce(new HashSet<>(), (a, b) ->
+                            map(mc -> mc.descendentMeshViews()).
+                            reduce(new HashSet<>(), (a, b) ->
                             {
                                 a.addAll(b);
                                 return a;
-                    });
+                            });
             if (selectedMeshViews.contains((MeshView) intersectedNode))
             {
                 doSelectTranslateModel(intersectedNode, event.getPickResult().getIntersectedPoint(), event, false);
@@ -736,31 +736,31 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private final ChangeListener<ApplicationMode> applicationModeListener
             = (ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode) ->
+    {
+        if (oldMode != newMode)
+        {
+            switch (newMode)
             {
-                if (oldMode != newMode)
-                {
-                    switch (newMode)
-                    {
-                        case SETTINGS:
-                            subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
-                            subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
-                            subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            deselectAllModels();
-                            transitionCameraToDefaults();
+                case SETTINGS:
+                    subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
+                    subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                    subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                    deselectAllModels();
+                    transitionCameraToDefaults();
 
 //                            startSettingsAnimation();
-                            break;
-                        default:
-                            subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
-                            subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
-                            subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
-                            notifyModelsOfCameraViewChange();
+                    break;
+                default:
+                    subScene.addEventHandler(MouseEvent.ANY, mouseEventHandler);
+                    subScene.addEventHandler(ZoomEvent.ANY, zoomEventHandler);
+                    subScene.addEventHandler(ScrollEvent.ANY, scrollEventHandler);
+                    notifyModelsOfCameraViewChange();
 //                            stopSettingsAnimation();
-                            break;
-                    }
-                    updateModelColours();
-                }
-            };
+                    break;
+            }
+            updateModelColours();
+        }
+    };
 
     private MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
@@ -790,7 +790,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             PrinterDefinitionFile defaultPrinterDefinition = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
             defaultXTranslate = -defaultPrinterDefinition.getPrintVolumeWidth() / 2;
             defaultYTranslate = defaultPrinterDefinition.getPrintVolumeHeight() - 80;
-            defaultDistance = initialCameraDistance;            
+            defaultDistance = initialCameraDistance;
         }
 
         deselectAllModels();
@@ -925,15 +925,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         layoutSubmode.addListener(
                 (ObservableValue<? extends LayoutSubmode> ov, LayoutSubmode t, LayoutSubmode t1) ->
-                {
-                    if (t1 == LayoutSubmode.SNAP_TO_GROUND)
-                    {
-                        subScene.setCursor(Cursor.HAND);
-                    } else
-                    {
-                        subScene.setCursor(Cursor.DEFAULT);
-                    }
-                });
+        {
+            if (t1 == LayoutSubmode.SNAP_TO_GROUND)
+            {
+                subScene.setCursor(Cursor.HAND);
+            } else
+            {
+                subScene.setCursor(Cursor.DEFAULT);
+            }
+        });
 
         dragMode.addListener(dragModeListener);
         layoutSubmode.addListener(layoutSubmodeListener);
@@ -953,23 +953,23 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    if (oldValue != null)
-                    {
-                        oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
-                    }
-                    if (newValue != null)
-                    {
-                        newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
-                    }
-                    updateModelColours();
-                });
+        {
+            if (oldValue != null)
+            {
+                oldValue.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+            }
+            if (newValue != null)
+            {
+                newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
+            }
+            updateModelColours();
+        });
 
         project.getPrinterSettings().getPrintSupportTypeOverrideProperty().addListener(
                 (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
-                {
-                    updateModelColours();
-                });
+        {
+            updateModelColours();
+        });
 
         /**
          * Listen for adding and removing of models from the project
@@ -1368,6 +1368,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                             {
                                 materialToUseForExtruder1 = greyExcludedMaterial;
                             }
+
+                            if (!selectedPrinter.extrudersProperty().get(0).isFittedProperty().get() && !selectedPrinter.extrudersProperty().get(1).isFittedProperty().get())
+                            {
+                                materialToUseForExtruder0 = greyExcludedMaterial;
+                                materialToUseForExtruder1 = greyExcludedMaterial;
+                            } else if (!selectedPrinter.extrudersProperty().get(0).isFittedProperty().get())
+                            {
+                                materialToUseForExtruder0 = materialToUseForExtruder1;
+                            } else if (!selectedPrinter.extrudersProperty().get(1).isFittedProperty().get())
+                            {
+                                materialToUseForExtruder1 = materialToUseForExtruder0;
+                            }
                         }
                     }
                 } else
@@ -1435,15 +1447,15 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     {
         project.getExtruder0FilamentProperty().addListener(
                 (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateModelColours();
-                });
+        {
+            updateModelColours();
+        });
 
         project.getExtruder1FilamentProperty().addListener(
                 (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    updateModelColours();
-                });
+        {
+            updateModelColours();
+        });
         updateModelColours();
     }
 
