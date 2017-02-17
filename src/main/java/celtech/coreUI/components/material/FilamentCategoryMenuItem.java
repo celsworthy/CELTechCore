@@ -9,6 +9,7 @@ import javafx.scene.control.CustomMenuItem;
  */
 public class FilamentCategoryMenuItem extends CustomMenuItem
 {
+
     public FilamentCategoryMenuItem(Node node)
     {
         super(node);

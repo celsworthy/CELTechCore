@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 /**
@@ -21,16 +22,18 @@ public class FilamentCategory extends VBox
 {
 
     @FXML
-    private Text categoryTitle;
+    private Text swatchPatchTitle;
 
     @FXML
     private VBox swatchContainer;
 
     private Comparator<Entry<MaterialType, List<Filament>>> byMaterialName
             = (Entry<MaterialType, List<Filament>> o1, Entry<MaterialType, List<Filament>> o2) -> o1.getKey().getFriendlyName().compareTo(o2.getKey().getFriendlyName());
+    private Comparator<Filament> byColour
+            = (Filament o1, Filament o2) -> o1.getDisplayColour().toString().compareTo(o2.getDisplayColour().toString());
 
     private final FilamentSelectionListener materialSelectionListener;
-    private Map<MaterialType, List<Filament>> filamentMap = null;
+    private Map<String, Map<MaterialType, List<Filament>>> filamentCategoryMap = null;
 
     public FilamentCategory(FilamentSelectionListener materialSelectionListener)
     {
@@ -51,38 +54,70 @@ public class FilamentCategory extends VBox
             throw new RuntimeException(exception);
         }
 
-//        this.getStyleClass().add("error-dialog-choice-button");
+        this.getStyleClass().add("filament-category");
     }
 
-    public void setCategoryData(String category, Map<MaterialType, List<Filament>> filamentMap)
+    public void setCategoryData(String brand, Map<String, Map<MaterialType, List<Filament>>> filamentCategoryMap)
     {
-        categoryTitle.setText(category);
+        swatchPatchTitle.setText(brand);
 
         swatchContainer.getChildren().clear();
 
-        this.filamentMap = filamentMap;
-        
-        filamentMap.entrySet().stream().sorted(byMaterialName).forEach((materialEntry) ->
+        this.filamentCategoryMap = filamentCategoryMap;
+
+        filamentCategoryMap.entrySet().stream().forEach((categoryEntry) ->
         {
-            MaterialType material = materialEntry.getKey();
-            List<Filament> filaments = materialEntry.getValue();
+            String category = categoryEntry.getKey();
+            Map<MaterialType, List<Filament>> materialMap = categoryEntry.getValue();
 
-            Text materialTitle = new Text(material.getFriendlyName());
-            swatchContainer.getChildren().add(materialTitle);
+            boolean needToAddCategory = false;
 
-            FlowPane flowPane = new FlowPane();
-            swatchContainer.getChildren().add(flowPane);
-
-            for (Filament filament : filaments)
+            if (materialMap.keySet().size() == 1)
             {
-                FilamentSwatch swatch = new FilamentSwatch(materialSelectionListener, filament);
-                flowPane.getChildren().add(swatch);
+                needToAddCategory = true;
+            } else
+            {
+                Text categoryTitle = new Text(category);
+                categoryTitle.getStyleClass().add("filament-display-category");
+                swatchContainer.getChildren().add(categoryTitle);
             }
+            
+            final boolean addCategoryDirective = needToAddCategory;
+
+            materialMap.entrySet().stream().sorted(byMaterialName).forEach((materialEntry) ->
+            {
+                MaterialType material = materialEntry.getKey();
+                List<Filament> filaments = materialEntry.getValue();
+
+                Text materialTitle = new Text();
+                materialTitle.getStyleClass().add("filament-display-material");
+                
+                if (addCategoryDirective)
+                {
+                    materialTitle.setText(category + " " + material.getFriendlyName());
+                }
+                else
+                {
+                    materialTitle.setText(material.getFriendlyName());
+                }
+                
+                swatchContainer.getChildren().add(materialTitle);
+
+                FlowPane flowPane = new FlowPane();
+                swatchContainer.getChildren().add(flowPane);
+
+                for (Filament filament : filaments)
+                {
+                    FilamentSwatch swatch = new FilamentSwatch(materialSelectionListener, filament);
+                    flowPane.getChildren().add(swatch);
+                }
+            });
         });
     }
-    public Map<MaterialType, List<Filament>> getFilamentMap()
+
+    public Map<String, Map<MaterialType, List<Filament>>> getFilamentMap()
     {
-        return filamentMap;
+        return filamentCategoryMap;
     }
 
 }

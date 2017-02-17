@@ -53,22 +53,22 @@ public class FilamentMenuButtonTest extends JavaFXConfiguredTest
         String customCategory = "Custom";
 
         //Basic alpha sort check
-        assertTrue(FilamentMenuButton.byCategoryName.compare(aCategory, zCategory) < 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(aCategory, aCategory) == 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(zCategory, aCategory) > 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(aCategory, zCategory) < 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(aCategory, aCategory) == 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(zCategory, aCategory) > 0);
         //Check Robox always comes first
-        assertTrue(FilamentMenuButton.byCategoryName.compare(roboxCategory, zCategory) < 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(roboxCategory, aCategory) < 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(zCategory, roboxCategory) > 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(aCategory, roboxCategory) > 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(customCategory, roboxCategory) > 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(roboxCategory, roboxCategory) == 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(roboxCategory, zCategory) < 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(roboxCategory, aCategory) < 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(zCategory, roboxCategory) > 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(aCategory, roboxCategory) > 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(customCategory, roboxCategory) > 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(roboxCategory, roboxCategory) == 0);
         //Check Custom always comes last
-        assertTrue(FilamentMenuButton.byCategoryName.compare(customCategory, zCategory) > 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(customCategory, aCategory) > 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(zCategory, customCategory) < 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(aCategory, customCategory) < 0);
-        assertTrue(FilamentMenuButton.byCategoryName.compare(customCategory, customCategory) == 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(customCategory, zCategory) > 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(customCategory, aCategory) > 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(zCategory, customCategory) < 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(aCategory, customCategory) < 0);
+        assertTrue(FilamentMenuButton.byBrandName.compare(customCategory, customCategory) == 0);
     }
 
 }

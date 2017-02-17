@@ -161,10 +161,28 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         updateWriteToReelBindings();
     };
 
+    private void updatePrinter(Printer lastPrinter, Printer newPrinter)
+    {
+        if (lastPrinter != null)
+        {
+            lastPrinter.getReelEEPROMStateProperty().removeListener(reelEEPROMChangeListener);
+        }
+
+        if (newPrinter != null)
+        {
+            newPrinter.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
+        }
+        updateWriteToReelBindings();
+        showReelsAtTopOfCombo();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
+        filamentMenuButton.initialiseButton(this, this, false);
+
         currentPrinter.bind(Lookup.getSelectedPrinterProperty());
+        updatePrinter(null, currentPrinter.get());
 
         updateSaveBindings();
 
@@ -176,21 +194,10 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
         isValid.bind(isNameValid.and(isNozzleTempValid));
 
-        updateWriteToReelBindings();
         currentPrinter.addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
-            if (oldValue != null)
-            {
-                oldValue.getReelEEPROMStateProperty().removeListener(reelEEPROMChangeListener);
-            }
-
-            if (newValue != null)
-            {
-                newValue.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
-            }
-            updateWriteToReelBindings();
-            showReelsAtTopOfCombo();
+            updatePrinter(oldValue, newValue);
         });
 
         for (MaterialType materialType : MaterialType.values())
@@ -205,8 +212,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         setupPrinterChangesListener();
 
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
-
-        filamentMenuButton.initialiseButton(this, this, false);
     }
 
     private void setupPrinterChangesListener()
@@ -444,18 +449,21 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
     private void selectFilament(Filament filament)
     {
-        currentFilamentID = filament.getFilamentID();
-        currentFilament = filament;
-        updateWidgets(filament);
-        if (currentFilamentID.startsWith("U"))
+        if (filament != null)
         {
-            state.set(State.CUSTOM);
-        } else
-        {
-            state.set(State.ROBOX);
-        }
+            currentFilamentID = filament.getFilamentID();
+            currentFilament = filament;
+            updateWidgets(filament);
+            if (currentFilamentID.startsWith("U"))
+            {
+                state.set(State.CUSTOM);
+            } else
+            {
+                state.set(State.ROBOX);
+            }
 
-        updateSaveBindings();
+            updateSaveBindings();
+        }
     }
 
     public void updateWidgets(Filament filament)
@@ -848,7 +856,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 Filament filament0 = filamentContainer.getFilamentByID(filamentId0);
                 filamentMenuButton.addSpecialMenuItem(reel1MenuItemTitle, filament0);
             }
-            filamentMenuButton.displayFirstFilament();
+            selectFilament(filamentMenuButton.displayFirstFilament());
         }
     }
 
@@ -866,8 +874,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             String filamentId = currentPrinter.get().reelsProperty().get(0).filamentIDProperty().get();
             Filament filament = filamentContainer.getFilamentByID(filamentId);
             selectFilament(filament);
-        }
-        else if (title.equals(reel2MenuItemTitle))
+        } else if (title.equals(reel2MenuItemTitle))
         {
             String filamentId = currentPrinter.get().reelsProperty().get(1).filamentIDProperty().get();
             Filament filament = filamentContainer.getFilamentByID(filamentId);

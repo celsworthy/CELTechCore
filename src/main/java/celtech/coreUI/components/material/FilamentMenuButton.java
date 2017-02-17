@@ -47,7 +47,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
                 && !o2.getCategory().startsWith(roboxCategoryPrefix))
                 || (!o1.getCategory().startsWith(customCategoryPrefix)
                 && o2.getCategory().startsWith(customCategoryPrefix)))
-        
+
         {
             comparisonStatus = -1;
         } else if (comparisonStatus < 0
@@ -61,7 +61,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         return comparisonStatus;
     });
 
-    protected static Comparator<String> byCategoryName = ((String o1, String o2) ->
+    protected static Comparator<String> byBrandName = ((String o1, String o2) ->
     {
         int comparisonStatus = o1.compareTo(o2);
         if (comparisonStatus > 0
@@ -82,6 +82,9 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         return comparisonStatus;
     });
 
+    private Comparator<Entry<MaterialType, List<Filament>>> byMaterialName
+            = (Entry<MaterialType, List<Filament>> o1, Entry<MaterialType, List<Filament>> o2) -> o1.getKey().getFriendlyName().compareTo(o2.getKey().getFriendlyName());
+
     public FilamentMenuButton()
     {
         setGraphic(filamentDisplayNode);
@@ -100,7 +103,15 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         });
     }
 
-    public void initialiseButton(FilamentSelectionListener filamentSelectionListener,
+    /**
+     * Returns the first filament in the control
+     *
+     * @param filamentSelectionListener
+     * @param specialItemSelectionListener
+     * @param dontDisplayDuplicateNamedFilaments
+     * @return
+     */
+    public Filament initialiseButton(FilamentSelectionListener filamentSelectionListener,
             SpecialItemSelectionListener specialItemSelectionListener,
             boolean dontDisplayDuplicateNamedFilaments)
     {
@@ -108,7 +119,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         this.specialItemSelectionListener = specialItemSelectionListener;
         this.dontDisplayDuplicateNamedFilaments = dontDisplayDuplicateNamedFilaments;
         repopulateFilaments();
-        displayFirstFilament();
+        return displayFirstFilament();
     }
 
     private void addSeparator()
@@ -119,40 +130,73 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
     private void repopulateFilaments()
     {
+        Map<String, Map<String, Map<MaterialType, List<Filament>>>> filamentsByBrand = new TreeMap<>(byBrandName);
         List<String> allTheFilamentNamesIHaveEverLoaded = new ArrayList<>();
 
-        Map<String, Map<MaterialType, List<Filament>>> filamentMap = FilamentContainer.getInstance().getCompleteFilamentList()
-                .stream()
-                .collect(Collectors.groupingBy(Filament::getCategory, () -> new TreeMap(byCategoryName), Collectors.groupingBy(Filament::getMaterial)));
-
-        if (dontDisplayDuplicateNamedFilaments)
+        FilamentContainer.getInstance().getCompleteFilamentList().forEach(filament ->
         {
-            for (Map.Entry<String, Map<MaterialType, List<Filament>>> categoryEntry : filamentMap.entrySet())
+            if (!allTheFilamentNamesIHaveEverLoaded.contains(filament.getFriendlyFilamentName()))
             {
-                for (Map.Entry<MaterialType, List<Filament>> materialEntry : categoryEntry.getValue().entrySet())
-                {
-                    List<Filament> filamentsToDelete = new ArrayList<>();
-                    for (Filament filament : materialEntry.getValue())
-                    {
-                        if (allTheFilamentNamesIHaveEverLoaded.contains(filament.getFriendlyFilamentName()))
-                        {
-                            filamentsToDelete.add(filament);
-                        }
-                        allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
-                    }
-                    filamentsToDelete.forEach((filament) ->
-                    {
-                        materialEntry.getValue().remove(filament);
-                    });
-                }
-            }
-        }
+                String brand = filament.getBrand();
+                String category = filament.getCategory();
+                MaterialType materialType = filament.getMaterial();
 
+                if (!filamentsByBrand.containsKey(brand))
+                {
+                    Map<String, Map<MaterialType, List<Filament>>> filamentCategoryGroupList = new TreeMap<>();
+                    filamentsByBrand.put(brand, filamentCategoryGroupList);
+                }
+
+                if (!filamentsByBrand.get(brand).containsKey(category))
+                {
+                    Map<MaterialType, List<Filament>> categoryMap = new TreeMap<>();
+                    filamentsByBrand.get(brand).put(category, categoryMap);
+                }
+ 
+                if (!filamentsByBrand.get(brand).get(category).containsKey(materialType))
+                {
+                    List<Filament> filamentList = new ArrayList<>();
+                    filamentsByBrand.get(brand).get(category).put(materialType, filamentList);
+                }
+ 
+                filamentsByBrand.get(brand).get(category).get(materialType).add(filament);
+
+                allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
+            }
+        });
+
+//        Map<String, Map<MaterialType, List<Filament>>> filamentMap = FilamentContainer.getInstance().getCompleteFilamentList()
+//                .stream()
+//                .collect(Collectors.groupingBy(Filament::getBrand, () -> new TreeMap(byBrandName), Collectors.groupingBy(Filament::getMaterial)));
+//
+//        if (dontDisplayDuplicateNamedFilaments)
+//        {
+//            for (Map.Entry<String, Map<MaterialType, List<Filament>>> categoryEntry : filamentMap.entrySet())
+//            {
+//                for (Map.Entry<MaterialType, List<Filament>> materialEntry : categoryEntry.getValue().entrySet())
+//                {
+//                    List<Filament> filamentsToDelete = new ArrayList<>();
+//                    for (Filament filament : materialEntry.getValue())
+//                    {
+//                        if (allTheFilamentNamesIHaveEverLoaded.contains(filament.getFriendlyFilamentName()))
+//                        {
+//                            filamentsToDelete.add(filament);
+//                        }
+//                        allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
+//                    }
+//                    filamentsToDelete.forEach((filament) ->
+//                    {
+//                        materialEntry.getValue().remove(filament);
+//                    });
+//                }
+//            }
+//        }
         getItems().clear();
 
         boolean firstItem = true;
 
-        for (Map.Entry<String, CustomMenuItem> permanentMenuItem : permanentMenuItems.entrySet())
+        for (Map.Entry<String, CustomMenuItem> permanentMenuItem
+                : permanentMenuItems.entrySet())
         {
             if (!firstItem)
             {
@@ -162,24 +206,30 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
             firstItem = false;
         }
 
-        for (Map.Entry<String, Map<MaterialType, List<Filament>>> entry : filamentMap.entrySet())
+        for (Map.Entry<String, Map<String, Map<MaterialType, List<Filament>>>> entry
+                : filamentsByBrand.entrySet())
         {
             if (!firstItem)
             {
                 addSeparator();
             }
-            String category = entry.getKey();
-            Map<MaterialType, List<Filament>> materialMap = entry.getValue();
+            String brand = entry.getKey();
+            Map<String, Map<MaterialType, List<Filament>>> filamentCategoryMap = entry.getValue();
             FilamentCategory filCat = new FilamentCategory(this);
-            filCat.setCategoryData(category, materialMap);
+            filCat.setCategoryData(brand, filamentCategoryMap);
             FilamentCategoryMenuItem filCatMenuItem = new FilamentCategoryMenuItem(filCat);
+            if (brand.equalsIgnoreCase("custom"))
+            {
+                filCatMenuItem.getStyleClass().add("custom-filament-category");
+            }
+
             filCatMenuItem.setHideOnClick(false);
             getItems().add(filCatMenuItem);
             firstItem = false;
         }
     }
 
-    public void displayFirstFilament()
+    public Filament displayFirstFilament()
     {
         Filament firstFilament = null;
 
@@ -193,6 +243,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
                     Entry<String, CustomMenuItem> foundItem = permanentMenuItemIterator.next();
                     if (foundItem.getValue() == menuItem)
                     {
+                        firstFilament = permanentMenuFilaments.get(foundItem.getKey());
                         displaySpecialItemOnButton(foundItem.getKey());
                         break;
                     }
@@ -202,10 +253,10 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
             {
                 FilamentCategoryMenuItem filCatMenuItem = (FilamentCategoryMenuItem) menuItem;
                 FilamentCategory filCat = (FilamentCategory) filCatMenuItem.getContent();
-                Iterator<Entry<MaterialType, List<Filament>>> iterator = filCat.getFilamentMap().entrySet().iterator();
+                Iterator<Entry<String, Map<MaterialType, List<Filament>>>> iterator = filCat.getFilamentMap().entrySet().iterator();
                 if (iterator.hasNext())
                 {
-                    List<Filament> availableFilaments = iterator.next().getValue();
+                    List<Filament> availableFilaments = iterator.next().getValue().values().iterator().next();
                     if (availableFilaments.size() > 0)
                     {
                         firstFilament = availableFilaments.get(0);
@@ -219,6 +270,8 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         {
             displayFilamentOnButton(firstFilament);
         }
+
+        return firstFilament;
     }
 
     public void displayFilamentOnButton(Filament filamentToDisplay)
