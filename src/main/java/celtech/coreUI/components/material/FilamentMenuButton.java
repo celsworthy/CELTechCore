@@ -12,10 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
@@ -24,7 +22,7 @@ import javafx.scene.control.SeparatorMenuItem;
  *
  * @author Ian
  */
-public class FilamentMenuButton extends MenuButton implements FilamentSelectionListener
+public class FilamentMenuButton extends MenuButton implements FilamentSelectionListener, FilamentContainer.FilamentDatabaseChangesListener
 {
 
     private SelectedFilamentDisplayNode filamentDisplayNode = new SelectedFilamentDisplayNode();
@@ -33,7 +31,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
     private SpecialItemSelectionListener specialItemSelectionListener = null;
     private boolean dontDisplayDuplicateNamedFilaments = false;
 
-    private Map<String, CustomMenuItem> permanentMenuItems = new TreeMap<>();
+    private Map<String, FilamentOnReelMenuItem> permanentMenuItems = new TreeMap<>();
     private Map<String, Filament> permanentMenuFilaments = new HashMap<>();
 
     private static final String roboxCategoryPrefix = "Robox";
@@ -96,11 +94,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
             repopulateFilaments();
         });
 
-        FilamentContainer.getInstance().getUserFilamentList().addListener(
-                (ListChangeListener.Change<? extends Filament> c) ->
-        {
-            repopulateFilaments();
-        });
+        FilamentContainer.getInstance().addFilamentDatabaseChangesListener(this);
     }
 
     /**
@@ -152,13 +146,13 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
                     Map<MaterialType, List<Filament>> categoryMap = new TreeMap<>();
                     filamentsByBrand.get(brand).put(category, categoryMap);
                 }
- 
+
                 if (!filamentsByBrand.get(brand).get(category).containsKey(materialType))
                 {
                     List<Filament> filamentList = new ArrayList<>();
                     filamentsByBrand.get(brand).get(category).put(materialType, filamentList);
                 }
- 
+
                 filamentsByBrand.get(brand).get(category).get(materialType).add(filament);
 
                 allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
@@ -195,7 +189,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
         boolean firstItem = true;
 
-        for (Map.Entry<String, CustomMenuItem> permanentMenuItem
+        for (Map.Entry<String, FilamentOnReelMenuItem> permanentMenuItem
                 : permanentMenuItems.entrySet())
         {
             if (!firstItem)
@@ -235,12 +229,12 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
         for (MenuItem menuItem : getItems())
         {
-            if (menuItem instanceof CustomMenuItem)
+            if (menuItem instanceof FilamentOnReelMenuItem)
             {
-                Iterator<Entry<String, CustomMenuItem>> permanentMenuItemIterator = permanentMenuItems.entrySet().iterator();
+                Iterator<Entry<String, FilamentOnReelMenuItem>> permanentMenuItemIterator = permanentMenuItems.entrySet().iterator();
                 while (permanentMenuItemIterator.hasNext())
                 {
-                    Entry<String, CustomMenuItem> foundItem = permanentMenuItemIterator.next();
+                    Entry<String, FilamentOnReelMenuItem> foundItem = permanentMenuItemIterator.next();
                     if (foundItem.getValue() == menuItem)
                     {
                         firstFilament = permanentMenuFilaments.get(foundItem.getKey());
@@ -300,10 +294,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
     public void addSpecialMenuItem(String title, Filament filament)
     {
-        FilamentOnReelDisplay filamentOnReelDisplay = new FilamentOnReelDisplay(title, filament);
-        filamentOnReelDisplay.setPrefWidth(getPrefWidth());
-        filamentOnReelDisplay.setMaxWidth(USE_PREF_SIZE);
-        CustomMenuItem newMenuItem = new CustomMenuItem(filamentOnReelDisplay, false);
+        FilamentOnReelMenuItem newMenuItem = new FilamentOnReelMenuItem(title, filament, getPrefWidth());
         newMenuItem.setOnAction((event) ->
         {
             specialItemSelectedAction(title);
@@ -332,5 +323,11 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
     public void filamentSelected(Filament filament)
     {
         filamentSelectedAction(filament);
+    }
+
+    @Override
+    public void whenFilamentChanges(String filamentId)
+    {
+        repopulateFilaments();
     }
 }

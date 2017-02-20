@@ -1323,7 +1323,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (currentPrinter != null
                 && selectedProject != null)
         {
-//if (timeCostThreadManager.)
+            steno.info("Got - " + selectedProject.getPrinterSettings().getSettingsName());
+//if (timeCostThreadManager.
         }
 
         if (thereIsNotEnoughFilament != notEnoughFilamentForPrint.get())

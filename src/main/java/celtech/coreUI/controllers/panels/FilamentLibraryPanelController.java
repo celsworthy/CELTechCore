@@ -172,17 +172,21 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         {
             newPrinter.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
         }
-        updateWriteToReelBindings();
-        showReelsAtTopOfCombo();
+
+        if (newPrinter != null)
+        {
+            updateWriteToReelBindings();
+            showReelsAtTopOfCombo();
+        } else
+        {
+            clearWidgets();
+        }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        filamentMenuButton.initialiseButton(this, this, false);
-
-        currentPrinter.bind(Lookup.getSelectedPrinterProperty());
-        updatePrinter(null, currentPrinter.get());
+        currentFilament = filamentMenuButton.initialiseButton(this, this, false);
 
         updateSaveBindings();
 
@@ -193,6 +197,9 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         isEditable.bind(state.isNotEqualTo(State.ROBOX).and(Lookup.getUserPreferences().advancedModeProperty()));
 
         isValid.bind(isNameValid.and(isNozzleTempValid));
+
+        currentPrinter.bind(Lookup.getSelectedPrinterProperty());
+        updatePrinter(null, currentPrinter.get());
 
         currentPrinter.addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
@@ -212,6 +219,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         setupPrinterChangesListener();
 
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
+
+        updateWidgets(currentFilament);
     }
 
     private void setupPrinterChangesListener()
@@ -542,6 +551,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         assert (state.get() != State.ROBOX);
         updateFilamentFromWidgets(currentFilament);
         filamentContainer.saveFilament(currentFilament);
+        selectFilament(currentFilament);
+        filamentMenuButton.displayFilamentOnButton(currentFilament);
     }
 
     void whenNewPressed()
@@ -565,6 +576,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         name.selectAll();
         // visually marks name as needing to be changed
         name.pseudoClassStateChanged(ERROR, true);
+        updateSaveBindings();
     }
 
     void whenDeletePressed()
@@ -574,6 +586,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             filamentContainer.deleteFilament(currentFilament);
         }
         clearWidgets();
+        selectFilament(filamentMenuButton.displayFirstFilament());
     }
 
     void whenWriteToReel1Pressed()

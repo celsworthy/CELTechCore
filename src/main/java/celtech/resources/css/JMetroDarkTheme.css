@@ -2966,6 +2966,8 @@ color-picker-label .text-field {
 .filament-display-brand
 {
     -fx-font-size: 18px;
+    -fx-font-family: 'Source Sans Pro Bold';
+    -fx-font-smoothing-type: lcd;
 }
 
 .filament-display-category
