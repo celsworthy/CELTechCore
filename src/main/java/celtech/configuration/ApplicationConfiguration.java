@@ -2,6 +2,7 @@ package celtech.configuration;
 
 import celtech.appManager.ProjectMode;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import javafx.geometry.Pos;
@@ -129,6 +131,18 @@ public class ApplicationConfiguration
         return projectFileStorageDirectory;
     }
 
+    private static void addExtension(List<String> extensionList, String extension)
+    {
+        extensionList.add(extension);
+        
+        //Yuk - linux is case sensitive when looking at extensions
+        if (BaseConfiguration.getMachineType() == MachineType.LINUX_X64
+                || BaseConfiguration.getMachineType() == MachineType.LINUX_X86)
+        {
+            extensionList.add(extension.toUpperCase());
+        }
+    }
+
     public static ArrayList<String> getSupportedFileExtensionWildcards(ProjectMode projectMode)
     {
         ArrayList<String> returnVal = new ArrayList<>();
@@ -138,27 +152,27 @@ public class ApplicationConfiguration
             case NONE:
                 for (String extension : supportedModelExtensions)
                 {
-                    returnVal.add("*." + extension);
+                    addExtension(returnVal, "*." + extension);
                 }
                 for (String extension : supported2DModelExtensions)
                 {
-                    returnVal.add("*." + extension);
+                    addExtension(returnVal, "*." + extension);
                 }
                 for (String extension : supportedProcessedModelExtensions)
                 {
-                    returnVal.add("*." + extension);
+                    addExtension(returnVal, "*." + extension);
                 }
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)
                 {
-                    returnVal.add("*." + extension);
+                    addExtension(returnVal, "*." + extension);
                 }
                 break;
             case SVG:
                 for (String extension : supported2DModelExtensions)
                 {
-                    returnVal.add("*." + extension);
+                    addExtension(returnVal, "*." + extension);
                 }
                 break;
             default:
@@ -177,24 +191,24 @@ public class ApplicationConfiguration
             case NONE:
                 for (String extension : supportedModelExtensions)
                 {
-                    returnVal.add(extension);
+                    addExtension(returnVal, extension);
                 }
                 for (String extension : supported2DModelExtensions)
                 {
-                    returnVal.add(extension);
+                    addExtension(returnVal, extension);
                 }
                 returnVal.add(supportedProjectFileExtension);
                 break;
             case MESH:
                 for (String extension : supportedModelExtensions)
                 {
-                    returnVal.add(extension);
+                    addExtension(returnVal, extension);
                 }
                 break;
             case SVG:
                 for (String extension : supported2DModelExtensions)
                 {
-                    returnVal.add(extension);
+                    addExtension(returnVal, extension);
                 }
                 break;
             default:
@@ -229,10 +243,10 @@ public class ApplicationConfiguration
     {
         String defaultDirectory = BaseConfiguration.getUserStorageDirectory();
         setLastDirectory(whichProperty, defaultDirectory);
-        
+
         return defaultDirectory;
     }
-    
+
     public static String getLastDirectory(DirectoryMemoryProperty memoryProperty)
     {
         String directory = BaseConfiguration.getApplicationMemory(memoryProperty.name());
