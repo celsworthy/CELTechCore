@@ -286,8 +286,6 @@ public class ProjectTab extends Tab implements ProjectCallback
         fireProjectSelected();
 
         projectManager.projectOpened(project);
-        
-        primeTabInsetPanels(true);
     }
 
     private void setup3DView()
