@@ -462,7 +462,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         {
             currentFilamentID = filament.getFilamentID();
             currentFilament = filament;
-            updateWidgets(filament);
             if (currentFilamentID.startsWith("U"))
             {
                 state.set(State.CUSTOM);
@@ -471,7 +470,9 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 state.set(State.ROBOX);
             }
 
+            updateWriteToReelBindings();
             updateSaveBindings();
+            updateWidgets(filament);
         }
     }
 
@@ -869,7 +870,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 Filament filament0 = filamentContainer.getFilamentByID(filamentId0);
                 filamentMenuButton.addSpecialMenuItem(reel1MenuItemTitle, filament0);
             }
-            selectFilament(filamentMenuButton.displayFirstFilament());
+            selectFilament(currentFilament);
         }
     }
 
