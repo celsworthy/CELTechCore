@@ -4,7 +4,6 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.remote.BusyStatus;
 import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.comms.remote.PauseStatus;

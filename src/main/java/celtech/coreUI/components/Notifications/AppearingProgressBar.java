@@ -5,7 +5,6 @@ package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
 import celtech.coreUI.components.buttons.GraphicButton;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.utils.Math.MathUtils;
 import java.io.IOException;
 import java.net.URL;
@@ -265,29 +264,34 @@ public abstract class AppearingProgressBar extends StackPane implements Initiali
         return slidOutOfView || slidingOutOfView;
     }
 
-    public void targetLegendRequired(boolean required)
+    public final void targetLegendRequired(boolean required)
     {
         largeTargetLegend.setVisible(required);
     }
 
-    public void targetValueRequired(boolean required)
+    public final void targetValueRequired(boolean required)
     {
         largeTargetValue.setVisible(required);
     }
 
-    public void currentValueRequired(boolean required)
+    public final void currentValueRequired(boolean required)
     {
         currentValue.setVisible(required);
     }
 
-    public void progressRequired(boolean required)
+    public final void progressRequired(boolean required)
     {
         progressBar.setVisible(required);
         progressBar.progressProperty().unbind();
     }
 
-    public void layerDataRequired(boolean required)
+    public final void layerDataRequired(boolean required)
     {
         layerData.setVisible(required);
+    }
+    
+    public final void destroyBar()
+    {
+        progressBar.progressProperty().unbind();
     }
 }

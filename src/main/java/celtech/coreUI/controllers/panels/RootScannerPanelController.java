@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.WebEngineFix.AMURLStreamHandlerFactory;
+import celtech.coreUI.components.Notifications.GenericProgressBar;
 import celtech.coreUI.components.RootTableCell;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DetectedDevice;
@@ -12,9 +13,15 @@ import celtech.roboxbase.comms.RemoteServerDetector;
 import celtech.roboxbase.comms.remote.Configuration;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.CoreMemory;
+import celtech.roboxbase.utils.SystemUtils;
+import celtech.utils.TaskWithProgessCallback;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -62,6 +69,8 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     public static String pinForCurrentServer = "";
 
+    private GenericProgressBar rootSoftwareUpDownloadProgress;
+
     @FXML
     private HBox scannerHolder;
 
@@ -78,6 +87,12 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     private VBox wrongVersionBox;
 
     @FXML
+    private Label rootVersionLabel;
+
+    @FXML
+    private Button rootUpdateButton;
+
+    @FXML
     private Button disconnectButton;
 
     @FXML
@@ -85,6 +100,74 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     @FXML
     private Label incorrectPINLabel;
+
+    @FXML
+    void beginRootUpdate(ActionEvent event)
+    {
+        //Is root file there?
+        //The format is RootARM-32bit-2.02.00_RC8.zip
+        String pathToRootFile = BaseConfiguration.getUserTempDirectory();
+        String rootFile = "RootARM-32bit-" + BaseConfiguration.getApplicationVersion() + ".zip";
+        Path rootFilePath = Paths.get(pathToRootFile + rootFile);
+
+        if (Files.exists(rootFilePath, LinkOption.NOFOLLOW_LINKS))
+        {
+            //Use this file to upgrade the root
+            upgradeRootWithFile(pathToRootFile, rootFile);
+        } else
+        {
+            //We need to download it
+            TaskWithProgessCallback<Boolean> rootDownloader = new TaskWithProgessCallback<Boolean>()
+            {
+                @Override
+                protected Boolean call() throws Exception
+                {
+                    URL obj = new URL("http://www.cel-robox.com/wp-content/uploads/Software/Root/" + rootFile);
+                    boolean success = SystemUtils.downloadFromUrl(obj, pathToRootFile + rootFile, this);
+                    return success;
+                }
+
+                @Override
+                public void updateProgressPercent(double percentProgress)
+                {
+                    updateProgress(percentProgress, 100.0);
+                }
+            };
+
+            rootDownloader.setOnSucceeded((result) ->
+            {
+                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
+                upgradeRootWithFile(pathToRootFile, rootFile);
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
+                rootSoftwareUpDownloadProgress = null;
+            });
+
+            rootDownloader.setOnFailed((result) ->
+            {
+                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.failedDownloadMessage"));
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
+                rootSoftwareUpDownloadProgress = null;
+            });
+
+            rootUpdateButton.disableProperty().unbind();
+            rootUpdateButton.disableProperty().bind(rootDownloader.runningProperty());
+
+            if (rootSoftwareUpDownloadProgress != null)
+            {
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
+                rootSoftwareUpDownloadProgress = null;
+            }
+
+            Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootDownloadTitle"),
+                    rootDownloader.runningProperty(),
+                    rootDownloader.progressProperty());
+
+            Thread rootDownloaderThread = new Thread(rootDownloader);
+            rootDownloaderThread.setName("Root software downloader");
+            rootDownloaderThread.setDaemon(true);
+            rootDownloaderThread.start();
+        }
+    }
 
     @FXML
     void connectToServer(ActionEvent event)
@@ -145,6 +228,67 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         }
     }
 
+    private void upgradeRootWithFile(String path, String filename)
+    {
+        DetectedServer server = scannedRoots.getSelectionModel().getSelectedItem();
+        if (server != null
+                && server.getServerStatus() == ServerStatus.WRONG_VERSION)
+        {
+            TaskWithProgessCallback<Boolean> rootUploader = new TaskWithProgessCallback<Boolean>()
+            {
+                @Override
+                protected Boolean call() throws Exception
+                {
+                    return server.upgradeRootSoftware(path, filename, this);
+                }
+
+                @Override
+                public void updateProgressPercent(double percentProgress)
+                {
+                    updateProgress(percentProgress, 100.0);
+                }
+            };
+
+            rootUploader.setOnFailed((event) ->
+            {
+                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
+                rootSoftwareUpDownloadProgress = null;
+            });
+
+            rootUploader.setOnSucceeded((event) ->
+            {
+                if ((boolean) event.getSource().getValue())
+                {
+                    BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.successfulUploadMessage"));
+                } else
+                {
+                    BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
+                }
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
+                rootSoftwareUpDownloadProgress = null;
+            });
+
+            rootUpdateButton.disableProperty().unbind();
+            rootUpdateButton.disableProperty().bind(rootUploader.runningProperty());
+
+            if (rootSoftwareUpDownloadProgress != null)
+            {
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
+                rootSoftwareUpDownloadProgress = null;
+            }
+
+            Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootUploadTitle"),
+                    rootUploader.runningProperty(),
+                    rootUploader.progressProperty());
+
+            Thread rootUploaderThread = new Thread(rootUploader);
+            rootUploaderThread.setName("Root uploader");
+            rootUploaderThread.setDaemon(true);
+            rootUploaderThread.start();
+        }
+    }
+
     private void hideEverything()
     {
         webViewHolder.setVisible(false);
@@ -195,6 +339,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 incorrectPINLabel.setVisible(false);
                 wrongVersionBox.setVisible(true);
                 wrongVersionBox.setMouseTransparent(false);
+                rootVersionLabel.setText(Lookup.i18n("rootScanner.wrongVersion"));
                 break;
             case NOT_CONNECTED:
                 webViewHolder.setVisible(false);

@@ -120,7 +120,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private Pane spinnerContainer;
     private Spinner spinner;
 
-    private NotificationArea notificationArea = new NotificationArea();
+    private final NotificationArea notificationArea = new NotificationArea();
 
     //Display scaling
     private BooleanProperty nodesMayHaveMoved;

@@ -3,8 +3,13 @@ package celtech.coreUI.components.Notifications;
 import celtech.Lookup;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 
 /**
@@ -20,6 +25,7 @@ public class ProgressDisplay extends VBox
     private MaterialHeatingStatusBar material1TemperatureDisplayBar;
     private MaterialHeatingStatusBar material2TemperatureDisplayBar;
     private PrintPreparationStatusBar printPreparationDisplayBar;
+    private final List<Node> printerRelatedNodes = new ArrayList<>();
 
     private final ChangeListener<Boolean> headDataChangedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
@@ -75,7 +81,7 @@ public class ProgressDisplay extends VBox
             createMaterialHeatBars(printer.headProperty().get());
         }
 
-        getChildren().addAll(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
+        addPrinterElementToDisplay(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
     }
 
     private void destroyMaterialHeatBars()
@@ -83,14 +89,14 @@ public class ProgressDisplay extends VBox
         if (material1TemperatureDisplayBar != null)
         {
             material1TemperatureDisplayBar.unbindAll();
-            getChildren().remove(material1TemperatureDisplayBar);
+            removePrinterElementFromDisplay(material1TemperatureDisplayBar);
             material1TemperatureDisplayBar = null;
         }
 
         if (material2TemperatureDisplayBar != null)
         {
             material2TemperatureDisplayBar.unbindAll();
-            getChildren().remove(material2TemperatureDisplayBar);
+            removePrinterElementFromDisplay(material2TemperatureDisplayBar);
             material2TemperatureDisplayBar = null;
         }
     }
@@ -105,10 +111,10 @@ public class ProgressDisplay extends VBox
             if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
             {
                 materialNumber = 2;
-        }
+            }
 
             material1TemperatureDisplayBar = new MaterialHeatingStatusBar(head.getNozzleHeaters().get(0), materialNumber, head.getNozzleHeaters().size() == 1);
-            getChildren().add(0, material1TemperatureDisplayBar);
+            addPrinterElementToStartOfDisplay(material1TemperatureDisplayBar);
         }
 
         if (head != null
@@ -116,7 +122,7 @@ public class ProgressDisplay extends VBox
         {
             //Must be DM - material 1
             material2TemperatureDisplayBar = new MaterialHeatingStatusBar(head.getNozzleHeaters().get(1), 1, false);
-            getChildren().add(0, material2TemperatureDisplayBar);
+            addPrinterElementToStartOfDisplay(material2TemperatureDisplayBar);
         }
     }
 
@@ -135,8 +141,54 @@ public class ProgressDisplay extends VBox
             printPreparationDisplayBar.unbindAll();
             bedTemperatureDisplayBar.unbindAll();
 
-            getChildren().clear();
+            removeAllPrinterElementsFromDisplay();
         }
         printerInUse = null;
+    }
+
+    public GenericProgressBar addGenericProgressBarToDisplay(String title, ReadOnlyBooleanProperty displayProgressBar, ReadOnlyDoubleProperty progressProperty)
+    {
+        GenericProgressBar progressBar = new GenericProgressBar(title, displayProgressBar, progressProperty);
+        getChildren().add(progressBar);
+        return progressBar;
+    }
+
+    public void removeGenericProgressBarFromDisplay(GenericProgressBar progressBar)
+    {
+        if (progressBar != null)
+        {
+            progressBar.destroyBar();
+            getChildren().remove(progressBar);
+        }
+    }
+
+    private void addPrinterElementToStartOfDisplay(Node node)
+    {
+        printerRelatedNodes.add(node);
+        getChildren().add(node);
+    }
+
+    private void addPrinterElementToDisplay(Node... nodes)
+    {
+        for (Node node : nodes)
+        {
+            printerRelatedNodes.add(node);
+            getChildren().add(node);
+        }
+    }
+
+    private void removePrinterElementFromDisplay(Node... nodes)
+    {
+        for (Node node : nodes)
+        {
+            printerRelatedNodes.remove(node);
+            getChildren().remove(node);
+        }
+    }
+
+    private void removeAllPrinterElementsFromDisplay()
+    {
+        getChildren().removeAll(printerRelatedNodes);
+        printerRelatedNodes.clear();
     }
 }

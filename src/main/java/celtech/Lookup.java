@@ -11,6 +11,7 @@ import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.SpinnerControl;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
+import celtech.coreUI.components.Notifications.ProgressDisplay;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ public class Lookup
     private static final Stenographer steno = StenographerFactory.getStenographer(
             Lookup.class.getName());
     private static NotificationDisplay notificationDisplay;
+    private static ProgressDisplay progressDisplay;
 
     static
     {
@@ -108,6 +110,7 @@ public class Lookup
                 appLocale, new SystemNotificationManagerJavaFX());
 
         setNotificationDisplay(new NotificationDisplay());
+        setProgressDisplay(new ProgressDisplay());
     }
 
     public static SpinnerControl getSpinnerControl()
@@ -172,6 +175,16 @@ public class Lookup
     public static void setNotificationDisplay(NotificationDisplay notificationDisplay)
     {
         Lookup.notificationDisplay = notificationDisplay;
+    }
+
+    public static ProgressDisplay getProgressDisplay()
+    {
+        return progressDisplay;
+    }
+
+    public static void setProgressDisplay(ProgressDisplay progressDisplay)
+    {
+        Lookup.progressDisplay = progressDisplay;
     }
 
     public static String i18n(String stringId)

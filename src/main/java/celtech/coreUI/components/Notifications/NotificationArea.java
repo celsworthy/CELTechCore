@@ -9,14 +9,10 @@ import javafx.scene.layout.VBox;
  */
 public class NotificationArea extends VBox
 {
-
-    private final ProgressDisplay progressDisplay;
-
     public NotificationArea()
     {
         this.getChildren().add(Lookup.getNotificationDisplay());
-        this.progressDisplay = new ProgressDisplay();
-        this.getChildren().add(progressDisplay);
+        this.getChildren().add(Lookup.getProgressDisplay());
         setPickOnBounds(false);
     }
 }
