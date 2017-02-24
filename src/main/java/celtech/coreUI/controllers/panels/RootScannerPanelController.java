@@ -386,7 +386,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         versionColumn = new TableColumn<>();
         versionColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("version"));
         versionColumn.setText(Lookup.i18n("rootScanner.version"));
-        versionColumn.setPrefWidth(85);
+        versionColumn.setPrefWidth(100);
         versionColumn.setResizable(false);
         versionColumn.setStyle("-fx-alignment: CENTER;");
 
@@ -400,7 +400,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
         scannedRoots.getColumns().add(statusColumn);
-        scannedRoots.setMaxWidth(385);
+        scannedRoots.setMaxWidth(400);
 
         rootWebView = new WebView();
         rootWebView.setMaxHeight(1000000);
