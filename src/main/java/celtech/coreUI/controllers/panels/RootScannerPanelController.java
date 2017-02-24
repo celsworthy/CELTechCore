@@ -201,7 +201,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     private ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
 
-    private ChangeListener<ServerStatus> serverStatusListener = new ChangeListener<ServerStatus>()
+    private final ChangeListener<ServerStatus> serverStatusListener = new ChangeListener<ServerStatus>()
     {
         @Override
         public void changed(ObservableValue<? extends ServerStatus> observable, ServerStatus oldValue, ServerStatus newValue)
@@ -332,8 +332,8 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             case WRONG_VERSION:
                 webViewHolder.setVisible(false);
                 webViewHolder.setMouseTransparent(true);
-                connectPage.setVisible(false);
-                connectPage.setMouseTransparent(true);
+                connectPage.setVisible(true);
+                connectPage.setMouseTransparent(false);
                 disconnectButton.setVisible(false);
                 disconnectButton.setMouseTransparent(true);
                 incorrectPINLabel.setVisible(false);
@@ -379,7 +379,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         ipAddressColumn = new TableColumn<>();
         ipAddressColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("serverIP"));
         ipAddressColumn.setText(Lookup.i18n("rootScanner.ipAddress"));
-        ipAddressColumn.setPrefWidth(85);
+        ipAddressColumn.setPrefWidth(100);
         ipAddressColumn.setResizable(false);
         ipAddressColumn.setStyle("-fx-alignment: CENTER;");
 
@@ -400,7 +400,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
         scannedRoots.getColumns().add(statusColumn);
-        scannedRoots.setMaxWidth(370);
+        scannedRoots.setMaxWidth(385);
 
         rootWebView = new WebView();
         rootWebView.setMaxHeight(1000000);
