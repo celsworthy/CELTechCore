@@ -154,11 +154,18 @@ public class ProjectTab extends Tab implements ProjectCallback
                 }
             } else
             {
-                settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
-                timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
-                settingsInsetPanelData.getNode().setVisible(false);
-                timeCostInsetPanelData.getNode().setVisible(false);
-                rhInsetContainer.getChildren().addAll(timeCostInsetPanelData.getNode(), settingsInsetPanelData.getNode());
+                if (settingsInsetPanelData == null)
+                {
+                    settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
+                    settingsInsetPanelData.getNode().setVisible(false);
+                    rhInsetContainer.getChildren().add(settingsInsetPanelData.getNode());
+                }
+                if (timeCostInsetPanelData == null)
+                {
+                    timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+                    timeCostInsetPanelData.getNode().setVisible(false);
+                    rhInsetContainer.getChildren().add(timeCostInsetPanelData.getNode());
+                }
             }
         }
     }
@@ -286,6 +293,8 @@ public class ProjectTab extends Tab implements ProjectCallback
         fireProjectSelected();
 
         projectManager.projectOpened(project);
+
+        primeTabInsetPanels(true);
     }
 
     private void setup3DView()
