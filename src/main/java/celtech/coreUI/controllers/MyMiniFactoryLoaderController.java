@@ -8,11 +8,13 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.visualisation.ModelLoader;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import celtech.web.AllCookiePolicy;
 import celtech.web.PersistentCookieStore;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.CookieHandler;
@@ -130,6 +132,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         VBox.setVgrow(webView, Priority.ALWAYS);
 
         webEngine = webView.getEngine();
+        webEngine.setUserDataDirectory(new File(BaseConfiguration.getUserTempDirectory()));
 
         webContentContainer.getChildren().addAll(webView);
 
@@ -137,39 +140,39 @@ public class MyMiniFactoryLoaderController implements Initializable
 
         webEngine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) ->
-                {
-                    switch (newState)
-                    {
-                        case RUNNING:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().startSpinning(webContentContainer);
-                            break;
-                        case SUCCEEDED:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().stopSpinning();
-                            Object fileLinkFunction = webEngine
+        {
+            switch (newState)
+            {
+                case RUNNING:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().startSpinning(webContentContainer);
+                    break;
+                case SUCCEEDED:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().stopSpinning();
+                    Object fileLinkFunction = webEngine
                             .executeScript("window.autoMakerGetFileLink");
-                            if (fileLinkFunction instanceof JSObject)
-                            {
-                                fileDownloadLocation.set((String) webEngine
-                                        .executeScript("window.autoMakerGetFileLink()"));
-                            }
-                            boolean okForBackwards = webEngine.getLocation().matches(".*\\/object\\/.*");
-                            forwardsPossible |= okForBackwards;
-                            boolean okForForwards = !okForBackwards && forwardsPossible;
-                            backwardButton.disableProperty().set(!okForBackwards);
-                            forwardButton.disableProperty().set(!okForForwards);
-                            break;
-                        case CANCELLED:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().stopSpinning();
-                            break;
-                        case FAILED:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().stopSpinning();
-                            break;
+                    if (fileLinkFunction instanceof JSObject)
+                    {
+                        fileDownloadLocation.set((String) webEngine
+                                .executeScript("window.autoMakerGetFileLink()"));
                     }
-                });
+                    boolean okForBackwards = webEngine.getLocation().matches(".*\\/object\\/.*");
+                    forwardsPossible |= okForBackwards;
+                    boolean okForForwards = !okForBackwards && forwardsPossible;
+                    backwardButton.disableProperty().set(!okForBackwards);
+                    forwardButton.disableProperty().set(!okForForwards);
+                    break;
+                case CANCELLED:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().stopSpinning();
+                    break;
+                case FAILED:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().stopSpinning();
+                    break;
+            }
+        });
     }
 
     private boolean alreadyDownloading = false;
