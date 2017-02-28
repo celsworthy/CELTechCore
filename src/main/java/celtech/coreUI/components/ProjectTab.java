@@ -164,7 +164,7 @@ public class ProjectTab extends Tab implements ProjectCallback
                 {
                     timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
                     timeCostInsetPanelData.getNode().setVisible(false);
-                    rhInsetContainer.getChildren().add(timeCostInsetPanelData.getNode());
+                    rhInsetContainer.getChildren().add(0, timeCostInsetPanelData.getNode());
                 }
             }
         }
