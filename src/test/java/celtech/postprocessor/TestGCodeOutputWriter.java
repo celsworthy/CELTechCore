@@ -9,6 +9,7 @@ import java.io.IOException;
  */
 public class TestGCodeOutputWriter implements GCodeOutputWriter
 {
+
     private int numberOfLinesOutput = 0;
 
     public TestGCodeOutputWriter(String filename) throws IOException
@@ -41,9 +42,15 @@ public class TestGCodeOutputWriter implements GCodeOutputWriter
     {
         // if it's not a comment or blank line
         if (!outputLine.trim().startsWith(";") && !"".equals(
-            outputLine.trim()))
+                outputLine.trim()))
         {
             numberOfLinesOutput++;
         }
+    }
+
+    @Override
+    public void incrementLinesOfOutput(int numberToIncrementBy)
+    {
+        numberOfLinesOutput += numberToIncrementBy;
     }
 }
