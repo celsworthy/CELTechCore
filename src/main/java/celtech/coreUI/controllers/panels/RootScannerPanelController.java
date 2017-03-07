@@ -41,6 +41,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
+import javafx.concurrent.Worker.State;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -53,6 +55,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 import org.w3c.dom.Document;
+import org.w3c.dom.html.HTMLButtonElement;
 import org.w3c.dom.html.HTMLFormElement;
 import org.w3c.dom.html.HTMLInputElement;
 
@@ -213,11 +216,36 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     private void openWebViewOnRoot(DetectedServer server)
     {
-        String url = "http://" + server.getAddress().getHostAddress() + ":" + Configuration.remotePort + "/login.html";
+        String url = "http://" + server.getAddress().getHostAddress() + ":" + Configuration.remotePort + "/index.html";
 
         pinForCurrentServer = server.getPin();
 
-        rootWebView.getEngine().setUserDataDirectory(new File(BaseConfiguration.getUserTempDirectory()));
+        WebEngine webEngine = rootWebView.getEngine();
+        webEngine.setUserDataDirectory(new File(BaseConfiguration.getUserTempDirectory()));
+        webEngine.setJavaScriptEnabled(true);
+
+        webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
+        {
+            JSObject window = (JSObject) webEngine.executeScript("window");
+            JavaBridge bridge = new JavaBridge();
+            window.setMember("java", bridge);
+            webEngine.executeScript("console.log = function(message)\n"
+                    + "{\n"
+                    + "    java.log(message);\n"
+                    + "};");
+        });
+//        webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<State>()
+//        {
+//            @Override
+//            public void changed(ObservableValue<? extends State> observable, State oldValue, State newValue)
+//            {
+//                if (newValue == Worker.State.SUCCEEDED)
+//                {
+//                    webEngine.executeScript("page_initialiser();");
+//                }
+//            }
+//        });
+
 //        rootWebView.getEngine().documentProperty().addListener(new ChangeListener<Document>()
 //        {
 //            @Override
@@ -229,10 +257,10 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         rootWebView.getEngine().load(url);
     }
 
-//    private static void enableFirebug(final WebEngine engine)
-//    {
-//        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
-//    }
+    private static void enableFirebug(final WebEngine engine)
+    {
+        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
+    }
 
     public class JavaBridge
     {
@@ -430,33 +458,34 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         rootWebView.getEngine().setJavaScriptEnabled(true);
         rootWebView.getEngine().setUserDataDirectory(new File(BaseConfiguration.getUserStorageDirectory()));
 
-        rootWebView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
-        {
-            JSObject window = (JSObject) rootWebView.getEngine().executeScript("window");
-            JavaBridge bridge = new JavaBridge();
-            window.setMember("java", bridge);
-            rootWebView.getEngine().executeScript("console.log = function(message)\n"
-                    + "{\n"
-                    + "    java.log(message);\n"
-                    + "};");
-        });
-
-        rootWebView.getEngine().documentProperty().addListener(new ChangeListener<Document>()
+        rootWebView.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<State>()
         {
             @Override
-            public void changed(ObservableValue<? extends Document> ov, Document oldDoc, Document doc)
+            public void changed(ObservableValue<? extends State> ov, State oldState, State newState)
             {
-                if (doc != null)
+//                JSObject window = (JSObject) rootWebView.getEngine().executeScript("window");
+//                JavaBridge bridge = new JavaBridge();
+//                window.setMember("java", bridge);
+//                rootWebView.getEngine().executeScript("console.log = function(message)\n"
+//                        + "{\n"
+//                        + "    java.log(message);\n"
+//                        + "};");
+
+                if (newState == State.SUCCEEDED)
                 {
-                    if (doc.getDocumentURI().endsWith("login.html"))
+                    Document doc = rootWebView.getEngine().documentProperty().get();
+                    if (doc != null)
                     {
-                        HTMLFormElement pinInputForm = (HTMLFormElement) doc.getElementById("pinInputForm");
-                        HTMLInputElement pinInput = (HTMLInputElement) doc.getElementById("application-pin-value");
+                        if (doc.getDocumentURI().endsWith("login.html"))
+                        {
+                            HTMLButtonElement pinInputButton = (HTMLButtonElement) doc.getElementById("pinInputButton");
+                            HTMLFormElement pinInputForm = (HTMLFormElement) doc.getElementById("pinInputForm");
+                            HTMLInputElement pinInput = (HTMLInputElement) doc.getElementById("application-pin-value");
 
-                        pinInput.setValue(pinForCurrentServer);
-                        pinInputForm.submit();
+                            pinInput.setValue(pinForCurrentServer);
+                            rootWebView.getEngine().executeScript("attemptLogin()");
+                        }
                     }
-
                 }
             }
         });
