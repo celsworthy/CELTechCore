@@ -16,6 +16,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -370,12 +371,18 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         lblCustomCost.setText("...");
 
         Cancellable cancellable = new SimpleCancellable();
-        if (currentProject != null
-                && currentProject.getNumberOfProjectifiableElements() > 0
-                && currentPrinter != null
+        
+        String headTypeToUse = HeadContainer.defaultHeadID;
+        if (currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
         {
-            SlicerParametersFile slicerParameters = currentProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
+            headTypeToUse = currentPrinter.headProperty().get().typeCodeProperty().get();
+        }
+        
+        if (currentProject != null
+                && currentProject.getNumberOfProjectifiableElements() > 0)
+        {
+            SlicerParametersFile slicerParameters = currentProject.getPrinterSettings().getSettings(headTypeToUse);
 
             //NOTE - this needs to change if raft settings in slicermapping.dat is changed
             double raftOffset = slicerParameters.getRaftBaseThickness_mm()
