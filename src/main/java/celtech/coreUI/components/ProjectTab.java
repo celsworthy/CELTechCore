@@ -571,10 +571,7 @@ public class ProjectTab extends Tab implements ProjectCallback
 
     public void fireProjectSelected()
     {
-        if (project != null)
-        {
-            Lookup.setSelectedProject(project);
-        }
+        Lookup.setSelectedProject(project);
     }
 
     @Override
