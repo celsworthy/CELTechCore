@@ -153,7 +153,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         @Override
         public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
         {
-            steno.info("Fired from " + this + " project " + currentProject);
             if (newValue == ApplicationMode.SETTINGS)
             {
                 settingsInsetRoot.setVisible(true);
