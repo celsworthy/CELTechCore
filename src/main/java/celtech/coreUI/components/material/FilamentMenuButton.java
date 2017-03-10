@@ -158,10 +158,6 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
                 allTheFilamentNamesIHaveEverLoaded.add(uniqueFilamentRef);
             }
-            else
-            {
-                System.out.println("I am discarding filament: " + filament.getFriendlyFilamentName());
-            }
         });
 
         getItems().clear();
