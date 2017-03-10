@@ -129,7 +129,8 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
         FilamentContainer.getInstance().getCompleteFilamentList().forEach(filament ->
         {
-            if (!allTheFilamentNamesIHaveEverLoaded.contains(filament.getFriendlyFilamentName()))
+            String uniqueFilamentRef = filament.getFriendlyFilamentName()+filament.getBrand()+filament.getCategory()+filament.getMaterial().getFriendlyName();
+            if (!allTheFilamentNamesIHaveEverLoaded.contains(uniqueFilamentRef))
             {
                 String brand = filament.getBrand();
                 String category = filament.getCategory();
@@ -155,36 +156,14 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
                 filamentsByBrand.get(brand).get(category).get(materialType).add(filament);
 
-                allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
+                allTheFilamentNamesIHaveEverLoaded.add(uniqueFilamentRef);
+            }
+            else
+            {
+                System.out.println("I am discarding filament: " + filament.getFriendlyFilamentName());
             }
         });
 
-//        Map<String, Map<MaterialType, List<Filament>>> filamentMap = FilamentContainer.getInstance().getCompleteFilamentList()
-//                .stream()
-//                .collect(Collectors.groupingBy(Filament::getBrand, () -> new TreeMap(byBrandName), Collectors.groupingBy(Filament::getMaterial)));
-//
-//        if (dontDisplayDuplicateNamedFilaments)
-//        {
-//            for (Map.Entry<String, Map<MaterialType, List<Filament>>> categoryEntry : filamentMap.entrySet())
-//            {
-//                for (Map.Entry<MaterialType, List<Filament>> materialEntry : categoryEntry.getValue().entrySet())
-//                {
-//                    List<Filament> filamentsToDelete = new ArrayList<>();
-//                    for (Filament filament : materialEntry.getValue())
-//                    {
-//                        if (allTheFilamentNamesIHaveEverLoaded.contains(filament.getFriendlyFilamentName()))
-//                        {
-//                            filamentsToDelete.add(filament);
-//                        }
-//                        allTheFilamentNamesIHaveEverLoaded.add(filament.getFriendlyFilamentName());
-//                    }
-//                    filamentsToDelete.forEach((filament) ->
-//                    {
-//                        materialEntry.getValue().remove(filament);
-//                    });
-//                }
-//            }
-//        }
         getItems().clear();
 
         boolean firstItem = true;
