@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.WebEngineFix.AMURLStreamHandlerFactory;
-import celtech.coreUI.components.Notifications.GenericProgressBar;
+import celtech.coreUI.components.RootConnectionButtonTableCell;
 import celtech.coreUI.components.RootTableCell;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DetectedDevice;
@@ -10,21 +10,13 @@ import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.DeviceDetectionListener;
 import celtech.roboxbase.comms.RemoteServerDetector;
-import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.CoreMemory;
-import celtech.roboxbase.utils.SystemUtils;
-import celtech.utils.TaskWithProgessCallback;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -36,9 +28,10 @@ import javafx.scene.control.TableView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.text.Text;
 
 /**
@@ -55,249 +48,25 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
     public static String pinForCurrentServer = "";
 
-    private GenericProgressBar rootSoftwareUpDownloadProgress;
-
-    @FXML
-    private HBox scannerHolder;
-
     @FXML
     private TableView<DetectedServer> scannedRoots;
 
     @FXML
     private TableColumn nameColumn;
-    
+
     @FXML
     private TableColumn ipAddressColumn;
-    
+
     @FXML
     private TableColumn versionColumn;
-    
+
     @FXML
     private TableColumn<DetectedServer, ServerStatus> statusColumn;
 
     @FXML
-    private TableColumn buttonColumn;
-    
-    @FXML
-    void beginRootUpdate(ActionEvent event)
-    {
-        //Is root file there?
-        //The format is RootARM-32bit-2.02.00_RC8.zip
-        String pathToRootFile = BaseConfiguration.getUserTempDirectory();
-        String rootFile = "RootARM-32bit-" + BaseConfiguration.getApplicationVersion() + ".zip";
-        Path rootFilePath = Paths.get(pathToRootFile + rootFile);
+    private TableColumn<DetectedServer, DetectedServer> buttonsColumn;
 
-        if (Files.exists(rootFilePath, LinkOption.NOFOLLOW_LINKS))
-        {
-            //Use this file to upgrade the root
-            upgradeRootWithFile(pathToRootFile, rootFile);
-        } else
-        {
-            //We need to download it
-            TaskWithProgessCallback<Boolean> rootDownloader = new TaskWithProgessCallback<Boolean>()
-            {
-                @Override
-                protected Boolean call() throws Exception
-                {
-                    URL obj = new URL("http://www.cel-robox.com/wp-content/uploads/Software/Root/" + rootFile);
-                    boolean success = SystemUtils.downloadFromUrl(obj, pathToRootFile + rootFile, this);
-                    return success;
-                }
-
-                @Override
-                public void updateProgressPercent(double percentProgress)
-                {
-                    updateProgress(percentProgress, 100.0);
-                }
-            };
-
-            rootDownloader.setOnSucceeded((result) ->
-            {
-                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
-                upgradeRootWithFile(pathToRootFile, rootFile);
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            });
-
-            rootDownloader.setOnFailed((result) ->
-            {
-                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.failedDownloadMessage"));
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            });
-
-//            rootUpdateButton.disableProperty().unbind();
-//            rootUpdateButton.disableProperty().bind(rootDownloader.runningProperty());
-
-            if (rootSoftwareUpDownloadProgress != null)
-            {
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            }
-
-            Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootDownloadTitle"),
-                    rootDownloader.runningProperty(),
-                    rootDownloader.progressProperty());
-
-            Thread rootDownloaderThread = new Thread(rootDownloader);
-            rootDownloaderThread.setName("Root software downloader");
-            rootDownloaderThread.setDaemon(true);
-            rootDownloaderThread.start();
-        }
-    }
-
-    @FXML
-    void connectToServer(ActionEvent event)
-    {
-        DetectedServer server = scannedRoots.getSelectionModel().getSelectedItem();
-        if (server != null
-                && server.getServerStatus() != ServerStatus.CONNECTED)
-        {
-//            server.setPin(pinEntryField.getText());
-//            server.connect();
-        }
-    }
-
-    @FXML
-    void disconnectFromServer(ActionEvent event)
-    {
-        DetectedServer server = scannedRoots.getSelectionModel().getSelectedItem();
-        if (server != null
-                && server.getServerStatus() == ServerStatus.CONNECTED)
-        {
-            server.disconnect();
-        }
-    }
-
-    private ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
-
-    private final ChangeListener<ServerStatus> serverStatusListener = new ChangeListener<ServerStatus>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends ServerStatus> observable, ServerStatus oldValue, ServerStatus newValue)
-        {
-            processStatus(newValue);
-        }
-    };
-
-    private void upgradeRootWithFile(String path, String filename)
-    {
-        DetectedServer server = scannedRoots.getSelectionModel().getSelectedItem();
-        if (server != null
-                && server.getServerStatus() == ServerStatus.WRONG_VERSION)
-        {
-            TaskWithProgessCallback<Boolean> rootUploader = new TaskWithProgessCallback<Boolean>()
-            {
-                @Override
-                protected Boolean call() throws Exception
-                {
-                    return server.upgradeRootSoftware(path, filename, this);
-                }
-
-                @Override
-                public void updateProgressPercent(double percentProgress)
-                {
-                    updateProgress(percentProgress, 100.0);
-                }
-            };
-
-            rootUploader.setOnFailed((event) ->
-            {
-                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            });
-
-            rootUploader.setOnSucceeded((event) ->
-            {
-                if ((boolean) event.getSource().getValue())
-                {
-                    BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.successfulUploadMessage"));
-                } else
-                {
-                    BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
-                }
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            });
-
-//            rootUpdateButton.disableProperty().unbind();
-//            rootUpdateButton.disableProperty().bind(rootUploader.runningProperty());
-
-            if (rootSoftwareUpDownloadProgress != null)
-            {
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            }
-
-            Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootUploadTitle"),
-                    rootUploader.runningProperty(),
-                    rootUploader.progressProperty());
-
-            Thread rootUploaderThread = new Thread(rootUploader);
-            rootUploaderThread.setName("Root uploader");
-            rootUploaderThread.setDaemon(true);
-            rootUploaderThread.start();
-        }
-    }
-
-    private void hideEverything()
-    {
-//        connectPage.setVisible(false);
-//        connectPage.setMouseTransparent(true);
-//        disconnectButton.setVisible(false);
-//        disconnectButton.setMouseTransparent(true);
-//        incorrectPINLabel.setVisible(false);
-//        wrongVersionBox.setVisible(false);
-//        wrongVersionBox.setMouseTransparent(true);
-    }
-
-    private void processStatus(ServerStatus status)
-    {
-        switch (status)
-        {
-//            case CONNECTED:
-//                connectPage.setVisible(false);
-//                connectPage.setMouseTransparent(true);
-//                disconnectButton.setVisible(true);
-//                disconnectButton.setMouseTransparent(false);
-//                incorrectPINLabel.setVisible(false);
-//                wrongVersionBox.setVisible(false);
-//                wrongVersionBox.setMouseTransparent(true);
-//                break;
-//            case WRONG_PIN:
-//                connectPage.setVisible(true);
-//                connectPage.setMouseTransparent(false);
-//                disconnectButton.setVisible(false);
-//                disconnectButton.setMouseTransparent(true);
-//                incorrectPINLabel.setVisible(true);
-//                wrongVersionBox.setVisible(false);
-//                wrongVersionBox.setMouseTransparent(true);
-//                break;
-//            case WRONG_VERSION:
-//                connectPage.setVisible(true);
-//                connectPage.setMouseTransparent(false);
-//                disconnectButton.setVisible(false);
-//                disconnectButton.setMouseTransparent(true);
-//                incorrectPINLabel.setVisible(false);
-//                wrongVersionBox.setVisible(true);
-//                wrongVersionBox.setMouseTransparent(false);
-//                rootVersionLabel.setText(Lookup.i18n("rootScanner.wrongVersion"));
-//                break;
-//            case NOT_CONNECTED:
-//                connectPage.setVisible(true);
-//                connectPage.setMouseTransparent(false);
-//                disconnectButton.setVisible(false);
-//                disconnectButton.setMouseTransparent(true);
-//                incorrectPINLabel.setVisible(false);
-//                wrongVersionBox.setVisible(false);
-//                wrongVersionBox.setMouseTransparent(true);
-//                break;
-//            default:
-//                hideEverything();
-//                break;
-        }
-    }
+    private final ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
 
     /**
      * Initialises the controller class.
@@ -337,19 +106,26 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         statusColumn.setPrefWidth(40);
         statusColumn.setResizable(false);
 
+        buttonsColumn = new TableColumn<>();
+        buttonsColumn.setCellFactory(buttonCell -> new RootConnectionButtonTableCell());
+        buttonsColumn.setCellValueFactory((CellDataFeatures<DetectedServer, DetectedServer> p) -> new SimpleObjectProperty<>(p.getValue()));
+        buttonsColumn.setMinWidth(350);
+        buttonsColumn.setMaxWidth(Integer.MAX_VALUE);
+        buttonsColumn.setResizable(false);
+
         scannedRoots.getColumns().add(nameColumn);
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
         scannedRoots.getColumns().add(statusColumn);
-//        scannedRoots.setMaxWidth(400);
+        scannedRoots.getColumns().add(buttonsColumn);
+        scannedRoots.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        HBox.setHgrow(scannedRoots, Priority.ALWAYS);
 
         scannedRoots.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
         scannedRoots.setItems(currentServers);
 
         scannedRoots.setPlaceholder(new Text(BaseLookup.i18n("rootScanner.noRemoteServersFound")));
-
-        hideEverything();
 
         currentServers.addListener(new ListChangeListener<DetectedServer>()
         {
@@ -362,26 +138,6 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 } else
                 {
                     scannedRoots.getSelectionModel().clearSelection();
-                }
-            }
-        });
-
-        scannedRoots.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DetectedServer>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends DetectedServer> observable, DetectedServer oldValue, DetectedServer newValue)
-            {
-                if (oldValue != null)
-                {
-                    oldValue.serverStatusProperty().removeListener(serverStatusListener);
-                }
-                if (newValue != null)
-                {
-                    newValue.serverStatusProperty().addListener(serverStatusListener);
-                    processStatus(newValue.getServerStatus());
-                } else
-                {
-                    hideEverything();
                 }
             }
         });

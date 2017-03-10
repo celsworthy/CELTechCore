@@ -57,6 +57,25 @@ public class NewsButton extends GraphicButton implements NewsListener
                     System.err.println("Error when attempting to browse to "
                             + allAutoMakerNewsFlashesURL);
                 }
+            } else if (BaseConfiguration.getMachineType() == MachineType.LINUX_X86
+                    || BaseConfiguration.getMachineType() == MachineType.LINUX_X64)
+            {
+                try
+                {
+                    if (Runtime.getRuntime().exec(new String[]
+                    {
+                        "which", "xdg-open"
+                    }).getInputStream().read() != -1)
+                    {
+                        Runtime.getRuntime().exec(new String[]
+                        {
+                            "xdg-open", allAutoMakerNewsFlashesURL
+                        });
+                    }
+                } catch (IOException ex)
+                {
+                    System.err.println("Failed to run linux-specific browser command");
+                }
             } else
             {
                 System.err.println(

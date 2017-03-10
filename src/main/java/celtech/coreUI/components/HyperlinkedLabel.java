@@ -77,7 +77,26 @@ public class HyperlinkedLabel extends TextFlow
                                 {
                                     System.err.println("Error when attempting to browse to "
                                             + linkToVisit.
-                                            toString());
+                                                    toString());
+                                }
+                            } else if (BaseConfiguration.getMachineType() == MachineType.LINUX_X86
+                                    || BaseConfiguration.getMachineType() == MachineType.LINUX_X64)
+                            {
+                                try
+                                {
+                                    if (Runtime.getRuntime().exec(new String[]
+                                    {
+                                        "which", "xdg-open"
+                                    }).getInputStream().read() != -1)
+                                    {
+                                        Runtime.getRuntime().exec(new String[]
+                                        {
+                                            "xdg-open", linkToVisit.toString()
+                                        });
+                                    }
+                                } catch (IOException ex)
+                                {
+                                    System.err.println("Failed to run linux-specific browser command");
                                 }
                             } else
                             {
