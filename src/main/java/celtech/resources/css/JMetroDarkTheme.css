@@ -2979,3 +2979,8 @@ color-picker-label .text-field {
 {
     -fx-font-size: 16px;
 }
+
+.reprint-title
+{
+    -fx-font-size: 28px;
+}

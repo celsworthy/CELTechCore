@@ -21,6 +21,7 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
+import celtech.coreUI.components.ReprintPanel;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
@@ -98,6 +99,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
 
     private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
+    
+    private ReprintPanel reprintPanel = new ReprintPanel();
 
     @FXML
     private GraphicButtonWithLabel undoButton;
@@ -148,10 +151,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private GraphicToggleButtonWithLabel headFanButton;
 
     @FXML
-    private GraphicButtonWithLabel headLightsButton;
+    private GraphicButtonWithLabel lightsButton;
 
     @FXML
-    private GraphicButtonWithLabel ambientLightsButton;
+    private GraphicButtonWithLabel reprintButton;
 
     @FXML
     private GraphicButtonWithLabel printButton;
@@ -747,6 +750,35 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
 
     @FXML
+    void toggleLight(ActionEvent event)
+    {
+        ContextMenu contextMenu = new ContextMenu();
+
+        String cm1Text = BaseLookup.i18n("buttonText.headLights");
+        String cm2Text = BaseLookup.i18n("buttonText.ambientLights");
+
+        MenuItem toggleHeadLight = new MenuItem(cm1Text);
+        MenuItem toggleAmbientLight = new MenuItem(cm2Text);
+        toggleHeadLight.setOnAction((ActionEvent e) ->
+        {
+            toggleHeadLight();
+        });
+        toggleAmbientLight.setOnAction((ActionEvent e) ->
+        {
+            toggleAmbientLight();
+        });
+
+        contextMenu.getItems().add(toggleHeadLight);
+        contextMenu.getItems().add(toggleAmbientLight);
+
+        double cm1Width = getWidthOfString(cm1Text, "lightText", 14);
+        double cm2Width = getWidthOfString(cm2Text, "lightText", 14);
+
+        contextMenu.show(lightsButton, Side.TOP,
+                35 - ((max(cm1Width, cm2Width) + 20) / 2.0), -25);
+    }
+
+    @FXML
     void toggleHeadFan(ActionEvent event)
     {
         try
@@ -766,8 +798,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     boolean headLEDOn = false;
 
-    @FXML
-    void toggleHeadLights(ActionEvent event)
+    private void toggleHeadLight()
     {
         try
         {
@@ -788,8 +819,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private AmbientLEDState ambientLEDState = AmbientLEDState.COLOUR;
 
-    @FXML
-    void toggleAmbientLights(ActionEvent event)
+    private void toggleAmbientLight()
     {
         try
         {
@@ -843,6 +873,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             BaseLookup.getSystemNotificationHandler().showWarningNotification(Lookup.i18n(
                     "removeHead.title"), Lookup.i18n("removeHead.failed"));
         }
+    }
+    
+    @FXML
+    void showReprintDialog(ActionEvent event)
+    {
+        reprintPanel.show(currentPrinter);
     }
 
     /**
@@ -1107,11 +1143,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     homeButton.disableProperty().unbind();
                     currentPrinter.getPrinterAncillarySystems().headFanOnProperty().
                             removeListener(headFanStatusListener);
-                    headLightsButton.disableProperty().unbind();
-                    ambientLightsButton.disableProperty().unbind();
+                    lightsButton.disableProperty().unbind();
                     calibrateButton.disableProperty().unbind();
                     removeHeadButton.disableProperty().unbind();
                     purgeButton.disableProperty().unbind();
+                    reprintButton.disableProperty().unbind();
 
                     clearConditionalNotificationBarConditions();
                 }
@@ -1145,6 +1181,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
                 purgeButton.disableProperty()
                         .bind(newValue.canPurgeHeadProperty().not());
+                reprintButton.disableProperty().bind(newValue.canPrintProperty().not());
 
                 if (newValue.headProperty().get() != null)
                 {

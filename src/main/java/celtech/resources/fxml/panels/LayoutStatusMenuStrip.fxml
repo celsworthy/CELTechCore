@@ -66,8 +66,8 @@
                                         <GraphicButtonWithLabel fx:id="homeButton" fxmlFileName="homeAxesButton" labelText="%buttonText.home" onAction="#homeAll" />
                                         <GraphicButtonWithLabel fx:id="removeHeadButton" fxmlFileName="removeHeadButton" labelText="%buttonText.removeHead" onAction="#removeHead" />
                                         <GraphicToggleButtonWithLabel fx:id="headFanButton" fxmlFileName="headFanButton" labelText="%buttonText.headFan" onAction="#toggleHeadFan" />
-                                        <GraphicButtonWithLabel fx:id="headLightsButton" fxmlFileName="lightsButton" labelText="%buttonText.headLights" onAction="#toggleHeadLights" />
-                                        <GraphicButtonWithLabel fx:id="ambientLightsButton" fxmlFileName="lightsButton" labelText="%buttonText.ambientLights" onAction="#toggleAmbientLights" />
+                                        <GraphicButtonWithLabel fx:id="lightsButton" fxmlFileName="lightsButton" labelText="%buttonText.lights" onAction="#toggleLight" />
+                                        <GraphicButtonWithLabel fx:id="reprintButton" fxmlFileName="reprintButton" labelText="%buttonText.reprint" onAction="#showReprintDialog" />
                                     </children>
                                 </FlowPane>
                                 <FlowPane fx:id="layoutButtonHBox" alignment="CENTER" prefWrapLength="200">
