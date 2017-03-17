@@ -313,7 +313,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 });
 
         disconnectedLinkedText.replaceText(Lookup.i18n("printerStatus.noPrinterAttached"));
-        
+
         projectPanelVisibility.bind(projectPanelShouldBeVisible.and(selectedPrinterIsPrinting));
 
         DisplayManager.getInstance().getDisplayScalingModeProperty().addListener(new ChangeListener<DisplayManager.DisplayScalingMode>()
@@ -323,7 +323,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             public void changed(ObservableValue<? extends DisplayManager.DisplayScalingMode> ov, DisplayManager.DisplayScalingMode t, DisplayManager.DisplayScalingMode t1)
             {
                 displayScaleChanged(t1);
-    }
+            }
         });
 
         displayScaleChanged(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
@@ -389,7 +389,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         setupReel1Colour();
         setupReel2Colour();
-        
+
         setAdvancedControlsVisibility();
 
         resizePrinterDisplay(parentPanel);
@@ -397,9 +397,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void setColorAdjustFromDesiredColour(ColorAdjust effect, Color desiredColor)
     {
-        effect.setHue(hueConverter(desiredColor.getHue()));
-        effect.setBrightness(desiredColor.getBrightness() - 1);
-        effect.setSaturation(desiredColor.getSaturation());
+        if (desiredColor != null)
+        {
+            effect.setHue(hueConverter(desiredColor.getHue()));
+            effect.setBrightness(desiredColor.getBrightness() - 1);
+            effect.setSaturation(desiredColor.getSaturation());
+        }
 //        steno.info("Colour - h=" + hueConverter(desiredColor.getHue()) + " s=" + desiredColor.getSaturation() + " b" + desiredColor.getBrightness());
     }
 
@@ -571,38 +574,38 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     {
         if (parent != null)
         {
-        final double beginWidth = 1500;
-        final double beginHeight = 1106;
-        final double aspect = beginWidth / beginHeight;
+            final double beginWidth = 1500;
+            final double beginHeight = 1106;
+            final double aspect = beginWidth / beginHeight;
             boolean lhPanelVisible = gcodePanel.isVisible() || diagnosticPanel.isVisible();
             boolean rhPanelVisible = projectPanel.isVisible() || printAdjustmentsPanel.isVisible();
             double fudgeFactor = (baseReel2.isVisible() || baseReelBoth.isVisible()) ? 600 : 300;
             double lefthandPanelWidthToSubtract = (lhPanelVisible || rhPanelVisible) ? fudgeFactor : 0.0;
             double parentWidth = parent.getWidth() - lefthandPanelWidthToSubtract;
-        double parentHeight = parent.getHeight();
-        double displayAspect = parentWidth / parentHeight;
+            double parentHeight = parent.getHeight();
+            double displayAspect = parentWidth / parentHeight;
 
-        double newWidth = 0;
-        double newHeight = 0;
+            double newWidth = 0;
+            double newHeight = 0;
 
-        if (displayAspect >= aspect)
-        {
-            // Drive from height
-            newWidth = parentHeight * aspect;
-            newHeight = parentHeight;
-        } else
-        {
-            //Drive from width
-            newHeight = parentWidth / aspect;
-            newWidth = parentWidth;
+            if (displayAspect >= aspect)
+            {
+                // Drive from height
+                newWidth = parentHeight * aspect;
+                newHeight = parentHeight;
+            } else
+            {
+                //Drive from width
+                newHeight = parentWidth / aspect;
+                newWidth = parentWidth;
+            }
+
+            double xScale = Double.max((newWidth / beginWidth), 0.4);
+            double yScale = Double.max((newHeight / beginHeight), 0.4);
+
+            statusPane.setScaleX(xScale);
+            statusPane.setScaleY(yScale);
         }
-
-        double xScale = Double.max((newWidth / beginWidth), 0.4);
-        double yScale = Double.max((newHeight / beginHeight), 0.4);
-
-        statusPane.setScaleX(xScale);
-        statusPane.setScaleY(yScale);
-    }
     }
 
     private void unbindFromSelectedPrinter()
@@ -647,7 +650,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 wrappedPanel = wrapPanelInOuterPanel(insetPanel, title, visibleProperty);
                 if (appearanceConditions != null)
                 {
-                wrappedPanel.visibleProperty().bind(appearanceConditions);
+                    wrappedPanel.visibleProperty().bind(appearanceConditions);
                 }
 
                 final VBox panelToChangeHeightOf = wrappedPanel;
