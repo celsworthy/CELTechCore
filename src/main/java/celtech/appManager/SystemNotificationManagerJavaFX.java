@@ -141,7 +141,14 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         setupErrorOptions();
 
                         errorChoiceBox = new ChoiceLinkDialogBox(true);
-                        errorChoiceBox.setTitle(Lookup.i18n(error.getErrorTitleKey()));
+                        String printerName = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
+                        if (printerName != null)
+                        {
+                            errorChoiceBox.setTitle(printerName + ": " + Lookup.i18n(error.getErrorTitleKey()));
+                        } else
+                        {
+                            errorChoiceBox.setTitle(Lookup.i18n(error.getErrorTitleKey()));
+                        }
                         errorChoiceBox.setMessage(Lookup.i18n(error.getErrorMessageKey()));
                         error.getOptions()
                                 .stream()
