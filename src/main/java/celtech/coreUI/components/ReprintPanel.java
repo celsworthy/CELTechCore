@@ -19,7 +19,6 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -49,6 +48,8 @@ public class ReprintPanel extends VBox
     private final Text printProfile = new Text();
     private final Text eLengthM = new Text();
     private final Text dLengthM = new Text();
+    private final Text creationDateLabel = new Text();
+    private final Text creationDate = new Text();
     private static final double VOLUME_TO_LENGTH_1_75MM = 0.00415751688076788;
 
     private final Button closeButton = new Button();
@@ -89,16 +90,19 @@ public class ReprintPanel extends VBox
         jobDurationLabel.setText(BaseLookup.i18n("reprintPanel.duration"));
         printProfileLabel.setText(BaseLookup.i18n("reprintPanel.profile"));
         eLengthMLabel.setText(BaseLookup.i18n("reprintPanel.requiredFilament1"));
-        dLengthMLabel.setText(BaseLookup.i18n("reprintPanel.requiredFilament1"));
+        dLengthMLabel.setText(BaseLookup.i18n("reprintPanel.requiredFilament2"));
+        creationDateLabel.setText(BaseLookup.i18n("reprintPanel.creationDate"));
 
-        detailsPanel.add(jobDurationLabel, 0, 0);
-        detailsPanel.add(jobDuration, 1, 0);
-        detailsPanel.add(printProfileLabel, 0, 1);
-        detailsPanel.add(printProfile, 1, 1);
-        detailsPanel.add(eLengthMLabel, 0, 2);
-        detailsPanel.add(eLengthM, 1, 2);
-        detailsPanel.add(dLengthMLabel, 0, 3);
-        detailsPanel.add(dLengthM, 1, 3);
+        detailsPanel.add(creationDateLabel, 0, 0);
+        detailsPanel.add(creationDate, 1, 0);
+        detailsPanel.add(jobDurationLabel, 0, 1);
+        detailsPanel.add(jobDuration, 1, 1);
+        detailsPanel.add(printProfileLabel, 0, 2);
+        detailsPanel.add(printProfile, 1, 2);
+        detailsPanel.add(eLengthMLabel, 0, 3);
+        detailsPanel.add(eLengthM, 1, 3);
+        detailsPanel.add(dLengthMLabel, 0, 4);
+        detailsPanel.add(dLengthM, 1, 4);
         detailsPanel.setPadding(new Insets(10, 10, 10, 10));
 
         closeButton.setText(BaseLookup.i18n("buttonText.close"));
@@ -168,6 +172,7 @@ public class ReprintPanel extends VBox
             tableView.getSelectionModel().clearSelection();
         } else
         {
+            creationDate.setText(printJob.getCreationDate());
             printProfile.setText(printJob.getPrintProfileName());
             double eLength = printJob.geteVolume() * VOLUME_TO_LENGTH_1_75MM;
             eLengthM.setText(String.format("%.2fm", eLength));
