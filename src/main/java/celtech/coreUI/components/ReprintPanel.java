@@ -126,6 +126,7 @@ public class ReprintPanel extends VBox
         this.getChildren().addAll(reprintTitle, masterDetailsPane, buttonContainer);
         this.setAlignment(Pos.CENTER);
         this.setPrefWidth(500);
+        this.setPrefHeight(405);
 
         Scene dialogScene = new Scene(this, Color.TRANSPARENT);
         dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
