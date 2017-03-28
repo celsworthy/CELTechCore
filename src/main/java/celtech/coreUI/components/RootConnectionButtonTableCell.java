@@ -6,7 +6,6 @@ import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.remote.Configuration;
-import celtech.roboxbase.comms.remote.RemoteClient;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.MachineType;
 import celtech.roboxbase.utils.SystemUtils;
@@ -64,6 +63,15 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
 
     @FXML
     void disconnectFromServer(ActionEvent event)
+    {
+        if (associatedServer != null)
+        {
+            associatedServer.disconnect();
+        }
+    }
+    
+    @FXML
+    void deleteServer(ActionEvent event)
     {
         if (associatedServer != null)
         {

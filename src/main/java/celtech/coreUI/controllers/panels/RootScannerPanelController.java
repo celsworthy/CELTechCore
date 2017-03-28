@@ -11,12 +11,16 @@ import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.DeviceDetectionListener;
 import celtech.roboxbase.comms.RemoteServerDetector;
 import celtech.roboxbase.configuration.CoreMemory;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -28,7 +32,10 @@ import javafx.scene.control.TableView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -51,22 +58,81 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     @FXML
     private TableView<DetectedServer> scannedRoots;
 
-    @FXML
     private TableColumn nameColumn;
-
-    @FXML
     private TableColumn ipAddressColumn;
-
-    @FXML
     private TableColumn versionColumn;
-
-    @FXML
     private TableColumn<DetectedServer, ServerStatus> statusColumn;
+    private TableColumn<DetectedServer, DetectedServer> scannedRootButtonsColumn;
 
     @FXML
-    private TableColumn<DetectedServer, DetectedServer> buttonsColumn;
+    private TextField ipTextField;
+
+    @FXML
+    private Button addRootButton;
+
+    @FXML
+    private Button deleteRootButton;
+
+    private static final String IPADDRESS_PATTERN
+            = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
+            + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+
+    @FXML
+    private void manuallyAddRoot(ActionEvent event)
+    {
+        String enteredIP = ipTextField.getText();
+        try
+        {
+            DetectedServer newServer = new DetectedServer(InetAddress.getByName(enteredIP));
+            newServer.setWasAutomaticallyAdded(false);
+            checkAndAddServer(newServer);
+            ipTextField.setText("");
+        } catch (UnknownHostException ex)
+        {
+            steno.error("Bad IP address for manually added Root: " + enteredIP);
+        }
+    }
+
+    @FXML
+    private void manuallyDeleteRoot(ActionEvent event)
+    {
+        String enteredIP = ipTextField.getText();
+
+        DetectedServer matchingServer = null;
+        for (DetectedServer server : currentServers)
+        {
+            if (server.getAddress().getHostAddress().equals(enteredIP))
+            {
+                matchingServer = server;
+                break;
+            }
+        }
+
+        if (matchingServer != null)
+        {
+            matchingServer.disconnect();
+            currentServers.remove(matchingServer);
+        }
+    }
 
     private final ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
+
+    private void checkAndAddServer(DetectedServer server)
+    {
+        if (!server.whoAreYou())
+        {
+            CoreMemory.getInstance().deactivateRoboxRoot(server);
+        } else
+        {
+            server.connect();
+            Platform.runLater(() ->
+            {
+                currentServers.add(server);
+            });
+        }
+    }
 
     /**
      * Initialises the controller class.
@@ -106,26 +172,86 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         statusColumn.setPrefWidth(40);
         statusColumn.setResizable(false);
 
-        buttonsColumn = new TableColumn<>();
-        buttonsColumn.setCellFactory(buttonCell -> new RootConnectionButtonTableCell());
-        buttonsColumn.setCellValueFactory((CellDataFeatures<DetectedServer, DetectedServer> p) -> new SimpleObjectProperty<>(p.getValue()));
-        buttonsColumn.setMinWidth(350);
-        buttonsColumn.setMaxWidth(Integer.MAX_VALUE);
-        buttonsColumn.setResizable(false);
+        scannedRootButtonsColumn = new TableColumn<>();
+        scannedRootButtonsColumn.setCellFactory(buttonCell -> new RootConnectionButtonTableCell());
+        scannedRootButtonsColumn.setCellValueFactory((CellDataFeatures<DetectedServer, DetectedServer> p) -> new SimpleObjectProperty<>(p.getValue()));
+        scannedRootButtonsColumn.setMinWidth(350);
+        scannedRootButtonsColumn.setMaxWidth(Integer.MAX_VALUE);
+        scannedRootButtonsColumn.setResizable(false);
 
         scannedRoots.getColumns().add(nameColumn);
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
         scannedRoots.getColumns().add(statusColumn);
-        scannedRoots.getColumns().add(buttonsColumn);
+        scannedRoots.getColumns().add(scannedRootButtonsColumn);
         scannedRoots.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         HBox.setHgrow(scannedRoots, Priority.ALWAYS);
 
         scannedRoots.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        scannedRoots.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DetectedServer>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends DetectedServer> observable, DetectedServer oldValue, DetectedServer newValue)
+            {
+                if (newValue == null
+                        || newValue.getWasAutomaticallyAdded())
+                {
+                    ipTextField.setText("");
+                } else
+                {
+                    ipTextField.setText(newValue.getServerIP());
+                }
+            }
+        });
 
         scannedRoots.setItems(currentServers);
 
         scannedRoots.setPlaceholder(new Text(BaseLookup.i18n("rootScanner.noRemoteServersFound")));
+
+        ipTextField.textProperty().addListener(new ChangeListener<String>()
+        {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue)
+            {
+                String enteredIP = ipTextField.getText();
+                if (enteredIP.matches(IPADDRESS_PATTERN))
+                {
+                    DetectedServer matchingServer = null;
+                    for (DetectedServer server : currentServers)
+                    {
+                        if (server.getAddress().getHostAddress().equals(enteredIP))
+                        {
+                            matchingServer = server;
+                            break;
+                        }
+                    }
+
+                    if (matchingServer != null
+                            && !matchingServer.getWasAutomaticallyAdded())
+                    {
+                        addRootButton.setDisable(true);
+                        deleteRootButton.setDisable(false);
+                    } else if (matchingServer == null)
+                    {
+                        // Allow the IP to be added - it is not in the list
+                        addRootButton.setDisable(false);
+                        deleteRootButton.setDisable(true);
+                    } else
+                    {
+                        // The entered IP is that of an automatically added server
+                        addRootButton.setDisable(false);
+                        deleteRootButton.setDisable(true);
+                    }
+                } else
+                {
+                    addRootButton.setDisable(true);
+                    deleteRootButton.setDisable(true);
+                }
+            }
+        });
+
+        addRootButton.setDisable(true);
+        deleteRootButton.setDisable(true);
 
         currentServers.addListener(new ListChangeListener<DetectedServer>()
         {
@@ -152,20 +278,10 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
                 serversToCheck.forEach((server) ->
                 {
-                    if (!server.whoAreYou())
-                    {
-                        CoreMemory.getInstance().deactivateRoboxRoot(server);
-                    } else
-                    {
-                        server.connect();
-                        Platform.runLater(() ->
-                        {
-                            currentServerList.add(server);
-                            currentServers.add(server);
-                        });
-                    }
+                    checkAndAddServer(server);
+                    currentServerList.add(server);
                 });
-
+                
                 while (!isCancelled())
                 {
                     List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
@@ -185,7 +301,8 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
 
                         for (DetectedServer server : currentServerList)
                         {
-                            if (!foundServers.contains(server))
+                            if (!foundServers.contains(server)
+                                    && server.getWasAutomaticallyAdded())
                             {
                                 serversToRemove.add(server);
                             }
