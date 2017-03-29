@@ -221,7 +221,6 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         } else
         {
             selectPrinter(null);
-            Lookup.setSelectedPrinter(null);
         }
     }
     

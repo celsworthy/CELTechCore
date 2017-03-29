@@ -331,12 +331,12 @@ public class PrinterComponent extends Pane
         switch (printerStatus)
         {
             case IDLE:
-            case RUNNING_MACRO_FILE:
             case REMOVING_HEAD:
             case OPENING_DOOR:
                 status = Status.READY;
                 inInterruptibleState = true;
                 break;
+            case RUNNING_MACRO_FILE:
             case PRINTING_PROJECT:
                 status = Status.PRINTING;
                 inInterruptibleState = true;

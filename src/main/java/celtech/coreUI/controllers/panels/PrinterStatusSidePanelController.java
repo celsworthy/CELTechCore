@@ -267,7 +267,6 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         if (printer != null)
         {
             previousSelectedPrinter = printer;
-            Lookup.setSelectedPrinter(printer);
             bindDetails(printer);
             if (printer.headProperty().get() != null)
             {
@@ -355,6 +354,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void showNoHead()
     {
+        headPanel.setVisible(false);
         noheadDataBox.setVisible(true);
         noHead.setVisible(true);
         headDataBox.setVisible(false);
@@ -465,6 +465,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
         if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
+            headPanel.setVisible(true);
             noheadDataBox.setVisible(false);
             noHead.setVisible(false);
             headDataBox.setVisible(true);
@@ -473,6 +474,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             singleMaterialLiteHead.setVisible(false);
         } else if (head.typeCodeProperty().get().equals("RBX01-SL"))
         {
+            headPanel.setVisible(true);
             noheadDataBox.setVisible(false);
             noHead.setVisible(false);
             headDataBox.setVisible(true);
@@ -481,6 +483,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             singleMaterialLiteHead.setVisible(true);
         } else
         {
+            headPanel.setVisible(true);
             noheadDataBox.setVisible(false);
             noHead.setVisible(false);
             headDataBox.setVisible(true);
@@ -509,14 +512,12 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     public void whenPrinterAdded(Printer printer)
     {
         controlDetailsVisibility();
-        headPanel.setVisible(true);
     }
 
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
         controlDetailsVisibility();
-        headPanel.setVisible(false);
     }
 
     @Override

@@ -33,6 +33,7 @@ public class HyperlinkedLabel extends TextFlow
     {
         getChildren().clear();
         hyperlinkMap.clear();
+        text.set("");
 
         Matcher matcher = hyperlinkPattern.matcher(newText);
         int matches = 0;
@@ -130,6 +131,7 @@ public class HyperlinkedLabel extends TextFlow
         Text plainText = new Text(textPortion);
         plainText.getStyleClass().add("hyperlink-plaintext");
         getChildren().add(plainText);
+        text.set(text.get() + textPortion);
     }
 
     public String getText()
