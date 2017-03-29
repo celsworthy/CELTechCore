@@ -229,15 +229,15 @@ public class PrinterComponent extends Pane
             printer.getPrintEngine().progressProperty().addListener(progressListener);
             printer.printerStatusProperty().addListener(
                     (ObservableValue<? extends PrinterStatus> observable, PrinterStatus oldValue, PrinterStatus newValue) ->
-                    {
-                        updateStatus(newValue, printer.pauseStatusProperty().get());
-                    });
+            {
+                updateStatus(newValue, printer.pauseStatusProperty().get());
+            });
 
             printer.pauseStatusProperty().addListener(
                     (ObservableValue<? extends PauseStatus> observable, PauseStatus oldValue, PauseStatus newValue) ->
-                    {
-                        updateStatus(printer.printerStatusProperty().get(), newValue);
-                    });
+            {
+                updateStatus(printer.printerStatusProperty().get(), newValue);
+            });
 
             printer.getPrintEngine().highIntensityCommsInProgressProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
             {
@@ -338,6 +338,10 @@ public class PrinterComponent extends Pane
                 break;
             case RUNNING_MACRO_FILE:
             case PRINTING_PROJECT:
+            case CALIBRATING_NOZZLE_ALIGNMENT:
+            case CALIBRATING_NOZZLE_OPENING:
+            case CALIBRATING_NOZZLE_HEIGHT:
+            case PURGING_HEAD:
                 status = Status.PRINTING;
                 inInterruptibleState = true;
                 break;
