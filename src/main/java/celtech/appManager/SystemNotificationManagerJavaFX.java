@@ -55,7 +55,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     /*
      * Error dialog
      */
-    /*
+ /*
      * SD card dialog
      */
     protected boolean sdDialogOnDisplay = false;
@@ -153,7 +153,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                         error.getOptions()
                                 .stream()
                                 .forEach(option -> errorChoiceBox.
-                                        addChoiceLink(errorToButtonMap.get(option)));
+                                addChoiceLink(errorToButtonMap.get(option)));
 
                         Optional<ChoiceLinkButton> buttonPressed;
                         try

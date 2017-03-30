@@ -33,6 +33,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
@@ -229,6 +230,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar notEnoughFilament2ForPrintNotificationBar;
     private final BooleanProperty notEnoughFilament2ForPrint = new SimpleBooleanProperty(false);
 
+    private ConditionalNotificationBar tooManyRoboxAttachedNotificationBar;
+    
     private TimeCostThreadManager timeCostThreadManager;
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
@@ -932,6 +935,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         notEnoughFilament2ForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilament2ToCompletePrint", NotificationType.CAUTION);
         notEnoughFilament2ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilament2ForPrint));
 
+        tooManyRoboxAttachedNotificationBar = new ConditionalNotificationBar("dialogs.toomanyrobox.message", NotificationType.CAUTION);
+        tooManyRoboxAttachedNotificationBar.setAppearanceCondition(RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty());
+        
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
         printerUtils = PrinterUtils.getInstance();
