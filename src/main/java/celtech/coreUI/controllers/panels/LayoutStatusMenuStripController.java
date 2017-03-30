@@ -214,7 +214,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar noHeadNotificationBar;
     private ConditionalNotificationBar noModelsNotificationBar;
     private ConditionalNotificationBar dmHeadOnSingleExtruderMachineNotificationBar;
-    private final BooleanProperty dualMaterialHeadAttachedToSingleMaterialMachine = new SimpleBooleanProperty(false);
 
     private final BooleanProperty modelsOffBed = new SimpleBooleanProperty(false);
     private final BooleanProperty modelsOffBedWithRaft = new SimpleBooleanProperty(false);
@@ -231,7 +230,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final BooleanProperty notEnoughFilament2ForPrint = new SimpleBooleanProperty(false);
 
     private ConditionalNotificationBar tooManyRoboxAttachedNotificationBar;
-    
+
     private TimeCostThreadManager timeCostThreadManager;
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
@@ -918,7 +917,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationType.CAUTION);
 
         dmHeadOnSingleExtruderMachineNotificationBar = new ConditionalNotificationBar("dialogs.dualMaterialHeadOnSingleExtruderMachine", NotificationType.WARNING);
-        dmHeadOnSingleExtruderMachineNotificationBar.setAppearanceCondition(dualMaterialHeadAttachedToSingleMaterialMachine.not().not());
 
         modelsOffBedNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBed", NotificationType.CAUTION);
         modelsOffBedWithRaftNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithRaft", NotificationType.CAUTION);
@@ -937,7 +935,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         tooManyRoboxAttachedNotificationBar = new ConditionalNotificationBar("dialogs.toomanyrobox.message", NotificationType.CAUTION);
         tooManyRoboxAttachedNotificationBar.setAppearanceCondition(RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty());
-        
+
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();
         printerUtils = PrinterUtils.getInstance();
@@ -1073,6 +1071,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 .and(printer.headProperty().isNotNull()));
         noHeadNotificationBar.setAppearanceCondition(printer.headProperty().isNull()
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+        if (printer.headProperty().get() != null)
+        {
+            printer.extrudersProperty().get(0).isFittedProperty().get();
+            printer.extrudersProperty().get(1).isFittedProperty().get();
+            dmHeadOnSingleExtruderMachineNotificationBar.setAppearanceCondition(printer.headProperty().get().headTypeProperty().isEqualTo(Head.HeadType.DUAL_MATERIAL_HEAD)
+                    .and(printer.extrudersProperty().get(0).isFittedProperty().not().or(printer.extrudersProperty().get(1).isFittedProperty().not())));
+        }
 
         if (project instanceof ModelContainerProject)
         {
@@ -1215,6 +1220,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         printHeadPowerOffNotificationBar.clearAppearanceCondition();
         noHeadNotificationBar.clearAppearanceCondition();
         noModelsNotificationBar.clearAppearanceCondition();
+        dmHeadOnSingleExtruderMachineNotificationBar.clearAppearanceCondition();
     }
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
@@ -1393,7 +1399,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             checkRemainingFilament();
         } catch (Exception ex)
         {
-            steno.warning("Error updating can print or print button conditionals: " + ex);
+            steno.exception("Error updating can print or print button conditionals", ex);
         }
     }
 
@@ -1569,15 +1575,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             bindNozzleControls(printer);
         }
-
-        if (printer != null)
-        {
-            dualMaterialHeadAttachedToSingleMaterialMachine.set((printer.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                    && (!printer.extrudersProperty().get(0).isFittedProperty().get() || !printer.extrudersProperty().get(1).isFittedProperty().get()));
-        } else
-        {
-            dualMaterialHeadAttachedToSingleMaterialMachine.set(false);
-        }
     }
 
     private void bindNozzleControls(Printer printer)
@@ -1603,8 +1600,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         fineNozzleButton.setVisible(false);
         fillNozzleButton.visibleProperty().unbind();
         fillNozzleButton.setVisible(false);
-
-        dualMaterialHeadAttachedToSingleMaterialMachine.set(false);
     }
 
     @Override
