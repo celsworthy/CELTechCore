@@ -19,6 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -38,6 +40,8 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
 {
 
     private GenericProgressBar rootSoftwareUpDownloadProgress;
+
+    private BooleanProperty inhibitUpdate = new SimpleBooleanProperty(false);
 
     @FXML
     private HBox connectedBox;
@@ -69,7 +73,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
             associatedServer.disconnect();
         }
     }
-    
+
     @FXML
     void deleteServer(ActionEvent event)
     {
@@ -98,11 +102,17 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 }
             };
 
+            rootUploader.setOnScheduled((event) ->
+            {
+                inhibitUpdate.set(true);
+            });
+
             rootUploader.setOnFailed((event) ->
             {
                 BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
                 rootSoftwareUpDownloadProgress = null;
+                inhibitUpdate.set(false);
             });
 
             rootUploader.setOnSucceeded((event) ->
@@ -116,10 +126,9 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 }
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
                 rootSoftwareUpDownloadProgress = null;
+                inhibitUpdate.set(false);
             });
 
-//            rootUpdateButton.disableProperty().unbind();
-//            rootUpdateButton.disableProperty().bind(rootUploader.runningProperty());
             if (rootSoftwareUpDownloadProgress != null)
             {
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
@@ -170,12 +179,18 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 }
             };
 
+            rootDownloader.setOnScheduled((result) ->
+            {
+                inhibitUpdate.set(true);
+            });
+
             rootDownloader.setOnSucceeded((result) ->
             {
                 BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
                 upgradeRootWithFile(pathToRootFile, rootFile);
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
                 rootSoftwareUpDownloadProgress = null;
+                inhibitUpdate.set(false);
             });
 
             rootDownloader.setOnFailed((result) ->
@@ -183,10 +198,9 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.failedDownloadMessage"));
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
                 rootSoftwareUpDownloadProgress = null;
+                inhibitUpdate.set(false);
             });
 
-//            rootUpdateButton.disableProperty().unbind();
-//            rootUpdateButton.disableProperty().bind(rootDownloader.runningProperty());
             if (rootSoftwareUpDownloadProgress != null)
             {
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
@@ -276,6 +290,8 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         {
             throw new RuntimeException(exception);
         }
+
+        updateButton.disableProperty().bind(inhibitUpdate);
     }
 
     @Override
