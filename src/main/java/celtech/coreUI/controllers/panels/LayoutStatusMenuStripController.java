@@ -99,7 +99,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final IntegerProperty currentNozzle = new SimpleIntegerProperty(0);
 
     private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
-    
+
     private ReprintPanel reprintPanel = new ReprintPanel();
 
     @FXML
@@ -381,7 +381,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 {
                     displayManager.getPurgeInsetPanelController().purgeAndPrint(
                             (ModelContainerProject) currentProject, printer);
-                } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE)
+                } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
+                        || purgeConsent == PurgeResponse.NOT_NECESSARY)
                 {
                     ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
                     for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
@@ -403,10 +404,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             }
                         }
                     }
-                    printer.printMeshes(printableMeshes);
-                    applicationStatus.setMode(ApplicationMode.STATUS);
-                } else if (purgeConsent == PurgeResponse.NOT_NECESSARY)
-                {
                     printer.printMeshes(printableMeshes);
                     applicationStatus.setMode(ApplicationMode.STATUS);
                 }
@@ -874,7 +871,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     "removeHead.title"), Lookup.i18n("removeHead.failed"));
         }
     }
-    
+
     @FXML
     void showReprintDialog(ActionEvent event)
     {
