@@ -2985,6 +2985,11 @@ color-picker-label .text-field {
     -fx-font-size: 28px;
 }
 
+.reprint-subtitle
+{
+    -fx-font-size: 18px;
+}
+
 .rootScannerTable .table-row-cell
 {
     -fx-cell-size: 40px;
