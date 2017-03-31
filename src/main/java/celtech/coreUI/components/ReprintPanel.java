@@ -66,6 +66,9 @@ public class ReprintPanel extends VBox
         Text reprintTitle = new Text(BaseLookup.i18n("reprintPanel.title"));
         reprintTitle.getStyleClass().add("reprint-title");
 
+        Text reprintSubtitle = new Text(BaseLookup.i18n("reprintPanel.subtitle"));
+        reprintSubtitle.getStyleClass().add("reprint-subtitle");
+
         TableColumn nameColumn = new TableColumn<>();
         nameColumn.setCellValueFactory(new PropertyValueFactory<SuitablePrintJob, String>("printJobName"));
         nameColumn.setText(BaseLookup.i18n("rootScanner.name"));
@@ -123,10 +126,10 @@ public class ReprintPanel extends VBox
         buttonContainer.setAlignment(Pos.CENTER);
         buttonContainer.getChildren().addAll(closeButton, printButton);
 
-        this.getChildren().addAll(reprintTitle, masterDetailsPane, buttonContainer);
+        this.getChildren().addAll(reprintTitle, reprintSubtitle, masterDetailsPane, buttonContainer);
         this.setAlignment(Pos.CENTER);
         this.setPrefWidth(500);
-        this.setPrefHeight(405);
+        this.setPrefHeight(415);
 
         Scene dialogScene = new Scene(this, Color.TRANSPARENT);
         dialogScene.getStylesheets().add(ApplicationConfiguration.getMainCSSFile());
