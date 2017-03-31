@@ -129,9 +129,13 @@ public class Lookup
         return currentlySelectedPrinterProperty;
     }
 
-    public static void setSelectedPrinter(Printer currentlySelectedPrinter)
+    public static void setSelectedPrinter(Printer printerToSelect)
     {
-        currentlySelectedPrinterProperty.set(currentlySelectedPrinter);
+        if (currentlySelectedPrinterProperty.get() == null
+                || !currentlySelectedPrinterProperty.get().getPrintEngine().highIntensityCommsInProgressProperty().get())
+        {
+            currentlySelectedPrinterProperty.set(printerToSelect);
+        }
     }
 
     public static UserPreferences getUserPreferences()
