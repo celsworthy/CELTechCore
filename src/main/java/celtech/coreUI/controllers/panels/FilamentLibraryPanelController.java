@@ -384,7 +384,14 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         colour.valueProperty().addListener(
                 (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
         {
-            isDirty.set(true);
+            if (!suspendDirtyTriggers)
+            {
+                isDirty.set(true);
+                currentFilamentAsEdited = currentFilament.clone();
+                updateFilamentFromWidgets(currentFilamentAsEdited);
+                updateWriteToReelBindings();
+                updateSaveBindings();
+            }
         });
         material.valueProperty().addListener(dirtyMaterialTypeListener);
         filamentDiameter.valueChangedProperty().addListener(dirtyBooleanListener);
