@@ -48,37 +48,37 @@ import javafx.scene.text.Text;
  */
 public class RootScannerPanelController implements Initializable, MenuInnerPanel, DeviceDetectionListener
 {
-
+    
     private static final Stenographer steno = StenographerFactory.getStenographer(RootScannerPanelController.class.getName());
-
+    
     private final RemoteServerDetector remoteServerDetector = RemoteServerDetector.getInstance();
-
+    
     public static String pinForCurrentServer = "";
-
+    
     @FXML
     private TableView<DetectedServer> scannedRoots;
-
+    
     private TableColumn nameColumn;
     private TableColumn ipAddressColumn;
     private TableColumn versionColumn;
     private TableColumn<DetectedServer, ServerStatus> statusColumn;
     private TableColumn<DetectedServer, DetectedServer> scannedRootButtonsColumn;
-
+    
     @FXML
     private TextField ipTextField;
-
+    
     @FXML
     private Button addRootButton;
-
+    
     @FXML
     private Button deleteRootButton;
-
+    
     private static final String IPADDRESS_PATTERN
             = "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
-
+    
     @FXML
     private void manuallyAddRoot(ActionEvent event)
     {
@@ -94,12 +94,12 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             steno.error("Bad IP address for manually added Root: " + enteredIP);
         }
     }
-
+    
     @FXML
     private void manuallyDeleteRoot(ActionEvent event)
     {
         String enteredIP = ipTextField.getText();
-
+        
         DetectedServer matchingServer = null;
         for (DetectedServer server : currentServers)
         {
@@ -109,16 +109,16 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 break;
             }
         }
-
+        
         if (matchingServer != null)
         {
             matchingServer.disconnect();
             currentServers.remove(matchingServer);
         }
     }
-
+    
     private final ObservableList<DetectedServer> currentServers = FXCollections.observableArrayList();
-
+    
     private void checkAndAddServer(DetectedServer server)
     {
         if (!server.whoAreYou())
@@ -144,41 +144,41 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     public void initialize(URL url, ResourceBundle rb)
     {
         URL.setURLStreamHandlerFactory(new AMURLStreamHandlerFactory());
-
+        
         nameColumn = new TableColumn<>();
         nameColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("name"));
         nameColumn.setText(Lookup.i18n("rootScanner.name"));
         nameColumn.setPrefWidth(160);
         nameColumn.setResizable(false);
         nameColumn.setStyle("-fx-alignment: CENTER_LEFT;");
-
+        
         ipAddressColumn = new TableColumn<>();
         ipAddressColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("serverIP"));
         ipAddressColumn.setText(Lookup.i18n("rootScanner.ipAddress"));
         ipAddressColumn.setPrefWidth(100);
         ipAddressColumn.setResizable(false);
         ipAddressColumn.setStyle("-fx-alignment: CENTER;");
-
+        
         versionColumn = new TableColumn<>();
         versionColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("version"));
         versionColumn.setText(Lookup.i18n("rootScanner.version"));
         versionColumn.setPrefWidth(100);
         versionColumn.setResizable(false);
         versionColumn.setStyle("-fx-alignment: CENTER;");
-
+        
         statusColumn = new TableColumn<>();
         statusColumn.setCellFactory(statusCell -> new RootTableCell());
         statusColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, ServerStatus>("serverStatus"));
         statusColumn.setPrefWidth(40);
         statusColumn.setResizable(false);
-
+        
         scannedRootButtonsColumn = new TableColumn<>();
         scannedRootButtonsColumn.setCellFactory(buttonCell -> new RootConnectionButtonTableCell());
         scannedRootButtonsColumn.setCellValueFactory((CellDataFeatures<DetectedServer, DetectedServer> p) -> new SimpleObjectProperty<>(p.getValue()));
         scannedRootButtonsColumn.setMinWidth(350);
         scannedRootButtonsColumn.setMaxWidth(Integer.MAX_VALUE);
         scannedRootButtonsColumn.setResizable(false);
-
+        
         scannedRoots.getColumns().add(nameColumn);
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
@@ -186,7 +186,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRoots.getColumns().add(scannedRootButtonsColumn);
         scannedRoots.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         HBox.setHgrow(scannedRoots, Priority.ALWAYS);
-
+        
         scannedRoots.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         scannedRoots.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<DetectedServer>()
         {
@@ -203,11 +203,11 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 }
             }
         });
-
+        
         scannedRoots.setItems(currentServers);
-
+        
         scannedRoots.setPlaceholder(new Text(BaseLookup.i18n("rootScanner.noRemoteServersFound")));
-
+        
         ipTextField.textProperty().addListener(new ChangeListener<String>()
         {
             @Override
@@ -225,7 +225,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                             break;
                         }
                     }
-
+                    
                     if (matchingServer != null
                             && !matchingServer.getWasAutomaticallyAdded())
                     {
@@ -249,10 +249,10 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 }
             }
         });
-
+        
         addRootButton.setDisable(true);
         deleteRootButton.setDisable(true);
-
+        
         currentServers.addListener(new ListChangeListener<DetectedServer>()
         {
             @Override
@@ -267,11 +267,11 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 }
             }
         });
-
+        
         Task<Void> scannerTask = new Task<Void>()
         {
             private List<DetectedServer> currentServerList = new ArrayList<>();
-
+            
             @Override
             protected Void call() throws Exception
             {
@@ -285,20 +285,32 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 while (!isCancelled())
                 {
                     List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
-
+                    
                     Platform.runLater(() ->
                     {
                         List<DetectedServer> serversToAdd = new ArrayList<>();
                         List<DetectedServer> serversToRemove = new ArrayList<>();
-
+                        
                         for (DetectedServer server : foundServers)
                         {
                             if (!currentServerList.contains(server))
                             {
                                 serversToAdd.add(server);
+                            } else
+                            {
+                                //Need to update an existing server
+                                DetectedServer serverInList = currentServerList.get(currentServerList.indexOf(server));
+                                if (!serverInList.getName().equals(server.getName()))
+                                {
+                                    serverInList.setName(server.getName());
+                                }
+                                if (!serverInList.getPin().equals(server.getPin()))
+                                {
+                                    serverInList.setPin(server.getPin());
+                                }
                             }
                         }
-
+                        
                         for (DetectedServer server : currentServerList)
                         {
                             if (!foundServers.contains(server)
@@ -307,7 +319,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                                 serversToRemove.add(server);
                             }
                         }
-
+                        
                         for (DetectedServer server : serversToAdd)
                         {
                             currentServerList.add(server);
@@ -326,35 +338,35 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                     {
                     }
                 }
-
+                
                 return null;
             }
         };
-
+        
         Thread scannerThread = new Thread(scannerTask);
         scannerThread.setDaemon(true);
         scannerThread.setName("RootScanner");
         scannerThread.start();
     }
-
+    
     @Override
     public String getMenuTitle()
     {
         return "preferences.root";
     }
-
+    
     @Override
     public List<OperationButton> getOperationButtons()
     {
         return null;
     }
-
+    
     @Override
     public void deviceDetected(DetectedDevice detectedDevice)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     @Override
     public void deviceNoLongerPresent(DetectedDevice detectedDevice)
     {
