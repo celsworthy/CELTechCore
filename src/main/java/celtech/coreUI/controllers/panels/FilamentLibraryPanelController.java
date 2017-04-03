@@ -560,7 +560,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         updateFilamentFromWidgets(currentFilament);
         filamentContainer.saveFilament(currentFilament);
         selectFilament(currentFilament);
-        filamentMenuButton.displayFilamentOnButton(currentFilament);
     }
 
     void whenNewPressed()
@@ -601,6 +600,11 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     {
         try
         {
+            if (isEditable.get())
+            {
+                whenSavePressed();
+            }
+
             Filament filament = filamentMenuButton.getCurrentlyDisplayedFilament();
 
             if (currentPrinter.get().getReelEEPROMStateProperty().get(0) == EEPROMState.NOT_PROGRAMMED)
@@ -608,16 +612,10 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 currentPrinter.get().formatReelEEPROM(0);
             } else
             {
-
                 float remainingFilament = getRemainingFilament(0);
                 if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
                 {
                     remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
-                }
-
-                if (isEditable.get())
-                {
-                    whenSavePressed();
                 }
 
                 filament.setRemainingFilament(remainingFilament);
@@ -877,7 +875,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 Filament filament0 = filamentContainer.getFilamentByID(filamentId0);
                 filamentMenuButton.addSpecialMenuItem(reel1MenuItemTitle, filament0);
             }
-            selectFilament(currentFilament);
+
+            selectFilament(filamentMenuButton.displayFirstFilament());
         }
     }
 

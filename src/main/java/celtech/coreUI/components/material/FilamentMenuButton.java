@@ -129,7 +129,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
         FilamentContainer.getInstance().getCompleteFilamentList().forEach(filament ->
         {
-            String uniqueFilamentRef = filament.getFriendlyFilamentName()+filament.getBrand()+filament.getCategory()+filament.getMaterial().getFriendlyName();
+            String uniqueFilamentRef = filament.getFriendlyFilamentName() + filament.getBrand() + filament.getCategory() + filament.getMaterial().getFriendlyName();
             if (!allTheFilamentNamesIHaveEverLoaded.contains(uniqueFilamentRef))
             {
                 String brand = filament.getBrand();
@@ -229,15 +229,11 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
                     if (availableFilaments.size() > 0)
                     {
                         firstFilament = availableFilaments.get(0);
+                        displayFilamentOnButton(firstFilament);
                     }
                 }
                 break;
             }
-        }
-
-        if (firstFilament != null)
-        {
-            displayFilamentOnButton(firstFilament);
         }
 
         return firstFilament;
