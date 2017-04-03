@@ -3,6 +3,7 @@ package celtech.coreUI.components;
 import celtech.Lookup;
 import celtech.coreUI.components.Notifications.GenericProgressBar;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.remote.Configuration;
@@ -119,7 +120,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
             {
                 if ((boolean) event.getSource().getValue())
                 {
-                    BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.successfulUploadMessage"));
+                    BaseLookup.getSystemNotificationHandler().showDismissableNotification(Lookup.i18n("rootScanner.successfulUploadMessage"), Lookup.i18n("dialogs.OK"), NotificationType.NOTE);
                 } else
                 {
                     BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
