@@ -15,6 +15,7 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 
 /**
@@ -34,6 +35,7 @@ public class HyperlinkedLabel extends TextFlow
         getChildren().clear();
         hyperlinkMap.clear();
         text.set("");
+        setTextAlignment(TextAlignment.CENTER);
 
         Matcher matcher = hyperlinkPattern.matcher(newText);
         int matches = 0;
