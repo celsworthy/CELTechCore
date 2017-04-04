@@ -304,10 +304,6 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                                 {
                                     serverInList.setName(server.getName());
                                 }
-                                if (!serverInList.getPin().equals(server.getPin()))
-                                {
-                                    serverInList.setPin(server.getPin());
-                                }
                             }
                         }
                         
