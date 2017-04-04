@@ -1574,6 +1574,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (printer == currentPrinter)
         {
             bindNozzleControls(printer);
+            whenProjectOrSettingsPrinterChange();
         }
     }
 
@@ -1592,14 +1593,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
-        openNozzleButton.visibleProperty().unbind();
-        openNozzleButton.setVisible(false);
-        closeNozzleButton.visibleProperty().unbind();
-        closeNozzleButton.setVisible(false);
-        fineNozzleButton.visibleProperty().unbind();
-        fineNozzleButton.setVisible(false);
-        fillNozzleButton.visibleProperty().unbind();
-        fillNozzleButton.setVisible(false);
+        if (printer == currentPrinter)
+        {
+            openNozzleButton.visibleProperty().unbind();
+            openNozzleButton.setVisible(false);
+            closeNozzleButton.visibleProperty().unbind();
+            closeNozzleButton.setVisible(false);
+            fineNozzleButton.visibleProperty().unbind();
+            fineNozzleButton.setVisible(false);
+            fillNozzleButton.visibleProperty().unbind();
+            fillNozzleButton.setVisible(false);
+            whenProjectOrSettingsPrinterChange();
+        }
     }
 
     @Override
