@@ -5,10 +5,8 @@ import celtech.WebEngineFix.AMURLStreamHandlerFactory;
 import celtech.coreUI.components.RootConnectionButtonTableCell;
 import celtech.coreUI.components.RootTableCell;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.comms.DetectedDevice;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
-import celtech.roboxbase.comms.DeviceDetectionListener;
 import celtech.roboxbase.comms.RemoteServerDetector;
 import celtech.roboxbase.configuration.CoreMemory;
 import java.net.InetAddress;
@@ -46,7 +44,7 @@ import javafx.scene.text.Text;
  *
  * @author Ian
  */
-public class RootScannerPanelController implements Initializable, MenuInnerPanel, DeviceDetectionListener
+public class RootScannerPanelController implements Initializable, MenuInnerPanel
 {
     
     private static final Stenographer steno = StenographerFactory.getStenographer(RootScannerPanelController.class.getName());
@@ -355,17 +353,5 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     public List<OperationButton> getOperationButtons()
     {
         return null;
-    }
-    
-    @Override
-    public void deviceDetected(DetectedDevice detectedDevice)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    @Override
-    public void deviceNoLongerPresent(DetectedDevice detectedDevice)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
