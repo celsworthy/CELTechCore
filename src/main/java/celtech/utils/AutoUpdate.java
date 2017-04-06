@@ -92,7 +92,7 @@ public class AutoUpdate extends Thread
                         public void run()
                         {
                             BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("dialogs.updateApplicationTitle"), Lookup.i18n("dialogs.updateApplicationNotAvailableForThisRelease")
-                                    + applicationName);
+                                    + " " + applicationName);
                         }
                     });
                     keepRunning = false;
