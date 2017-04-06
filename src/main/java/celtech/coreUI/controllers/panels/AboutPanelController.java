@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
@@ -28,7 +29,7 @@ import javafx.scene.text.Text;
  *
  * @author Ian
  */
-public class AboutPanelController implements Initializable, PrinterListChangesListener
+public class AboutPanelController implements Initializable
 {
 
     private final Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -113,7 +114,6 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        BaseLookup.getPrinterListChangesNotifier().addListener(this);
         version.setText(BaseConfiguration.getApplicationVersion());
 
         DisplayManager.getInstance().getDisplayScalingModeProperty().addListener(new ChangeListener<DisplayManager.DisplayScalingMode>()
@@ -156,83 +156,75 @@ public class AboutPanelController implements Initializable, PrinterListChangesLi
             }
         });
 
-        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
+        Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
         {
-            @Override
-            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
-            {
-                if (t1 == ApplicationMode.ABOUT
-                        && currentPrinter != null)
-                {
-                    headSerialNumber.setText(currentPrinter.headProperty().get().getFormattedSerial());
-                }
-            }
+            bindToPrinter(newValue);
         });
+        bindToPrinter(Lookup.getSelectedPrinterProperty().get());
     }
 
-    @Override
-    public void whenPrinterAdded(Printer printer)
+    private void updateHeadData(Head head)
     {
-        StringBuilder idString = new StringBuilder();
-        PrinterIdentity identity = printer.getPrinterIdentity();
-        idString.append(identity.printermodelProperty().get());
-        idString.append("-");
-        idString.append(identity.printereditionProperty().get());
-        idString.append("-");
-        idString.append(identity.printerweekOfManufactureProperty().get());
-        idString.append(identity.printeryearOfManufactureProperty().get());
-        idString.append("-");
-        idString.append(identity.printerpoNumberProperty().get());
-        idString.append("-");
-        idString.append(identity.printerserialNumberProperty().get());
-        idString.append("-");
-        idString.append(identity.printercheckByteProperty().get());
-        roboxSerialNumber.setText(idString.toString());
+        if (head != null)
+        {
+            headSerialNumber.setText(head.getFormattedSerial());
+        } else
+        {
+            headSerialNumber.setText("");
+        }
+    }
+
+    private void updateIDData(PrinterIdentity identity)
+    {
+        if (identity != null)
+        {
+            StringBuilder idString = new StringBuilder();
+            idString.append(identity.printermodelProperty().get());
+            idString.append("-");
+            idString.append(identity.printereditionProperty().get());
+            idString.append("-");
+            idString.append(identity.printerweekOfManufactureProperty().get());
+            idString.append(identity.printeryearOfManufactureProperty().get());
+            idString.append("-");
+            idString.append(identity.printerpoNumberProperty().get());
+            idString.append("-");
+            idString.append(identity.printerserialNumberProperty().get());
+            idString.append("-");
+            idString.append(identity.printercheckByteProperty().get());
+            roboxSerialNumber.setText(idString.toString());
+        } else
+        {
+            roboxSerialNumber.setText("");
+        }
+    }
+
+    private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Head> observable, Head oldValue, Head newValue)
+        {
+            updateHeadData(newValue);
+        }
+    };
+
+    private void bindToPrinter(Printer printer)
+    {
+        if (currentPrinter != null)
+        {
+            currentPrinter.headProperty().removeListener(headChangeListener);
+        }
+
+        if (printer != null)
+        {
+            printer.headProperty().addListener(headChangeListener);
+            updateHeadData(printer.headProperty().get());
+            updateIDData(printer.getPrinterIdentity());
+        } else
+        {
+            updateHeadData(null);
+            updateIDData(null);
+        }
 
         currentPrinter = printer;
-    }
-
-    @Override
-    public void whenPrinterRemoved(Printer printer)
-    {
-        roboxSerialNumber.setText("");
-        currentPrinter = null;
-    }
-
-    @Override
-    public void whenHeadAdded(Printer printer)
-    {
-        headSerialNumber.setText(printer.headProperty().get().getFormattedSerial());
-    }
-
-    @Override
-    public void whenHeadRemoved(Printer printer, Head head)
-    {
-        headSerialNumber.setText("");
-    }
-
-    @Override
-    public void whenReelAdded(Printer printer, int reelIndex)
-    {
-    }
-
-    @Override
-    public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
-    {
-    }
-
-    @Override
-    public void whenReelChanged(Printer printer, Reel reel)
-    {
-    }
-
-    @Override
-    public void whenExtruderAdded(Printer printer, int extruderIndex)
-    {
-    }
-
-    @Override
-    public void whenExtruderRemoved(Printer printer, int extruderIndex)
-    {
     }
 }
