@@ -559,7 +559,9 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         assert (state.get() != State.ROBOX);
         updateFilamentFromWidgets(currentFilament);
         filamentContainer.saveFilament(currentFilament);
+        showReelsAtTopOfCombo();
         selectFilament(currentFilament);
+        filamentMenuButton.displayFilamentOnButton(currentFilament);
     }
 
     void whenNewPressed()
@@ -602,7 +604,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     {
         try
         {
-            if (isEditable.get())
+            if (isEditable.get() && isDirty.get())
             {
                 whenSavePressed();
             }
@@ -642,7 +644,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             } else
             {
 
-                if (isEditable.get())
+                if (isEditable.get() && isDirty.get())
                 {
                     whenSavePressed();
                 }
