@@ -29,7 +29,11 @@ public class ProgressDisplay extends VBox
 
     private final ChangeListener<Boolean> headDataChangedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
-        createMaterialHeatBars(printerInUse.headProperty().get());
+        if (printerInUse != null
+                && printerInUse.headProperty().get() != null)
+        {
+            createMaterialHeatBars(printerInUse.headProperty().get());
+        }
     };
 
     private final ChangeListener<Head> headListener = (ObservableValue<? extends Head> ov, Head oldHead, Head newHead) ->
