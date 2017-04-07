@@ -577,6 +577,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         state.set(State.NEW);
         currentFilamentID = null;
         currentFilament = currentFilament.clone();
+        currentFilament.setBrand(FilamentContainer.CUSTOM_BRAND);
+        currentFilament.setCategory(FilamentContainer.CUSTOM_CATEGORY);
         currentFilament.setFilamentID(Filament.generateUserFilamentID());
         updateWidgets(currentFilament);
         name.requestFocus();
