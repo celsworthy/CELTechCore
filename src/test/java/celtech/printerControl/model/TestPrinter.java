@@ -1201,12 +1201,6 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public PrinterIDResponse getLastIdentityResponse()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void updatePrinterIdentity(PrinterIdentity identity) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
