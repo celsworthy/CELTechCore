@@ -483,7 +483,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         double scaling = 1.0;
 
         double relativeXSize = printableBoundingBox.getWidth() / printVolumeWidth;
-        double relativeYSize = printableBoundingBox.getHeight() / -printVolumeHeight;
+        double relativeYSize = printableBoundingBox.getHeight() / printVolumeHeight;
         double relativeZSize = printableBoundingBox.getDepth() / printVolumeDepth;
         steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize + " Z "
                 + relativeZSize);

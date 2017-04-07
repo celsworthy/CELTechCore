@@ -262,6 +262,7 @@ public class ModelLoader
             boolean shouldCentre,
             Printer printer)
     {
+        shrinkIfRequested(projectifiableThing, printer);
         if (shouldCentre)
         {
             projectifiableThing.moveToCentre();
@@ -270,7 +271,6 @@ public class ModelLoader
                 ((ModelContainer)projectifiableThing).dropToBed();
             }
         }
-        shrinkIfRequested(projectifiableThing, printer);
         projectifiableThing.checkOffBed();
         undoableProject.addModel(projectifiableThing);
     }
