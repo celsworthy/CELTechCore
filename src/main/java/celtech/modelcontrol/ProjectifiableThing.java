@@ -264,7 +264,6 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     public void setBedReference(Group bed)
     {
         this.bed = bed;
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     public abstract void setBedCentreOffsetTransform();

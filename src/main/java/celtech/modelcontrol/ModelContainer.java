@@ -58,7 +58,6 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.univariate.BrentOptimizer;
@@ -518,7 +517,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         }
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-
     }
 
     /**
@@ -1124,16 +1122,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     public void applyGroupTransformToThis(ModelGroup modelGroup)
     {
         double xScaleFactor = getXScale() * modelGroup.getXScale();
-        preferredXScale.set(xScaleFactor);
-        transformScalePreferred.setX(xScaleFactor);
-
         double yScaleFactor = getYScale() * modelGroup.getYScale();
-        preferredYScale.set(yScaleFactor);
-        transformScalePreferred.setY(yScaleFactor);
-
         double zScaleFactor = getZScale() * modelGroup.getZScale();
-        preferredZScale.set(zScaleFactor);
-        transformScalePreferred.setZ(zScaleFactor);
 
         //Calculate the centre of the group in world co-ords
         Point3D groupCentre = new Point3D(modelGroup.getTransformedCentreX(),
@@ -1141,8 +1131,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
                 modelGroup.getTransformedCentreDepth());
         
         Point3D modelCentre = new Point3D(getTransformedCentreX() + modelGroup.transformMoveToPreferred.getX(),
-//                getTransformedCentreY() + modelGroup.transformDropToBedYAdjust.getY(),
-                modelGroup.transformDropToBedYAdjust.getY(),
+                getTransformedCentreY() + modelGroup.transformDropToBedYAdjust.getY(),
                 getTransformedCentreDepth() + modelGroup.transformMoveToPreferred.getZ());
 
         Point3D groupCentreToModelCentre = modelCentre.subtract(groupCentre);
@@ -1165,6 +1154,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         setRotationTurn(getRotationTurn() + modelGroup.getRotationTurn(), false);
         setRotationLean(getRotationLean() + modelGroup.getRotationLean(), false);
         setRotationTwist(getRotationTwist() + modelGroup.getRotationTwist(), false);
+        setXScale(xScaleFactor);
+        setYScale(yScaleFactor);
+        setZScale(zScaleFactor);
     }
 
     /**
