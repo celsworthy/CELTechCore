@@ -89,44 +89,47 @@ public class CalibrationNozzleOpeningGUI
                 controller.calibrationMenu.disableNonSelectedItems();
                 stepNo = 1;
                 break;
-            case NO_MATERIAL_CHECK:
-                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
-                controller.buttonB.setText(Lookup.i18n("misc.No"));
+            case HEAD_CLEAN_CHECK_BEFORE_LEAK_TEST:
                 stepNo = 2;
                 break;
-            case T0_EXTRUDING:
+            case NO_MATERIAL_CHECK:
                 controller.buttonA.setText(Lookup.i18n("misc.Yes"));
                 controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 3;
                 break;
-            case T1_EXTRUDING:
+            case T0_EXTRUDING:
                 controller.buttonA.setText(Lookup.i18n("misc.Yes"));
                 controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 4;
                 break;
-            case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
+            case T1_EXTRUDING:
+                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
+                controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 5;
+                break;
+            case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
+                stepNo = 6;
                 break;
             case PRE_CALIBRATION_PRIMING_FINE:
                 break;
             case CALIBRATE_FINE_NOZZLE:
                 controller.buttonA.setText(Lookup.i18n("calibrationPanel.present"));
                 controller.buttonB.setText(Lookup.i18n("calibrationPanel.notPresent"));
-                stepNo = 6;
+                stepNo = 7;
                 break;
             case CALIBRATE_FILL_NOZZLE:
                 controller.buttonA.setText(Lookup.i18n("calibrationPanel.present"));
                 controller.buttonB.setText(Lookup.i18n("calibrationPanel.notPresent"));
-                stepNo = 7;
+                stepNo = 8;
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
-                stepNo = 8;
+                stepNo = 9;
                 break;
             case CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS:
             case CONFIRM_NO_MATERIAL:
                 controller.buttonA.setText(Lookup.i18n("misc.Yes"));
                 controller.buttonB.setText(Lookup.i18n("misc.No"));
-                stepNo = 9;
+                stepNo = 10;
                 break;
             case FINISHED:
                 controller.calibrationMenu.reset();
@@ -140,7 +143,7 @@ public class CalibrationNozzleOpeningGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf9"), stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf10"), stepNo));
         }
     }
 
