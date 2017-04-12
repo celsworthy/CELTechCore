@@ -604,6 +604,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     {
         try
         {
+            String remainingOnReelText = remainingOnReelM.getText();
             if (isEditable.get() && isDirty.get())
             {
                 whenSavePressed();
@@ -617,7 +618,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             } else
             {
                 float remainingFilament = getRemainingFilament(0);
-                if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
+                if (state.get() == State.CUSTOM && !remainingOnReelText.equals(REMAINING_ON_REEL_UNCHANGED))
                 {
                     remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
                 }
