@@ -50,7 +50,7 @@ public class ReprintPanel extends VBox
     private final Text dLengthM = new Text();
     private final Text creationDateLabel = new Text();
     private final Text creationDate = new Text();
-    private static final double VOLUME_TO_LENGTH_1_75MM = 0.00415751688076788;
+    private static final double VOLUME_TO_LENGTH_1_75MM = 0.000415751688076788;
 
     private final Button closeButton = new Button();
     private final Button printButton = new Button();
