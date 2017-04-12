@@ -283,7 +283,7 @@ public class ApplicationConfiguration
      */
     public static String getDownloadModifier(String applicationName)
     {
-        if (applicationName.equals("CEL AutoMaker"))
+        if (applicationName.equals("CEL Robox"))
         {
             return "0abc523fc24";
         } else if (applicationName.equals("CEL ReelProgrammer"))
