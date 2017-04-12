@@ -9,9 +9,9 @@ public interface ScaleableTwoD extends ContainerOperation
 
     public double getXScale();
 
-    public void setXScale(double scaleFactor);
+    public void setXScale(double scaleFactor, boolean dropToBed);
 
     public double getYScale();
 
-    public void setYScale(double scaleFactor);
+    public void setYScale(double scaleFactor, boolean dropToBed);
 }

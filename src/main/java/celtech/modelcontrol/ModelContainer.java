@@ -511,9 +511,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
         if (scaling != 1.0f)
         {
-            setXScale(scaling);
-            setYScale(scaling);
-            setZScale(scaling);
+            setXScale(scaling, true);
+            setYScale(scaling, true);
+            setZScale(scaling, true);
         }
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
@@ -651,20 +651,23 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    protected void updateScaleTransform()
+    protected void updateScaleTransform(boolean dropToBed)
     {
-        dropToBed();
+        if (dropToBed)
+        {
+            dropToBed();
+        }
         checkOffBed();
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
 
     @Override
-    public void setZScale(double scaleFactor)
+    public void setZScale(double scaleFactor, boolean dropToBed)
     {
         preferredZScale.set(scaleFactor);
         transformScalePreferred.setZ(scaleFactor);
-        updateScaleTransform();
+        updateScaleTransform(dropToBed);
     }
 
     /**
@@ -997,7 +1000,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         double originalWidth = bounds.getWidth();
 
         double newScale = width / originalWidth;
-        setXScale(newScale);
+        setXScale(newScale, true);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
@@ -1011,7 +1014,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
         double newScale = height / currentHeight;
 
-        setYScale(newScale);
+        setYScale(newScale, true);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
@@ -1026,7 +1029,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
         double newScale = depth / currentDepth;
 
-        setZScale(newScale);
+        setZScale(newScale, true);
         notifyShapeChange();
         notifyScreenExtentsChange();
     }
@@ -1129,7 +1132,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         Point3D groupCentre = new Point3D(modelGroup.getTransformedCentreX(),
                 modelGroup.getTransformedCentreY(),
                 modelGroup.getTransformedCentreDepth());
-        
+
         Point3D modelCentre = new Point3D(getTransformedCentreX() + modelGroup.transformMoveToPreferred.getX(),
                 getTransformedCentreY() + modelGroup.transformDropToBedYAdjust.getY(),
                 getTransformedCentreDepth() + modelGroup.transformMoveToPreferred.getZ());
@@ -1150,13 +1153,16 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
                 groupCentre.getZ() + turnedModelCentrePoint.getZ());
 
         translateTo(newModelCentre.getX(), newModelCentre.getZ());
-        translateYPositionTo(newModelCentre.getY());
         setRotationTurn(getRotationTurn() + modelGroup.getRotationTurn(), false);
         setRotationLean(getRotationLean() + modelGroup.getRotationLean(), false);
         setRotationTwist(getRotationTwist() + modelGroup.getRotationTwist(), false);
-        setXScale(xScaleFactor);
-        setYScale(yScaleFactor);
-        setZScale(zScaleFactor);
+        setXScale(xScaleFactor, false);
+        setYScale(yScaleFactor, false);
+        setZScale(zScaleFactor, false);
+        transformDropToBedYAdjust.setY(0);
+        RectangularBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
+        transformDropToBedYAdjust.setY(-modelBoundsParent.getMaxY() + (lastTransformedBoundsInParent.getMaxY() * yScaleFactor));
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     /**
@@ -2084,7 +2090,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
         return sb.toString();
     }
-    
+
     public void updateLastTransformedBoundsInParent()
     {
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();

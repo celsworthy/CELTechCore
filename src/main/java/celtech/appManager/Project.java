@@ -319,9 +319,9 @@ public abstract class Project
     {
         for (ScaleableThreeD projectifiableThing : projectifiableThings)
         {
-            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio);
-            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio);
-            projectifiableThing.setZScale(projectifiableThing.getZScale() * ratio);
+            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio, true);
+            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio, true);
+            projectifiableThing.setZScale(projectifiableThing.getZScale() * ratio, true);
         }
         projectModified();
         fireWhenModelsTransformed((Set) projectifiableThings);
@@ -339,8 +339,8 @@ public abstract class Project
     {
         for (ScaleableTwoD projectifiableThing : projectifiableThings)
         {
-            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio);
-            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio);
+            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio, true);
+            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio, true);
         }
         projectModified();
         fireWhenModelsTransformed((Set) projectifiableThings);
@@ -367,7 +367,7 @@ public abstract class Project
             for (ScaleableTwoD projectifiableThing : projectifiableThings)
             {
                 {
-                    projectifiableThing.setXScale(newScale);
+                    projectifiableThing.setXScale(newScale, true);
                 }
             }
         }
@@ -397,7 +397,7 @@ public abstract class Project
             for (ScaleableTwoD projectifiableThing : projectifiableThings)
             {
                 {
-                    projectifiableThing.setYScale(newScale);
+                    projectifiableThing.setYScale(newScale, true);
                 }
             }
         }
@@ -420,7 +420,7 @@ public abstract class Project
             for (ScaleableThreeD projectifiableThing : projectifiableThings)
             {
                 {
-                    projectifiableThing.setZScale(newScale);
+                    projectifiableThing.setZScale(newScale, true);
                 }
             }
         }

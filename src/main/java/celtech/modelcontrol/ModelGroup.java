@@ -238,9 +238,9 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
             childModels.add(modelContainerCopy);
         }
         ModelGroup copy = new ModelGroup(childModels);
-        copy.setXScale(this.getXScale());
-        copy.setYScale(this.getYScale());
-        copy.setZScale(this.getZScale());
+        copy.setXScale(this.getXScale(), true);
+        copy.setYScale(this.getYScale(), true);
+        copy.setZScale(this.getZScale(), true);
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());

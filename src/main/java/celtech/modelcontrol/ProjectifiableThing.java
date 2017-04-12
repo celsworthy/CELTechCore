@@ -313,7 +313,7 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
 
     public abstract RectangularBounds calculateBoundsInParentCoordinateSystem();
 
-    protected abstract void updateScaleTransform();
+    protected abstract void updateScaleTransform(boolean dropToBed);
 
     public Scale getTransformScale()
     {
@@ -330,18 +330,18 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
         return preferredYScale.get();
     }
 
-    public void setXScale(double scaleFactor)
+    public void setXScale(double scaleFactor, boolean dropToBed)
     {
         preferredXScale.set(scaleFactor);
         transformScalePreferred.setX(scaleFactor);
-        updateScaleTransform();
+        updateScaleTransform(dropToBed);
     }
 
-    public void setYScale(double scaleFactor)
+    public void setYScale(double scaleFactor, boolean dropToBed)
     {
         preferredYScale.set(scaleFactor);
         transformScalePreferred.setY(scaleFactor);
-        updateScaleTransform();
+        updateScaleTransform(dropToBed);
     }
 
     public double getTransformedCentreDepth()

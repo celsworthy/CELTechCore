@@ -514,7 +514,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    protected void updateScaleTransform()
+    protected void updateScaleTransform(boolean dropToBed)
     {
         checkOffBed();
         notifyShapeChange();
