@@ -21,6 +21,7 @@ public class FilamentSwatch extends StackPane
     private Tooltip ttip = null;
 
     private FilamentSelectionListener filamentSelectionListener;
+    private Filament currentFilament = null;
 
     public FilamentSwatch()
     {
@@ -83,5 +84,12 @@ public class FilamentSwatch extends StackPane
 
             swatchPanel.setFill(filament.getDisplayColour());
         }
+        
+        currentFilament = filament;
+    }
+    
+        public Filament getFilament()
+    {
+        return currentFilament;
     }
 }

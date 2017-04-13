@@ -253,7 +253,14 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
     public Filament getCurrentlyDisplayedFilament()
     {
-        return filamentDisplayNode.getSelectedFilament();
+        if (getGraphic() == filamentDisplayNode)
+        {
+            return filamentDisplayNode.getSelectedFilament();
+        } else
+        {
+            //Must be a special
+            return filamentOnReelDisplayNode.getSelectedFilament();
+        }
     }
 
     public void deleteSpecialMenuItem(String title)
