@@ -511,7 +511,7 @@ public class CalibrationInsetPanelController implements Initializable,
             {
                 try
                 {
-                    stateManager = currentPrinter.startCalibrateNozzleOpening();
+                    stateManager = currentPrinter.startCalibrateNozzleOpening(Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.warning("Can't switch to calibration: " + ex);
@@ -526,7 +526,7 @@ public class CalibrationInsetPanelController implements Initializable,
             {
                 try
                 {
-                    stateManager = currentPrinter.startCalibrateNozzleHeight();
+                    stateManager = currentPrinter.startCalibrateNozzleHeight(Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.warning("Can't switch to calibration: " + ex);
@@ -541,7 +541,7 @@ public class CalibrationInsetPanelController implements Initializable,
             {
                 try
                 {
-                    stateManager = currentPrinter.startCalibrateXAndY();
+                    stateManager = currentPrinter.startCalibrateXAndY(Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.warning("Can't switch to calibration: " + ex);

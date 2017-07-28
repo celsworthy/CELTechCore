@@ -79,7 +79,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
     {
         try
         {
-            printer.cancel(null);
+            printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
             System.out.println("Couldn't resume print");

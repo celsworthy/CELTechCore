@@ -183,7 +183,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                 }
                                                 if (printer.canCancelProperty().get())
                                                 {
-                                                    printer.cancel(null);
+                                                    printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
                                                 }
                                             } catch (PrinterException ex)
                                             {

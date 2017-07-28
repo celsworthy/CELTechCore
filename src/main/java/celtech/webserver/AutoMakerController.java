@@ -48,7 +48,7 @@ public class AutoMakerController implements HttpHandler
             {
                 try
                 {
-                    connectedPrinters.get(0).cancel(null);
+                    connectedPrinters.get(0).cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.error("Error attempting to abort");

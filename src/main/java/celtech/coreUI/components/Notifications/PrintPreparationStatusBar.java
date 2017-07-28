@@ -46,7 +46,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         {
             try
             {
-                printer.cancel(null);
+                printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
                 System.out.println("Couldn't resume print");

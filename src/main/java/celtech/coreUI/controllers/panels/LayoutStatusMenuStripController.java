@@ -406,7 +406,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             }
                         }
                     }
-                    printer.printMeshes(printableMeshes);
+                    printer.printMeshes(printableMeshes, Lookup.getUserPreferences().isSafetyFeaturesOn());
                     applicationStatus.setMode(ApplicationMode.STATUS);
                 }
             } catch (PrinterException ex)
@@ -853,7 +853,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             currentPrinter.removeHead((TaskResponse taskResponse) ->
             {
                 removeHeadFinished(taskResponse);
-            });
+            }, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
             steno.error("PrinterException whilst invoking remove head: " + ex.getMessage());
