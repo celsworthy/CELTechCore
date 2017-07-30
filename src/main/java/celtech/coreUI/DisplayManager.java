@@ -10,7 +10,6 @@ import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.Notifications.NotificationArea;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectTab;
@@ -27,8 +26,12 @@ import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.DummyPrinterCommandInterface;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -798,16 +801,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         boolean handled = false;
 
-        switch (commandSequence)
-        {
+        switch (commandSequence)        {
             case addDummyPrinterCommand:
                 RoboxCommsManager.getInstance().addDummyPrinter();
                 handled = true;
                 break;
             case dummyCommandPrefix:
-                if (RoboxCommsManager.getInstance().getDummyPrinters().size() > 0)
-                {
-                    RoboxCommsManager.getInstance().getDummyPrinters().get(0).sendRawGCode(
+                Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
+                PrinterIdentity pid = currentPrinter.getPrinterIdentity();
+                if (pid.printeryearOfManufactureProperty().get().equals(
+                        DummyPrinterCommandInterface.dummyYear)) {
+                    currentPrinter.sendRawGCode(
                             capturedParameter.replaceAll("/", " ").trim().toUpperCase(), true);
                     handled = true;
                 }

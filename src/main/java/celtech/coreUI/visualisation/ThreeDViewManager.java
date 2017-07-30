@@ -8,25 +8,25 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.StandardColours;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.visualisation.collision.CollisionManager;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
-import celtech.utils.threed.importers.obj.ObjImporter;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.TimeUtils;
+import celtech.utils.threed.importers.obj.ObjImporter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -100,17 +100,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
      * Model moving
      */
     private Point3D lastDragPosition;
-    private Point3D lastCameraPickedPoint;
     private final int dragPlaneHalfSize = 500;
-    private final Xform cameraTranslateDragPlaneTransform = new Xform();
     private final Box cameraTranslateDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
             * 2);
     private final Box translationDragPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize
             * 2);
     private final Box verticalDragPlane = new Box(dragPlaneHalfSize * 2, dragPlaneHalfSize * 2, 0.1);
     private final Box zCutDisplayPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
-
-    private Group gcodeParts;
 
     private Group models = new Group();
     /*
@@ -123,8 +119,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final Set<ModelContainer> inSelectedGroupButNotSelected;
 
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
-    private final Xform cameraTranslateXform = new Xform(Xform.RotateOrder.XYZ, "CameraTranslateXForm");
-    private final Xform cameraRotateXform = new Xform(Xform.RotateOrder.XYZ, "CameraRotateXForm");
     private final Group bed;
     private Node printVolumeBoundingBox = null;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
@@ -137,7 +131,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final DoubleProperty cameraDistance = new SimpleDoubleProperty(initialCameraDistance);
     private final DoubleProperty demandedCameraRotationX = new SimpleDoubleProperty(0);
     private final DoubleProperty demandedCameraRotationY = new SimpleDoubleProperty(0);
-    private List<CameraViewChangeListener> cameraViewChangeListeners = new ArrayList<>();
+    private final List<CameraViewChangeListener> cameraViewChangeListeners = new ArrayList<>();
 
     private double mousePosX;
     private double mousePosY;
@@ -700,7 +694,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         {
             setDragMode(DragMode.IDLE);
             lastDragPosition = null;
-            lastCameraPickedPoint = null;
         }
     };
 
@@ -714,7 +707,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 //            cameraLookAtCentreY += 0.01 * event.getDeltaY();  // -
         } else
         {
-            double z = bedTranslateXform.getTz() - (event.getDeltaY() * 0.2);
+            double z = bedTranslateXform.getTz() - (event.getDeltaY());
             cameraDistance.set(z);
 //            cameraDistance.set(cameraDistance.get() - (event.getDeltaY() * 0.2));
 //            refreshCameraPosition();
@@ -779,7 +772,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() - 80;
             defaultDistance = initialCameraDistance;
 
-            if (currentPrinterConfiguration.getTypeCode().equals("RBXFR"))
+            if (currentPrinterConfiguration.getTypeCode().equals("RBX10"))
             {
                 defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() - 200;
                 defaultDistance = 800;
