@@ -335,14 +335,16 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setBedCentreOffsetTransform()
     {
+        double xDelta = printVolumeWidth / 2 - bedCentreOffsetX;
+        double zDelta = printVolumeDepth / 2 - bedCentreOffsetZ;
         bedCentreOffsetX = printVolumeWidth / 2;
         bedCentreOffsetY = 0;
         bedCentreOffsetZ = printVolumeDepth / 2;
         transformBedCentre.setX(bedCentreOffsetX);
         transformBedCentre.setY(bedCentreOffsetY);
         transformBedCentre.setZ(bedCentreOffsetZ);
-        updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
-        updateLastTransformedBoundsInParentForTranslateByZ(bedCentreOffsetZ);
+        updateLastTransformedBoundsInParentForTranslateByX(xDelta);
+        updateLastTransformedBoundsInParentForTranslateByZ(zDelta);
     }
 
     /**

@@ -778,6 +778,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 defaultDistance = 550;
                 defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() / 7;
                 addPrintVolumeBoundingBox(bedBrobox);
+                updateProjectifiableThings(true);
             } else
             {
                 if (bedTranslateXform.getChildren().contains(bedBrobox))
@@ -789,6 +790,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     bedTranslateXform.getChildren().add(bed);
                 }
                 addPrintVolumeBoundingBox(bed);
+                updateProjectifiableThings(false);
             }
 
         } else
@@ -804,6 +806,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         deselectAllModels();
         transitionCameraToDefaults();
+
     }
 
     public ThreeDViewManager(ModelContainerProject project,
@@ -905,6 +908,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         overheadLight.setColor(Color.WHITE.darker().darker().darker());
 
+        bedTranslateXform.getChildren().clear();
         bedTranslateXform.getChildren().addAll(overheadLight, bed, models, translationDragPlane,
                 verticalDragPlane, zCutDisplayPlane);
         root3D.getChildren().add(bedTranslateXform);
@@ -1712,5 +1716,19 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 30,
                 0,
                 defaultDistance);
+    }
+
+    private void updateProjectifiableThings(boolean isBrobox) {
+        for (ProjectifiableThing model : loadedModels)
+        {
+            if (isBrobox)
+            {
+                model.setBedReference(bedBrobox);
+            } else
+            {
+                model.setBedReference(bed);
+            }
+            model.setBedCentreOffsetTransform();
+        }
     }
 }
