@@ -57,6 +57,7 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.PointLight;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
+import javafx.scene.effect.Lighting;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -118,7 +119,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final Set<ModelContainer> inSelectedGroupButNotSelected;
 
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
-    private final Group bed, bedBrobox;
+    private final Group bed = new Group();
     private Node printVolumeBoundingBox = null;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
 
@@ -756,6 +757,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private void whenCurrentPrinterChanged(Printer printer)    {
 
+        defaultDistance = initialCameraDistance;
         if (printer != null
                 && printer.printerConfigurationProperty().get() != null)
         {
@@ -763,35 +765,17 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
             defaultXTranslate = -currentPrinterConfiguration.getPrintVolumeWidth() / 2;
             defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() / 3;
-            defaultDistance = initialCameraDistance;
 
             if (currentPrinterConfiguration.getTypeCode().equals("RBX10"))
             {
-                if (!bedTranslateXform.getChildren().contains(bedBrobox))
-                {
-                    bedTranslateXform.getChildren().add(bedBrobox);
-                }
-                if (bedTranslateXform.getChildren().contains(bed))
-                {
-                    bedTranslateXform.getChildren().remove(bed);
-                }
                 defaultDistance = 550;
                 defaultYTranslate = currentPrinterConfiguration.getPrintVolumeHeight() / 7;
-                addPrintVolumeBoundingBox(bedBrobox);
-                updateProjectifiableThings(true);
+                buildBed(true);
             } else
             {
-                if (bedTranslateXform.getChildren().contains(bedBrobox))
-                {
-                    bedTranslateXform.getChildren().remove(bedBrobox);
-                }
-                if (!bedTranslateXform.getChildren().contains(bed))
-                {
-                    bedTranslateXform.getChildren().add(bed);
-                }
-                addPrintVolumeBoundingBox(bed);
-                updateProjectifiableThings(false);
+                buildBed(false);
             }
+            updateProjectifiableThings();
 
         } else
         {
@@ -800,10 +784,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     = PrinterContainer.getPrinterByID(PrinterContainer.defaultPrinterID);
             defaultXTranslate = -defaultPrinterDefinition.getPrintVolumeWidth() / 2;
             defaultYTranslate = defaultPrinterDefinition.getPrintVolumeHeight() - 80;
-            defaultDistance = initialCameraDistance;
-            addPrintVolumeBoundingBox(bed);
         }
-
+        addPrintVolumeBoundingBox(bed);
         deselectAllModels();
         transitionCameraToDefaults();
 
@@ -869,8 +851,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         subScene.setFill(Color.TRANSPARENT);
         subScene.setCamera(camera);
 
-        bed = buildBed(false);
-        bedBrobox = buildBed(true);
+        buildBed(false);
 
         Lookup.getSelectedPrinterProperty().addListener(new ChangeListener<Printer>()
         {
@@ -1012,27 +993,44 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         }
     }
 
-    private Group buildBed(boolean brobox) {
-        URL bedOuterURL, peiSheetURL, bedClipsURL;
+    /**
+     * Add / rebuild the correct assets to the bed according to the printer type
+     *
+     * @param brobox
+     * @return
+     */
+    private void buildBed(boolean brobox) {
+        URL bedOuterURL, peiSheetURL, bedClipsURL, bedGraphicURL;
+        int bedZOffset, bedXOffset, bedYOffset;
+        double peiDrop;
+        bed.getChildren().clear();
         if (brobox)
         {
             bedOuterURL = CoreTest.class
                     .getResource(ApplicationConfiguration.modelResourcePath + "bed_frame_210x300.obj");
-
             peiSheetURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
                     + "bed_glass_210x300.obj");
-
             bedClipsURL = null;
+            bedGraphicURL = CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath
+                    + "Bed Graphic - RoboxPro.png");
+            bedZOffset = 210;
+            bedYOffset = 0;
+            bedXOffset = 0;
+            peiDrop = 0.5;
         } else
         {
             bedOuterURL = CoreTest.class
                     .getResource(ApplicationConfiguration.modelResourcePath + "bedBase.obj");
-
             peiSheetURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
                     + "pei.obj");
-
             bedClipsURL = CoreTest.class.getResource(ApplicationConfiguration.modelResourcePath
                     + "clips.obj");
+            bedGraphicURL = CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath
+                    + "Bed Graphic - Robox.png");
+            bedZOffset = 151;
+            bedYOffset = 0;
+            bedXOffset = 0;
+            peiDrop = 0.25;
         }
 
         PhongMaterial bedOuterMaterial = new PhongMaterial(Color.web("#0a0a0a"));
@@ -1042,10 +1040,6 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         PhongMaterial bedClipsMaterial = new PhongMaterial(Color.web("#f0f0f0"));
         bedClipsMaterial.setSpecularPower(20f);
-
-        Group bed = new Group();
-
-        bed.setId("Bed");
 
         ObjImporter bedOuterImporter = new ObjImporter();
         ModelLoadResult bedOuterLoadResult = bedOuterImporter.loadURL(null, bedOuterURL);
@@ -1069,31 +1063,31 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             bed.getChildren().addAll(bedClipsMeshView);
         }
 
-        final Image roboxLogoImage = new Image(CoreTest.class.getResource(
-                ApplicationConfiguration.imageResourcePath + "BedGraphics.png").toExternalForm());
-        final ImageView roboxLogoView = new ImageView();
+        final Image roboxLogoImage = new Image(bedGraphicURL.toExternalForm());
+        final ImageView bedGraphicView = new ImageView();
+        Lighting lighting = new Lighting();
+        lighting.setSurfaceScale(1.5);
+        bedGraphicView.setEffect(lighting);
 
-        roboxLogoView.setImage(roboxLogoImage);
+        bedGraphicView.setImage(roboxLogoImage);
 
         final Xform roboxLogoTransformNode = new Xform();
 
-        roboxLogoTransformNode.setTz(150);
+        roboxLogoTransformNode.setTz(bedZOffset);
+        roboxLogoTransformNode.setTx(bedXOffset);
+        roboxLogoTransformNode.setTy(bedYOffset);
 
         roboxLogoTransformNode.setRotateX(-90);
+        roboxLogoTransformNode.setScale(0.1);
 
-        roboxLogoTransformNode.setScale(0.084);
+        peiMeshView.translateYProperty().set(peiDrop);
 
-        roboxLogoTransformNode.setTy(-.25);
-
-        roboxLogoTransformNode.getChildren()
-                .add(roboxLogoView);
+        roboxLogoTransformNode.getChildren().add(bedGraphicView);
         roboxLogoTransformNode.setId("LogoImage");
 
-        bed.getChildren()
-                .add(roboxLogoTransformNode);
+        bed.getChildren().add(roboxLogoTransformNode);
         bed.setMouseTransparent(true);
 
-        return bed;
     }
 
     private Node createBoundingBox(double printVolumeWidth, double printVolumeDepth, double printVolumeHeight)
@@ -1718,16 +1712,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                 defaultDistance);
     }
 
-    private void updateProjectifiableThings(boolean isBrobox) {
+    private void updateProjectifiableThings() {
         for (ProjectifiableThing model : loadedModels)
         {
-            if (isBrobox)
-            {
-                model.setBedReference(bedBrobox);
-            } else
-            {
-                model.setBedReference(bed);
-            }
             model.setBedCentreOffsetTransform();
         }
     }

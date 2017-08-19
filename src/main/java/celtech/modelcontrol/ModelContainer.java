@@ -535,6 +535,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
     /**
      * Return a set of all descendent ModelContainers (and include this one)
      * that have ModelContainer children.
+     * @return
      */
     public Collection<? extends ModelContainer> getModelsHoldingModels()
     {
@@ -580,8 +581,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         BrentOptimizer optimizer = new BrentOptimizer(1e-3, 1e-4);
         UnivariatePointValuePair pair = optimizer.optimize(new MaxEval(70),
                 new UnivariateObjectiveFunction(
-                        new ApplyTwist(meshView,
-                                snapFaceIndex)),
+                        new ApplyTwist(meshView, snapFaceIndex)),
                 GoalType.MINIMIZE,
                 new SearchInterval(0, 360));
         steno.debug("optimiser took " + (int) ((System.nanoTime() - start) * 10e-6) + " ms"
@@ -630,8 +630,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
 
             Point3D rotatedFaceCentre = bed.sceneToLocal(localToScene(toPoint3D(faceCentre)));
 
-            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(localToScene(toPoint3D(
-                    faceCentre.add(faceNormal))));
+            Point3D rotatedFaceCentrePlusNormal = bed.sceneToLocal(
+                    localToScene(toPoint3D(faceCentre.add(faceNormal))));
 
             Point3D rotatedFaceNormal = rotatedFaceCentrePlusNormal.subtract(rotatedFaceCentre);
             return rotatedFaceNormal;
