@@ -3,15 +3,14 @@
  */
 package celtech.printerControl.model;
 
-import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
-import celtech.roboxbase.comms.remote.EEPROMState;
-import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.MaterialType;
-import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
-import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.comms.CommandInterface;
+import celtech.roboxbase.comms.events.ErrorConsumer;
 import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.comms.remote.BusyStatus;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.comms.remote.PauseStatus;
+import celtech.roboxbase.comms.remote.clear.SuitablePrintJob;
 import celtech.roboxbase.comms.rx.AckResponse;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.FirmwareResponse;
@@ -23,11 +22,12 @@ import celtech.roboxbase.comms.rx.ReelEEPROMDataResponse;
 import celtech.roboxbase.comms.rx.RoboxRxPacket;
 import celtech.roboxbase.comms.rx.SendFile;
 import celtech.roboxbase.comms.rx.StatusResponse;
-import celtech.roboxbase.comms.events.ErrorConsumer;
-import celtech.roboxbase.comms.remote.clear.SuitablePrintJob;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.Macro;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterEdition;
-import celtech.roboxbase.utils.models.PrintableMeshes;
+import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Extruder;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.PrintEngine;
@@ -40,18 +40,27 @@ import celtech.roboxbase.printerControl.model.TemperatureAndPWMData;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.XAndYStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
 import celtech.roboxbase.services.printing.DatafileSendAlreadyInProgress;
 import celtech.roboxbase.services.printing.DatafileSendNotInitialised;
 import celtech.roboxbase.utils.AxisSpecifier;
 import celtech.roboxbase.utils.RectangularBounds;
+import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.TaskResponder;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -70,6 +79,36 @@ public class TestPrinter implements Printer
     private final ObservableMap<Integer, Reel> reelsProperty = FXCollections.observableHashMap();
     private final ObservableMap<Integer, Filament> effectiveFilaments = FXCollections.observableHashMap();
     private final ObservableList<Extruder> extrudersProperty = FXCollections.observableArrayList();
+    protected final ObjectProperty<PrinterStatus> printerStatus = new SimpleObjectProperty(
+            PrinterStatus.IDLE);
+    protected final ObjectProperty<PauseStatus> pauseStatus = new SimpleObjectProperty<>(
+            PauseStatus.NOT_PAUSED);
+    protected final ObjectProperty<BusyStatus> busyStatus = new SimpleObjectProperty<>(
+            BusyStatus.NOT_BUSY);
+    private PrintEngine printEngine;
+    protected final IntegerProperty printJobLineNumber = new SimpleIntegerProperty(0);
+    protected final StringProperty printJobID = new SimpleStringProperty("");
+
+    private final ObservableList<String> gcodeTranscript = FXCollections.observableArrayList();
+    private final PrinterIdentity printerIdentity = new PrinterIdentity();
+    private final PrinterAncillarySystems printerAncillarySystems = new PrinterAncillarySystems();
+    private final ObjectProperty<PrinterDefinitionFile> printerConfiguration = new SimpleObjectProperty<>(null);
+
+    private final BooleanProperty canRemoveHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canPurgeHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty mustPurgeHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canInitiateNewState = new SimpleBooleanProperty(false);
+    private final BooleanProperty canPrint = new SimpleBooleanProperty(false);
+    private final BooleanProperty canOpenCloseNozzle = new SimpleBooleanProperty(false);
+    private final BooleanProperty canPause = new SimpleBooleanProperty(false);
+    private final BooleanProperty canResume = new SimpleBooleanProperty(false);
+    private final BooleanProperty canRunMacro = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCancel = new SimpleBooleanProperty(false);
+    private final BooleanProperty canOpenDoor = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateNozzleHeight = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateXYAlignment = new SimpleBooleanProperty(false);
+    private final BooleanProperty canCalibrateNozzleOpening = new SimpleBooleanProperty(false);
 
     public TestPrinter()
     {
@@ -92,6 +131,8 @@ public class TestPrinter implements Printer
         }
         extrudersProperty.add(extruder0);
         extrudersProperty.add(extruder1);
+
+        printEngine = new PrintEngine(this);
     }
 
     public void addHead()
@@ -206,7 +247,7 @@ public class TestPrinter implements Printer
     @Override
     public ReadOnlyBooleanProperty canCancelProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return canCancel;
     }
 
     @Override
@@ -260,19 +301,19 @@ public class TestPrinter implements Printer
     @Override
     public ObservableList<String> gcodeTranscriptProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return gcodeTranscript;
     }
 
     @Override
     public ReadOnlyBooleanProperty canPauseProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return canPause;
     }
 
     @Override
     public ReadOnlyBooleanProperty canResumeProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return canResume;
     }
 
     @Override
@@ -284,19 +325,19 @@ public class TestPrinter implements Printer
     @Override
     public PrintEngine getPrintEngine()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printEngine;
     }
 
     @Override
     public PrinterAncillarySystems getPrinterAncillarySystems()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printerAncillarySystems;
     }
 
     @Override
     public PrinterIdentity getPrinterIdentity()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printerIdentity;
     }
 
     @Override
@@ -368,7 +409,7 @@ public class TestPrinter implements Printer
     @Override
     public ReadOnlyObjectProperty<PrinterStatus> printerStatusProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printerStatus;
     }
 
     @Override
@@ -595,19 +636,19 @@ public class TestPrinter implements Printer
     @Override
     public ReadOnlyIntegerProperty printJobLineNumberProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printJobLineNumber;
     }
 
     @Override
     public ReadOnlyStringProperty printJobIDProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printJobID;
     }
 
     @Override
     public ReadOnlyObjectProperty pauseStatusProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return pauseStatus;
     }
 
     @Override
@@ -782,7 +823,7 @@ public class TestPrinter implements Printer
     @Override
     public ReadOnlyObjectProperty busyStatusProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return busyStatus;
     }
 
     @Override
@@ -1107,13 +1148,13 @@ public class TestPrinter implements Printer
     @Override
     public ReadOnlyObjectProperty<PrinterDefinitionFile> printerConfigurationProperty()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return printerConfiguration;
     }
 
     @Override
     public void setPrinterConfiguration(PrinterDefinitionFile printerConfigurationFile)
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.printerConfiguration.set(printerConfigurationFile);
     }
 
     @Override

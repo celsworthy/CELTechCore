@@ -56,13 +56,14 @@ public class JavaFXConfiguredTest
 
         new File(userStorageFolderPath
             + ApplicationConfiguration.projectFileDirectoryPath
-            + File.separator).mkdirs();
+                + File.separator).mkdirs();
+
+        URL configURL = JavaFXConfiguredTest.class.getResource("/AutoMaker.configFile.xml");
+        System.setProperty("libertySystems.configFile", configURL.getFile());
         
         Lookup.setupDefaultValues();
 
         // force initialisation
-        URL configURL = JavaFXConfiguredTest.class.getResource("/AutoMaker.configFile.xml");
-        System.setProperty("libertySystems.configFile", configURL.getFile());
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
         SlicerParametersContainer.getInstance();

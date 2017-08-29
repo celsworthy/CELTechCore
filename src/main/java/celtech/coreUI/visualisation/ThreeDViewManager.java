@@ -22,6 +22,7 @@ import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.TimeUtils;
@@ -161,18 +162,18 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final ObjectProperty<LayoutSubmode> layoutSubmode;
     private boolean justEnteredDragMode;
 
-    private PhongMaterial loaded1Material = new PhongMaterial(Color.BLUE);
-    private PhongMaterial loaded2Material = new PhongMaterial(Color.GREEN);
-    private PhongMaterial extruder1Material = new PhongMaterial(StandardColours.ROBOX_BLUE);
-    private PhongMaterial extruder1TransparentMaterial = new PhongMaterial(StandardColours.ROBOX_BLUE_TRANSPARENT);
-    private PhongMaterial extruder2Material = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE);
-    private PhongMaterial extruder2TransparentMaterial = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE_TRANSPARENT);
-    private PhongMaterial greyExcludedMaterial = new PhongMaterial(StandardColours.LIGHT_GREY_TRANSPARENT);
-    private PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
-    private PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
-    private PhongMaterial zcutDisplayPlaneMaterial = new PhongMaterial(Color.web("#00005530"));
+    private final PhongMaterial loaded1Material = new PhongMaterial(Color.BLUE);
+    private final PhongMaterial loaded2Material = new PhongMaterial(Color.GREEN);
+    private final PhongMaterial extruder1Material = new PhongMaterial(StandardColours.ROBOX_BLUE);
+    private final PhongMaterial extruder1TransparentMaterial = new PhongMaterial(StandardColours.ROBOX_BLUE_TRANSPARENT);
+    private final PhongMaterial extruder2Material = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE);
+    private final PhongMaterial extruder2TransparentMaterial = new PhongMaterial(StandardColours.HIGHLIGHT_ORANGE_TRANSPARENT);
+    private final PhongMaterial greyExcludedMaterial = new PhongMaterial(StandardColours.LIGHT_GREY_TRANSPARENT);
+    private final PhongMaterial collidedMaterial = new PhongMaterial(Color.DARKORANGE);
+    private final PhongMaterial outOfBoundsMaterial = new PhongMaterial(Color.RED);
+    private final PhongMaterial zcutDisplayPlaneMaterial = new PhongMaterial(Color.web("#00005530"));
 
-    private CollisionManager collisionManager = new CollisionManager();
+    private final CollisionManager collisionManager = new CollisionManager();
 
     private PrinterDefinitionFile currentPrinterConfiguration = null;
 
@@ -703,7 +704,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         } else
         {
             double z = bedTranslateXform.getTz() - event.getDeltaY();
-            if (z >= 0)
+            double minimumZ = currentPrinterConfiguration.getPrinterType() == PrinterType.BROBOX ? -60.0 : 0.0;
+            if (z >= minimumZ)
             {
                 cameraDistance.set(z);
             }
@@ -1001,7 +1003,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
      */
     private void buildBed(boolean brobox) {
         URL bedOuterURL, peiSheetURL, bedClipsURL, bedGraphicURL;
-        int bedZOffset, bedXOffset, bedYOffset;
+        double bedZOffset, bedXOffset, bedYOffset;
         double peiDrop;
         bed.getChildren().clear();
         if (brobox)
@@ -1027,7 +1029,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                     + "clips.obj");
             bedGraphicURL = CoreTest.class.getResource(ApplicationConfiguration.imageResourcePath
                     + "Bed Graphic - Robox.png");
-            bedZOffset = 151;
+            bedZOffset = 150;
             bedYOffset = 0;
             bedXOffset = 0;
             peiDrop = 0.25;
@@ -1071,21 +1073,21 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         bedGraphicView.setImage(roboxLogoImage);
 
-        final Xform roboxLogoTransformNode = new Xform();
+        final Xform bedGraphicTransformNode = new Xform();
 
-        roboxLogoTransformNode.setTz(bedZOffset);
-        roboxLogoTransformNode.setTx(bedXOffset);
-        roboxLogoTransformNode.setTy(bedYOffset);
+        bedGraphicTransformNode.setTz(bedZOffset);
+        bedGraphicTransformNode.setTx(bedXOffset);
+        bedGraphicTransformNode.setTy(bedYOffset);
 
-        roboxLogoTransformNode.setRotateX(-90);
-        roboxLogoTransformNode.setScale(0.1);
+        bedGraphicTransformNode.setRotateX(-90);
+        bedGraphicTransformNode.setScale(0.1);
 
         peiMeshView.translateYProperty().set(peiDrop);
 
-        roboxLogoTransformNode.getChildren().add(bedGraphicView);
-        roboxLogoTransformNode.setId("LogoImage");
+        bedGraphicTransformNode.getChildren().add(bedGraphicView);
+        bedGraphicTransformNode.setId("LogoImage");
 
-        bed.getChildren().add(roboxLogoTransformNode);
+        bed.getChildren().add(bedGraphicTransformNode);
         bed.setMouseTransparent(true);
 
     }
