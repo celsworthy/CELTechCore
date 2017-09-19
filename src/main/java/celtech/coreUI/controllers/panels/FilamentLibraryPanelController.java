@@ -559,9 +559,10 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         assert (state.get() != State.ROBOX);
         updateFilamentFromWidgets(currentFilament);
         filamentContainer.saveFilament(currentFilament);
+        Filament filamentToSelect = currentFilament;
         showReelsAtTopOfCombo();
-        selectFilament(currentFilament);
-        filamentMenuButton.displayFilamentOnButton(currentFilament);
+        selectFilament(filamentToSelect);
+        filamentMenuButton.displayFilamentOnButton(filamentToSelect);
     }
 
     void whenNewPressed()
@@ -599,8 +600,8 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         clearWidgets();
         selectFilament(filamentMenuButton.displayFirstFilament());
     }
-
-    void whenWriteToReel1Pressed()
+    
+    void whenWriteToReelPressed(int reelIndex)
     {
         try
         {
@@ -612,12 +613,12 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
             Filament filament = filamentMenuButton.getCurrentlyDisplayedFilament();
 
-            if (currentPrinter.get().getReelEEPROMStateProperty().get(0) == EEPROMState.NOT_PROGRAMMED)
+            if (currentPrinter.get().getReelEEPROMStateProperty().get(reelIndex) == EEPROMState.NOT_PROGRAMMED)
             {
-                currentPrinter.get().formatReelEEPROM(0);
+                currentPrinter.get().formatReelEEPROM(reelIndex);
             } else
             {
-                float remainingFilament = getRemainingFilament(0);
+                float remainingFilament = getRemainingFilament(reelIndex);
                 if (state.get() == State.CUSTOM && !remainingOnReelText.equals(REMAINING_ON_REEL_UNCHANGED))
                 {
                     remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
@@ -626,43 +627,21 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
                 filament.setRemainingFilament(remainingFilament);
             }
 
-            currentPrinter.get().transmitWriteReelEEPROM(0, filament);
+            currentPrinter.get().transmitWriteReelEEPROM(reelIndex, filament);
         } catch (RoboxCommsException | PrinterException ex)
         {
-            steno.error("Unable to write to Reel 0 " + ex);
+            steno.error("Unable to write to Reel " + reelIndex + " " + ex);
         }
+    }
+
+    void whenWriteToReel1Pressed()
+    {
+        whenWriteToReelPressed(0);
     }
 
     void whenWriteToReel2Pressed()
     {
-        try
-        {
-            Filament filament = filamentMenuButton.getCurrentlyDisplayedFilament();
-
-            if (currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
-            {
-                currentPrinter.get().formatReelEEPROM(1);
-            } else
-            {
-
-                if (isEditable.get() && isDirty.get())
-                {
-                    whenSavePressed();
-                }
-                float remainingFilament = getRemainingFilament(1);
-                if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
-                {
-                    remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
-                }
-
-                filament.setRemainingFilament(remainingFilament);
-            }
-
-            currentPrinter.get().transmitWriteReelEEPROM(1, filament);
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Unable to write to Reel 1 " + ex);
-        }
+        whenWriteToReelPressed(1);
     }
 
     public ReadOnlyBooleanProperty getCanSave()
