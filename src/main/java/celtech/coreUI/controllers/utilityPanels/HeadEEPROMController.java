@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableBooleanValue;
@@ -347,16 +348,19 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
     private void updateFieldsFromAttachedHead(Head head)
     {
+        Head.ValveType valveType;
         headTypeCode.setText(head.typeCodeProperty().get().trim());
         headType.setText(head.nameProperty().get().trim());
-
+        
+        valveType = head.valveTypeProperty().get();
+        
         headTypeCodeEntry.setText(head.typeCodeProperty().get().trim());
         printerWeek.setText(head.getWeekNumber());
         printerYear.setText(head.getYearNumber());
         printerPONumber.setText(head.getPONumber());
         printerSerialNumber.setText(head.getSerialNumber());
         printerChecksum.setText(head.getChecksum());
-
+        
         if (head.uniqueIDProperty().get().length() > 8)
         {
             enterSerialNumberHBox.setDisable(true);
@@ -391,8 +395,17 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
 
-        nozzle1BOffset.setText(String.format("%.2f",
+        if (valveType == Head.ValveType.FITTED)
+        {
+            nozzle1BOffset.setVisible(true);
+            nozzle1BOffset.setText(String.format("%.2f",
                 head.getNozzles().get(0).bOffsetProperty().get()));
+        } else
+        {
+            nozzle1BOffset.setVisible(false);
+            nozzle1BOffset.setText("");
+        }
+
         nozzle1XOffset.setText(String.format("%.2f",
                 head.getNozzles().get(0).xOffsetProperty().get()));
         nozzle1YOffset.setText(String.format("%.2f",
@@ -400,17 +413,30 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
         if (head.getNozzles().size() > 1)
         {
-            nozzle2BOffset.setText(String.format("%.2f",
+            if (valveType == Head.ValveType.FITTED)
+            {
+                nozzle2BOffset.setVisible(true);
+                nozzle2BOffset.setText(String.format("%.2f",
                     head.getNozzles().get(1).bOffsetProperty().get()));
+            } else
+            {
+                nozzle2BOffset.setVisible(false);
+                nozzle2BOffset.setText("");
+            }
+            nozzle2XOffset.setVisible(true);
             nozzle2XOffset.setText(String.format("%.2f",
                     head.getNozzles().get(1).xOffsetProperty().get()));
+            nozzle2YOffset.setVisible(true);
             nozzle2YOffset.setText(String.format("%.2f",
                     head.getNozzles().get(1).yOffsetProperty().get()));
         } else
         {
             nozzle2BOffset.setText("");
+            nozzle2XOffset.setVisible(false);
             nozzle2XOffset.setText("");
-            nozzle2YOffset.setText("");
+            nozzle2YOffset.setVisible(false);
+            nozzle2BOffset.setText("");
+            nozzle2BOffset.setVisible(false);
         }
 
         float nozzle1Offset = head.getNozzles().get(0).zOffsetProperty().get();
@@ -420,14 +446,23 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             nozzle2Offset = head.getNozzles().get(1).zOffsetProperty().get();
         }
-
         float nozzle1ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
                 nozzle2Offset);
-        float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(nozzle1Offset,
+        nozzle1ZOverrun.setText(String.format("%.2f", nozzle1ZOverrunValue));
+
+        if (head.getNozzles().size() > 1)
+        {
+            float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(nozzle1Offset,
                 nozzle2Offset);
 
-        nozzle1ZOverrun.setText(String.format("%.2f", nozzle1ZOverrunValue));
-        nozzle2ZOverrun.setText(String.format("%.2f", nozzle2ZOverrunValue));
+            nozzle2ZOverrun.setVisible(true);
+            nozzle2ZOverrun.setText(String.format("%.2f", nozzle2ZOverrunValue));
+        } else
+        {
+            nozzle2ZOverrun.setVisible(false);
+            nozzle2ZOverrun.setText("");
+        }
+        
         offsetFieldsDirty.set(false);
     }
 

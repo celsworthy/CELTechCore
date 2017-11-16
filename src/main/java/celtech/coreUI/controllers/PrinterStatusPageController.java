@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
@@ -74,47 +75,37 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private StackPane statusPane;
 
     @FXML
+    private Group rbx01Group; // Default printer group, that holds the images of the printer shown on the status page.
+    private HashMap<String, Group> printerGroupMap = null;
+    
     private ImageView baseNoReels;
 
-    @FXML
     private ImageView baseReel2;
 
-    @FXML
     private ImageView baseReel1;
 
-    @FXML
     private ImageView reel1Background;
     private ColorAdjust reel1BackgroundColourEffect = new ColorAdjust();
 
-    @FXML
     private ImageView reel2Background;
     private ColorAdjust reel2BackgroundColourEffect = new ColorAdjust();
 
-    @FXML
     private ImageView baseReelBoth;
 
-    @FXML
     private ImageView doorClosed;
 
-    @FXML
     private ImageView doorOpen;
 
-    @FXML
     private ImageView singleMaterialHead;
 
-    @FXML
     private ImageView ambientLight;
-
     private ColorAdjust ambientColourEffect = new ColorAdjust();
 
-    @FXML
     private ImageView dualMaterialHead;
 
-    @FXML
     private ImageView bed;
-
-    @FXML
-    private Group temperatureWarning;
+    
+    private ImageView temperatureWarning;
 
     @FXML
     private VBox extruder1Controls;
@@ -209,6 +200,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 {
                     setAdvancedControlsVisibility();
                 });
+                
+        printerGroupMap = new HashMap<>();
+        printerGroupMap.put("RBX01", rbx01Group);
+        setupPrinterType("RBX01");
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
         threeDPformatter.setMaximumFractionDigits(3);
@@ -238,9 +233,10 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         doorClosed.setVisible(false);
         doorOpen.setVisible(false);
 
-        ambientLight.setEffect(ambientColourEffect);
-        reel1Background.setEffect(reel1BackgroundColourEffect);
-        reel2Background.setEffect(reel2BackgroundColourEffect);
+        // Now done in setupPrinterType().      
+        // ambientLight.setEffect(ambientColourEffect);
+        // reel1Background.setEffect(reel1BackgroundColourEffect);
+        // reel2Background.setEffect(reel2BackgroundColourEffect);
 
         temperatureWarning.setVisible(false);
 
@@ -267,23 +263,15 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             Printer t, Printer selectedPrinter)
                     {
                         printerToUse = selectedPrinter;
-
+                        unbindFromSelectedPrinter();
                         setupBaseDisplay();
-
+                        setupAmbientLight();
+                            
                         if (selectedPrinter == null)
                         {
-                            unbindFromSelectedPrinter();
-
-                            setupBaseDisplay();
-                            setupAmbientLight();
-
                             temperatureWarning.setVisible(false);
                         } else
                         {
-                            unbindFromSelectedPrinter();
-
-                            setupBaseDisplay();
-                            setupAmbientLight();
                             selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
                                     printerColourChangeListener);
 
@@ -329,10 +317,127 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         displayScaleChanged(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
     }
 
+    private Group loadPrinterGroup(String printerTypeCode)
+    {
+        Group printerGroup = printerGroupMap.getOrDefault(printerTypeCode, null);
+        if (printerGroup == null)
+        {
+            String printerGroupFXMLName = printerTypeCode.toLowerCase() + "Group.fxml";
+            URL printerGroupURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + printerGroupFXMLName);
+
+            try
+            {
+                FXMLLoader loader =  new FXMLLoader(printerGroupURL, BaseLookup.getLanguageBundle());
+                printerGroup = loader.load();
+                printerGroupMap.put(printerTypeCode, printerGroup);
+                
+                // Add the printer group to the status page.
+                statusPane.getChildren().add(1, printerGroup);
+                printerGroup.setVisible(false);
+            } catch (IOException ex)
+            {
+                printerGroup = null;
+            }
+            
+            if (printerGroup == null)
+            {
+                printerGroup = rbx01Group;
+                // So it doesn't try to load it again.
+                printerGroupMap.put(printerTypeCode, printerGroup);
+            }
+        }
+    
+        return printerGroup;
+    }
+    
+    private void setupPrinterType(String printerTypeCode)
+    {
+        // Clear visible property bindings from hidden elements.
+        if (temperatureWarning != null)
+        {
+            temperatureWarning.visibleProperty().unbind();
+        }
+        if (doorOpen != null)
+        {
+            doorOpen.visibleProperty().unbind();
+        }
+        if (doorClosed != null)
+        {
+            doorClosed.visibleProperty().unbind();
+        }
+        
+        // Hide all the printer groups.
+        printerGroupMap.forEach((k, v) -> v.setVisible(false));
+        if (printerTypeCode != null && !printerTypeCode.isEmpty())
+        {
+            Group printerGroup = loadPrinterGroup(printerTypeCode);
+            if (printerGroup == null)
+            {
+                throw new RuntimeException("No printer groups found in printer status fxml.");
+            }
+            
+            printerGroup.setVisible(true);
+            for (Node pgNode : printerGroup.getChildren())
+            {
+                String pgNodeName = pgNode.getId();
+                String pgBaseName = pgNodeName.substring(0, pgNodeName.lastIndexOf(printerTypeCode));
+
+                switch (pgBaseName) {
+                    case "baseNoReels":
+                        baseNoReels = (ImageView)pgNode;
+                        break;
+                    case "baseReel1":
+                        baseReel1 = (ImageView)pgNode;
+                        break;
+                    case "baseReel2":
+                        baseReel2 = (ImageView)pgNode;
+                        break;
+                    case "reel1Background":
+                        reel1Background = (ImageView)pgNode;
+                        reel1Background.setEffect(reel1BackgroundColourEffect);
+                        break;
+                    case "reel2Background":
+                        reel2Background = (ImageView)pgNode;
+                        reel2Background.setEffect(reel2BackgroundColourEffect);
+                        break;
+                    case "baseReelBoth":
+                        baseReelBoth = (ImageView)pgNode;
+                        break;
+                    case "doorClosed":
+                        doorClosed = (ImageView)pgNode;
+                        break;
+                    case "doorOpen":
+                        doorOpen = (ImageView)pgNode;
+                        break;
+                    case "singleMaterialHead":
+                        singleMaterialHead = (ImageView)pgNode;
+                        break;
+                    case "ambientLight":
+                        ambientLight = (ImageView)pgNode;
+                        ambientLight.setEffect(ambientColourEffect);
+                        break;
+                    case "dualMaterialHead":
+                        dualMaterialHead = (ImageView)pgNode;
+                        break;
+                    case "bed":
+                        bed = (ImageView)pgNode;
+                        break;
+                    case "temperatureWarning":
+                        temperatureWarning = (ImageView)pgNode;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+     }
+    
     private void setupBaseDisplay()
     {
         if (printerToUse == null)
         {
+            setupPrinterType(null);
+            
             baseNoReels.setVisible(false);
             baseReel1.setVisible(false);
             baseReel2.setVisible(false);
@@ -341,12 +446,15 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             vBoxLeft.setVisible(false);
             vBoxRight.setVisible(false);
             disconnectedText.setVisible(true);
-        } else
+        } 
+        else
         {
+            setupPrinterType(printerToUse.printerConfigurationProperty().get().getTypeCode());
             vBoxLeft.setVisible(true);
             vBoxRight.setVisible(true);
             disconnectedText.setVisible(false);
-
+            setupHead();
+            
             if (((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(0).isFittedProperty().get())
                     || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
                     && ((printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(1).isFittedProperty().get())
