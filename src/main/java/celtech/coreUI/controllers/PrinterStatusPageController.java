@@ -98,10 +98,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private ImageView singleMaterialHead;
 
+    private ImageView dualMaterialHead;
+
+    private ImageView singleNozzleHead;
+
     private ImageView ambientLight;
     private ColorAdjust ambientColourEffect = new ColorAdjust();
-
-    private ImageView dualMaterialHead;
 
     private ImageView bed;
     
@@ -323,7 +325,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         if (printerGroup == null)
         {
             String printerGroupFXMLName = printerTypeCode.toLowerCase() + "Group.fxml";
-            URL printerGroupURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + printerGroupFXMLName);
+            URL printerGroupURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "printerStatus/" + printerGroupFXMLName);
 
             try
             {
@@ -380,9 +382,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             for (Node pgNode : printerGroup.getChildren())
             {
                 String pgNodeName = pgNode.getId();
-                String pgBaseName = pgNodeName.substring(0, pgNodeName.lastIndexOf(printerTypeCode));
 
-                switch (pgBaseName) {
+                switch (pgNodeName) {
                     case "baseNoReels":
                         baseNoReels = (ImageView)pgNode;
                         break;
@@ -412,12 +413,15 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     case "singleMaterialHead":
                         singleMaterialHead = (ImageView)pgNode;
                         break;
+                    case "dualMaterialHead":
+                        dualMaterialHead = (ImageView)pgNode;
+                        break;
+                    case "singleNozzleHead":
+                        singleNozzleHead = (ImageView)pgNode;
+                        break;
                     case "ambientLight":
                         ambientLight = (ImageView)pgNode;
                         ambientLight.setEffect(ambientColourEffect);
-                        break;
-                    case "dualMaterialHead":
-                        dualMaterialHead = (ImageView)pgNode;
                         break;
                     case "bed":
                         bed = (ImageView)pgNode;
@@ -425,12 +429,43 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     case "temperatureWarning":
                         temperatureWarning = (ImageView)pgNode;
                         break;
+                        
+                    case "extruder1ControlsOffset":
+                        extruder1Controls.setTranslateX(pgNode.getTranslateX());
+                        extruder1Controls.setTranslateY(pgNode.getTranslateY());
+                        pgNode.setVisible(false);
+                        break;
+                    
+                    case "extruder2ControlsOffset":
+                        extruder2Controls.setTranslateX(pgNode.getTranslateX());
+                        extruder2Controls.setTranslateY(pgNode.getTranslateY());
+                        pgNode.setVisible(false);
+                        break;
+
+                    case "xAxisControlsOffset":
+                        xAxisControls.setTranslateX(pgNode.getTranslateX());
+                        xAxisControls.setTranslateY(pgNode.getTranslateY());
+                        pgNode.setVisible(false);
+                        break;
+
+                    case "yAxisControlsOffset":
+                        yAxisControls.setTranslateX(pgNode.getTranslateX());
+                        yAxisControls.setTranslateY(pgNode.getTranslateY());
+                        pgNode.setVisible(false);
+                        break;
+
+                    case "zAxisControlsOffset":
+                        zAxisControls.setTranslateX(pgNode.getTranslateX());
+                        zAxisControls.setTranslateY(pgNode.getTranslateY());
+                        pgNode.setVisible(false);
+                        break;
+                        
                     default:
                         break;
                 }
             }
         }
-     }
+    }
     
     private void setupBaseDisplay()
     {
@@ -454,6 +489,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             vBoxRight.setVisible(true);
             disconnectedText.setVisible(false);
             setupHead();
+
+            doorOpen.visibleProperty().bind(printerToUse.getPrinterAncillarySystems().doorOpenProperty());
+            doorClosed.visibleProperty().bind(printerToUse.getPrinterAncillarySystems().doorOpenProperty().not());
             
             if (((printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get() && printerToUse.extrudersProperty().get(0).isFittedProperty().get())
                     || (printerToUse.effectiveFilamentsProperty().containsKey(0) && printerToUse.effectiveFilamentsProperty().get(0) != FilamentContainer.UNKNOWN_FILAMENT))
@@ -574,27 +612,36 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void setupHead()
     {
-        if (printerToUse == null
-                || printerToUse.headProperty().get() == null)
+        boolean singleMaterialHeadVisible = false;
+        boolean dualMaterialHeadVisible = false;
+        boolean singleNozzleHeadVisible = false;
+        
+        if (printerToUse != null)
         {
-            singleMaterialHead.setVisible(false);
-            dualMaterialHead.setVisible(false);
-        } else
-        {
-            if (printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+            Head printerHead = printerToUse.headProperty().get();
+            if (printerHead != null)
             {
-                singleMaterialHead.setVisible(true);
-                dualMaterialHead.setVisible(false);
-            } else if (printerToUse.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-            {
-                singleMaterialHead.setVisible(false);
-                dualMaterialHead.setVisible(true);
-            } else
-            {
-                singleMaterialHead.setVisible(false);
-                dualMaterialHead.setVisible(false);
+                if (printerHead.headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+                {
+                    if (printerHead.getNozzles().size() == 1)
+                    {
+                        singleNozzleHeadVisible = true;
+                    }
+                    else
+                    {
+                        singleMaterialHeadVisible = true;
+                    }
+                }
+                else if (printerHead.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                {
+                    dualMaterialHeadVisible = true;
+                }
             }
         }
+        
+        singleMaterialHead.setVisible(singleMaterialHeadVisible);
+        dualMaterialHead.setVisible(dualMaterialHeadVisible);
+        singleNozzleHead.setVisible(singleNozzleHeadVisible);
     }
 
     private void setAdvancedControlsVisibility()
@@ -639,7 +686,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             node.setVisible(visible);
         }
-
         extruder1Controls.setVisible(Lookup.getUserPreferences().advancedModeProperty().get()
                 && visible
                 && printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()

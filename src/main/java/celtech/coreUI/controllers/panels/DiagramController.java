@@ -4,6 +4,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.XAndYStateTransitionManager;
@@ -102,6 +103,16 @@ class DiagramController implements Initializable
             }
             setupZCoListener(zcoProperty);
         }
+		if (stateTransitionManager instanceof SingleNozzleHeightStateTransitionManager)
+        {
+            ReadOnlyDoubleProperty zcoProperty
+                = ((SingleNozzleHeightStateTransitionManager) stateTransitionManager).getZcoProperty();
+            if (calibrationTextField != null)
+            {
+                calibrationTextField.setText(String.format("%1.2f", zcoProperty.get()));
+            }
+            setupZCoListener(zcoProperty);
+        }
         if (stateTransitionManager instanceof NozzleOpeningStateTransitionManager)
         {
             ReadOnlyFloatProperty bPositionProperty
@@ -173,8 +184,8 @@ class DiagramController implements Initializable
             zcoProperty.addListener(zcoListener);
         }
     }
-
-    protected void setupBPositionListener(ReadOnlyFloatProperty bPositionProperty)
+	
+	    protected void setupBPositionListener(ReadOnlyFloatProperty bPositionProperty)
     {
         bPositionProperty.removeListener(bPositionListener);
         if (BPosition != null)

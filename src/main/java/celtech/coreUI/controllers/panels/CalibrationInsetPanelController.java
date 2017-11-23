@@ -23,6 +23,7 @@ import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionMa
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.CalibrationXAndYState;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightCalibrationState;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningCalibrationState;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightCalibrationState;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -72,7 +73,9 @@ public class CalibrationInsetPanelController implements Initializable,
     ObjectProperty<CalibrationMode> calibrationMode = new SimpleObjectProperty<CalibrationMode>(null);
     CalibrationXAndYGUI calibrationXAndYGUI;
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
+    CalibrationSingleNozzleHeightGUI calibrationSingleNozzleHeightGUI;
     CalibrationNozzleOpeningGUI calibrationNozzleOpeningGUI;
+    
     StateTransitionManager stateManager;
     SpinnerControl spinnerControl;
     private ApplicationStatus applicationStatus = null;
@@ -201,17 +204,7 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void nextButtonAction(ActionEvent event)
     {
-        steno.info("Current state = " + stateManager.stateGUITProperty().get());
-        if (stateManager.stateGUITProperty().get() == NozzleHeightCalibrationState.HEAD_CLEAN_CHECK &&
-            currentPrinter.headProperty().get() != null &&
-            currentPrinter.headProperty().get().getNozzles().size() == 1)
-        {
-            stateManager.followTransition(StateTransitionManager.GUIName.NEXT_2);
-        }
-        else
-        {
-            stateManager.followTransition(StateTransitionManager.GUIName.NEXT);
-        }
+        stateManager.followTransition(StateTransitionManager.GUIName.NEXT);
     }
 
     @FXML
@@ -590,6 +583,22 @@ public class CalibrationInsetPanelController implements Initializable,
             break;
 
             case NOZZLE_HEIGHT:
+            if (currentPrinter.headProperty().get() != null &&
+                currentPrinter.headProperty().get().getNozzles().size() == 1)
+            {
+                try
+                {
+                    stateManager = currentPrinter.startCalibrateSingleNozzleHeight(Lookup.getUserPreferences().isSafetyFeaturesOn());
+                } catch (PrinterException ex)
+                {
+                    steno.warning("Can't switch to calibration: " + ex);
+                    return;
+                }
+            
+                calibrationSingleNozzleHeightGUI = new CalibrationSingleNozzleHeightGUI(this, stateManager);
+                calibrationSingleNozzleHeightGUI.setState(SingleNozzleHeightCalibrationState.IDLE);
+            }
+            else
             {
                 try
                 {
@@ -599,9 +608,11 @@ public class CalibrationInsetPanelController implements Initializable,
                     steno.warning("Can't switch to calibration: " + ex);
                     return;
                 }
+            
+                calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
+                calibrationNozzleHeightGUI.setState(NozzleHeightCalibrationState.IDLE);
             }
-            calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
-            calibrationNozzleHeightGUI.setState(NozzleHeightCalibrationState.IDLE);
+
             break;
 
             case X_AND_Y_OFFSET:

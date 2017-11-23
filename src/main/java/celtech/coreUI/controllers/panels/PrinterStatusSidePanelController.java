@@ -109,7 +109,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Group noHead;
 
     @FXML
-    private Group singleMaterialLiteHead;
+    private Group singleNozzleHead;
 
     @FXML
     private Group singleMaterialHead;
@@ -360,7 +360,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         headDataBox.setVisible(false);
         dualMaterialHead.setVisible(false);
         singleMaterialHead.setVisible(false);
-        singleMaterialLiteHead.setVisible(false);
+        singleNozzleHead.setVisible(false);
         graphAlternativeMaterial1Legend.setVisible(false);
         graphAlternativeMaterial1Temp.setVisible(false);
         graphAlternativeMaterial2Legend.setVisible(false);
@@ -471,8 +471,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             headDataBox.setVisible(true);
             dualMaterialHead.setVisible(true);
             singleMaterialHead.setVisible(false);
-            singleMaterialLiteHead.setVisible(false);
-        } else if (head.typeCodeProperty().get().equals("RBX01-SL"))
+            singleNozzleHead.setVisible(false);
+        } else if (head.headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD &&
+                   head.getNozzles().size() == 1)
         {
             headPanel.setVisible(true);
             noheadDataBox.setVisible(false);
@@ -480,8 +481,8 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             headDataBox.setVisible(true);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(false);
-            singleMaterialLiteHead.setVisible(true);
-        } else
+            singleNozzleHead.setVisible(true);
+        } else // Default to single material head.
         {
             headPanel.setVisible(true);
             noheadDataBox.setVisible(false);
@@ -489,7 +490,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             headDataBox.setVisible(true);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(true);
-            singleMaterialLiteHead.setVisible(false);
+            singleNozzleHead.setVisible(false);
         }
     }
 

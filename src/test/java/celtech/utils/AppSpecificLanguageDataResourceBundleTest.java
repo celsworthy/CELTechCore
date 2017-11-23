@@ -67,6 +67,6 @@ public class AppSpecificLanguageDataResourceBundleTest
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.i18n.languagedata.LanguageData");
 
         assertEquals("Bed", bundle.getString("reelPanel.bed"));
-        assertEquals(1033, bundle.keySet().size());
+        assertEquals(1042, bundle.keySet().size());
     }
 }

@@ -38,6 +38,7 @@ import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.printerControl.model.TemperatureAndPWMData;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.XAndYStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
@@ -659,6 +660,12 @@ public class TestPrinter implements Printer
 
     @Override
     public NozzleHeightStateTransitionManager startCalibrateNozzleHeight(boolean safetyFeaturesRequired)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public SingleNozzleHeightStateTransitionManager startCalibrateSingleNozzleHeight(boolean safetyFeaturesRequired)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
