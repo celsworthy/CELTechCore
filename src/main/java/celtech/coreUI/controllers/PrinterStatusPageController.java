@@ -32,19 +32,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import celtech.coreUI.DisplayManager;
+import libertysystems.stenographer.LogLevel;
 
 /**
  * FXML Controller class
@@ -67,6 +66,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private NumberFormat threeDPformatter;
     private NumberFormat fiveDPformatter;
+    private boolean initialised = false;
 
     @FXML
     private AnchorPane container;
@@ -75,8 +75,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private StackPane statusPane;
 
     @FXML
-    private Group rbx01Group; // Default printer group, that holds the images of the printer shown on the status page.
-    private HashMap<String, Group> printerGroupMap = null;
+    private StackPane rbx01Stack; // Default printer stack, that holds the images of the printer shown on the status page.
+    private HashMap<String, StackPane> printerStackMap = null;
     
     private ImageView baseNoReels;
 
@@ -109,28 +109,21 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     
     private ImageView temperatureWarning;
 
-    @FXML
     private VBox extruder1Controls;
 
-    @FXML
     private VBox extruder2Controls;
 
-    @FXML
     private HBox xAxisControls;
 
-    @FXML
     private VBox yAxisControls;
 
-    @FXML
     private VBox zAxisControls;
-
+    
     @FXML
     private VBox disconnectedText;
 
     @FXML
     private HyperlinkedLabel disconnectedLinkedText;
-
-    private Node[] advancedControls = null;
 
     private Printer lastSelectedPrinter = null;
 
@@ -195,6 +188,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        // Should only run once, but gets called every time a printer stack is loaded.
+        if (initialised)
+            return;
+        else
+            initialised = true;
+        
         BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         Lookup.getUserPreferences().advancedModeProperty().addListener(
@@ -203,8 +202,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     setAdvancedControlsVisibility();
                 });
                 
-        printerGroupMap = new HashMap<>();
-        printerGroupMap.put("RBX01", rbx01Group);
+        printerStackMap = new HashMap<>();
+        printerStackMap.put("RBX01", rbx01Stack);
         setupPrinterType("RBX01");
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
@@ -234,25 +233,12 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
         doorClosed.setVisible(false);
         doorOpen.setVisible(false);
-
-        // Now done in setupPrinterType().      
-        // ambientLight.setEffect(ambientColourEffect);
-        // reel1Background.setEffect(reel1BackgroundColourEffect);
-        // reel2Background.setEffect(reel2BackgroundColourEffect);
-
         temperatureWarning.setVisible(false);
-
-        advancedControls = new Node[]
-        {
-            xAxisControls,
-            yAxisControls,
-            zAxisControls
-        };
 
         setupBaseDisplay();
         setupAmbientLight();
         setupHead();
-
+        
         AnchorPane.setTopAnchor(vBoxLeft, 30.0);
         AnchorPane.setBottomAnchor(vBoxLeft, 30.0);
         loadInsetPanels();
@@ -319,37 +305,40 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         displayScaleChanged(DisplayManager.getInstance().getDisplayScalingModeProperty().get());
     }
 
-    private Group loadPrinterGroup(String printerTypeCode)
+    private StackPane loadPrinterStack(String printerTypeCode)
     {
-        Group printerGroup = printerGroupMap.getOrDefault(printerTypeCode, null);
-        if (printerGroup == null)
+        StackPane printerStack = printerStackMap.getOrDefault(printerTypeCode, null);
+        if (printerStack == null)
         {
-            String printerGroupFXMLName = printerTypeCode.toLowerCase() + "Group.fxml";
-            URL printerGroupURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "printerStatus/" + printerGroupFXMLName);
+            String printerStackFXMLName = printerTypeCode.toLowerCase() + "Stack.fxml";
+            URL printerStackURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "printerStatus/" + printerStackFXMLName);
 
             try
             {
-                FXMLLoader loader =  new FXMLLoader(printerGroupURL, BaseLookup.getLanguageBundle());
-                printerGroup = loader.load();
-                printerGroupMap.put(printerTypeCode, printerGroup);
+                FXMLLoader loader =  new FXMLLoader(printerStackURL, BaseLookup.getLanguageBundle());
+                loader.setController(this);
                 
-                // Add the printer group to the status page.
-                statusPane.getChildren().add(1, printerGroup);
-                printerGroup.setVisible(false);
+                printerStack = loader.load();
+                printerStackMap.put(printerTypeCode, printerStack);
+                
+                // Add the printer stack to the status page.
+                statusPane.getChildren().add(1, printerStack);
+                printerStack.setVisible(false);
             } catch (IOException ex)
             {
-                printerGroup = null;
+                steno.exception("Couldn't load printer stack for printer type " + printerTypeCode, ex);
+                printerStack = null;
             }
             
-            if (printerGroup == null)
+            if (printerStack == null)
             {
-                printerGroup = rbx01Group;
+                printerStack = rbx01Stack;
                 // So it doesn't try to load it again.
-                printerGroupMap.put(printerTypeCode, printerGroup);
+                printerStackMap.put(printerTypeCode, printerStack);
             }
         }
     
-        return printerGroup;
+        return printerStack;
     }
     
     private void setupPrinterType(String printerTypeCode)
@@ -368,21 +357,21 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             doorClosed.visibleProperty().unbind();
         }
         
-        // Hide all the printer groups.
-        printerGroupMap.forEach((k, v) -> v.setVisible(false));
+        // Hide all the printer stacks.
+        printerStackMap.forEach((k, v) -> v.setVisible(false));
         if (printerTypeCode != null && !printerTypeCode.isEmpty())
         {
-            Group printerGroup = loadPrinterGroup(printerTypeCode);
-            if (printerGroup == null)
+            StackPane printerStack = loadPrinterStack(printerTypeCode);
+            if (printerStack == null)
             {
-                throw new RuntimeException("No printer groups found in printer status fxml.");
+                throw new RuntimeException("No printer stacks found in printer status fxml.");
             }
             
-            printerGroup.setVisible(true);
-            for (Node pgNode : printerGroup.getChildren())
+            printerStack.setVisible(true);
+            for (Node pgNode : printerStack.getChildren())
             {
                 String pgNodeName = pgNode.getId();
-
+                steno.log("pgNodeName = " + pgNodeName, LogLevel.ALL);
                 switch (pgNodeName) {
                     case "baseNoReels":
                         baseNoReels = (ImageView)pgNode;
@@ -430,34 +419,24 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                         temperatureWarning = (ImageView)pgNode;
                         break;
                         
-                    case "extruder1ControlsOffset":
-                        extruder1Controls.setTranslateX(pgNode.getTranslateX());
-                        extruder1Controls.setTranslateY(pgNode.getTranslateY());
-                        pgNode.setVisible(false);
+                    case "extruder1Controls":
+                        extruder1Controls = (VBox)pgNode;
                         break;
                     
-                    case "extruder2ControlsOffset":
-                        extruder2Controls.setTranslateX(pgNode.getTranslateX());
-                        extruder2Controls.setTranslateY(pgNode.getTranslateY());
-                        pgNode.setVisible(false);
+                    case "extruder2Controls":
+                        extruder2Controls = (VBox)pgNode;
                         break;
 
-                    case "xAxisControlsOffset":
-                        xAxisControls.setTranslateX(pgNode.getTranslateX());
-                        xAxisControls.setTranslateY(pgNode.getTranslateY());
-                        pgNode.setVisible(false);
+                    case "xAxisControls":
+                        xAxisControls = (HBox)pgNode;
                         break;
 
-                    case "yAxisControlsOffset":
-                        yAxisControls.setTranslateX(pgNode.getTranslateX());
-                        yAxisControls.setTranslateY(pgNode.getTranslateY());
-                        pgNode.setVisible(false);
-                        break;
+                    case "yAxisControls":
+                       yAxisControls = (VBox)pgNode;
+                       break;
 
-                    case "zAxisControlsOffset":
-                        zAxisControls.setTranslateX(pgNode.getTranslateX());
-                        zAxisControls.setTranslateY(pgNode.getTranslateY());
-                        pgNode.setVisible(false);
+                    case "zAxisControls":
+                        zAxisControls = (VBox)pgNode;
                         break;
                         
                     default:
@@ -682,10 +661,9 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             selectedPrinterIsPrinting.set(false);
         }
 
-        for (Node node : advancedControls)
-        {
-            node.setVisible(visible);
-        }
+        xAxisControls.setVisible(visible);
+        yAxisControls.setVisible(visible);
+        zAxisControls.setVisible(visible);
         extruder1Controls.setVisible(Lookup.getUserPreferences().advancedModeProperty().get()
                 && visible
                 && printerToUse.extrudersProperty().get(0).filamentLoadedProperty().get()

@@ -657,7 +657,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 private void setExtrusionWidthLimits(Number newValue, ObservableList<String> widthOptions, RestrictedNumberField widthField, Slider widthSlider)
     {
         float currentWidth = widthField.getAsFloat();
-        String widthOption = widthOptions.get(newValue.intValue());
+        int selIndex = newValue.intValue();
+        if (selIndex < 0)
+            selIndex = 0;
+        String widthOption = widthOptions.get(selIndex);
         Optional<NozzleData> ond = HeadContainer.getHeadByID(cmbHeadType.getValue())
                                   .getNozzles()
                                   .stream()
