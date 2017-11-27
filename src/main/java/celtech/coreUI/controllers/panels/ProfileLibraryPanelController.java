@@ -9,6 +9,7 @@ import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.configuration.fileRepresentation.NozzleData;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerMappings;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.slicer.FillPattern;
@@ -19,6 +20,7 @@ import celtech.roboxbase.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
@@ -31,6 +33,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -85,6 +88,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private String currentProfileName;
     private final StringProperty currentHeadType = new SimpleStringProperty();
     private final IntegerProperty numNozzleHeaters = new SimpleIntegerProperty();
+    private final IntegerProperty numNozzles = new SimpleIntegerProperty();
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             ProfileLibraryPanelController.class.getName());
@@ -304,10 +308,8 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private BooleanProperty profileNameInvalid = new SimpleBooleanProperty(false);
 
-    private final ObservableList<String> forceNozzleFirstLayerOptions = FXCollections.
-            observableArrayList();
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
-            "0.3mm", "0.8mm");
+            "0.3mm", "0.4mm", "0.6mm", "0.8mm");
     private final ObservableList<FillPattern> fillPatternOptions = FXCollections.
             observableArrayList(
                     FillPattern.values());
@@ -327,6 +329,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private final float minPoint8ExtrusionWidth = 0.5f;
     private final float defaultPoint8ExtrusionWidth = 0.8f;
     private final float maxPoint8ExtrusionWidth = 1.2f;
+    private final float minPoint6ExtrusionWidth = 0.4f;
+    private final float defaultPoint6ExtrusionWidth = 0.6f;
+    private final float maxPoint6ExtrusionWidth = 0.8f;
+    private final float minPoint4ExtrusionWidth = 0.2f;
+    private final float defaultPoint4ExtrusionWidth = 0.4f;
+    private final float maxPoint4ExtrusionWidth = 0.6f;
     private final float minPoint3ExtrusionWidth = 0.2f;
     private final float defaultPoint3ExtrusionWidth = 0.3f;
     private final float maxPoint3ExtrusionWidth = 0.6f;
@@ -406,8 +414,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
-        forceNozzleFirstLayerOptions.addAll(nozzleOptions);
-
         supportInterfaceNozzleChoice.setItems(nozzleOptions);
 
         fillPatternChoice.setItems(fillPatternOptions);
@@ -461,6 +467,19 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         {
             currentHeadType.set(newValue);
             numNozzleHeaters.set(HeadContainer.getHeadByID(newValue).getNozzleHeaters().size());
+            numNozzles.set(HeadContainer.getHeadByID(newValue).getNozzles().size());
+            List<Float> nozzleSizes = HeadContainer.getHeadByID(newValue)
+                                      .getNozzles()
+                                      .stream()
+                                      .map(n -> n.getDiameter())
+                                      .collect(Collectors.toList());
+
+            List<String> nozzleSizeStrings = nozzleSizes.stream()
+                                             .map(n -> n.toString() + "mm")
+                                             .collect(Collectors.toList());
+            
+           nozzleOptions.setAll(nozzleSizeStrings);
+            
             repopulateCmbPrintProfile();
             selectFirstPrintProfile();
             setSliderLimits(newValue);
@@ -522,11 +541,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void setupWidgetsForHeadType()
     {
-        firstLayerNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
-        perimeterNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
-        fillNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
-        supportNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
-        supportInterfaceNozzleChoice.disableProperty().bind(numNozzleHeaters.isEqualTo(2));
+        BooleanBinding disableNozzleChoice = numNozzleHeaters.isEqualTo(2).or(numNozzles.isEqualTo(1)); // Two heaters implies two materials.
+        firstLayerNozzleChoice.disableProperty().bind(disableNozzleChoice);
+        perimeterNozzleChoice.disableProperty().bind(disableNozzleChoice);
+        fillNozzleChoice.disableProperty().bind(disableNozzleChoice);
+        supportNozzleChoice.disableProperty().bind(disableNozzleChoice);
+        supportInterfaceNozzleChoice.disableProperty().bind(disableNozzleChoice);
     }
 
     private void setupPrintProfileCombo()
@@ -626,7 +646,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void setupFirstLayerNozzleChoice()
     {
-        firstLayerNozzleChoice.setItems(forceNozzleFirstLayerOptions);
+        firstLayerNozzleChoice.setItems(nozzleOptions);
         firstLayerNozzleChoice.getSelectionModel().selectedIndexProperty().addListener(
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
                 {
@@ -634,36 +654,89 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 });
     }
 
-    private void setFirstLayerExtrusionWidthLimits(Number newValue)
+private void setExtrusionWidthLimits(Number newValue, ObservableList<String> widthOptions, RestrictedNumberField widthField, Slider widthSlider)
     {
-        float currentWidth = firstLayerExtrusionWidth.getAsFloat();
-        switch (newValue.intValue())
+        float currentWidth = widthField.getAsFloat();
+        String widthOption = widthOptions.get(newValue.intValue());
+        Optional<NozzleData> ond = HeadContainer.getHeadByID(cmbHeadType.getValue())
+                                  .getNozzles()
+                                  .stream()
+                                  .filter(nn -> (nn.getMinExtrusionWidth() > 0.0) && (Float.toString(nn.getDiameter()) + " mm").equals(widthOption))
+                                  .findFirst();
+        // At Java 9, Optional has an ifPresentOrElse() method. But for the moment this is the easiest way to do this.
+        if (ond.isPresent())
         {
-            case 0:
-                // The point 3 nozzle has been selected
-                if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                {
-                    firstLayerExtrusionWidth.setValue(
-                            defaultPoint3ExtrusionWidth);
-                }
-                firstLayerExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                firstLayerExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                break;
-            case 1:
-                // The point 8 nozzle has been selected
-                if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                {
-                    firstLayerExtrusionWidth.setValue(
-                            defaultPoint8ExtrusionWidth);
-                }
-                firstLayerExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                firstLayerExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                break;
+            NozzleData nd = ond.get();
+            float minExtrusionWidth = nd.getMinExtrusionWidth();
+            float maxExtrusionWidth = nd.getMaxExtrusionWidth();
+            if (currentWidth < minExtrusionWidth ||
+                currentWidth > maxExtrusionWidth)
+            {
+                widthField.setValue(nd.getDefaultExtrusionWidth());
+            }
+            widthSlider.setMin(minExtrusionWidth);
+            widthSlider.setMax(maxExtrusionWidth);
+        }
+        else
+        {
+            switch (widthOption)
+            {
+                case "0.3mm":
+                    // The point 3 nozzle has been selected
+                    if (currentWidth < minPoint3ExtrusionWidth ||
+                        currentWidth > maxPoint3ExtrusionWidth)
+                    {
+                        widthField.setValue(defaultPoint3ExtrusionWidth);
+                    }
+                    widthSlider.setMin(minPoint3ExtrusionWidth);
+                    widthSlider.setMax(maxPoint3ExtrusionWidth);
+                    break;
+                case "0.4mm":
+                    // The point 4 nozzle has been selected
+                    if (currentWidth < minPoint4ExtrusionWidth ||
+                        currentWidth > maxPoint4ExtrusionWidth)
+                    {
+                        widthField.setValue(defaultPoint4ExtrusionWidth);
+                    }
+                    widthSlider.setMin(minPoint4ExtrusionWidth);
+                    widthSlider.setMax(maxPoint4ExtrusionWidth);
+                    break;
+                case "0.6mm":
+                    // The point 6 nozzle has been selected
+                    if (currentWidth < minPoint6ExtrusionWidth ||
+                        currentWidth > maxPoint6ExtrusionWidth)
+                    {
+                        widthField.setValue(defaultPoint6ExtrusionWidth);
+                    }
+                    widthSlider.setMin(minPoint6ExtrusionWidth);
+                    widthSlider.setMax(maxPoint6ExtrusionWidth);
+                    break;
+                case "0.8mm":
+                    // The point 8 nozzle has been selected
+                    if (currentWidth < minPoint8ExtrusionWidth ||
+                        currentWidth > maxPoint8ExtrusionWidth)
+                    {
+                        widthField.setValue(defaultPoint8ExtrusionWidth);
+                    }
+                    widthSlider.setMin(minPoint8ExtrusionWidth);
+                    widthSlider.setMax(maxPoint8ExtrusionWidth);
+                    break;
+                    
+                default:
+                    float nozzleWidth = Float.parseFloat(widthOption);
+                    widthField.setValue(nozzleWidth);
+                    widthSlider.setMin(nozzleWidth);
+                    widthSlider.setMax(nozzleWidth);
+                    break;
+            }
         }
     }
 
+    private void setFirstLayerExtrusionWidthLimits(Number newValue)
+    {
+        setExtrusionWidthLimits(newValue, nozzleOptions, firstLayerExtrusionWidth, firstLayerExtrusionWidthSlider);
+    }
+    
     private void setupSupportNozzleChoice()
     {
         supportNozzleChoice.setItems(nozzleOptions);
@@ -678,32 +751,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void setSupportExtrusionWidthLimits(Number newValue)
     {
-        float currentWidth = supportExtrusionWidth.getAsFloat();
-        switch (newValue.intValue())
-        {
-            case 0:
-                // The point 3 nozzle has been selected
-                if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                {
-                    supportExtrusionWidth.setValue(
-                            defaultPoint3ExtrusionWidth);
-                }
-                supportExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                supportExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                break;
-            case 1:
-                // The point 8 nozzle has been selected
-                if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                {
-                    supportExtrusionWidth.setValue(
-                            defaultPoint8ExtrusionWidth);
-                }
-                supportExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                supportExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                break;
-        }
+        setExtrusionWidthLimits(newValue, nozzleOptions, supportExtrusionWidth, supportExtrusionWidthSlider);
     }
 
     private void setupFillNozzleChoice()
@@ -718,71 +766,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void setInfillExtrusionWidthLimits(Number newValue)
     {
-        float currentInfillWidth = infillExtrusionWidth.getAsFloat();
-        float currentSolidInfillWidth = solidInfillExtrusionWidth.getAsFloat();
-        float currentTopSolidInfillWidth = topSolidInfillExtrusionWidth.getAsFloat();
-        switch (newValue.intValue())
-        {
-            case 0:
-                // The point 3 nozzle has been selected
-                if (currentInfillWidth < minPoint3ExtrusionWidth || currentInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                {
-                    infillExtrusionWidth.setValue(
-                            defaultPoint3ExtrusionWidth);
-                }
-                if (currentSolidInfillWidth < minPoint3ExtrusionWidth
-                        || currentSolidInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                {
-                    solidInfillExtrusionWidth.setValue(
-                            defaultPoint3ExtrusionWidth);
-                }
-                if (currentTopSolidInfillWidth < minPoint3ExtrusionWidth
-                        || currentTopSolidInfillWidth
-                        > maxPoint3ExtrusionWidth)
-                {
-                    topSolidInfillExtrusionWidth.setValue(
-                            defaultPoint3ExtrusionWidth);
-                }
-
-                infillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                infillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                solidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                solidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                topSolidInfillExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                topSolidInfillExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                break;
-            case 1:
-                // The point 8 nozzle has been selected
-                if (currentInfillWidth < minPoint8ExtrusionWidth || currentInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                {
-                    infillExtrusionWidth.setValue(
-                            defaultPoint8ExtrusionWidth);
-                }
-                if (currentSolidInfillWidth < minPoint8ExtrusionWidth
-                        || currentSolidInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                {
-                    solidInfillExtrusionWidth.setValue(
-                            defaultPoint8ExtrusionWidth);
-                }
-                if (currentTopSolidInfillWidth < minPoint8ExtrusionWidth
-                        || currentTopSolidInfillWidth
-                        > maxPoint8ExtrusionWidth)
-                {
-                    topSolidInfillExtrusionWidth.setValue(
-                            defaultPoint8ExtrusionWidth);
-                }
-                infillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                infillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                solidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                solidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                topSolidInfillExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                topSolidInfillExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                break;
-        }
+        setExtrusionWidthLimits(newValue, nozzleOptions, infillExtrusionWidth, infillExtrusionWidthSlider);
+        setExtrusionWidthLimits(newValue, nozzleOptions, solidInfillExtrusionWidth, solidInfillExtrusionWidthSlider);
+        setExtrusionWidthLimits(newValue, nozzleOptions, topSolidInfillExtrusionWidth, topSolidInfillExtrusionWidthSlider);
     }
 
     private void setupPerimeterNozzleChoice()
@@ -797,32 +783,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private void setPerimeterExtrusionWidthLimits(Number newValue)
     {
-        float currentWidth = perimeterExtrusionWidth.getAsFloat();
-        switch (newValue.intValue())
-        {
-            case 0:
-                // The point 3 nozzle has been selected
-                if (currentWidth < minPoint3ExtrusionWidth || currentWidth
-                        > maxPoint3ExtrusionWidth)
-                {
-                    perimeterExtrusionWidth.setValue(
-                            defaultPoint3ExtrusionWidth);
-                }
-                perimeterExtrusionWidthSlider.setMin(minPoint3ExtrusionWidth);
-                perimeterExtrusionWidthSlider.setMax(maxPoint3ExtrusionWidth);
-                break;
-            case 1:
-                // The point 8 nozzle has been selected
-                if (currentWidth < minPoint8ExtrusionWidth || currentWidth
-                        > maxPoint8ExtrusionWidth)
-                {
-                    perimeterExtrusionWidth.setValue(
-                            defaultPoint8ExtrusionWidth);
-                }
-                perimeterExtrusionWidthSlider.setMin(minPoint8ExtrusionWidth);
-                perimeterExtrusionWidthSlider.setMax(maxPoint8ExtrusionWidth);
-                break;
-        }
+        setExtrusionWidthLimits(newValue, nozzleOptions, perimeterExtrusionWidth, perimeterExtrusionWidthSlider);
     }
 
     private void setupWidgetEditableBindings()
