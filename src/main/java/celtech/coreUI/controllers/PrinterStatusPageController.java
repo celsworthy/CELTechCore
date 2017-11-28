@@ -43,7 +43,6 @@ import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import celtech.coreUI.DisplayManager;
-import libertysystems.stenographer.LogLevel;
 
 /**
  * FXML Controller class
@@ -371,7 +370,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             for (Node pgNode : printerStack.getChildren())
             {
                 String pgNodeName = pgNode.getId();
-                steno.log("pgNodeName = " + pgNodeName, LogLevel.ALL);
                 switch (pgNodeName) {
                     case "baseNoReels":
                         baseNoReels = (ImageView)pgNode;
@@ -672,6 +670,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 && visible
                 && printerToUse.extrudersProperty().get(1).filamentLoadedProperty().get()
                 && printerToUse.extrudersProperty().get(1).isFittedProperty().get());
+//        xAxisControls.setVisible(true);
+//        yAxisControls.setVisible(true);
+//        zAxisControls.setVisible(true);
+//        extruder1Controls.setVisible(true);
+//        extruder2Controls.setVisible(true);
     }
 
     /**
