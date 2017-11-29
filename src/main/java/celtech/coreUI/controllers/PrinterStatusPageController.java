@@ -311,7 +311,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             String printerStackFXMLName = printerTypeCode.toLowerCase() + "Stack.fxml";
             URL printerStackURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "printerStatus/" + printerStackFXMLName);
-
+            steno.info("printerStackURL = " + printerStackURL.toString());
+                
             try
             {
                 FXMLLoader loader =  new FXMLLoader(printerStackURL, BaseLookup.getLanguageBundle());
