@@ -174,26 +174,26 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         {
             String headTypeCodeText = headTypeCode.getText();
             float headMaxTemperatureVal = getFloatValueOrZero(headMaxTemperature);
-            Float headThermistorBetaVal = getFloatValueOrZero(headThermistorBeta);
-            Float headThermistorTCalVal = getFloatValueOrZero(headThermistorTCal);
-            Float nozzle1XOffsetVal = nozzle1XOffset.getFloatValue();
-            Float nozzle1YOffsetVal = nozzle1YOffset.getFloatValue();
-            Float nozzle1BOffsetVal = nozzle1BOffset.getFloatValue();
-            Float nozzle2XOffsetVal = nozzle2XOffset.getFloatValue();
-            Float nozzle2YOffsetVal = nozzle2YOffset.getFloatValue();
-            Float nozzle2BOffsetVal = nozzle2BOffset.getFloatValue();
+            float headThermistorBetaVal = getFloatValueOrZero(headThermistorBeta);
+            float headThermistorTCalVal = getFloatValueOrZero(headThermistorTCal);
+            float nozzle1XOffsetVal = nozzle1XOffset.getFloatValue();
+            float nozzle1YOffsetVal = nozzle1YOffset.getFloatValue();
+            float nozzle1ZOverrunVal = nozzle1ZOverrun.getFloatValue();
+            float nozzle1BOffsetVal = (nozzle1BOffset.isVisible() ? nozzle1BOffset.getFloatValue() : 0.0F);
+            float nozzle2XOffsetVal = (nozzle2XOffset.isVisible() ? nozzle2XOffset.getFloatValue() : 0.0F);
+            float nozzle2YOffsetVal = (nozzle2YOffset.isVisible() ? nozzle2YOffset.getFloatValue() : 0.0F);
+            float nozzle2BOffsetVal = (nozzle2BOffset.isVisible() ? nozzle2BOffset.getFloatValue() : 0.0F);
+            float nozzle2ZOverrunVal = (nozzle2ZOverrun.isVisible() ? nozzle2ZOverrun.getFloatValue() : nozzle1ZOverrunVal);;
             float lastFilamentTemperatureVal0 = getFloatValueOrZero(lastFilamentTemperature0);
             float lastFilamentTemperatureVal1 = 0;
             if (lastFilamentTemperature1.isVisible())
             {
                 lastFilamentTemperatureVal1 = getFloatValueOrZero(lastFilamentTemperature1);
             }
-            Float headHourCounterVal = headHourCounter.getFloatValue();
+            float headHourCounterVal = headHourCounter.getFloatValue();
 
-            float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(
-                    nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
-            float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(
-                    nozzle1ZOverrun.getFloatValue(), nozzle2ZOverrun.getFloatValue());
+            float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(nozzle1ZOverrunVal, nozzle2ZOverrunVal);
+            float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(nozzle1ZOverrunVal, nozzle2ZOverrunVal);
 
             // N.B. this call must come after reading the data in the fields because
             // reading the head eeprom results in the fields being updated with current head
