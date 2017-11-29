@@ -43,6 +43,8 @@ public class ApplicationConfiguration
 
     public static final String fxmlButtonsResourcePath = resourcePath + "fxml/buttons/";
 
+    public static final String fxmlPrinterStatusResourcePath = resourcePath + "fxml/printerstatus/";
+
     public static final String fxmlUtilityPanelResourcePath = resourcePath + "fxml/utilityPanels/";
 
     public static final String fxmlPopupResourcePath = resourcePath + "fxml/popups/";
