@@ -311,7 +311,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         {
             String printerStackFXMLName = printerTypeCode.toLowerCase() + "Stack.fxml";
             URL printerStackURL = getClass().getResource(ApplicationConfiguration.fxmlResourcePath + "printerStatus/" + printerStackFXMLName);
-            steno.info("printerStackURL = " + printerStackURL.toString());
                 
             try
             {
@@ -324,9 +323,11 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 // Add the printer stack to the status page.
                 statusPane.getChildren().add(1, printerStack);
                 printerStack.setVisible(false);
-            } catch (IOException ex)
+            } catch (IOException | java.lang.IllegalStateException ex)
             {
                 steno.exception("Couldn't load printer stack for printer type " + printerTypeCode, ex);
+                steno.info("printerStackURL = " + printerStackURL.toString());
+            
                 printerStack = null;
             }
             
