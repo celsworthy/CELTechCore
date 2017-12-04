@@ -53,9 +53,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     private HashMap<SystemErrorHandlerOptions, ChoiceLinkButton> errorToButtonMap = null;
 
     /*
-     * Error dialog
-     */
- /*
      * SD card dialog
      */
     protected boolean sdDialogOnDisplay = false;
@@ -68,6 +65,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private boolean clearBedDialogOnDisplay = false;
 
+    private boolean calibrateDialogOnDisplay = false;
+    
     /*
      * Firmware upgrade progress
      */
@@ -90,6 +89,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private ChoiceLinkDialogBox loadFilamentNowDialogBox = null;
 
+    /*
+     * Error dialog
+     */
     private ChoiceLinkDialogBox errorChoiceBox = null;
 
     @Override
@@ -238,34 +240,41 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public void showCalibrationDialogue()
     {
-        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        if (!calibrateDialogOnDisplay)
         {
-            ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
-            choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"));
-            choiceLinkDialogBox.setMessage(Lookup.i18n(
-                    "dialogs.headUpdateCalibrationRequiredInstruction"));
-            ChoiceLinkButton okCalibrateChoice = choiceLinkDialogBox.addChoiceLink(
-                    Lookup.i18n("dialogs.headUpdateCalibrationYes"));
-            ChoiceLinkButton dontCalibrateChoice = choiceLinkDialogBox.addChoiceLink(
-                    Lookup.i18n("dialogs.headUpdateCalibrationNo"));
+            calibrateDialogOnDisplay = true;
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.headUpdateCalibrationRequiredTitle"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n(
+                        "dialogs.headUpdateCalibrationRequiredInstruction"));
+                ChoiceLinkButton okCalibrateChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.headUpdateCalibrationYes"));
+                ChoiceLinkButton dontCalibrateChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.headUpdateCalibrationNo"));
 
-            Optional<ChoiceLinkButton> calibrationResponse;
-            try
-            {
-                calibrationResponse = choiceLinkDialogBox.getUserInput();
-            } catch (PrinterDisconnectedException ex)
-            {
-                return;
-            }
-
-            if (calibrationResponse.isPresent())
-            {
-                if (calibrationResponse.get() == okCalibrateChoice)
+                Optional<ChoiceLinkButton> calibrationResponse;
+                try
                 {
-                    ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
+                    calibrationResponse = choiceLinkDialogBox.getUserInput();
+                } catch (PrinterDisconnectedException ex)
+                {
+                    return;
+                } finally
+                {
+                    calibrateDialogOnDisplay = false;
                 }
-            }
-        });
+                
+                if (calibrationResponse.isPresent())
+                {
+                    if (calibrationResponse.get() == okCalibrateChoice)
+                    {
+                        ApplicationStatus.getInstance().setMode(ApplicationMode.CALIBRATION_CHOICE);
+                    }
+                }
+            });
+        }
     }
 
     @Override
