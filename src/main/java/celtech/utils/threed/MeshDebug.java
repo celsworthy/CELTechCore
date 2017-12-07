@@ -33,7 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.poly2tri.polygon.Polygon;
+import org.poly2tri.geometry.polygon.Polygon;
 import org.poly2tri.triangulation.TriangulationPoint;
 
 

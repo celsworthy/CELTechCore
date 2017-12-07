@@ -213,7 +213,7 @@ public class PrinterComponent extends Pane
         {
             printerSVG.setPrinterIcon(printer.printerConfigurationProperty().get().getTypeCode());
             nameText = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
-            if (printer.getCommandInterface() instanceof RoboxRemoteCommandInterface)
+            if (!printer.printerConfigurationProperty().get().getTypeCode().equalsIgnoreCase("RBX10") && printer.getCommandInterface() instanceof RoboxRemoteCommandInterface)
             {
                 rootName.textProperty().unbind();
                 rootName.textProperty().bind(((RemoteDetectedPrinter) printer.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo().nameProperty());
