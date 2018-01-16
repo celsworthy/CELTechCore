@@ -847,13 +847,13 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         if (currentPrinter != null
                 && currentPrinter.get() != null)
         {
-            if (currentPrinter.get().reelsProperty().size() > 1)
+            if (currentPrinter.get().reelsProperty().containsKey(1))
             {
                 String filamentId1 = currentPrinter.get().reelsProperty().get(1).filamentIDProperty().get();
                 Filament filament1 = filamentContainer.getFilamentByID(filamentId1);
                 filamentMenuButton.addSpecialMenuItem(reel2MenuItemTitle, filament1);
             }
-            if (currentPrinter.get().reelsProperty().size() > 0)
+            if (currentPrinter.get().reelsProperty().containsKey(0))
             {
                 String filamentId0 = currentPrinter.get().reelsProperty().get(0).filamentIDProperty().get();
                 Filament filament0 = filamentContainer.getFilamentByID(filamentId0);

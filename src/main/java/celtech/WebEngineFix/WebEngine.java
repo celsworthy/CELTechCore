@@ -22,6 +22,7 @@ import com.sun.webkit.graphics.WCGraphicsContext;
 import com.sun.webkit.graphics.WCGraphicsManager;
 import com.sun.webkit.network.URLs;
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.*;
 import javafx.concurrent.Worker;
@@ -1179,7 +1180,11 @@ final public class WebEngine {
                     // that is during the pulse event. This makes the timer more
                     // repsonsive, though prolongs the pulse. So far it causes no
                     // problems but nevertheless it should be kept in mind.
-                    Timer.getTimer().notifyTick();
+					
+					// Execute notifyTick in runLater to run outside of pulse so
+                    // that events will run in order and be able to display dialogs
+                    // or call other methods that require a nested event loop.
+                    Platform.runLater(() -> Timer.getTimer().notifyTick());
                 };
 
         private static void start(){
@@ -1566,6 +1571,15 @@ final public class WebEngine {
         }
     }
 
+	private static final boolean printStatusOK(PrinterJob job) {
+        switch (job.getJobStatus()) {
+            case NOT_STARTED:
+            case PRINTING:
+                return true;
+            default:
+                return false;
+        }
+    }
     /**
      * Prints the current Web page using the given printer job.
      * <p>This method does not modify the state of the job, nor does it call
@@ -1575,15 +1589,20 @@ final public class WebEngine {
      * @since JavaFX 8.0
      */
     public void print(PrinterJob job) {
+        if (!printStatusOK(job)) {
+            return;
+        }
         PageLayout pl = job.getJobSettings().getPageLayout();
         float width = (float) pl.getPrintableWidth();
         float height = (float) pl.getPrintableHeight();
         int pageCount = page.beginPrinting(width, height);
 
         for (int i = 0; i < pageCount; i++) {
-            Node printable = new Printable(i, width);
-            job.printPage(printable);
-        }
+            if (printStatusOK(job)) {
+                Node printable = new Printable(i, width);
+                job.printPage(printable);
+            }
+       }
         page.endPrinting();
     }
 

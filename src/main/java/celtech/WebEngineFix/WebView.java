@@ -31,6 +31,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.FontSmoothingType;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -922,6 +924,28 @@ final public class WebView extends Parent {
     }
 
     // event handling
+	
+    // To handle stage pulse we need to know if currently webview and
+    // tree is visible or not
+    private boolean isTreeReallyVisible() {
+        if (getScene() == null) {
+            return false;
+        }
+
+        final Window window = getScene().getWindow();
+
+        if (window == null) {
+            return false;
+        }
+
+        boolean iconified = (window instanceof Stage) ? ((Stage)window).isIconified() : false;
+
+        return impl_isTreeVisible()
+               && window.isShowing()
+               && window.getWidth() > 0
+               && window.getHeight() > 0
+               && !iconified;
+    }
 
     private void handleStagePulse() {
         // The stage pulse occurs before the scene pulse.
@@ -940,10 +964,7 @@ final public class WebView extends Parent {
 
         if (page == null) return;
 
-        boolean reallyVisible = impl_isTreeVisible()
-                && getScene() != null
-                && getScene().getWindow() != null
-                && getScene().getWindow().isShowing();
+        boolean reallyVisible = isTreeReallyVisible();
 
         if (reallyVisible) {
             if (page.isDirty()) {
@@ -976,6 +997,9 @@ final public class WebView extends Parent {
             x = Short.MIN_VALUE;
             y = Short.MIN_VALUE;
             Point2D screenPoint = localToScreen(x, y);
+            if (screenPoint == null) {
+                return;
+            }
             screenX = screenPoint.getX();
             screenY = screenPoint.getY();
         }
@@ -1032,7 +1056,7 @@ final public class WebView extends Parent {
                 keyIdentifier,
                 windowsVirtualKeyCode,
                 ev.isShiftDown(), ev.isControlDown(),
-                ev.isAltDown(), ev.isMetaDown());
+                ev.isAltDown(), ev.isMetaDown(), 0);
         if (page.dispatchKeyEvent(keyEvent)) {
             ev.consume();
         }
