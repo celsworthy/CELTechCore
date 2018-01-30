@@ -335,6 +335,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
             case NOT_CONNECTED:
             case WRONG_PIN:
                 disconnectedBox.setVisible(true);
+				pinEntryField.clear();
                 connectedBox.setVisible(false);
                 updateButton.setVisible(false);
                 break;

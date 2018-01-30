@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -77,15 +78,28 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\."
             + "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
     
+
+    private DetectedServer findKnownServer(String ipAddress)
+    {
+        return currentServers.stream()
+                             .filter(s -> s.getAddress().getHostAddress().equals(ipAddress))
+                             .findAny()
+                             .orElse(null);
+    }
+    
     @FXML
     private void manuallyAddRoot(ActionEvent event)
     {
         String enteredIP = ipTextField.getText();
         try
         {
-            DetectedServer newServer = new DetectedServer(InetAddress.getByName(enteredIP));
-            newServer.setWasAutomaticallyAdded(false);
-            checkAndAddServer(newServer);
+            if (findKnownServer(enteredIP) == null)
+            {
+                InetAddress address = InetAddress.getByName(enteredIP);
+                DetectedServer newServer = DetectedServer.createDetectedServer(address);
+                newServer.setWasAutomaticallyAdded(false);
+                checkAndAddServer(newServer);
+            }
             ipTextField.setText("");
         } catch (UnknownHostException ex)
         {
@@ -97,17 +111,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     private void manuallyDeleteRoot(ActionEvent event)
     {
         String enteredIP = ipTextField.getText();
-        
-        DetectedServer matchingServer = null;
-        for (DetectedServer server : currentServers)
-        {
-            if (server.getAddress().getHostAddress().equals(enteredIP))
-            {
-                matchingServer = server;
-                break;
-            }
-        }
-        
+        DetectedServer matchingServer = findKnownServer(enteredIP);
         if (matchingServer != null)
         {
             matchingServer.disconnect();
@@ -121,7 +125,10 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     {
         if (!server.whoAreYou())
         {
-            CoreMemory.getInstance().deactivateRoboxRoot(server);
+            if (server.maxPollCountExceeded())
+            {
+                CoreMemory.getInstance().deactivateRoboxRoot(server);
+            }
         } else
         {
             server.connect();
@@ -214,32 +221,10 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                 String enteredIP = ipTextField.getText();
                 if (enteredIP.matches(IPADDRESS_PATTERN))
                 {
-                    DetectedServer matchingServer = null;
-                    for (DetectedServer server : currentServers)
-                    {
-                        if (server.getAddress().getHostAddress().equals(enteredIP))
-                        {
-                            matchingServer = server;
-                            break;
-                        }
-                    }
+                    DetectedServer matchingServer = findKnownServer(enteredIP);
                     
-                    if (matchingServer != null
-                            && !matchingServer.getWasAutomaticallyAdded())
-                    {
-                        addRootButton.setDisable(true);
-                        deleteRootButton.setDisable(false);
-                    } else if (matchingServer == null)
-                    {
-                        // Allow the IP to be added - it is not in the list
-                        addRootButton.setDisable(false);
-                        deleteRootButton.setDisable(true);
-                    } else
-                    {
-                        // The entered IP is that of an automatically added server
-                        addRootButton.setDisable(false);
-                        deleteRootButton.setDisable(true);
-                    }
+                    addRootButton.setDisable(matchingServer != null); // Can't add existing server.
+                    deleteRootButton.setDisable(matchingServer == null || matchingServer.getWasAutomaticallyAdded());
                 } else
                 {
                     addRootButton.setDisable(true);
@@ -291,7 +276,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         
                         for (DetectedServer server : foundServers)
                         {
-                            if (!currentServerList.contains(server))
+                            if (!currentServerList.contains(server)) // Compares addresses.
                             {
                                 serversToAdd.add(server);
                             } else
@@ -316,14 +301,25 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         
                         for (DetectedServer server : serversToAdd)
                         {
+                            steno.info("RootScannerPanelController adding server " + server.getName());
                             currentServerList.add(server);
                             currentServers.add(server);
                         }
+                        
                         for (DetectedServer server : serversToRemove)
                         {
-                            currentServerList.remove(server);
-                            currentServers.remove(server);
-                        }
+                            if (server.incrementPollCount())
+                            {
+                                steno.info("RootScannerPanelController removing server " + server.getName());
+                                currentServerList.remove(server);
+                                currentServers.remove(server);
+                                server.disconnect();
+                            }
+                            else
+                            {
+                                steno.info("RootScannerPanelController not removing server " + server.getName() + " as it has not exceeded it's maximum allowed poll count." );
+                            }
+                       }
                     });
                     try
                     {
