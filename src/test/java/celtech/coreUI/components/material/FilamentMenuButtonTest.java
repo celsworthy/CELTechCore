@@ -36,9 +36,11 @@ public class FilamentMenuButtonTest extends JavaFXConfiguredTest
         System.err.println("    assertions");
         //Basic alpha sort check
         assertTrue(FilamentMenuButton.byCategory.compare(aCategory, zCategory) < 0);
+        System.err.println("    a-z");
         assertTrue(FilamentMenuButton.byCategory.compare(aCategory, aCategory) == 0);
+        System.err.println("    a-a");
         assertTrue(FilamentMenuButton.byCategory.compare(zCategory, aCategory) > 0);
-        System.err.println("    robox first");
+        System.err.println("    z-a");
         //Check Robox always comes first
         assertTrue(FilamentMenuButton.byCategory.compare(roboxCategory, zCategory) < 0);
         assertTrue(FilamentMenuButton.byCategory.compare(roboxCategory, aCategory) < 0);
