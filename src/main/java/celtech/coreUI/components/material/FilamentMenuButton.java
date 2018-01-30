@@ -39,9 +39,7 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
 
     protected static Comparator<Filament> byCategory = ((Filament o1, Filament o2) ->
     {
-        System.err.println("FilamentMenuButton::Comparator");
         int comparisonStatus = o1.getCategory().compareTo(o2.getCategory());
-        System.err.println("    comparisonStatus = " + comparisonStatus);
         if (comparisonStatus > 0
                 && (o1.getCategory().startsWith(roboxCategoryPrefix)
                 && !o2.getCategory().startsWith(roboxCategoryPrefix))
@@ -58,7 +56,6 @@ public class FilamentMenuButton extends MenuButton implements FilamentSelectionL
         {
             comparisonStatus = 1;
         }
-        System.err.println("    returning " + comparisonStatus);
         return comparisonStatus;
     });
 
