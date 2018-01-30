@@ -3,6 +3,7 @@
  */
 package celtech.appManager.undo;
 
+import celtech.JavaFXConfiguredTest;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -10,7 +11,7 @@ import static org.junit.Assert.*;
  *
  * @author tony
  */
-public class CommandStackTest
+public class CommandStackTest extends JavaFXConfiguredTest
 {
 
     public class TestModel
