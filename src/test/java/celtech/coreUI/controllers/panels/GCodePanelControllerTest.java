@@ -50,11 +50,10 @@ public class GCodePanelControllerTest extends JavaFXConfiguredTest {
         }
         controller = (GCodePanelController) loader.getController();
         Lookup.setSelectedPrinter(printer);
-
     }
 
     @Test
-    public void testGetGCodeFileToUse() throws IOException {
+    public void testGetGCodeFileToUse1() throws IOException {
         String text = "!!Home_all";
         Optional<String> fileToUse = controller.getGCodeFileToUse(text);
         assertTrue(fileToUse.get().endsWith("Common/Macros/Home_all.gcode"));
@@ -115,6 +114,4 @@ public class GCodePanelControllerTest extends JavaFXConfiguredTest {
         Optional<String> fileToUse = controller.getGCodeFileToUse(text);
         assertTrue(fileToUse.get().endsWith("Common/Macros/PurgeMaterial.gcode"));
     }
-
-
 }
