@@ -301,7 +301,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         
                         for (DetectedServer server : serversToAdd)
                         {
-                            steno.info("RootScannerPanelController adding server " + server.getName());
+                            //steno.info("RootScannerPanelController adding server " + server.getName());
                             currentServerList.add(server);
                             currentServers.add(server);
                         }
@@ -310,14 +310,14 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         {
                             if (server.incrementPollCount())
                             {
-                                steno.info("RootScannerPanelController removing server " + server.getName());
+                                //steno.info("RootScannerPanelController removing server " + server.getName());
                                 currentServerList.remove(server);
                                 currentServers.remove(server);
                                 server.disconnect();
                             }
                             else
                             {
-                                steno.info("RootScannerPanelController not removing server " + server.getName() + " as it has not exceeded it's maximum allowed poll count." );
+                                //steno.info("RootScannerPanelController not removing server " + server.getName() + " as it has not exceeded it's maximum allowed poll count." );
                             }
                        }
                     });
