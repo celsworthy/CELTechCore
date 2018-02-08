@@ -1,5 +1,6 @@
 package celtech.utils;
 
+import celtech.Lookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.i18n.UTF8Control;
 import java.io.File;
@@ -50,22 +51,27 @@ public class AppSpecificLanguageDataResourceBundleTest
     @Test
     public void testLocaleUK_appdata()
     {
+        URL applicationURL = AppSpecificLanguageDataResourceBundleTest.class.getResource("/");        
+        String configDir = applicationURL.getPath();
+        String configFile = configDir + "AutoMaker.configFile.xml";
+        System.setProperty("libertySystems.configFile", configFile);
+        System.out.println("System.getProperty(libertySystems.configFile) returns " + System.getProperty("libertySystems.configFile"));
+
         Locale.setDefault(Locale.ENGLISH);
         Properties testProperties = new Properties();
 
         testProperties.setProperty("language", "UK");
         
-        URL applicationInstallURL = AppSpecificLanguageDataResourceBundleTest.class.getResource("/InstallDir/AutoMaker/");        
-        String installDir = applicationInstallURL.getPath();
-
+        applicationURL = AppSpecificLanguageDataResourceBundleTest.class.getResource("/InstallDir/AutoMaker/");        
+        String installDir = applicationURL.getPath();
+        
         BaseConfiguration.setInstallationProperties(
                 testProperties,
                 installDir,
                 "");
-
-        Locale.setDefault(Locale.ENGLISH);
+        Lookup.setupDefaultValues(); // Need to do this to load the resource bundles, otherwise the getBundle fails because of a recursive call to getBundle() in LanugagePropertiesResourceBundle.
+        
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.i18n.languagedata.LanguageData");
-
         assertEquals("Bed", bundle.getString("reelPanel.bed"));
         assertEquals(1042, bundle.keySet().size());
     }

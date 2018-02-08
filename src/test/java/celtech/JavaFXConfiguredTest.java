@@ -9,6 +9,7 @@ import celtech.postprocessor.TestGCodeOutputWriter;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.utils.AppSpecificLanguageDataResourceBundleTest;
 import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
@@ -28,9 +29,12 @@ public class JavaFXConfiguredTest
 {
     static
     {
-        // Set the libertySystems config file property to inidicate it is a test request.
+        // Set the libertySystems config file property..
         // The property is set in this static initializer because the configuration is loaded before the test is run.
-        System.setProperty("libertySystems.configFile", "$test$");
+        URL applicationURL = JavaFXConfiguredTest.class.getResource("/");
+        String configDir = applicationURL.getPath();
+        String configFile = configDir + "AutoMaker.configFile.xml";
+        System.setProperty("libertySystems.configFile", configFile);
     }
     
     @Rule
