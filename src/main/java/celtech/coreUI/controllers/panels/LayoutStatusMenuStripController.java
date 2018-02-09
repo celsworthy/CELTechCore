@@ -1306,13 +1306,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         boolean aModelIsOffTheBed = false;
         boolean aModelIsOffTheBedWithRaft = false;
         boolean aModelIsOffTheBedWithSpiral = false;
-
+        SlicerParametersFile slicerParameters = null; // This is sometimes returned as null. Not sure why.
         if (selectedProject != null
                 && currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
         {
-            SlicerParametersFile slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
-
+            slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
+        }
+        if (slicerParameters == null)
+        {
+            steno.error("slicerParameters == null!");
+        }
+        else
+        {
             for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
             {
                 if (projectifiableThing instanceof ModelContainer)

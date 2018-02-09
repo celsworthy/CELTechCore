@@ -379,11 +379,18 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             headTypeToUse = currentPrinter.headProperty().get().typeCodeProperty().get();
         }
         
+        SlicerParametersFile slicerParameters = null; // This is sometimes returned as null. Not sure why.
         if (currentProject != null
                 && currentProject.getNumberOfProjectifiableElements() > 0)
         {
-            SlicerParametersFile slicerParameters = currentProject.getPrinterSettings().getSettings(headTypeToUse);
-
+            slicerParameters = currentProject.getPrinterSettings().getSettings(headTypeToUse);
+        }
+        if (slicerParameters == null)
+        {
+            steno.error("slicerParameters == null!");
+        }
+        else
+        {
             //NOTE - this needs to change if raft settings in slicermapping.dat is changed
             double raftOffset = slicerParameters.getRaftBaseThickness_mm()
                     //Raft interface thickness
