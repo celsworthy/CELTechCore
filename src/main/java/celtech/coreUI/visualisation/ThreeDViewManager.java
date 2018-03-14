@@ -704,7 +704,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         } else
         {
             double z = bedTranslateXform.getTz() - event.getDeltaY();
-            double minimumZ = currentPrinterConfiguration.getPrinterType() == PrinterType.BROBOX ? -60.0 : 0.0;
+            double minimumZ = currentPrinterConfiguration.getPrinterType() == PrinterType.ROBOX_PRO ? -60.0 : 0.0;
             if (z >= minimumZ)
             {
                 cameraDistance.set(z);

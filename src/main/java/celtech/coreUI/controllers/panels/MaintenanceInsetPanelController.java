@@ -150,7 +150,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             connectedPrinter.testX(false, null);
         } catch (PrinterException ex)
         {
-            steno.error("Couldn't level gantry");
+            steno.error("Couldn't test X");
         }
     }
 
@@ -162,7 +162,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             connectedPrinter.testY(false, null);
         } catch (PrinterException ex)
         {
-            steno.error("Couldn't level gantry");
+            steno.error("Couldn't test Y");
         }
     }
 
@@ -174,7 +174,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             connectedPrinter.testZ(false, null);
         } catch (PrinterException ex)
         {
-            steno.error("Couldn't level gantry");
+            steno.error("Couldn't test Z");
         }
     }
 
