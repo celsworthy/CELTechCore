@@ -75,7 +75,7 @@
                                         <String fx:value="aboutBodyTextRegular" />
                                     </styleClass>
                                 </Text>
-                                <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kenneth Tam" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Christopher Elsworthy" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                     <styleClass>
                                         <String fx:value="aboutBodyText" />
                                         <String fx:value="blue-inset-panel-text" />
