@@ -16,6 +16,7 @@ import celtech.roboxbase.configuration.slicer.FillPattern;
 import celtech.roboxbase.configuration.slicer.NozzleParameters;
 import celtech.roboxbase.configuration.slicer.SupportPattern;
 import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Head.ValveType;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
@@ -89,6 +91,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private final StringProperty currentHeadType = new SimpleStringProperty();
     private final IntegerProperty numNozzleHeaters = new SimpleIntegerProperty();
     private final IntegerProperty numNozzles = new SimpleIntegerProperty();
+    private final BooleanProperty hasValves = new SimpleBooleanProperty(false);
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             ProfileLibraryPanelController.class.getName());
@@ -202,6 +205,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private RestrictedNumberField solidInfillSpeed;
 
     @FXML
+    private Label nozzlePartialOpenLabel1;
+
+    @FXML
     private RestrictedNumberField nozzlePartialOpen0;
 
     @FXML
@@ -215,6 +221,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     @FXML
     private ComboBox<String> fillNozzleChoice;
+
+    @FXML
+    private Label nozzle2Title;
+
+    @FXML
+    private Label nozzleEjectionVolumeLabel1;
 
     @FXML
     private RestrictedNumberField nozzleEjectionVolume0;
@@ -465,20 +477,35 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
         cmbHeadType.valueProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
         {
+            HeadFile headDetails = HeadContainer.getHeadByID(newValue);
             currentHeadType.set(newValue);
-            numNozzleHeaters.set(HeadContainer.getHeadByID(newValue).getNozzleHeaters().size());
-            numNozzles.set(HeadContainer.getHeadByID(newValue).getNozzles().size());
-            List<Float> nozzleSizes = HeadContainer.getHeadByID(newValue)
-                                      .getNozzles()
-                                      .stream()
-                                      .map(n -> n.getDiameter())
-                                      .collect(Collectors.toList());
+            numNozzleHeaters.set(headDetails.getNozzleHeaters().size());
+            numNozzles.set(headDetails.getNozzles().size());
+
+            List<Float> nozzleSizes = headDetails.getNozzles()
+                                                 .stream()
+                                                 .map(n -> n.getDiameter())
+                                                 .collect(Collectors.toList());
 
             List<String> nozzleSizeStrings = nozzleSizes.stream()
-                                             .map(n -> n.toString() + "mm")
-                                             .collect(Collectors.toList());
+                                                        .map(n -> n.toString() + "mm")
+                                                        .collect(Collectors.toList());
             
-           nozzleOptions.setAll(nozzleSizeStrings);
+            nozzleOptions.setAll(nozzleSizeStrings);
+            
+            hasValves.set(headDetails.getValves() == ValveType.FITTED);
+            if (hasValves.get())
+            {
+                nozzleEjectionVolumeLabel1.setText(BaseLookup.i18n("nozzle.ejectionVolume"));
+                nozzleEjectionVolume0.getTooltip().setText(BaseLookup.i18n("profileLibraryHelp.nozzleEjectionVolume"));
+                nozzleEjectionVolume1.getTooltip().setText(BaseLookup.i18n("profileLibraryHelp.nozzleEjectionVolume"));
+            }
+            else
+            {
+                nozzleEjectionVolumeLabel1.setText(BaseLookup.i18n("nozzle.retractionVolume"));
+                nozzleEjectionVolume0.getTooltip().setText(BaseLookup.i18n("profileLibraryHelp.nozzleRetractionVolume"));
+                nozzleEjectionVolume1.getTooltip().setText(BaseLookup.i18n("profileLibraryHelp.nozzleRetractionVolume"));
+            }
             
             repopulateCmbPrintProfile();
             selectFirstPrintProfile();
@@ -547,6 +574,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         fillNozzleChoice.disableProperty().bind(disableNozzleChoice);
         supportNozzleChoice.disableProperty().bind(disableNozzleChoice);
         supportInterfaceNozzleChoice.disableProperty().bind(disableNozzleChoice);
+        nozzle2Title.visibleProperty().bind(numNozzles.greaterThan(1));
+        nozzleEjectionVolume1.visibleProperty().bind(numNozzles.greaterThan(1));
+        nozzlePartialOpen0.visibleProperty().bind(hasValves);
+        nozzlePartialOpenLabel1.visibleProperty().bind(hasValves);
+        nozzlePartialOpen1.visibleProperty().bind(hasValves.and(numNozzles.greaterThan(1)));
     }
 
     private void setupPrintProfileCombo()
@@ -1116,15 +1148,37 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         minPrintSpeed.setValue(parametersFile.getMinPrintSpeed_mm_per_s());
 
         // nozzle
-        nozzleEjectionVolume0.setValue(parametersFile.getNozzleParameters().get(
-                0).getEjectionVolume());
-        nozzlePartialOpen0.setValue(parametersFile.getNozzleParameters().get(
-                0).getPartialBMinimum());
-        nozzleEjectionVolume1.setValue(parametersFile.getNozzleParameters().get(
-                1).getEjectionVolume());
-        nozzlePartialOpen1.setValue(parametersFile.getNozzleParameters().get(
-                1).getPartialBMinimum());
-
+        nozzleEjectionVolume0.setValue(parametersFile.getNozzleParameters()
+            .get(0).getEjectionVolume());
+        if (hasValves.get())
+        {
+            nozzlePartialOpen0.setValue(parametersFile.getNozzleParameters()
+                .get(0).getPartialBMinimum());
+        }
+        else
+        {
+            nozzlePartialOpen0.setValue(0.5);
+        }
+            
+        if (numNozzles.get() > 1)
+        {
+            nozzleEjectionVolume1.setValue(parametersFile.getNozzleParameters()
+                .get(1).getEjectionVolume());
+            if (hasValves.get())
+            {
+                nozzlePartialOpen1.setValue(parametersFile.getNozzleParameters()
+                    .get(1).getPartialBMinimum());
+            }
+            else
+            {
+                nozzlePartialOpen1.setValue(0.5);
+            }
+        }
+        else
+        {
+            nozzleEjectionVolume1.setValue(0.0);
+            nozzlePartialOpen1.setValue(0.5);
+        }
         updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
     }
 
@@ -1339,10 +1393,21 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 nozzleEjectionVolume0.getAsFloat());
         settingsToUpdate.getNozzleParameters().get(0).setPartialBMinimum(
                 nozzlePartialOpen0.getAsFloat());
-        settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
-                nozzleEjectionVolume1.getAsFloat());
-        settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
-                nozzlePartialOpen1.getAsFloat());
+        if (numNozzles.get() > 1)
+        {
+            settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
+                    nozzleEjectionVolume1.getAsFloat());
+            settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
+                    nozzlePartialOpen1.getAsFloat());
+        }
+        else
+        {
+            // Only one nozzle. Copy the values from nozzle 0.
+            settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
+                   nozzleEjectionVolume0.getAsFloat());
+            settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
+                    nozzlePartialOpen0.getAsFloat());
+        }
 
         return settingsToUpdate;
     }

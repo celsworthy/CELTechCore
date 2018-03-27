@@ -72,7 +72,7 @@ public class AppSpecificLanguageDataResourceBundleTest
         Lookup.setupDefaultValues(); // Need to do this to load the resource bundles, otherwise the getBundle fails because of a recursive call to getBundle() in LanugagePropertiesResourceBundle.
         
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.i18n.languagedata.LanguageData");
-        assertEquals("Bed", bundle.getString("reelPanel.bed"));
-        assertEquals(1042, bundle.keySet().size());
+        assertEquals("Ambient", bundle.getString("buttonText.ambientLights"));
+        assertEquals(583, bundle.keySet().size());
     }
 }

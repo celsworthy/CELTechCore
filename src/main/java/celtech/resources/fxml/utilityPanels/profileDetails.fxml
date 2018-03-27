@@ -361,15 +361,15 @@
                                             </children>
                                         </HBox>
                                         <RestrictedNumberField fx:id="nozzleEjectionVolume0" allowedDecimalPlaces="2" maxLength="5" prefWidth="80.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.nozzleEjectionVolume" />
-                                 </tooltip></RestrictedNumberField>
+										 <tooltip>
+											<HideableTooltip text="%profileLibraryHelp.nozzleEjectionVolume" />
+										 </tooltip></RestrictedNumberField>
                                         <RestrictedNumberField fx:id="nozzlePartialOpen0" allowedDecimalPlaces="1" maxLength="5" prefWidth="80.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.nozzlePartialOpen" />
-                                 </tooltip></RestrictedNumberField>
-                                        <Label styleClass="printProfileDivider" text="Nozzle 1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                        <Label styleClass="printProfileDivider" text="Nozzle 2" GridPane.columnIndex="2" GridPane.rowIndex="1">
+										 <tooltip>
+											<HideableTooltip text="%profileLibraryHelp.nozzlePartialOpen" />
+										 </tooltip></RestrictedNumberField>
+                                        <Label fx:id="nozzle1Title" styleClass="printProfileDivider" text="Nozzle 1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label fx:id="nozzle2Title" styleClass="printProfileDivider" text="Nozzle 2" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                             <GridPane.margin>
                                                 <Insets left="10.0" />
                                             </GridPane.margin>
