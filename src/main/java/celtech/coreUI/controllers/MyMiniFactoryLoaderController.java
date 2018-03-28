@@ -21,7 +21,7 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
-import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -58,7 +58,7 @@ public class MyMiniFactoryLoaderController implements Initializable
 
     private final StringProperty fileDownloadLocation = new SimpleStringProperty("");
 
-    private final String myMiniFactoryURLString = "http://cel-robox.myminifactory.com";
+    private final String myMiniFactoryURLString = "https://cel-robox.myminifactory.com";
     private boolean forwardsPossible = false;
     private final ModelLoader modelLoader = new ModelLoader();
 
@@ -229,7 +229,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         try
         {
             URL obj = new URL(myMiniFactoryURLString);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
             con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.44 (KHTML, like Gecko) JavaFX/8.0 Safari/537.44");
 
             // optional default is GET
@@ -239,8 +239,7 @@ public class MyMiniFactoryLoaderController implements Initializable
             con.setConnectTimeout(500);
             int responseCode = con.getResponseCode();
 
-            if (responseCode == 200
-                    && con.getContentLength() > 0)
+            if (responseCode == 200)
             {
                 available = true;
             } else
