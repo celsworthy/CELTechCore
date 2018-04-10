@@ -74,7 +74,7 @@ public class CalibrationSingleNozzleHeightGUI
         {
             URL fxmlURL = getClass().getResource(
                     ApplicationConfiguration.fxmlDiagramsResourcePath
-                    + "SingleNozzleHeight" + "/" + state.getDiagramName().get());
+                    + "singlenozzleheight" + "/" + state.getDiagramName().get());
 
             controller.showDiagram(fxmlURL);
         }
@@ -119,7 +119,7 @@ public class CalibrationSingleNozzleHeightGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf6"), stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOfY"), stepNo, 6));
         }
     }
 
