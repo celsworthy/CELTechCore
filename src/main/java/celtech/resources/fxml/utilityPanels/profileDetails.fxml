@@ -368,8 +368,8 @@
 										 <tooltip>
 											<HideableTooltip text="%profileLibraryHelp.nozzlePartialOpen" />
 										 </tooltip></RestrictedNumberField>
-                                        <Label fx:id="nozzle1Title" styleClass="printProfileDivider" text="Nozzle 1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                        <Label fx:id="nozzle2Title" styleClass="printProfileDivider" text="Nozzle 2" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                        <Label fx:id="leftNozzleTitle" styleClass="printProfileDivider" text="Left Nozzle" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label fx:id="rightNozzleTitle" styleClass="printProfileDivider" text="Right Nozzle" GridPane.columnIndex="2" GridPane.rowIndex="1">
                                             <GridPane.margin>
                                                 <Insets left="10.0" />
                                             </GridPane.margin>

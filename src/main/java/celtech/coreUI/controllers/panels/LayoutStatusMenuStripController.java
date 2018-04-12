@@ -708,7 +708,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             currentNozzle.set(1);
         } catch (PrinterException ex)
         {
-            steno.error("Error when selecting nozzle 1" + ex.getMessage());
+            steno.error("Error when selecting left nozzle" + ex.getMessage());
         }
     }
 

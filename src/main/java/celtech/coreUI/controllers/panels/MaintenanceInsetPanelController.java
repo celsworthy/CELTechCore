@@ -186,7 +186,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             connectedPrinter.cleanNozzle(0, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
-            steno.error("Couldn't clean nozzle 0");
+            steno.error("Couldn't clean left nozzle");
         }
     }
 
@@ -198,7 +198,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             connectedPrinter.cleanNozzle(1, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
-            steno.error("Couldn't clean nozzle 1");
+            steno.error("Couldn't clean right nozzle");
         }
     }
 

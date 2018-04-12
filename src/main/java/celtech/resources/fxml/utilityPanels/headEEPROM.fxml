@@ -102,29 +102,29 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label alignment="CENTER" styleClass="preferenceLabel" text="%sidePanel_settings.Nozzle2Title" GridPane.columnIndex="2" GridPane.columnSpan="2" />
+                <Label alignment="CENTER" styleClass="preferenceLabel" text="%sidePanel_settings.RightNozzleTitle" GridPane.columnIndex="2" GridPane.columnSpan="2" />
 
-                <Label styleClass="preferenceLabel" text="%sidePanel_settings.Nozzle1Title" GridPane.columnIndex="1" GridPane.columnSpan="1" />
-                <RestrictedTextField fx:id="nozzle1XOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <RestrictedTextField fx:id="nozzle2XOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <Label styleClass="preferenceLabel" text="%sidePanel_settings.LeftNozzleTitle" GridPane.columnIndex="1" GridPane.columnSpan="1" />
+                <RestrictedTextField fx:id="leftNozzleXOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <RestrictedTextField fx:id="rightNozzleXOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="nozzle1YOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <RestrictedTextField fx:id="nozzle2YOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <RestrictedTextField fx:id="leftNozzleYOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <RestrictedTextField fx:id="rightNozzleYOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="nozzle1ZOverrun" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                <RestrictedTextField fx:id="nozzle2ZOverrun" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <RestrictedTextField fx:id="leftNozzleZOverrun" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <RestrictedTextField fx:id="rightNozzleZOverrun" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>
                 </RestrictedTextField>
-                <RestrictedTextField fx:id="nozzle1BOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                <RestrictedTextField fx:id="nozzle2BOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="4">
+                <RestrictedTextField fx:id="leftNozzleBOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <RestrictedTextField fx:id="rightNozzleBOffset" maxLength="8" restrict="0-9.\-" styleClass="preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="4">
                     <GridPane.margin>
                         <Insets left="5.0" right="5.0" />
                     </GridPane.margin>

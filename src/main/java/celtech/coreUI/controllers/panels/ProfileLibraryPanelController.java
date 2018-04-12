@@ -223,7 +223,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private ComboBox<String> fillNozzleChoice;
 
     @FXML
-    private Label nozzle2Title;
+    private Label rightNozzleTitle;
+
+    @FXML
+    private Label leftNozzleTitle;
 
     @FXML
     private Label nozzleEjectionVolumeLabel1;
@@ -574,11 +577,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         fillNozzleChoice.disableProperty().bind(disableNozzleChoice);
         supportNozzleChoice.disableProperty().bind(disableNozzleChoice);
         supportInterfaceNozzleChoice.disableProperty().bind(disableNozzleChoice);
-        nozzle2Title.visibleProperty().bind(numNozzles.greaterThan(1));
-        nozzleEjectionVolume1.visibleProperty().bind(numNozzles.greaterThan(1));
-        nozzlePartialOpen0.visibleProperty().bind(hasValves);
+        //rightNozzleTitle.visibleProperty().bind(numNozzles.greaterThan(1));
+        leftNozzleTitle.visibleProperty().bind(numNozzles.greaterThan(1));
+        nozzleEjectionVolume0.visibleProperty().bind(numNozzles.greaterThan(1));
+        nozzlePartialOpen0.visibleProperty().bind(hasValves.and(numNozzles.greaterThan(1)));
         nozzlePartialOpenLabel1.visibleProperty().bind(hasValves);
-        nozzlePartialOpen1.visibleProperty().bind(hasValves.and(numNozzles.greaterThan(1)));
+        nozzlePartialOpen1.visibleProperty().bind(hasValves);
     }
 
     private void setupPrintProfileCombo()
@@ -1148,36 +1152,42 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         minPrintSpeed.setValue(parametersFile.getMinPrintSpeed_mm_per_s());
 
         // nozzle
-        nozzleEjectionVolume0.setValue(parametersFile.getNozzleParameters()
-            .get(0).getEjectionVolume());
-        if (hasValves.get())
-        {
-            nozzlePartialOpen0.setValue(parametersFile.getNozzleParameters()
-                .get(0).getPartialBMinimum());
-        }
-        else
-        {
-            nozzlePartialOpen0.setValue(0.5);
-        }
-            
         if (numNozzles.get() > 1)
         {
+            nozzleEjectionVolume0.setValue(parametersFile.getNozzleParameters()
+                .get(0).getEjectionVolume());
             nozzleEjectionVolume1.setValue(parametersFile.getNozzleParameters()
                 .get(1).getEjectionVolume());
             if (hasValves.get())
             {
+                nozzlePartialOpen0.setValue(parametersFile.getNozzleParameters()
+                    .get(0).getPartialBMinimum());
                 nozzlePartialOpen1.setValue(parametersFile.getNozzleParameters()
                     .get(1).getPartialBMinimum());
             }
             else
             {
+                nozzlePartialOpen0.setValue(0.5);
                 nozzlePartialOpen1.setValue(0.5);
             }
         }
         else
         {
-            nozzleEjectionVolume1.setValue(0.0);
-            nozzlePartialOpen1.setValue(0.5);
+            // If there is a single nozzle, then it is the RIGHT nozzle (i.e. nozzle 1).
+            nozzleEjectionVolume1.setValue(parametersFile.getNozzleParameters()
+                .get(0).getEjectionVolume());
+            if (hasValves.get())
+            {
+                nozzlePartialOpen1.setValue(parametersFile.getNozzleParameters()
+                    .get(0).getPartialBMinimum());
+            }
+            else
+            {
+                nozzlePartialOpen1.setValue(0.5);
+            }
+            
+            nozzleEjectionVolume0.setValue(0.0);
+            nozzlePartialOpen0.setValue(0.5);
         }
         updateFieldsForSelectedSlicer(parametersFile.getSlicerOverride());
     }
@@ -1395,6 +1405,10 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 nozzlePartialOpen0.getAsFloat());
         if (numNozzles.get() > 1)
         {
+            settingsToUpdate.getNozzleParameters().get(0).setEjectionVolume(
+                nozzleEjectionVolume0.getAsFloat());
+            settingsToUpdate.getNozzleParameters().get(0).setPartialBMinimum(
+                nozzlePartialOpen0.getAsFloat());
             settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
                     nozzleEjectionVolume1.getAsFloat());
             settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
@@ -1402,11 +1416,16 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         }
         else
         {
-            // Only one nozzle. Copy the values from nozzle 0.
+            // Only one nozzle.
+            // Copy the values from the RIGHT nozzle (i.e. nozzle 1).
+            settingsToUpdate.getNozzleParameters().get(0).setEjectionVolume(
+                    nozzleEjectionVolume1.getAsFloat());
+            settingsToUpdate.getNozzleParameters().get(0).setPartialBMinimum(
+                    nozzlePartialOpen1.getAsFloat());
             settingsToUpdate.getNozzleParameters().get(1).setEjectionVolume(
-                   nozzleEjectionVolume0.getAsFloat());
+                   nozzleEjectionVolume1.getAsFloat());
             settingsToUpdate.getNozzleParameters().get(1).setPartialBMinimum(
-                    nozzlePartialOpen0.getAsFloat());
+                    nozzlePartialOpen1.getAsFloat());
         }
 
         return settingsToUpdate;

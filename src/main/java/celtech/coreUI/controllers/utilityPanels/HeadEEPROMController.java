@@ -53,7 +53,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     Stenographer steno = StenographerFactory.getStenographer(HeadEEPROMController.class.getName());
 
     @FXML
-    private RestrictedTextField nozzle2ZOverrun;
+    private RestrictedTextField rightNozzleZOverrun;
 
     @FXML
     private RestrictedTextField headThermistorTCal;
@@ -68,28 +68,28 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private RestrictedTextField lastFilamentTemperature1;
 
     @FXML
-    private RestrictedTextField nozzle1ZOverrun;
+    private RestrictedTextField leftNozzleZOverrun;
 
     @FXML
     private RestrictedTextField headMaxTemperature;
 
     @FXML
-    private RestrictedTextField nozzle2XOffset;
+    private RestrictedTextField rightNozzleXOffset;
 
     @FXML
-    private RestrictedTextField nozzle1YOffset;
+    private RestrictedTextField leftNozzleYOffset;
 
     @FXML
-    private RestrictedTextField nozzle2YOffset;
+    private RestrictedTextField rightNozzleYOffset;
 
     @FXML
-    private RestrictedTextField nozzle1XOffset;
+    private RestrictedTextField leftNozzleXOffset;
 
     @FXML
     private RestrictedTextField headHourCounter;
 
     @FXML
-    private RestrictedTextField nozzle2BOffset;
+    private RestrictedTextField rightNozzleBOffset;
 
     @FXML
     private HBox enterSerialNumberHBox;
@@ -122,7 +122,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
     private RestrictedTextField headTypeCode;
 
     @FXML
-    private RestrictedTextField nozzle1BOffset;
+    private RestrictedTextField leftNozzleBOffset;
 
     @FXML
     private RestrictedTextField headType;
@@ -176,14 +176,14 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             float headMaxTemperatureVal = getFloatValueOrZero(headMaxTemperature);
             float headThermistorBetaVal = getFloatValueOrZero(headThermistorBeta);
             float headThermistorTCalVal = getFloatValueOrZero(headThermistorTCal);
-            float nozzle1XOffsetVal = nozzle1XOffset.getFloatValue();
-            float nozzle1YOffsetVal = nozzle1YOffset.getFloatValue();
-            float nozzle1ZOverrunVal = nozzle1ZOverrun.getFloatValue();
-            float nozzle1BOffsetVal = (nozzle1BOffset.isVisible() ? nozzle1BOffset.getFloatValue() : 0.0F);
-            float nozzle2XOffsetVal = (nozzle2XOffset.isVisible() ? nozzle2XOffset.getFloatValue() : 0.0F);
-            float nozzle2YOffsetVal = (nozzle2YOffset.isVisible() ? nozzle2YOffset.getFloatValue() : 0.0F);
-            float nozzle2BOffsetVal = (nozzle2BOffset.isVisible() ? nozzle2BOffset.getFloatValue() : 0.0F);
-            float nozzle2ZOverrunVal = (nozzle2ZOverrun.isVisible() ? nozzle2ZOverrun.getFloatValue() : nozzle1ZOverrunVal);;
+            float leftNozzleXOffsetVal = (leftNozzleXOffset.isVisible() ? leftNozzleXOffset.getFloatValue() : rightNozzleXOffset.getFloatValue());
+            float leftNozzleYOffsetVal = (leftNozzleYOffset.isVisible() ? leftNozzleYOffset.getFloatValue() : rightNozzleYOffset.getFloatValue());
+            float leftNozzleZOverrunVal = (leftNozzleZOverrun.isVisible() ? leftNozzleZOverrun.getFloatValue() : rightNozzleZOverrun.getFloatValue());
+            float leftNozzleBOffsetVal = (leftNozzleBOffset.isVisible() ? leftNozzleBOffset.getFloatValue() : (rightNozzleBOffset.isVisible() ? rightNozzleBOffset.getFloatValue() : 0.0F));
+            float rightNozzleXOffsetVal = (leftNozzleXOffset.isVisible() ? rightNozzleXOffset.getFloatValue() : 0.0F);
+            float rightNozzleYOffsetVal = (leftNozzleYOffset.isVisible() ? rightNozzleYOffset.getFloatValue() : 0.0F);
+            float rightNozzleBOffsetVal = (rightNozzleBOffset.isVisible() ? rightNozzleBOffset.getFloatValue() : 0.0F);
+            float rightNozzleZOverrunVal = rightNozzleZOverrun.getFloatValue();
             float lastFilamentTemperatureVal0 = getFloatValueOrZero(lastFilamentTemperature0);
             float lastFilamentTemperatureVal1 = 0;
             if (lastFilamentTemperature1.isVisible())
@@ -192,8 +192,8 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             }
             float headHourCounterVal = headHourCounter.getFloatValue();
 
-            float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(nozzle1ZOverrunVal, nozzle2ZOverrunVal);
-            float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(nozzle1ZOverrunVal, nozzle2ZOverrunVal);
+            float nozzle1ZOffsetCalculated = PrinterUtils.deriveNozzle1ZOffsetsFromOverrun(leftNozzleZOverrunVal, rightNozzleZOverrunVal);
+            float nozzle2ZOffsetCalculated = PrinterUtils.deriveNozzle2ZOffsetsFromOverrun(leftNozzleZOverrunVal, rightNozzleZOverrunVal);
 
             // N.B. this call must come after reading the data in the fields because
             // reading the head eeprom results in the fields being updated with current head
@@ -209,11 +209,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
             selectedPrinter.transmitWriteHeadEEPROM(
                     headTypeCodeText, idToCreate, headMaxTemperatureVal, headThermistorBetaVal,
-                    headThermistorTCalVal, nozzle1XOffsetVal, nozzle1YOffsetVal,
-                    nozzle1ZOffsetCalculated, nozzle1BOffsetVal,
+                    headThermistorTCalVal, leftNozzleXOffsetVal, leftNozzleYOffsetVal,
+                    nozzle1ZOffsetCalculated, leftNozzleBOffsetVal,
                     "", "",
-                    nozzle2XOffsetVal, nozzle2YOffsetVal,
-                    nozzle2ZOffsetCalculated, nozzle2BOffsetVal,
+                    rightNozzleXOffsetVal, rightNozzleYOffsetVal,
+                    nozzle2ZOffsetCalculated, rightNozzleBOffsetVal,
                     lastFilamentTemperatureVal0, lastFilamentTemperatureVal1, headHourCounterVal);
 
             offsetFieldsDirty.set(false);
@@ -268,14 +268,14 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
                 offsetFieldsDirty.set(true);
             };
 
-            nozzle1BOffset.textProperty().addListener(offsetsChangedListener);
-            nozzle1XOffset.textProperty().addListener(offsetsChangedListener);
-            nozzle1YOffset.textProperty().addListener(offsetsChangedListener);
-            nozzle1ZOverrun.textProperty().addListener(offsetsChangedListener);
-            nozzle2BOffset.textProperty().addListener(offsetsChangedListener);
-            nozzle2XOffset.textProperty().addListener(offsetsChangedListener);
-            nozzle2YOffset.textProperty().addListener(offsetsChangedListener);
-            nozzle2ZOverrun.textProperty().addListener(offsetsChangedListener);
+            leftNozzleBOffset.textProperty().addListener(offsetsChangedListener);
+            leftNozzleXOffset.textProperty().addListener(offsetsChangedListener);
+            leftNozzleYOffset.textProperty().addListener(offsetsChangedListener);
+            leftNozzleZOverrun.textProperty().addListener(offsetsChangedListener);
+            rightNozzleBOffset.textProperty().addListener(offsetsChangedListener);
+            rightNozzleXOffset.textProperty().addListener(offsetsChangedListener);
+            rightNozzleYOffset.textProperty().addListener(offsetsChangedListener);
+            rightNozzleZOverrun.textProperty().addListener(offsetsChangedListener);
 
             serialInvalidImage.setImage(new Image(CoreTest.class.getResource(
                     ApplicationConfiguration.imageResourcePath + "CrossIcon.png").toExternalForm()));
@@ -395,72 +395,79 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
 
         headHourCounter.setText(String.format("%.2f", head.headHoursProperty().get()));
 
-        if (valveType == Head.ValveType.FITTED)
-        {
-            nozzle1BOffset.setVisible(true);
-            nozzle1BOffset.setText(String.format("%.2f",
-                head.getNozzles().get(0).bOffsetProperty().get()));
-        } else
-        {
-            nozzle1BOffset.setVisible(false);
-            nozzle1BOffset.setText("");
-        }
-
-        nozzle1XOffset.setText(String.format("%.2f",
-                head.getNozzles().get(0).xOffsetProperty().get()));
-        nozzle1YOffset.setText(String.format("%.2f",
-                head.getNozzles().get(0).yOffsetProperty().get()));
-
         if (head.getNozzles().size() > 1)
         {
             if (valveType == Head.ValveType.FITTED)
             {
-                nozzle2BOffset.setVisible(true);
-                nozzle2BOffset.setText(String.format("%.2f",
+                leftNozzleBOffset.setVisible(true);
+                leftNozzleBOffset.setText(String.format("%.2f",
+                    head.getNozzles().get(0).bOffsetProperty().get()));
+                rightNozzleBOffset.setVisible(true);
+                rightNozzleBOffset.setText(String.format("%.2f",
                     head.getNozzles().get(1).bOffsetProperty().get()));
             } else
             {
-                nozzle2BOffset.setVisible(false);
-                nozzle2BOffset.setText("");
+                leftNozzleBOffset.setVisible(false);
+                leftNozzleBOffset.setText("");
+                rightNozzleBOffset.setVisible(false);
+                rightNozzleBOffset.setText("");
             }
-            nozzle2XOffset.setVisible(true);
-            nozzle2XOffset.setText(String.format("%.2f",
+
+            leftNozzleXOffset.setVisible(true);
+            leftNozzleXOffset.setText(String.format("%.2f",
+                    head.getNozzles().get(0).xOffsetProperty().get()));
+            leftNozzleYOffset.setVisible(true);
+            leftNozzleYOffset.setText(String.format("%.2f",
+                    head.getNozzles().get(0).yOffsetProperty().get()));
+
+            rightNozzleXOffset.setText(String.format("%.2f",
                     head.getNozzles().get(1).xOffsetProperty().get()));
-            nozzle2YOffset.setVisible(true);
-            nozzle2YOffset.setText(String.format("%.2f",
+            rightNozzleYOffset.setText(String.format("%.2f",
                     head.getNozzles().get(1).yOffsetProperty().get()));
-        } else
-        {
-            nozzle2BOffset.setText("");
-            nozzle2XOffset.setVisible(false);
-            nozzle2XOffset.setText("");
-            nozzle2YOffset.setVisible(false);
-            nozzle2BOffset.setText("");
-            nozzle2BOffset.setVisible(false);
+
+            float leftNozzleZOffset = head.getNozzles().get(0).zOffsetProperty().get();
+            float rightNozzleZOffset = head.getNozzles().get(1).zOffsetProperty().get();
+            float leftNozzleZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(leftNozzleZOffset,
+                    rightNozzleZOffset);
+            leftNozzleZOverrun.setText(String.format("%.2f", leftNozzleZOverrunValue));
+            float rightNozzleZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(leftNozzleZOffset,
+                rightNozzleZOffset);
+
+            rightNozzleZOverrun.setVisible(true);
+            rightNozzleZOverrun.setText(String.format("%.2f", rightNozzleZOverrunValue));
         }
-
-        float nozzle1Offset = head.getNozzles().get(0).zOffsetProperty().get();
-        float nozzle2Offset = nozzle1Offset;
-
-        if (head.getNozzles().size() > 1)
+        else if (head.getNozzles().size() > 0)
         {
-            nozzle2Offset = head.getNozzles().get(1).zOffsetProperty().get();
-        }
-        float nozzle1ZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(nozzle1Offset,
-                nozzle2Offset);
-        nozzle1ZOverrun.setText(String.format("%.2f", nozzle1ZOverrunValue));
+            if (valveType == Head.ValveType.FITTED)
+            {
+                rightNozzleBOffset.setVisible(true);
+                rightNozzleBOffset.setText(String.format("%.2f",
+                    head.getNozzles().get(0).bOffsetProperty().get()));
+            } else
+            {
+                rightNozzleBOffset.setVisible(false);
+                rightNozzleBOffset.setText("");
+            }
 
-        if (head.getNozzles().size() > 1)
-        {
-            float nozzle2ZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(nozzle1Offset,
-                nozzle2Offset);
+            rightNozzleXOffset.setText(String.format("%.2f",
+                head.getNozzles().get(0).xOffsetProperty().get()));
+            rightNozzleYOffset.setText(String.format("%.2f",
+                head.getNozzles().get(0).yOffsetProperty().get()));
+            float rightNozzleZOffset = head.getNozzles().get(0).zOffsetProperty().get();
+            float rightNozzleZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(rightNozzleZOffset,
+                rightNozzleZOffset);
+            rightNozzleZOverrun.setVisible(true);
+            rightNozzleZOverrun.setText(String.format("%.2f", rightNozzleZOverrunValue));
 
-            nozzle2ZOverrun.setVisible(true);
-            nozzle2ZOverrun.setText(String.format("%.2f", nozzle2ZOverrunValue));
-        } else
-        {
-            nozzle2ZOverrun.setVisible(false);
-            nozzle2ZOverrun.setText("");
+            leftNozzleBOffset.setVisible(false);
+            leftNozzleBOffset.setText("");
+            leftNozzleXOffset.setVisible(false);
+            leftNozzleXOffset.setText("");
+            leftNozzleYOffset.setVisible(false);
+            leftNozzleZOverrun.setVisible(false);
+            leftNozzleZOverrun.setText("");
+            leftNozzleBOffset.setText("");
+            leftNozzleBOffset.setVisible(false);
         }
         
         offsetFieldsDirty.set(false);
@@ -486,15 +493,15 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         headMaxTemperature.setText("");
         headThermistorBeta.setText("");
         headThermistorTCal.setText("");
-        nozzle1BOffset.setText("");
-        nozzle1XOffset.setText("");
-        nozzle1YOffset.setText("");
-        nozzle2BOffset.setText("");
-        nozzle2XOffset.setText("");
-        nozzle2YOffset.setText("");
+        leftNozzleXOffset.setText("");
+        leftNozzleYOffset.setText("");
+        leftNozzleZOverrun.setText("");
+        leftNozzleBOffset.setText("");
+        rightNozzleXOffset.setText("");
+        rightNozzleYOffset.setText("");
+        rightNozzleZOverrun.setText("");
+        rightNozzleBOffset.setText("");
 
-        nozzle1ZOverrun.setText("");
-        nozzle2ZOverrun.setText("");
         offsetFieldsDirty.set(false);
     }
 
