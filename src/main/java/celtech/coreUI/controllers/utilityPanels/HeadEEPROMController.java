@@ -429,10 +429,11 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
             float rightNozzleZOffset = head.getNozzles().get(1).zOffsetProperty().get();
             float leftNozzleZOverrunValue = PrinterUtils.deriveNozzle1OverrunFromOffsets(leftNozzleZOffset,
                     rightNozzleZOffset);
+            leftNozzleZOverrun.setVisible(true);            
             leftNozzleZOverrun.setText(String.format("%.2f", leftNozzleZOverrunValue));
+
             float rightNozzleZOverrunValue = PrinterUtils.deriveNozzle2OverrunFromOffsets(leftNozzleZOffset,
                 rightNozzleZOffset);
-
             rightNozzleZOverrun.setVisible(true);
             rightNozzleZOverrun.setText(String.format("%.2f", rightNozzleZOverrunValue));
         }
