@@ -1315,7 +1315,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
         if (slicerParameters == null)
         {
-            steno.error("slicerParameters == null!");
+            steno.debug("slicerParameters == null!");
         }
         else
         {
