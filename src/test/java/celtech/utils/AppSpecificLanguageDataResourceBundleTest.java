@@ -73,6 +73,6 @@ public class AppSpecificLanguageDataResourceBundleTest
         
         ResourceBundle bundle = ResourceBundle.getBundle("celtech.roboxbase.i18n.languagedata.LanguageData");
         assertEquals("Ambient", bundle.getString("buttonText.ambientLights"));
-        assertEquals(583, bundle.keySet().size());
+        assertEquals(1045, bundle.keySet().size());
     }
 }

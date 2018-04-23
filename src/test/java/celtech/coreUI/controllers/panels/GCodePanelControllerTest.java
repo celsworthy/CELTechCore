@@ -110,8 +110,8 @@ public class GCodePanelControllerTest extends JavaFXConfiguredTest {
 
     @Test
     public void testGetGCodeFileToUse9() throws IOException {
-        String text = "!!PurgeMaterial";
+        String text = "!!Home_all";
         Optional<String> fileToUse = controller.getGCodeFileToUse(text);
-        assertTrue(fileToUse.get().endsWith("Common/Macros/PurgeMaterial.gcode"));
+        assertTrue(fileToUse.get().endsWith("Common/Macros/Home_all.gcode"));
     }
 }
