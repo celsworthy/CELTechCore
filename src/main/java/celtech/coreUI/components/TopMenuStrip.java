@@ -71,11 +71,8 @@ public class TopMenuStrip extends HBox
         applicationStatus = ApplicationStatus.getInstance();
 
         BooleanBinding buttonDisabled
-                = applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.EXTRAS_MENU)).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LIBRARY));
+                = applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE).
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE));
 
         aboutButton.disableProperty().bind(buttonDisabled);
 
