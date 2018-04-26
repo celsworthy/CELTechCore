@@ -27,6 +27,7 @@ import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterEdition;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Extruder;
 import celtech.roboxbase.printerControl.model.Head;
@@ -1156,6 +1157,16 @@ public class TestPrinter implements Printer
     public ReadOnlyObjectProperty<PrinterDefinitionFile> printerConfigurationProperty()
     {
         return printerConfiguration;
+    }
+    
+    @Override
+    public PrinterType findPrinterType() 
+    {
+        if(printerConfigurationProperty().get() == null) {
+            return null;
+        }
+        
+        return printerConfigurationProperty().get().getPrinterType();
     }
 
     @Override
