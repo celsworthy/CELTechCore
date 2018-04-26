@@ -97,7 +97,7 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
             try
             {
                 gcodeFileWithPathApp = GCodeMacros.getFilename(macroFilename,
-                        Optional.of(currentPrinter.printerConfigurationProperty().get().getPrinterType()),
+                        Optional.of(currentPrinter.findPrinterType()),
                         currentPrinter.headProperty().get().typeCodeProperty().get(),
                         nozzleUse,
                         GCodeMacros.SafetyIndicator.DONT_CARE);
