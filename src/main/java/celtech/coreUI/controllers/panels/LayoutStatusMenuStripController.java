@@ -1325,6 +1325,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 {
                     ModelContainer modelContainer = (ModelContainer) projectifiableThing;
                     aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
+                    
+                    // Needed as heads differ in size and will need to adjust print volume for this
+                    final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+                    aModelIsOffTheBed = zReduction > 0 ? modelContainer.isModelTooHighWithOffset(zReduction) : aModelIsOffTheBed;
 
                     //NOTE - this needs to change if raft settings in slicermapping.dat is changed
                     double raftOffset = slicerParameters.getRaftBaseThickness_mm()
