@@ -67,6 +67,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Bounds;
@@ -214,11 +215,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar noHeadNotificationBar;
     private ConditionalNotificationBar noModelsNotificationBar;
     private ConditionalNotificationBar dmHeadOnSingleExtruderMachineNotificationBar;
+    private ConditionalNotificationBar singleXHeadRequiredForFilledMaterialNotificationBar;
 
     private final BooleanProperty modelsOffBed = new SimpleBooleanProperty(false);
+    private final BooleanProperty modelsOffBedWithHead = new SimpleBooleanProperty(false);
     private final BooleanProperty modelsOffBedWithRaft = new SimpleBooleanProperty(false);
     private final BooleanProperty modelOffBedWithSpiral = new SimpleBooleanProperty(false);
+    private final BooleanProperty headIsSingleX = new SimpleBooleanProperty(false);
     private ConditionalNotificationBar modelsOffBedNotificationBar;
+    private ConditionalNotificationBar modelsOffBedWithHeadNotificationBar;
     private ConditionalNotificationBar modelsOffBedWithRaftNotificationBar;
     private ConditionalNotificationBar modelOffBedWithSpiralNotificationBar;
 
@@ -900,6 +905,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         timeCostThreadManager = TimeCostThreadManager.getInstance();
 
         modelsOffBed.addListener(outOfBoundsModelListener);
+        modelsOffBedWithHead.addListener(outOfBoundsModelListener);
         modelOffBedWithSpiral.addListener(outOfBoundsModelListener);
         modelsOffBedWithRaft.addListener(outOfBoundsModelListener);
 
@@ -917,14 +923,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         noModelsNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoModelOnBed", NotificationType.CAUTION);
 
         dmHeadOnSingleExtruderMachineNotificationBar = new ConditionalNotificationBar("dialogs.dualMaterialHeadOnSingleExtruderMachine", NotificationType.WARNING);
+        singleXHeadRequiredForFilledMaterialNotificationBar = new ConditionalNotificationBar("dialogs.singleXHeadRequiredForFilledMaterial", NotificationType.CAUTION);
 
         modelsOffBedNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBed", NotificationType.CAUTION);
+        modelsOffBedWithHeadNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithHead", NotificationType.CAUTION);
         modelsOffBedWithRaftNotificationBar = new ConditionalNotificationBar("dialogs.modelsOffBedWithRaft", NotificationType.CAUTION);
         modelOffBedWithSpiralNotificationBar = new ConditionalNotificationBar("dialogs.modelOffBedWithSpiral", NotificationType.CAUTION);
 
-        modelsOffBedNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBed).and(modelsOffBedWithRaft.not()).and(modelOffBedWithSpiral.not()));
-        modelsOffBedWithRaftNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBedWithRaft));
-        modelOffBedWithSpiralNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelOffBedWithSpiral));
+        modelsOffBedNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBed));
+        modelsOffBedWithHeadNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBedWithHead).and(modelsOffBed.not()));
+        modelsOffBedWithRaftNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelsOffBedWithRaft).and(modelsOffBed.not()).and(modelsOffBedWithHead.not()));
+        modelOffBedWithSpiralNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelOffBedWithSpiral).and(modelsOffBed.not()).and(modelsOffBedWithHead.not()).and(modelsOffBedWithRaft.not()));
 
         notEnoughFilamentForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilamentToCompletePrint", NotificationType.CAUTION);
         notEnoughFilamentForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilamentForPrint));
@@ -1077,8 +1086,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             printer.extrudersProperty().get(1).isFittedProperty().get();
             dmHeadOnSingleExtruderMachineNotificationBar.setAppearanceCondition(printer.headProperty().get().headTypeProperty().isEqualTo(Head.HeadType.DUAL_MATERIAL_HEAD)
                     .and(printer.extrudersProperty().get(0).isFittedProperty().not().or(printer.extrudersProperty().get(1).isFittedProperty().not())));
+            headIsSingleX.set(printer.headProperty().get().typeCodeProperty().get().equalsIgnoreCase("RBXDV-S1"));
         }
-
+        else
+            headIsSingleX.set(false);
+ 
         if (project instanceof ModelContainerProject)
         {
             ModelContainerProject mcProject = (ModelContainerProject) project;
@@ -1120,6 +1132,21 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             noModelsNotificationBar.setAppearanceCondition(Bindings.isEmpty(project.getTopLevelThings())
                     .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+
+            BooleanBinding filledMaterialAndNotSingleXHead = headIsSingleX.not().and(
+                    Bindings.createBooleanBinding(() -> printer.effectiveFilamentsProperty()
+                                                               .entrySet()
+                                                               .stream()
+                                                               .filter(entry -> usedExtruders.get(entry.getKey()) &&
+                                                                                entry.getValue()
+                                                                                     .isFilled()
+                                                                                
+                                                                       )
+                                                               .findAny()
+                                                               .isPresent(),
+                                                  printer.effectiveFilamentsProperty()));
+            singleXHeadRequiredForFilledMaterialNotificationBar.setAppearanceCondition(filledMaterialAndNotSingleXHead
+                                                                                           .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
         }
     }
 
@@ -1221,6 +1248,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         noHeadNotificationBar.clearAppearanceCondition();
         noModelsNotificationBar.clearAppearanceCondition();
         dmHeadOnSingleExtruderMachineNotificationBar.clearAppearanceCondition();
+        singleXHeadRequiredForFilledMaterialNotificationBar.clearAppearanceCondition();
     }
 
     private final ChangeListener<LayoutSubmode> layoutSubmodeListener = (ObservableValue<? extends LayoutSubmode> observable, LayoutSubmode oldValue, LayoutSubmode newValue) ->
@@ -1304,6 +1332,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void dealWithOutOfBoundsModels()
     {
         boolean aModelIsOffTheBed = false;
+        boolean aModelIsOffTheBedWithHead = false;
         boolean aModelIsOffTheBedWithRaft = false;
         boolean aModelIsOffTheBedWithSpiral = false;
         SlicerParametersFile slicerParameters = null; // This is sometimes returned as null. Not sure why.
@@ -1319,20 +1348,37 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
         else
         {
+            // Needed as heads differ in size and will need to adjust print volume for this
+            final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+
+            //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+            final double raftOffset = slicerParameters.getRaftBaseThickness_mm()
+                     //Raft interface thickness
+                     + 0.28
+                     //Raft surface layer thickness * surface layers
+                     + (slicerParameters.getInterfaceLayers() * 0.27)
+                     + slicerParameters.getRaftAirGapLayer0_mm()
+                     + zReduction;
+
+            //TODO use settings derived offset values
+            final double spiralOffset = 0.5 + zReduction;
+            
             for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
             {
                 if (projectifiableThing instanceof ModelContainer)
                 {
                     ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-                    aModelIsOffTheBed |= modelContainer.isOffBedProperty().get();
+                    
+                    if (modelContainer.isOffBedProperty().get())
+                    {
+                        aModelIsOffTheBed = true;
+                    }
 
-                    //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-                    double raftOffset = slicerParameters.getRaftBaseThickness_mm()
-                            //Raft interface thickness
-                            + 0.28
-                            //Raft surface layer thickness * surface layers
-                            + (slicerParameters.getInterfaceLayers() * 0.27)
-                            + slicerParameters.getRaftAirGapLayer0_mm();
+                    if (zReduction > 0.0 
+                            && modelContainer.isModelTooHighWithOffset(zReduction))
+                    {
+                        aModelIsOffTheBedWithHead = true;
+                    }
 
                     if (selectedProject.getPrinterSettings().getRaftOverride()
                             && modelContainer.isModelTooHighWithOffset(raftOffset))
@@ -1340,9 +1386,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         aModelIsOffTheBedWithRaft = true;
                     }
 
-                    //TODO use settings derived offset values
                     if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
-                            && modelContainer.isModelTooHighWithOffset(0.5))
+                            && modelContainer.isModelTooHighWithOffset(spiralOffset))
                     {
                         aModelIsOffTheBedWithSpiral = true;
                     }
@@ -1353,6 +1398,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         if (aModelIsOffTheBed != modelsOffBed.get())
         {
             modelsOffBed.set(aModelIsOffTheBed);
+        }
+
+        if (aModelIsOffTheBedWithHead != modelsOffBedWithHead.get())
+        {
+            modelsOffBedWithHead.set(aModelIsOffTheBedWithHead);
         }
 
         if (aModelIsOffTheBedWithRaft != modelsOffBedWithRaft.get())
@@ -1446,7 +1496,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             if (printer != null && project != null)
             {
                 printButton.disableProperty().unbind();
-
                 ObservableList<Boolean> usedExtruders = ((ModelContainerProject) project).getUsedExtruders(printer);
 
                 if (usedExtruders.get(0) && usedExtruders.get(1))
@@ -1466,8 +1515,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                     .and(printer.extrudersProperty().get(1).filamentLoadedProperty()
                                             .and(printer.headPowerOnFlagProperty()))
                                     .and(modelsOffBed.not())
+                                    .and(modelsOffBedWithHead.not())
                                     .and(modelsOffBedWithRaft.not())
                                     .and(modelOffBedWithSpiral.not())
+                                    .and(headIsSingleX
+                                             .or(printer.effectiveFilamentsProperty().get(0).getFilledProperty().not()
+                                                     .and(printer.effectiveFilamentsProperty().get(1).getFilledProperty().not())))
                     );
                 } else
                 {
@@ -1486,8 +1539,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                             filamentLoadedProperty()
                                             .and(printer.headPowerOnFlagProperty()))
                                     .and(modelsOffBed.not())
+                                    .and(modelsOffBedWithHead.not())
                                     .and(modelsOffBedWithRaft.not())
                                     .and(modelOffBedWithSpiral.not())
+                                    .and(headIsSingleX
+                                            .or(printer.effectiveFilamentsProperty().get(extruderNumber).getFilledProperty().not()))
                     );
                 }
                 printButton.disableProperty().bind(canPrintProject.not());
