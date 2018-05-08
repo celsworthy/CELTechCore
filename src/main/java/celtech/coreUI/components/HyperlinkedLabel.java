@@ -41,7 +41,7 @@ public class HyperlinkedLabel extends TextFlow
         int matches = 0;
         int currentIndex = 0;
 
-        while (matcher.find())
+        while (matcher.find(currentIndex))
         {
             matches++;
             if (matcher.start() > 0)
@@ -110,6 +110,7 @@ public class HyperlinkedLabel extends TextFlow
                     });
                     hyperlink.setText(linkText);
                     getChildren().add(hyperlink);
+                    currentIndex = matcher.end();
                 } catch (URISyntaxException ex)
                 {
                     System.err.println("Error attempting to create UI hyperlink from "
@@ -120,11 +121,19 @@ public class HyperlinkedLabel extends TextFlow
                 System.err.println("Error rendering dialog text: " + newText);
             }
         }
-
+        
         if (matches == 0)
         {
             //We didn't have any hyperlinks here
+            currentIndex = newText.length();
             addPlainText(newText);
+        }
+
+        if (currentIndex < newText.length()) 
+        {
+            // Add any final text after the hyperlinks
+            String textPortion = newText.substring(currentIndex);
+            addPlainText(textPortion);
         }
     }
 
