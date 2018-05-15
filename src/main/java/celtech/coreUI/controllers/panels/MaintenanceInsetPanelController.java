@@ -400,16 +400,27 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
 
                             noHead.bind(connectedPrinter.headProperty().isNull());
 
-                            if (noHead.not().get())
-                            {
-                                dualHead.bind(Bindings.size(
-                                                connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
-                                                2));
-                                singleHead.bind(Bindings.size(
-                                                connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
-                                                1));
-                                noValveHead.bind(connectedPrinter.headProperty().get().valveTypeProperty().isEqualTo(Head.ValveType.NOT_FITTED));
-                            }
+                            //if (noHead.not().get())
+                            //{
+                            //    dualHead.bind(Bindings.size(
+                            //                    connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
+                            //                    2));
+                            //    singleHead.bind(Bindings.size(
+                            //                    connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
+                            //                    1));
+                            //    noValveHead.bind(connectedPrinter.headProperty().get().valveTypeProperty().isEqualTo(Head.ValveType.NOT_FITTED));
+                            //}
+                            dualHead.bind(Bindings.createBooleanBinding(() -> connectedPrinter.headProperty().get() != null &&
+                                                                                (connectedPrinter.headProperty().get().getNozzleHeaters().size() == 2),
+                                                                          connectedPrinter.headProperty()));
+
+                            singleHead.bind(Bindings.createBooleanBinding(() -> connectedPrinter.headProperty().get() != null &&
+                                                                                (connectedPrinter.headProperty().get().getNozzleHeaters().size() == 1),
+                                                                          connectedPrinter.headProperty()));
+
+                            noValveHead.bind(Bindings.createBooleanBinding(() -> connectedPrinter.headProperty().get() != null &&
+                                                                                 (connectedPrinter.headProperty().get().valveTypeProperty().get() == Head.ValveType.NOT_FITTED),
+                                                                           connectedPrinter.headProperty()));
 
                             noFilamentE.bind(
                                     connectedPrinter.extrudersProperty().get(0).filamentLoadedProperty().not());
