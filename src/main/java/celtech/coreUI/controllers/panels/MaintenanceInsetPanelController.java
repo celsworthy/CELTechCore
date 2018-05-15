@@ -7,6 +7,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.printing.GCodePrintResult;
@@ -54,6 +55,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     private final BooleanProperty noHead = new SimpleBooleanProperty(false);
     private final BooleanProperty dualHead = new SimpleBooleanProperty(false);
     private final BooleanProperty singleHead = new SimpleBooleanProperty(false);
+    private final BooleanProperty noValveHead = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentE = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentD = new SimpleBooleanProperty(false);
     private final BooleanProperty noFilamentEOrD = new SimpleBooleanProperty(false);
@@ -287,12 +289,14 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                     noHead
                     .or(printingDisabled)
                     .or(dualHead.and(noFilamentE))
-                    .or(singleHead.and(noFilamentEOrD)));
+                    .or(singleHead.and(noFilamentEOrD))
+                    .or(noValveHead));
             T1CleanButton.disableProperty().bind(
                     noHead
                     .or(printingDisabled)
                     .or(dualHead.and(noFilamentD))
-                    .or(singleHead.and(noFilamentEOrD)));
+                    .or(singleHead.and(noFilamentEOrD))
+                    .or(noValveHead));
 
             EjectStuckMaterialButton1.disableProperty().bind(printingDisabled.or(noFilamentE));
             EjectStuckMaterialButton2.disableProperty().bind(printingDisabled.or(noFilamentD).or(singleHead));
@@ -381,6 +385,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                             dualHead.set(false);
                             singleHead.unbind();
                             singleHead.set(false);
+                            noValveHead.unbind();
+                            noValveHead.set(false);
                         }
 
                         connectedPrinter = newValue;
@@ -402,6 +408,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                                 singleHead.bind(Bindings.size(
                                                 connectedPrinter.headProperty().get().getNozzleHeaters()).isEqualTo(
                                                 1));
+                                noValveHead.bind(connectedPrinter.headProperty().get().valveTypeProperty().isEqualTo(Head.ValveType.NOT_FITTED));
                             }
 
                             noFilamentE.bind(

@@ -56,7 +56,11 @@ public class ResetHeadController implements Initializable
 
         for (HeadFile headFile : headFiles)
         {
-            URL headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png");
+            URL headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "_FRONT.png");
+            if (headImageURL == null)
+            {
+                headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png");
+            }
             if (headImageURL == null)
             {
                 headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/Unknown.png");
