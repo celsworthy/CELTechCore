@@ -458,6 +458,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             isDirty.set(true);
             currentFilamentAsEdited = currentFilament.clone();
             updateFilamentFromWidgets(currentFilamentAsEdited);
+            updateIDBasedOnMaterial(currentFilamentAsEdited);
             updateWriteToReelBindings();
             updateSaveBindings();
         }
@@ -510,6 +511,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
      */
     public void updateFilamentFromWidgets(Filament filament)
     {
+        filament.setFilamentID(filamentID.getText());
         filament.setFriendlyFilamentName(name.getText());
         filament.setMaterial(material.getSelectionModel().getSelectedItem());
         filament.setFilamentDiameter(filamentDiameter.getAsFloat());
@@ -523,6 +525,32 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         Color webDomainColor = stringToColor(colourToString(colour.getValue()));
         filament.setDisplayColour(webDomainColor);
         filament.setCostGBPPerKG(costGBPPerKG.getAsFloat());
+    }
+    
+    /**
+     * Make a check to see if the selected material is different from the current
+     * on file. If it is we need a new id for the new file. We only need 
+     * to generate a new id if it hasn't already changed.
+     * 
+     * @param currentFilamentAsEdited the current state of the filament in the editor
+     */
+    protected void updateIDBasedOnMaterial(Filament currentFilamentAsEdited)
+    {
+        if (material.getSelectionModel().getSelectedItem() != currentFilament.getMaterial()) 
+        {
+            if(filamentID.getText().equals(currentFilamentID)) 
+            {
+                currentFilamentAsEdited.setFilamentID(Filament.generateUserFilamentID());
+            } else 
+            {
+                currentFilamentAsEdited.setFilamentID(filamentID.getText());
+            }
+        } else
+        {
+            currentFilamentAsEdited.setFilamentID(currentFilamentID);
+        }
+        
+        filamentID.setText(currentFilamentAsEdited.getFilamentID());
     }
 
     private boolean validateMaterialName(String name)
@@ -557,6 +585,11 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     void whenSavePressed()
     {
         assert (state.get() != State.ROBOX);
+        if (!currentFilament.getFilamentID().equals(filamentID.getText())) {
+            // We do this in case the id has changed, in which case we are
+            // saving a new filament.
+            currentFilament = currentFilament.clone();
+        }
         updateFilamentFromWidgets(currentFilament);
         filamentContainer.saveFilament(currentFilament);
         Filament filamentToSelect = currentFilament;
