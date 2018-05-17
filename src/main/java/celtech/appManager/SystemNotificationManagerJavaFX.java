@@ -30,6 +30,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
@@ -156,6 +157,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                 .stream()
                                 .forEach(option -> errorChoiceBox.
                                 addChoiceLink(errorToButtonMap.get(option)));
+                        ListChangeListener<? super FirmwareError> listener = (ListChangeListener.Change<? extends FirmwareError> c) -> {
+                            if (!printer.getActiveErrors().contains(error))
+                                errorChoiceBox.closeDueToPrinterDisconnect();
+                        };
+                        printer.getActiveErrors().addListener(listener);
 
                         Optional<ChoiceLinkButton> buttonPressed;
                         try
@@ -163,6 +169,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                             buttonPressed = errorChoiceBox.getUserInput();
                         } catch (PrinterDisconnectedException ex)
                         {
+                            printer.getActiveErrors().removeListener(listener);
                             return;
                         }
 
@@ -210,6 +217,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                             break;
                                     }
                                     printer.clearError(error);
+                                    printer.getActiveErrors().removeListener(listener);
                                     break;
                                 }
                             }
