@@ -51,7 +51,19 @@ public class TestTaskExecutor implements TaskExecutor
     public void runOnBackgroundThread(Runnable runnable)
     {
         runnable.run();
-    }    
+    }
+    
+    @Override
+    public void runDelayedOnBackgroundThread(Runnable runnable, long delay)
+    {
+        try {
+            Thread.sleep(delay);
+        }
+        catch (InterruptedException ex)
+        {
+        }
+        runnable.run();
+    }
 
     @Override
     public void runAsTask(NoArgsVoidFunc action, NoArgsVoidFunc successHandler,
