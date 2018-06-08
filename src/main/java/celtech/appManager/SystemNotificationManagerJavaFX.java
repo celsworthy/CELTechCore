@@ -658,7 +658,9 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
                 choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.updateApplicationTitle"));
                 choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.updateApplicationMessagePart1")
+                        + " "
                         + applicationName
+                        + " "
                         + Lookup.i18n("dialogs.updateApplicationMessagePart2"));
                 ChoiceLinkButton upgradeChoice = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("misc.Yes"),
