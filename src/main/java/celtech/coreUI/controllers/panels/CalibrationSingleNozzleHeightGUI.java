@@ -68,7 +68,7 @@ public class CalibrationSingleNozzleHeightGUI
     public void setState(SingleNozzleHeightCalibrationState state)
     {
         steno.debug("GUI going to state " + state);
-        controller.calibrationStatus.setText(state.getStepTitle());
+        controller.calibrationStatus.replaceText(state.getStepTitle());
         showAppropriateButtons(state);
         if (state.getDiagramName().isPresent())
         {
