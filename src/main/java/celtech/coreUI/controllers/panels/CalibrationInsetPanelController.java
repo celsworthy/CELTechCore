@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.SpinnerControl;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
@@ -142,7 +143,7 @@ public class CalibrationInsetPanelController implements Initializable,
     protected GraphicButtonWithLabel cancelCalibrationButton;
 
     @FXML
-    protected Label calibrationStatus;
+    protected HyperlinkedLabel calibrationStatus;
 
     @FXML
     private VBox informationCentre;
@@ -637,7 +638,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void setupChoice()
     {
-        calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
+        calibrationStatus.replaceText(Lookup.i18n("calibrationPanel.chooseCalibration"));
         calibrationMenu.reset();
         hideAllInputControlsExceptStepNumber();
         stepNumber.setVisible(false);

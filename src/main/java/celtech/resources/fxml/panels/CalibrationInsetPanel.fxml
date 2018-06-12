@@ -56,11 +56,11 @@
                                         <Insets bottom="5.0" top="5.0" />
                                     </padding>
                                     <children>
-                                        <Label id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" wrapText="true" VBox.vgrow="ALWAYS">
+                                        <HyperlinkedLabel id="calibrationStatus" fx:id="calibrationStatus" text="%calibrationPanel.readyToBeginNozzleOpeningCalibration" VBox.vgrow="ALWAYS">
                                             <VBox.margin>
                                                 <Insets bottom="20.0" left="30.0" right="30.0" top="120.0" />
                                             </VBox.margin>
-                                        </Label>
+                                        </HyperlinkedLabel>
                                         <VBox fx:id="diagramContainer" alignment="CENTER" fillWidth="false" minHeight="100" VBox.vgrow="ALWAYS" />
                                         <HBox alignment="CENTER" VBox.vgrow="NEVER">
                                             <children>
