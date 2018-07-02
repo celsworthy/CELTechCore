@@ -12,9 +12,11 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
+import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.comms.rx.FirmwareError;
+import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
@@ -443,7 +445,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
 
     /**
-     * Returns 0 for no downgrade and 1 for downgrade
+     * Returns 0 for no upgrade and 1 for upgrade
      *
      * @param requiredFirmwareVersion
      * @param actualFirmwareVersion
@@ -491,6 +493,58 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return false;
         }
     }
+
+    ////////////////////////////////////
+    /**
+     * Returns 0 for failure, 1 for reset, 2 for temporary set.
+     */
+    @Override
+    public int askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
+    {
+        Callable<Integer> resetPrinterIDCallable = new Callable()
+        {
+            @Override
+            public Integer call() throws Exception
+            {
+                Stage resetPrinterIDStage = null;
+                ResetPrinterIDController controller = null;
+                try
+                {
+                    URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPopupResourcePath + "resetPrinterIDDialog.fxml");
+                    FXMLLoader resetDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+                    VBox resetVBox = (VBox) resetDialogLoader.load();
+                    controller = (ResetPrinterIDController) resetVBox.getUserData();
+                    resetPrinterIDStage = new Stage(StageStyle.UNDECORATED);
+                    resetPrinterIDStage.initModality(Modality.APPLICATION_MODAL);
+                    resetPrinterIDStage.setScene(new Scene(resetVBox));
+                    resetPrinterIDStage.initOwner(DisplayManager.getMainStage());
+                    controller.setPrinterToUse(printerToUse);
+                    controller.updateFieldsFromPrinterID(printerID);
+                    resetPrinterIDStage.showAndWait();
+                    return controller.getResetResult();
+                }
+                catch (Exception ex)
+                {
+                    steno.exception("Couldn't load reset printer Id dialog", ex);
+                    return 0;
+                }
+            }
+        };
+        
+        FutureTask<Integer> resetPrinterIDTask = new FutureTask<>(resetPrinterIDCallable);
+        BaseLookup.getTaskExecutor().runOnGUIThread(resetPrinterIDTask);
+        try
+        {
+            return resetPrinterIDTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during printer id reset");
+            return -1;
+        }
+    }
+
+    //////////////////////////////////////////////////////
 
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)

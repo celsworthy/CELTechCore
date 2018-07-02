@@ -5,6 +5,7 @@ import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.comms.rx.FirmwareError;
+import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
@@ -23,6 +24,12 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public boolean askUserToUpdateFirmware()
     {
         return false;
+    }
+
+    @Override
+    public int askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
+    {
+        return 1;
     }
 
     @Override
