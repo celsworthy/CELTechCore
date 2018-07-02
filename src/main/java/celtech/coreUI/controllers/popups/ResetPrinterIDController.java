@@ -394,7 +394,7 @@ public class ResetPrinterIDController implements Initializable
                 newIdentity.printerpoNumberProperty().set(components[4].trim());
                 newIdentity.printerserialNumberProperty().set(components[5].trim());
                 newIdentity.printercheckByteProperty().set(components[6].trim());
-                newIdentity.firmwareVersionProperty().set("r763");
+                newIdentity.firmwareVersionProperty().set("r762"); // Force a reload of the firmware.
                 if (newIdentity.isValid())
                 {
                     identity = newIdentity;
