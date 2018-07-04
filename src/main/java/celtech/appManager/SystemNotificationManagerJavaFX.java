@@ -15,6 +15,7 @@ import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.configuration.BaseConfiguration;
@@ -499,12 +500,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * Returns 0 for failure, 1 for reset, 2 for temporary set.
      */
     @Override
-    public int askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
+    public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
     {
-        Callable<Integer> resetPrinterIDCallable = new Callable()
+        Callable<RoboxResetIDResult> resetPrinterIDCallable = new Callable()
         {
             @Override
-            public Integer call() throws Exception
+            public RoboxResetIDResult call() throws Exception
             {
                 Stage resetPrinterIDStage = null;
                 ResetPrinterIDController controller = null;
@@ -526,12 +527,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 catch (Exception ex)
                 {
                     steno.exception("Couldn't load reset printer Id dialog", ex);
-                    return 0;
+                    return RoboxResetIDResult.RESET_FAILED;
                 }
             }
         };
         
-        FutureTask<Integer> resetPrinterIDTask = new FutureTask<>(resetPrinterIDCallable);
+        FutureTask<RoboxResetIDResult> resetPrinterIDTask = new FutureTask<>(resetPrinterIDCallable);
         BaseLookup.getTaskExecutor().runOnGUIThread(resetPrinterIDTask);
         try
         {
@@ -540,7 +541,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during printer id reset");
-            return -1;
+            return RoboxResetIDResult.RESET_FAILED;
         }
     }
 
