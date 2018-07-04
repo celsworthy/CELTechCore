@@ -3,6 +3,7 @@ package celtech.appManager;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
+import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
@@ -27,9 +28,9 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public int askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
+    public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
     {
-        return 1;
+        return RoboxResetIDResult.RESET_NOT_DONE;
     }
 
     @Override

@@ -6,6 +6,7 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
@@ -54,7 +55,7 @@ public class ResetPrinterIDController implements Initializable
 {
     private static final String KEY_TO_THE_CRYPT = "4304504C02D05504B05204F04204F058";
     
-    private int resetResult = 0;
+    private RoboxResetIDResult resetResult = RoboxResetIDResult.RESET_NOT_DONE;
     
     private final Stenographer steno = StenographerFactory.getStenographer(ResetPrinterIDController.class.getName());
 
@@ -119,7 +120,7 @@ public class ResetPrinterIDController implements Initializable
     @FXML
     private void resetPrinterID()
     {
-        resetResult = -1;
+        resetResult = RoboxResetIDResult.RESET_NOT_DONE;
         
         if (printerToUse != null)
         {
@@ -127,7 +128,7 @@ public class ResetPrinterIDController implements Initializable
             {
                 printerToUse.setPrinterConfiguration(printerTypeChoice.getValue());
                 printerToUse.setPrinterEdition(printerEditionChoice.getValue());
-                resetResult = 2;
+                resetResult = RoboxResetIDResult.RESET_TEMPORARY;
             }
             else if (permSetRadioButton.isSelected())
             {
@@ -153,7 +154,7 @@ public class ResetPrinterIDController implements Initializable
                                                                         try
                                                                         {
                                                                             printerToUse.updatePrinterIdentity(newIdentity);
-                                                                            resetResult = 1;
+                                                                            resetResult = RoboxResetIDResult.RESET_SUCCESSFUL;
                                                                         }
                                                                         catch (PrinterException ex)
                                                                         {
@@ -163,7 +164,7 @@ public class ResetPrinterIDController implements Initializable
                     }
                 }
             }
-            if (resetResult > 0)
+            if (resetResult != RoboxResetIDResult.RESET_NOT_DONE)
             {
                 closeDialog();
             }
@@ -173,7 +174,7 @@ public class ResetPrinterIDController implements Initializable
     @FXML
     private void cancel()
     {
-        resetResult = 0;        
+        resetResult = RoboxResetIDResult.RESET_CANCELLED;        
         closeDialog();
     }
     
@@ -183,7 +184,7 @@ public class ResetPrinterIDController implements Initializable
         dialogStage.close();
     }
 
-    public int getResetResult()
+    public RoboxResetIDResult getResetResult()
     {
         return resetResult;
     }
