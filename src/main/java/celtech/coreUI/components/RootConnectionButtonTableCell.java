@@ -16,8 +16,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javafx.beans.property.BooleanProperty;
@@ -39,6 +43,7 @@ import javafx.scene.layout.StackPane;
  */
 public class RootConnectionButtonTableCell extends TableCell<DetectedServer, DetectedServer>
 {
+    private static final String ROOT_UPGRADE_FILE_PREFIX = "RootARM-32bit-";
 
     private GenericProgressBar rootSoftwareUpDownloadProgress;
 
@@ -84,6 +89,31 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         }
     }
 
+    private void tidyRootFiles(String path, String filename)
+    {
+        try
+        {
+            Files.newDirectoryStream(Paths.get(path), (p) ->
+                                                      {
+                                                          String f = p.getFileName().toString();
+                                                          return Files.isRegularFile(p) && !f.equals(filename) && f.startsWith(ROOT_UPGRADE_FILE_PREFIX);
+                                                      })
+                 .forEach(rootARMPath -> 
+                          { 
+                              try
+                              {
+                                  Files.deleteIfExists(rootARMPath);
+                              }
+                              catch (IOException ex)
+                              {
+                              }
+                          });
+        }
+        catch (IOException ex)
+        {
+        }
+    }
+    
     private void upgradeRootWithFile(String path, String filename)
     {
         if (associatedServer != null)
@@ -151,9 +181,9 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
     void updateRoot(ActionEvent event)
     {
         //Is root file there?
-        //The format is RootARM-32bit-2.02.00_RC8.zip
+        //The format is RootARM-32bit-3.01.01.zip
         String pathToRootFile = BaseConfiguration.getUserTempDirectory();
-        String rootFile = "RootARM-32bit-" + BaseConfiguration.getApplicationVersion() + ".zip";
+        String rootFile = ROOT_UPGRADE_FILE_PREFIX + BaseConfiguration.getApplicationVersion() + ".zip";
         Path rootFilePath = Paths.get(pathToRootFile + rootFile);
 
         if (Files.exists(rootFilePath, LinkOption.NOFOLLOW_LINKS))
@@ -187,7 +217,8 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
 
             rootDownloader.setOnSucceeded((result) ->
             {
-                BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
+                BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
+                tidyRootFiles(pathToRootFile, rootFile);
                 upgradeRootWithFile(pathToRootFile, rootFile);
                 Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
                 rootSoftwareUpDownloadProgress = null;
