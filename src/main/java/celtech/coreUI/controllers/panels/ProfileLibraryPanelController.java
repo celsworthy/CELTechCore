@@ -20,7 +20,10 @@ import celtech.roboxbase.printerControl.model.Head.ValveType;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -1116,7 +1119,7 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         //Support tab
         supportOverhangThreshold.setValue(
                 parametersFile.getSupportOverhangThreshold_degrees());
-        supportPattern.valueProperty().set(parametersFile.getSupportPattern());
+        supportPattern.valueProperty().set(parametersFile.getSupportPattern().get(slicerType));
         supportPatternSpacing.setValue(parametersFile.getSupportPatternSpacing_mm());
         supportPatternAngle.setValue(parametersFile.getSupportPatternAngle_degrees());
         raftBaseLinewidth.setValue(parametersFile.getRaftBaseLinewidth_mm());
@@ -1258,23 +1261,17 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 "supportPatternAngle_degrees"));
 
         SupportPattern currentSupportPattern = supportPattern.getValue();
-        if (slicerType == SlicerType.Slic3r)
+        supportPattern.getItems().clear();
+        SupportPattern[] supportPatternsForSlicer = SupportPattern.valuesForSlicer(slicerType);
+        supportPattern.setItems(FXCollections.observableArrayList(supportPatternsForSlicer));
+        supportPattern.setValue(currentSupportPattern);
+
+        if(Arrays.asList(supportPatternsForSlicer).contains(currentSupportPattern)) 
         {
-            supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
             supportPattern.setValue(currentSupportPattern);
         } else
         {
-            supportPattern.getItems().clear();
-            supportPattern.getItems().add(SupportPattern.RECTILINEAR);
-            supportPattern.getItems().add(SupportPattern.RECTILINEAR_GRID);
-            if (currentSupportPattern == SupportPattern.RECTILINEAR
-                    || currentSupportPattern == SupportPattern.RECTILINEAR_GRID)
-            {
-                supportPattern.setValue(currentSupportPattern);
-            } else
-            {
-                supportPattern.setValue(SupportPattern.RECTILINEAR);
-            }
+            supportPattern.setValue(supportPatternsForSlicer[0]);
         }
 
         //Speed tab
@@ -1359,7 +1356,13 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(
                 supportOverhangThreshold.getAsInt());
-        settingsToUpdate.setSupportPattern(supportPattern.valueProperty().get());
+        // Support Pattern
+        HashMap<SlicerType, SupportPattern> supportPatternMap = new HashMap<>();
+        SupportPattern supportPatternValue = supportPattern.getValue();
+        supportPatternValue.getSlicerTypes().forEach(type -> 
+                supportPatternMap.put(type, supportPatternValue));
+        settingsToUpdate.setSupportPattern(supportPatternMap);
+        
         settingsToUpdate.setSupportPatternSpacing_mm(
                 supportPatternSpacing.getAsFloat());
         settingsToUpdate.
@@ -1534,7 +1537,10 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
         slicerParametersFile.setFillPattern(FillPattern.LINE);
-        slicerParametersFile.setSupportPattern(SupportPattern.RECTILINEAR);
+        HashMap<SlicerType, SupportPattern> supportPatterns = new HashMap<>();
+        supportPatterns.put(SlicerType.Cura, SupportPattern.RECTILINEAR);
+        supportPatterns.put(SlicerType.Cura3, SupportPattern.LINES);
+        slicerParametersFile.setSupportPattern(supportPatterns);
         return slicerParametersFile;
     }
 
