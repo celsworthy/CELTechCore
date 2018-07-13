@@ -306,8 +306,6 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
 
             LevelGantryButton.disableProperty().bind(printingDisabled);
             ZTestButton.disableProperty().bind(printingDisabled);
-            loadFirmwareButton.disableProperty().bind(printingDisabled.or(Lookup.
-                    getUserPreferences().advancedModeProperty().not()));
             sendGCodeSDButton.disableProperty().bind(printingDisabled.or(Lookup.
                     getUserPreferences().advancedModeProperty().not()));
 
@@ -394,6 +392,13 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                         if (connectedPrinter != null)
                         {
                             currentFirmwareField.textProperty().bind(connectedPrinter.getPrinterIdentity().firmwareVersionProperty());
+                            loadFirmwareButton.disableProperty()
+                                              .bind(printingDisabled.or(Lookup.getUserPreferences()
+                                                                              .advancedModeProperty()
+                                                                              .not()
+                                                                              .or(connectedPrinter.getPrinterIdentity()
+                                                                                                  .validIDProperty()
+                                                                                                  .not())));
 
                             printingDisabled.bind(connectedPrinter.printerStatusProperty().isNotEqualTo(
                                             PrinterStatus.IDLE));
@@ -434,6 +439,8 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                         }
                         else
                         {
+                            loadFirmwareButton.disableProperty().unbind();
+                            loadFirmwareButton.disableProperty().set(true);
                             currentFirmwareField.setText("-");
                         }
                     });
