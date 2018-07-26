@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
+ * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
 package celtech.WebEngineFix;
 
 import static com.sun.glass.ui.Clipboard.DRAG_IMAGE;
@@ -35,11 +60,13 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.web.PopupFeatures;
 import javafx.scene.web.PromptData;
+//import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebEvent;
 import static javafx.scene.web.WebEvent.ALERT;
 import static javafx.scene.web.WebEvent.RESIZED;
 import static javafx.scene.web.WebEvent.STATUS_CHANGED;
 import static javafx.scene.web.WebEvent.VISIBILITY_CHANGED;
+//import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
@@ -192,6 +219,14 @@ public final class UIClientImpl implements UIClient {
         return "";
     }
 
+    @Override public boolean canRunBeforeUnloadConfirmPanel() {
+        return false;
+    }
+
+    @Override public boolean runBeforeUnloadConfirmPanel(String message) {
+        return false;
+    }
+
     @Override public String[] chooseFile(String initialFileName, boolean multiple, String mimeFilters) {
         // get the toplevel window
         Window win = null;
@@ -289,7 +324,7 @@ public final class UIClientImpl implements UIClient {
     @Override public void startDrag(WCImage image,
         int imageOffsetX, int imageOffsetY,
         int eventPosX, int eventPosY,
-        String[] mimeTypes, Object[] values
+        String[] mimeTypes, Object[] values, boolean isImageSource
     ){
         content = new ClipboardContent();
         for (int i = 0; i < mimeTypes.length; ++i) if (values[i] != null) {
@@ -323,24 +358,27 @@ public final class UIClientImpl implements UIClient {
             //Image need to be created by target request only.
             //QuantumClipboard.putContent have to be rewritten in Glass manner
             //with postponed data requests (DelayedCallback data object).
-            Object platformImage = image.getWidth() > 0 && image.getHeight() > 0 ?
-                    image.getPlatformImage() : null;
-            if (platformImage != null) {
-                try {
-                    File temp = File.createTempFile("jfx", ".png");
-                    temp.deleteOnExit();
-                    ImageIO.write(
-                        toBufferedImage(Image.impl_fromPlatformImage(
-                            Toolkit.getToolkit().loadPlatformImage(
-                                platformImage
-                            )
-                        )),
-                        "png",
-                        temp);
-                    content.put(DataFormat.FILES, Arrays.asList(temp));
-                } catch (IOException | SecurityException e) {
-                    //That is ok. It was just an attempt.
-                    //e.printStackTrace();
+            if (isImageSource) {
+                Object platformImage = image.getWidth() > 0 && image.getHeight() > 0 ?
+                        image.getPlatformImage() : null;
+                String fileExtension = image.getFileExtension();
+                if (platformImage != null) {
+                    try {
+                        File temp = File.createTempFile("jfx", "." + fileExtension);
+                        temp.deleteOnExit();
+                        ImageIO.write(
+                            toBufferedImage(Image.impl_fromPlatformImage(
+                                Toolkit.getToolkit().loadPlatformImage(
+                                    platformImage
+                                )
+                            )),
+                            fileExtension,
+                            temp);
+                        content.put(DataFormat.FILES, Arrays.asList(temp));
+                    } catch (IOException | SecurityException e) {
+                        //That is ok. It was just an attempt.
+                        //e.printStackTrace();
+                    }
                 }
             }
         }
