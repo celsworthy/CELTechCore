@@ -35,7 +35,6 @@ import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.LoadException;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
@@ -524,12 +523,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     controller.updateFieldsFromPrinterID(printerID);
                     resetPrinterIDStage.showAndWait();
                     return controller.getResetResult();
-                }
-                catch (LoadException ex)
-                {
-                    // Reset printer id dialog is not available in this environment.
-                    // This happens in ReelProgrammer and Commissionator.
-                    return RoboxResetIDResult.RESET_NOT_DONE;                    
                 }
                 catch (Exception ex)
                 {
