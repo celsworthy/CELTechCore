@@ -91,7 +91,7 @@ public class LoadModelInsetPanelController implements Initializable
                                                 ApplicationConfiguration.getSupportedFileExtensionWildcards(
                                                     ProjectMode.MESH)));
 
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY)));
+            modelFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
 
             List<File> files;
 

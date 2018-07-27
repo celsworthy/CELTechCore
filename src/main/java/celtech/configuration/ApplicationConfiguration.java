@@ -260,6 +260,18 @@ public class ApplicationConfiguration
         return directory;
     }
 
+    public static File getLastDirectoryFile(DirectoryMemoryProperty memoryProperty)
+    {
+        String directory = getLastDirectory(memoryProperty);
+        File modelDirectory = new File(directory);
+        if (!modelDirectory.exists())
+        {
+            directory = ApplicationConfiguration.resetLastDirectoryToDefaults(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY);
+            modelDirectory = new File(directory);
+        }
+        return modelDirectory;
+    }
+
     public static void setLastDirectory(DirectoryMemoryProperty memoryProperty, String value)
     {
         BaseConfiguration.setApplicationMemory(memoryProperty.name(), value);

@@ -236,8 +236,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     void sendGCodeSD(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
-
-        gcodeFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_GCODE_DIRECTORY)));
+        gcodeFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
 
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
 
@@ -288,13 +287,13 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
             T0CleanButton.disableProperty().bind(
                     noHead
                     .or(printingDisabled)
-                    .or(dualHead.and(noFilamentE))
+                    .or(dualHead.and(noFilamentD))
                     .or(singleHead.and(noFilamentEOrD))
                     .or(noValveHead));
             T1CleanButton.disableProperty().bind(
                     noHead
                     .or(printingDisabled)
-                    .or(dualHead.and(noFilamentD))
+                    .or(dualHead.and(noFilamentE))
                     .or(singleHead.and(noFilamentEOrD))
                     .or(noValveHead));
 
