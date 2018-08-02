@@ -42,6 +42,8 @@
     highlight_colour_orange: #ff661b;
     highlight_colour_orange_darker: #f0570c;
     highlight_colour_orange_lighter: #ff752a;
+    robox_blue_faint: #75b7d8;
+    robox_orange_faint: #ffa072;
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -2993,4 +2995,19 @@ color-picker-label .text-field {
 .rootScannerTable .table-row-cell
 {
     -fx-cell-size: 40px;
+}
+
+.nozzle-orange-setting
+{
+    -fx-background-color: robox_orange_faint;
+}
+
+.nozzle-blue-setting
+{
+    -fx-background-color: robox_blue_faint;
+}
+
+.nozzle-hidden-setting
+{
+    visibility: hidden;
 }
