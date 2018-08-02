@@ -16,6 +16,7 @@ import celtech.roboxbase.configuration.slicer.FillPattern;
 import celtech.roboxbase.configuration.slicer.NozzleParameters;
 import celtech.roboxbase.configuration.slicer.SupportPattern;
 import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Head.ValveType;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.net.URL;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -50,6 +50,8 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
@@ -62,7 +64,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProfileLibraryPanelController implements Initializable, MenuInnerPanel
 {
-
+    
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
 
     enum State
@@ -149,6 +151,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     @FXML
     private RestrictedNumberField minFanSpeed;
+    
+    @FXML
+    private RestrictedNumberField minFanSpeed_n2;
 
     @FXML
     private RestrictedNumberField solidLayersBottom;
@@ -197,6 +202,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     @FXML
     private RestrictedNumberField slowFanIfLayerTimeBelow;
+    
+    @FXML
+    private RestrictedNumberField slowFanIfLayerTimeBelow_n2;
 
     @FXML
     private Slider firstLayerExtrusionWidthSlider;
@@ -263,6 +271,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     @FXML
     private RestrictedNumberField minPrintSpeed;
+    
+    @FXML
+    private RestrictedNumberField minPrintSpeed_n2;
 
     @FXML
     private RestrictedNumberField infillEveryN;
@@ -278,6 +289,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     @FXML
     private RestrictedNumberField maxFanSpeed;
+    
+    @FXML
+    private RestrictedNumberField maxFanSpeed_n2;
 
     @FXML
     private RestrictedNumberField topSolidInfillExtrusionWidth;
@@ -314,6 +328,15 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     @FXML
     private TextArea helpText;
+    
+    @FXML
+    private ToggleButton nozzle1SettingsToggle;
+
+    @FXML
+    private ToggleButton nozzle2SettingsToggle;
+
+    @FXML
+    private ToggleGroup nozzleSelect;
 
     /**
      * **************************************************************************
@@ -364,12 +387,13 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private Printer currentPrinter = null;
 
-    private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Head> ov, Head t, Head t1)
-        {
-            headHasChanged(t1);
+    private final ChangeListener<Head> headChangeListener = (ObservableValue<? extends Head> ov, Head t, Head t1) -> {
+        headHasChanged(t1);
+    };
+    
+    private final ChangeListener<SlicerType> slicerTypeChangeListener = (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
+        if(slicerChooser.getValue() == CustomSlicerType.Default) {
+            updateFieldsForSelectedSlicer(newValue);
         }
     };
 
@@ -439,6 +463,8 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         FXMLUtilities.addColonsToLabels(container);
 
         setupWidgetsForHeadType();
+        
+        Lookup.getUserPreferences().getSlicerTypeProperty().addListener(slicerTypeChangeListener);
     }
 
     private void headHasChanged(Head head)
@@ -516,6 +542,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             repopulateCmbPrintProfile();
             selectFirstPrintProfile();
             setSliderLimits(newValue);
+            updateIndividualNozzleSettings(newValue, determineSlicerType());
         });
 
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
@@ -995,6 +1022,7 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
 
         fillDensity.textProperty().addListener(dirtyStringListener);
         slowFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
+        slowFanIfLayerTimeBelow_n2.textProperty().addListener(dirtyStringListener);
         enableFanIfLayerTimeBelow.textProperty().addListener(dirtyStringListener);
         solidInfillSpeed.textProperty().addListener(dirtyStringListener);
         supportOverhangThreshold.textProperty().addListener(dirtyStringListener);
@@ -1017,7 +1045,11 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 .addListener(dirtyStringListener);
         minPrintSpeed.textProperty()
                 .addListener(dirtyStringListener);
+        minPrintSpeed_n2.textProperty()
+                .addListener(dirtyStringListener);
         minFanSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        minFanSpeed_n2.textProperty()
                 .addListener(dirtyStringListener);
         infillEveryN.textProperty()
                 .addListener(dirtyStringListener);
@@ -1026,6 +1058,8 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         smallPerimeterSpeed.textProperty()
                 .addListener(dirtyStringListener);
         maxFanSpeed.textProperty()
+                .addListener(dirtyStringListener);
+        maxFanSpeed_n2.textProperty()
                 .addListener(dirtyStringListener);
         disableFanForFirstNLayers.textProperty()
                 .addListener(dirtyStringListener);
@@ -1084,11 +1118,12 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         } else
         {
             slicerChooser.setValue(CustomSlicerType.Default);
+            slicerType = Lookup.getUserPreferences().getSlicerType();
         }
         // Extrusion tab
         layerHeight.setValue(parametersFile.getLayerHeight_mm());
         fillDensity.setValue(parametersFile.getFillDensity_normalised());
-        fillPatternChoice.setValue(parametersFile.getFillPattern());
+        fillPatternChoice.setValue(parametersFile.getFillPattern().get(slicerType));
         infillEveryN.setValue(parametersFile.getFillEveryNLayers());
         solidLayersTop.setValue(parametersFile.getSolidLayersAtTop());
         solidLayersBottom.setValue(parametersFile.getSolidLayersAtBottom());
@@ -1145,14 +1180,19 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         //Cooling tab
         enableAutoCooling.selectedProperty().set(parametersFile.getEnableCooling());
         minFanSpeed.setValue(parametersFile.getMinFanSpeed_percent());
+        minFanSpeed_n2.setValue(parametersFile.getMinFanSpeed_percent_n2());
         maxFanSpeed.setValue(parametersFile.getMaxFanSpeed_percent());
+        maxFanSpeed_n2.setValue(parametersFile.getMaxFanSpeed_percent_n2());
         bridgesFanSpeed.setValue(parametersFile.getBridgeFanSpeed_percent());
         disableFanForFirstNLayers.setValue(parametersFile.getDisableFanFirstNLayers());
         enableFanIfLayerTimeBelow.setValue(
                 parametersFile.getCoolIfLayerTimeLessThan_secs());
         slowFanIfLayerTimeBelow.setValue(
                 parametersFile.getSlowDownIfLayerTimeLessThan_secs());
+        slowFanIfLayerTimeBelow_n2.setValue(
+                parametersFile.getSlowDownIfLayerTimeLessThan_secs_n2());
         minPrintSpeed.setValue(parametersFile.getMinPrintSpeed_mm_per_s());
+        minPrintSpeed_n2.setValue(parametersFile.getMinPrintSpeed_mm_per_s_n2());
 
         // nozzle
         if (numNozzles.get() > 1)
@@ -1221,19 +1261,6 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         numberOfPerimeters.setDisable(!slicerMappings.isMapped(slicerType, "numberOfPerimeters"));
         fillPatternChoice.setDisable(!slicerMappings.isMapped(slicerType, "fillPattern"));
 
-        FillPattern currentFillPattern = fillPatternChoice.getValue();
-        if (slicerType == SlicerType.Slic3r)
-        {
-            fillPatternChoice.setItems(FXCollections.observableArrayList(FillPattern.values()));
-            fillPatternChoice.setValue(currentFillPattern);
-        } else
-        {
-            // For Cura (and any other non-Slic3r slicers we only have a LINE fill option
-            fillPatternChoice.getItems().clear();
-            fillPatternChoice.getItems().add(FillPattern.LINE);
-            fillPatternChoice.setValue(FillPattern.LINE);
-        }
-
         //Nozzle tab
         firstLayerExtrusionWidth.setDisable(!slicerMappings.isMapped(slicerType,
                 "firstLayerExtrusionWidth_mm"));
@@ -1260,16 +1287,30 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         supportPatternAngle.setDisable(!slicerMappings.isMapped(slicerType,
                 "supportPatternAngle_degrees"));
 
+        FillPattern currentFillPattern = fillPatternChoice.getValue();
+        fillPatternChoice.getItems().clear();
+        FillPattern[] fillPatternsForSlicer = FillPattern.valuesForSlicer(slicerType);
+        fillPatternChoice.setItems(FXCollections.observableArrayList(fillPatternsForSlicer));
+        
+        if(Arrays.asList(fillPatternsForSlicer).contains(currentFillPattern))
+        {
+            fillPatternChoice.setValue(currentFillPattern);
+        } 
+        else 
+        {
+            fillPatternChoice.setValue(fillPatternsForSlicer[0]);
+        }
+        
         SupportPattern currentSupportPattern = supportPattern.getValue();
         supportPattern.getItems().clear();
         SupportPattern[] supportPatternsForSlicer = SupportPattern.valuesForSlicer(slicerType);
         supportPattern.setItems(FXCollections.observableArrayList(supportPatternsForSlicer));
-        supportPattern.setValue(currentSupportPattern);
 
         if(Arrays.asList(supportPatternsForSlicer).contains(currentSupportPattern)) 
         {
             supportPattern.setValue(currentSupportPattern);
-        } else
+        } 
+        else
         {
             supportPattern.setValue(supportPatternsForSlicer[0]);
         }
@@ -1292,7 +1333,9 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
 
         //Cooling tab
         minFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minFanSpeed_percent"));
+        minFanSpeed_n2.setDisable(!slicerMappings.isMapped(slicerType, "minFanSpeed_percent_n2"));
         maxFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "maxFanSpeed_percent"));
+        maxFanSpeed_n2.setDisable(!slicerMappings.isMapped(slicerType, "maxFanSpeed_percent_n2"));
         bridgesFanSpeed.setDisable(!slicerMappings.isMapped(slicerType, "bridgeFanSpeed_percent"));
         disableFanForFirstNLayers.setDisable(!slicerMappings.isMapped(slicerType,
                 "disableFanFirstNLayers"));
@@ -1300,7 +1343,12 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 "coolIfLayerTimeLessThan_secs"));
         slowFanIfLayerTimeBelow.setDisable(!slicerMappings.isMapped(slicerType,
                 "slowDownIfLayerTimeLessThan_secs"));
+        slowFanIfLayerTimeBelow_n2.setDisable(!slicerMappings.isMapped(slicerType,
+                "slowDownIfLayerTimeLessThan_secs_n2"));
         minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));
+        minPrintSpeed_n2.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s_n2"));
+        
+        updateIndividualNozzleSettings(cmbHeadType.getValue(), slicerType);
     }
 
     private SlicerParametersFile getPrintProfile()
@@ -1319,7 +1367,14 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         // Extrusion tab
         settingsToUpdate.setLayerHeight_mm(layerHeight.getAsFloat());
         settingsToUpdate.setFillDensity_normalised(fillDensity.getAsFloat());
-        settingsToUpdate.setFillPattern(fillPatternChoice.valueProperty().get());
+        
+        // Fill pattern
+        HashMap<SlicerType, FillPattern> fillPatternMap = new HashMap<>();
+        FillPattern fillPatternValue = fillPatternChoice.getValue();
+        fillPatternValue.getSlicerTypes().forEach(type -> 
+                fillPatternMap.put(type, fillPatternValue));
+        settingsToUpdate.setFillPattern(fillPatternMap);
+        
         settingsToUpdate.setFillEveryNLayers(infillEveryN.getAsInt());
         settingsToUpdate.setSolidLayersAtTop(solidLayersTop.getAsInt());
         settingsToUpdate.setSolidLayersAtBottom(solidLayersBottom.getAsInt());
@@ -1356,6 +1411,7 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 supportInterfaceNozzleChoice.getSelectionModel().getSelectedIndex());
         settingsToUpdate.setSupportOverhangThreshold_degrees(
                 supportOverhangThreshold.getAsInt());
+        
         // Support Pattern
         HashMap<SlicerType, SupportPattern> supportPatternMap = new HashMap<>();
         SupportPattern supportPatternValue = supportPattern.getValue();
@@ -1391,7 +1447,9 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         //Cooling tab
         settingsToUpdate.setEnableCooling(enableAutoCooling.selectedProperty().get());
         settingsToUpdate.setMinFanSpeed_percent(minFanSpeed.getAsInt());
+        settingsToUpdate.setMinFanSpeed_percent_n2(minFanSpeed_n2.getAsInt());
         settingsToUpdate.setMaxFanSpeed_percent(maxFanSpeed.getAsInt());
+        settingsToUpdate.setMaxFanSpeed_percent_n2(maxFanSpeed_n2.getAsInt());
         settingsToUpdate.setBridgeFanSpeed_percent(bridgesFanSpeed.getAsInt());
         settingsToUpdate.setDisableFanFirstNLayers(
                 disableFanForFirstNLayers.getAsInt());
@@ -1399,7 +1457,10 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 enableFanIfLayerTimeBelow.getAsInt());
         settingsToUpdate.setSlowDownIfLayerTimeLessThan_secs(
                 slowFanIfLayerTimeBelow.getAsInt());
+        settingsToUpdate.setSlowDownIfLayerTimeLessThan_secs_n2(
+                slowFanIfLayerTimeBelow_n2.getAsInt());
         settingsToUpdate.setMinPrintSpeed_mm_per_s(minPrintSpeed.getAsInt());
+        settingsToUpdate.setMinPrintSpeed_mm_per_s_n2(minPrintSpeed_n2.getAsInt());
 
         // Nozzle
         settingsToUpdate.getNozzleParameters().get(0).setEjectionVolume(
@@ -1536,11 +1597,17 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         slicerParametersFile.setNozzleParameters(new ArrayList<>());
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
         slicerParametersFile.getNozzleParameters().add(new NozzleParameters());
-        slicerParametersFile.setFillPattern(FillPattern.LINE);
+        
+        HashMap<SlicerType, FillPattern> fillPatterns = new HashMap<>();
+        fillPatterns.put(SlicerType.Cura, FillPattern.LINE);
+        fillPatterns.put(SlicerType.Cura3, FillPattern.LINES);
+        slicerParametersFile.setFillPattern(fillPatterns);
+        
         HashMap<SlicerType, SupportPattern> supportPatterns = new HashMap<>();
         supportPatterns.put(SlicerType.Cura, SupportPattern.RECTILINEAR);
         supportPatterns.put(SlicerType.Cura3, SupportPattern.LINES);
         slicerParametersFile.setSupportPattern(supportPatterns);
+        
         return slicerParametersFile;
     }
 
@@ -1667,5 +1734,132 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         };
         operationButtons.add(deleteButton);
         return operationButtons;
+    }
+    
+    /**
+     * Update the state of the settings in the UI if using Cura 3, to display
+     * that the user can edit settings for individual nozzles (extruders).
+     * 
+     * @param headId current head for profile.
+     * @param slicerType current slicer type for profile.
+     */
+    private void updateIndividualNozzleSettings(String headId, SlicerType slicerType) 
+    {
+        HeadFile headFile = HeadContainer.getHeadByID(headId);
+        HeadType headType = headFile.getType();
+        
+        nozzle1SettingsToggle.setVisible(true);
+        nozzle2SettingsToggle.setVisible(true);
+        
+        if(slicerType != SlicerType.Cura3) {
+            nozzle1SettingsToggle.setVisible(false);
+            nozzle2SettingsToggle.setVisible(false);
+            return;
+        }
+        
+        if(headType == HeadType.SINGLE_MATERIAL_HEAD) {
+            nozzle1SettingsToggle.getStyleClass().clear();
+            nozzle1SettingsToggle.getStyleClass().add("model-material1-button");
+            if(headFile.getNozzles().size() == 1) {
+                nozzle1SettingsToggle.setVisible(false);
+                nozzle2SettingsToggle.setVisible(false);
+            }
+        } else if (headType == HeadType.DUAL_MATERIAL_HEAD) {
+            nozzle1SettingsToggle.getStyleClass().clear();
+            nozzle1SettingsToggle.getStyleClass().add("model-material2-button");
+        }
+        
+        switchNozzleSettings();
+    }
+    
+    /**
+     * Return either the default {@link SlicerType} from the print settings, or if there
+     * is a slicer override for this profile, return the override.
+     * 
+     * @return SlicerType to use for this profile.
+     */
+    private SlicerType determineSlicerType() 
+    {
+        SlicerType defaultSlicerType = Lookup.getUserPreferences().getSlicerType();
+        
+        CustomSlicerType customSlicerType = slicerChooser.getValue();
+        if (customSlicerType == null) 
+        {
+            return defaultSlicerType;
+        }
+        
+        SlicerType slicerType = customSlicerType.getSlicerType();
+        if (slicerType == null)
+        {
+            return defaultSlicerType;
+        }
+        
+        return slicerType;
+    }
+    
+    @FXML
+    void nozzleOneSelected() 
+    {
+        nozzleSelect.selectToggle(nozzle1SettingsToggle);
+        switchNozzleSettings();
+    }
+    
+    @FXML
+    void nozzleTwoSelected()
+    {
+        nozzleSelect.selectToggle(nozzle2SettingsToggle);
+        switchNozzleSettings();
+    }
+    
+    /**
+     * Switch the fields over for the required nozzle as selected by the toggle switch.
+     */
+    private void switchNozzleSettings()
+    {
+        String nozzleOneStyle = "nozzle-orange-setting";
+        String nozzleTwoStyle = "nozzle-blue-setting";
+        String nozzleHiddenStyle = "nozzle-hidden-setting";
+        
+        List<String> nozzleStyles = Arrays.asList(nozzleOneStyle, nozzleTwoStyle, nozzleHiddenStyle);
+        
+        HeadFile headFile = HeadContainer.getHeadByID(cmbHeadType.getValue());
+        HeadType headType = headFile.getType();
+        
+        if (headType == HeadType.SINGLE_MATERIAL_HEAD)
+        {
+            nozzleOneStyle = nozzleTwoStyle;
+        }
+        
+        minFanSpeed.getStyleClass().removeAll(nozzleStyles);
+        minFanSpeed_n2.getStyleClass().removeAll(nozzleStyles);
+        maxFanSpeed.getStyleClass().removeAll(nozzleStyles);
+        maxFanSpeed_n2.getStyleClass().removeAll(nozzleStyles);
+        slowFanIfLayerTimeBelow.getStyleClass().removeAll(nozzleStyles);
+        slowFanIfLayerTimeBelow_n2.getStyleClass().removeAll(nozzleStyles);
+        minPrintSpeed.getStyleClass().removeAll(nozzleStyles);
+        minPrintSpeed_n2.getStyleClass().removeAll(nozzleStyles);
+        
+        if (nozzle1SettingsToggle.isSelected()) 
+        {
+            minFanSpeed.getStyleClass().add(nozzleOneStyle);
+            minFanSpeed_n2.getStyleClass().add(nozzleHiddenStyle);
+            maxFanSpeed.getStyleClass().add(nozzleOneStyle);
+            maxFanSpeed_n2.getStyleClass().add(nozzleHiddenStyle);
+            slowFanIfLayerTimeBelow.getStyleClass().add(nozzleOneStyle);
+            slowFanIfLayerTimeBelow_n2.getStyleClass().add(nozzleHiddenStyle);
+            minPrintSpeed.getStyleClass().add(nozzleOneStyle);
+            minPrintSpeed_n2.getStyleClass().add(nozzleHiddenStyle);
+        }
+        else if (nozzle2SettingsToggle.isSelected())
+        {
+            minFanSpeed_n2.getStyleClass().add(nozzleTwoStyle);
+            minFanSpeed.getStyleClass().add(nozzleHiddenStyle);
+            maxFanSpeed_n2.getStyleClass().add(nozzleTwoStyle);
+            maxFanSpeed.getStyleClass().add(nozzleHiddenStyle);
+            slowFanIfLayerTimeBelow_n2.getStyleClass().add(nozzleTwoStyle);
+            slowFanIfLayerTimeBelow.getStyleClass().add(nozzleHiddenStyle);
+            minPrintSpeed_n2.getStyleClass().add(nozzleTwoStyle);
+            minPrintSpeed.getStyleClass().add(nozzleHiddenStyle);
+        }
     }
 }
