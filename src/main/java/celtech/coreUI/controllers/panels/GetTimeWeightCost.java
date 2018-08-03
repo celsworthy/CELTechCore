@@ -15,6 +15,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.slicer.Cura3ConfigConvertor;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriter;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriterFactory;
 import celtech.roboxbase.postprocessor.PrintJobStatistics;
@@ -24,12 +25,14 @@ import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
 import celtech.roboxbase.services.postProcessor.PostProcessorTask;
 import celtech.roboxbase.services.slicer.SliceResult;
 import celtech.roboxbase.services.slicer.SlicerTask;
+import celtech.roboxbase.utils.cura.CuraDefaultSettingsEditor;
 import celtech.roboxbase.utils.models.MeshForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import javafx.beans.value.ObservableValue;
@@ -267,24 +270,31 @@ public class GetTimeWeightCost
         {
             slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
         }
-
-        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
-                slicerTypeToUse);
-
-        configWriter.setPrintCentre((float) (printableMeshes.getCentreOfPrintedObject().getX()),
-                (float) (printableMeshes.getCentreOfPrintedObject().getZ()));
-        configWriter.generateConfigForSlicer(settings,
-                temporaryDirectory
-                + settings.getProfileName()
-                + BaseConfiguration.printProfileFileExtension);
-
+        
         Printer printerToUse = null;
 
         if (Lookup.getSelectedPrinterProperty().isNotNull().get())
         {
             printerToUse = Lookup.getSelectedPrinterProperty().get();
         }
+ 
+        SlicerConfigWriter configWriter = SlicerConfigWriterFactory.getConfigWriter(
+                slicerTypeToUse);
 
+        configWriter.setPrintCentre((float) (printableMeshes.getCentreOfPrintedObject().getX()),
+                (float) (printableMeshes.getCentreOfPrintedObject().getZ()));
+        
+        String configFileDest = temporaryDirectory
+                + settings.getProfileName()
+                + BaseConfiguration.printProfileFileExtension;
+        
+        configWriter.generateConfigForSlicer(settings, configFileDest);
+
+         if(slicerTypeToUse == SlicerType.Cura3) {
+             Cura3ConfigConvertor cura3ConfigConvertor = new Cura3ConfigConvertor(printerToUse, printableMeshes);
+             cura3ConfigConvertor.injectConfigIntoCura3SettingsFile(configFileDest);
+        }
+        
         SliceResult sliceResult = SlicerTask.doSlicing(
                 settings.getProfileName(),
                 printableMeshes,
@@ -294,7 +304,7 @@ public class GetTimeWeightCost
                 steno);
         return sliceResult.isSuccess();
     }
-
+    
     /**
      * Take the duration in seconds and return a string in the format H MM.
      */
