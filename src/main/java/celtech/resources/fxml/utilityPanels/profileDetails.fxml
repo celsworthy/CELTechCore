@@ -8,7 +8,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="600.0" spacing="5.0" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<VBox id="printProfileInnerPanel" fx:id="container" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="600.0" spacing="5.0" styleClass="inset-panel" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
@@ -24,7 +24,7 @@
                 <Insets bottom="10.0" top="10.0" />
             </padding>
         </HBox>
-      <HBox spacing="20.0">
+      <HBox prefHeight="30.0" prefWidth="600.0" spacing="20.0">
          <children>
             <HBox alignment="CENTER_LEFT" spacing="5.0">
                <children>
@@ -56,6 +56,16 @@
                 <HBox alignment="CENTER" />
             </children>
         </VBox>
+      <HBox prefHeight="36.0" prefWidth="600.0">
+         <children>
+            <ToggleButton fx:id="nozzle1SettingsToggle" mnemonicParsing="false" onAction="#nozzleOneSelected" selected="true" styleClass="model-material2-button" text="Left Nozzle">
+               <toggleGroup>
+                  <ToggleGroup fx:id="nozzleSelect" />
+               </toggleGroup>
+            </ToggleButton>
+            <ToggleButton fx:id="nozzle2SettingsToggle" mnemonicParsing="false" onAction="#nozzleTwoSelected" styleClass="model-material1-button" text="Right Nozzle" toggleGroup="$nozzleSelect" />
+         </children>
+      </HBox>
         <TabPane id="printProfileTabPane" fx:id="customTabPane" minHeight="-Infinity" opacity="1.0" prefHeight="355.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
                 <Tab>
@@ -865,14 +875,26 @@
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableAutoCooling" GridPane.columnIndex="1" />
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.MinimumSpeed" GridPane.rowIndex="2" />
                                         <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.minFanSpeed" />
-                                 </tooltip></RestrictedNumberField>
+                                            <tooltip>
+                                               <HideableTooltip text="%profileLibraryHelp.minFanSpeed" />
+                                            </tooltip>
+                                        </RestrictedNumberField>
+                                        <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed_n2" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="nozzle-hidden-setting">
+                                            <tooltip>
+                                               <HideableTooltip text="%profileLibraryHelp.minFanSpeed" />
+                                            </tooltip>
+                                        </RestrictedNumberField>
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.MaximumSpeed" GridPane.rowIndex="3" />
                                         <RestrictedNumberField id="unretractLength" fx:id="maxFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.maxFanSpeed" />
-                                 </tooltip></RestrictedNumberField>
+                                            <tooltip>
+                                               <HideableTooltip text="%profileLibraryHelp.maxFanSpeed" />
+                                            </tooltip>
+                                        </RestrictedNumberField>
+                                        <RestrictedNumberField id="unretractLength" fx:id="maxFanSpeed_n2" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="nozzle-hidden-setting">
+                                            <tooltip>
+                                               <HideableTooltip text="%profileLibraryHelp.maxFanSpeed" />
+                                            </tooltip>
+                                        </RestrictedNumberField>
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.bridgesFanSpeedLabel" GridPane.rowIndex="4" />
                                         <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                             <children>
@@ -908,20 +930,40 @@
                                         <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
                                             <children>
                                                 <RestrictedNumberField id="unretractLength" fx:id="slowFanIfLayerTimeBelow" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.slowFanLayerTimeBelow" />
-                                       </tooltip></RestrictedNumberField>
+                                                    <tooltip>
+                                                       <HideableTooltip text="%profileLibraryHelp.slowFanLayerTimeBelow" />
+                                                    </tooltip>
+                                                </RestrictedNumberField>
                                                 <Label minWidth="-1.0" text="%misc.secs" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                                            <children>
+                                                <RestrictedNumberField id="unretractLength" fx:id="slowFanIfLayerTimeBelow_n2" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" styleClass="nozzle-hidden-setting">
+                                                    <tooltip>
+                                                       <HideableTooltip text="%profileLibraryHelp.slowFanLayerTimeBelow" />
+                                                    </tooltip>
+                                                </RestrictedNumberField>
                                             </children>
                                         </HBox>
                                         <Label minWidth="-1.0" styleClass="colon" text="%cooling.minPrintSpeed" GridPane.columnIndex="2" GridPane.rowIndex="4" />
                                         <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
                                             <children>
                                                 <RestrictedNumberField id="unretractLength" fx:id="minPrintSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.minPrintSpeed" />
-                                       </tooltip></RestrictedNumberField>
+                                                    <tooltip>
+                                                       <HideableTooltip text="%profileLibraryHelp.minPrintSpeed" />
+                                                    </tooltip>
+                                                </RestrictedNumberField>
                                                 <Label minWidth="-1.0" text="%misc.mmpersec" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
+                                            <children>
+                                                <RestrictedNumberField id="unretractLength" fx:id="minPrintSpeed_n2" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" styleClass="nozzle-hidden-setting">
+                                                    <tooltip>
+                                                       <HideableTooltip text="%profileLibraryHelp.minPrintSpeed" />
+                                                    </tooltip>
+                                                </RestrictedNumberField>
                                             </children>
                                         </HBox>
                                     </children>

@@ -28,6 +28,7 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         control.getStyleClass().add("cmbCleanCombo");
         ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
         slicerTypes.add(SlicerType.Cura);
+        slicerTypes.add(SlicerType.Cura3);
         control.setItems(slicerTypes);
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
