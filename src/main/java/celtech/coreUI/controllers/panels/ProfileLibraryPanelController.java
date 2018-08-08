@@ -19,6 +19,8 @@ import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Head.ValveType;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.utils.settingsgeneration.ProfileDetailsFxmlGenerator;
+import celtech.utils.settingsgeneration.SlicerSetting;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,7 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.HPos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -52,7 +55,9 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -309,9 +314,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private RestrictedNumberField externalPerimeterSpeed;
 
     @FXML
-    private ComboBox<CustomSlicerType> slicerChooser;
-
-    @FXML
     private RestrictedNumberField raftBaseLinewidth;
 
     @FXML
@@ -392,9 +394,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     };
     
     private final ChangeListener<SlicerType> slicerTypeChangeListener = (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
-        if(slicerChooser.getValue() == CustomSlicerType.Default) {
-            updateFieldsForSelectedSlicer(newValue);
-        }
+        updateFieldsForSelectedSlicer(newValue);
     };
 
     public ProfileLibraryPanelController()
@@ -451,8 +451,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         setupFillNozzleChoice();
 
         setupSupportNozzleChoice();
-
-        setupSlicerChooser();
 
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
 
@@ -542,7 +540,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             repopulateCmbPrintProfile();
             selectFirstPrintProfile();
             setSliderLimits(newValue);
-            updateIndividualNozzleSettings(newValue, determineSlicerType());
+            updateIndividualNozzleSettings(newValue, Lookup.getUserPreferences().getSlicerType());
         });
 
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
@@ -690,24 +688,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         {
             // this should only happen in SceneBuilder            
         }
-    }
-
-    private void setupSlicerChooser()
-    {
-        slicerChooser.setItems(FXCollections.observableArrayList(CustomSlicerType.values()));
-
-        slicerChooser.valueProperty().addListener(new ChangeListener<CustomSlicerType>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends CustomSlicerType> ov,
-                    CustomSlicerType lastSlicer, CustomSlicerType newSlicer)
-            {
-                if (lastSlicer != newSlicer)
-                {
-                    updateFieldsForSelectedSlicer(newSlicer.getSlicerType());
-                }
-            }
-        });
     }
 
     private void setupFirstLayerNozzleChoice()
@@ -858,7 +838,6 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
     private void setupWidgetEditableBindings()
     {
         profileNameField.disableProperty().bind(isEditable.not());
-        slicerChooser.disableProperty().bind(isEditable.not());
         coolingGrid.disableProperty().bind(isEditable.not());
         extrusionGrid.disableProperty().bind(isEditable.not());
         extrusionControls.disableProperty().bind(isEditable.not());
@@ -885,12 +864,6 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
 
         //Dirty listeners...
         profileNameField.textProperty().addListener(dirtyStringListener);
-
-        slicerChooser.valueProperty().addListener(
-                (ObservableValue<? extends CustomSlicerType> observable, CustomSlicerType oldValue, CustomSlicerType newValue) ->
-                {
-                    isDirty.set(true);
-                });
 
         //Nozzle Page
         firstLayerExtrusionWidthSlider.valueProperty().addListener(new ChangeListener<Number>()
@@ -1112,12 +1085,8 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
 
         profileNameField.setText(parametersFile.getProfileName());
         SlicerType slicerType = parametersFile.getSlicerOverride();
-        if (slicerType != null)
+        if (slicerType == null)
         {
-            slicerChooser.setValue(CustomSlicerType.customTypefromSettings(slicerType));
-        } else
-        {
-            slicerChooser.setValue(CustomSlicerType.Default);
             slicerType = Lookup.getUserPreferences().getSlicerType();
         }
         // Extrusion tab
@@ -1362,7 +1331,7 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         {
             settingsToUpdate = makeNewSlicerParametersFile();
         }
-        settingsToUpdate.setSlicerOverride(slicerChooser.getValue().getSlicerType());
+        settingsToUpdate.setSlicerOverride(Lookup.getUserPreferences().getSlicerType());
         settingsToUpdate.setProfileName(profileNameField.getText());
         // Extrusion tab
         settingsToUpdate.setLayerHeight_mm(layerHeight.getAsFloat());
@@ -1770,31 +1739,6 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         }
         
         switchNozzleSettings();
-    }
-    
-    /**
-     * Return either the default {@link SlicerType} from the print settings, or if there
-     * is a slicer override for this profile, return the override.
-     * 
-     * @return SlicerType to use for this profile.
-     */
-    private SlicerType determineSlicerType() 
-    {
-        SlicerType defaultSlicerType = Lookup.getUserPreferences().getSlicerType();
-        
-        CustomSlicerType customSlicerType = slicerChooser.getValue();
-        if (customSlicerType == null) 
-        {
-            return defaultSlicerType;
-        }
-        
-        SlicerType slicerType = customSlicerType.getSlicerType();
-        if (slicerType == null)
-        {
-            return defaultSlicerType;
-        }
-        
-        return slicerType;
     }
     
     @FXML

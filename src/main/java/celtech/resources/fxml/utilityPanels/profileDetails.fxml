@@ -35,15 +35,6 @@
                      </tooltip></RestrictedTextField>
                </children>
             </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="5.0">
-               <children>
-                      <Label styleClass="colon" text="%sidePanel_settings.slicerType" />
-                      <ComboBox fx:id="slicerChooser" prefWidth="111.0" styleClass="cmbCleanCombo">
-                     <tooltip>
-                        <HideableTooltip text="%profileLibraryHelp.slicerChooser" />
-                     </tooltip></ComboBox>
-               </children>
-            </HBox>
          </children>
       </HBox>
         <VBox>
