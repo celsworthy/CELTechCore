@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
+import java.util.Optional;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
@@ -53,7 +54,7 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     public void testAddSingleFieldRow() {
         SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
-        slicerSetting.setUnit(UNIT);
+        slicerSetting.setUnit(Optional.of(UNIT));
         gridPane = profileDetailsFxmlGenerator.addSingleFieldRow(gridPane, slicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
@@ -89,58 +90,56 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     public void testAddSelectionAndValueRow() {
         SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
-        slicerSetting.setUnit(UNIT);
+        slicerSetting.setUnit(Optional.empty());
         gridPane = profileDetailsFxmlGenerator.addSelectionAndValueRow(gridPane, slicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
-        HBox comboHBox = (HBox) gridPane.getChildren().get(1);
-        HBox fieldHBox = (HBox) gridPane.getChildren().get(2);
+        Label boxLabel = (Label) gridPane.getChildren().get(1);
+        ComboBox combo = (ComboBox) gridPane.getChildren().get(2);
+        HBox fieldHBox = (HBox) gridPane.getChildren().get(3);
         
         assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
-        
-        Label boxLabel = (Label) comboHBox.getChildren().get(0);
-        ComboBox combo = (ComboBox) comboHBox.getChildren().get(1);
         
         assertThat(boxLabel.getText(), is(equalTo(Lookup.i18n("extrusion.nozzle"))));
         assertThat(combo.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertTrue(combo.getStyleClass().contains("cmbCleanCombo"));
         
         RestrictedNumberField restrictedNumberField = (RestrictedNumberField) fieldHBox.getChildren().get(0);
-        Label unitLabel = (Label) fieldHBox.getChildren().get(1);
+        // We should not have a unit label
+        assertThat(fieldHBox.getChildren().size(), is(equalTo(1)));
         
         assertThat(restrictedNumberField.getTooltip().getText(), is(equalTo(TOOLTIP)));
-        assertThat(unitLabel.getText(), is(equalTo(UNIT)));
-        assertFalse(unitLabel.getStyleClass().contains(COLON_STYLE));
     }
     
     @Test
     public void testAddPerExtruderValueRow() {
         SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
-        slicerSetting.setUnit(UNIT);
+        slicerSetting.setUnit(Optional.of(UNIT));
         gridPane = profileDetailsFxmlGenerator.addPerExtruderValueRow(gridPane, slicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
-        HBox leftHBox = (HBox) gridPane.getChildren().get(1);
-        HBox rightHBox = (HBox) gridPane.getChildren().get(2);
+        Label leftLabel = (Label) gridPane.getChildren().get(1);
+        HBox leftHBox = (HBox) gridPane.getChildren().get(2);
+        Label rightLabel = (Label) gridPane.getChildren().get(3);
+        HBox rightHBox = (HBox) gridPane.getChildren().get(4);
         
         assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
-        
-        Label leftNozzleLabel = (Label) leftHBox.getChildren().get(0);
-        RestrictedNumberField leftField = (RestrictedNumberField) leftHBox.getChildren().get(1);
-        
-        assertThat(leftNozzleLabel.getText(), is(equalTo("Left Nozzle")));
-        assertTrue(leftNozzleLabel.getStyleClass().contains(COLON_STYLE));
+        assertThat(leftLabel.getText(), is(equalTo("Left Nozzle")));
+        assertTrue(leftLabel.getStyleClass().contains(COLON_STYLE));
+
+        RestrictedNumberField leftField = (RestrictedNumberField) leftHBox.getChildren().get(0);
+ 
         assertThat(leftField.getTooltip().getText(), is(equalTo(TOOLTIP)));
         
-        Label rightNozzleLabel = (Label) rightHBox.getChildren().get(0);
-        RestrictedNumberField rightField = (RestrictedNumberField) rightHBox.getChildren().get(1);
-        Label rightUnitLabel = (Label) rightHBox.getChildren().get(2);
+        assertThat(rightLabel.getText(), is(equalTo("Right Nozzle")));
+        assertTrue(rightLabel.getStyleClass().contains(COLON_STYLE));
         
-        assertThat(rightNozzleLabel.getText(), is(equalTo("Right Nozzle")));
-        assertTrue(rightNozzleLabel.getStyleClass().contains(COLON_STYLE));
+        RestrictedNumberField rightField = (RestrictedNumberField) rightHBox.getChildren().get(0);
+        Label rightUnitLabel = (Label) rightHBox.getChildren().get(1);
+        
         assertThat(rightField.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertThat(rightUnitLabel.getText(), is(equalTo(UNIT)));
         assertFalse(rightUnitLabel.getStyleClass().contains(COLON_STYLE));
