@@ -1,5 +1,7 @@
 package celtech.utils.settingsgeneration;
 
+import java.util.Optional;
+
 /**
  *
  * @author George
@@ -8,7 +10,7 @@ public class SlicerSetting {
     
     private String settingName;
     private String tooltip;
-    private String unit;
+    private Optional<String> unit = Optional.empty();
     
     public SlicerSetting(String settingName) {
         this.settingName = settingName;
@@ -30,11 +32,11 @@ public class SlicerSetting {
         this.tooltip = tooltip;
     }
 
-    public String getUnit() {
+    public Optional<String> getUnit() {
         return unit;
     }
 
-    public void setUnit(String unit) {
+    public void setUnit(Optional<String> unit) {
         this.unit = unit;
     }
 }
