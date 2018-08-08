@@ -47,16 +47,6 @@
                 <HBox alignment="CENTER" />
             </children>
         </VBox>
-      <HBox prefHeight="36.0" prefWidth="600.0">
-         <children>
-            <ToggleButton fx:id="nozzle1SettingsToggle" mnemonicParsing="false" onAction="#nozzleOneSelected" selected="true" styleClass="model-material2-button" text="Left Nozzle">
-               <toggleGroup>
-                  <ToggleGroup fx:id="nozzleSelect" />
-               </toggleGroup>
-            </ToggleButton>
-            <ToggleButton fx:id="nozzle2SettingsToggle" mnemonicParsing="false" onAction="#nozzleTwoSelected" styleClass="model-material1-button" text="Right Nozzle" toggleGroup="$nozzleSelect" />
-         </children>
-      </HBox>
         <TabPane id="printProfileTabPane" fx:id="customTabPane" minHeight="-Infinity" opacity="1.0" prefHeight="355.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
                 <Tab>

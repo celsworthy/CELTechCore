@@ -328,18 +328,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     @FXML
     private RestrictedNumberField supportZDistance;
 
-    @FXML
-    private TextArea helpText;
-    
-    @FXML
-    private ToggleButton nozzle1SettingsToggle;
-
-    @FXML
-    private ToggleButton nozzle2SettingsToggle;
-
-    @FXML
-    private ToggleGroup nozzleSelect;
-
     /**
      * **************************************************************************
      */
@@ -540,7 +528,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             repopulateCmbPrintProfile();
             selectFirstPrintProfile();
             setSliderLimits(newValue);
-            updateIndividualNozzleSettings(newValue, Lookup.getUserPreferences().getSlicerType());
         });
 
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
@@ -1316,8 +1303,6 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                 "slowDownIfLayerTimeLessThan_secs_n2"));
         minPrintSpeed.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s"));
         minPrintSpeed_n2.setDisable(!slicerMappings.isMapped(slicerType, "minPrintSpeed_mm_per_s_n2"));
-        
-        updateIndividualNozzleSettings(cmbHeadType.getValue(), slicerType);
     }
 
     private SlicerParametersFile getPrintProfile()
@@ -1703,107 +1688,5 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
         };
         operationButtons.add(deleteButton);
         return operationButtons;
-    }
-    
-    /**
-     * Update the state of the settings in the UI if using Cura 3, to display
-     * that the user can edit settings for individual nozzles (extruders).
-     * 
-     * @param headId current head for profile.
-     * @param slicerType current slicer type for profile.
-     */
-    private void updateIndividualNozzleSettings(String headId, SlicerType slicerType) 
-    {
-        HeadFile headFile = HeadContainer.getHeadByID(headId);
-        HeadType headType = headFile.getType();
-        
-        nozzle1SettingsToggle.setVisible(true);
-        nozzle2SettingsToggle.setVisible(true);
-        
-        if(slicerType != SlicerType.Cura3) {
-            nozzle1SettingsToggle.setVisible(false);
-            nozzle2SettingsToggle.setVisible(false);
-            return;
-        }
-        
-        if(headType == HeadType.SINGLE_MATERIAL_HEAD) {
-            nozzle1SettingsToggle.getStyleClass().clear();
-            nozzle1SettingsToggle.getStyleClass().add("model-material1-button");
-            if(headFile.getNozzles().size() == 1) {
-                nozzle1SettingsToggle.setVisible(false);
-                nozzle2SettingsToggle.setVisible(false);
-            }
-        } else if (headType == HeadType.DUAL_MATERIAL_HEAD) {
-            nozzle1SettingsToggle.getStyleClass().clear();
-            nozzle1SettingsToggle.getStyleClass().add("model-material2-button");
-        }
-        
-        switchNozzleSettings();
-    }
-    
-    @FXML
-    void nozzleOneSelected() 
-    {
-        nozzleSelect.selectToggle(nozzle1SettingsToggle);
-        switchNozzleSettings();
-    }
-    
-    @FXML
-    void nozzleTwoSelected()
-    {
-        nozzleSelect.selectToggle(nozzle2SettingsToggle);
-        switchNozzleSettings();
-    }
-    
-    /**
-     * Switch the fields over for the required nozzle as selected by the toggle switch.
-     */
-    private void switchNozzleSettings()
-    {
-        String nozzleOneStyle = "nozzle-orange-setting";
-        String nozzleTwoStyle = "nozzle-blue-setting";
-        String nozzleHiddenStyle = "nozzle-hidden-setting";
-        
-        List<String> nozzleStyles = Arrays.asList(nozzleOneStyle, nozzleTwoStyle, nozzleHiddenStyle);
-        
-        HeadFile headFile = HeadContainer.getHeadByID(cmbHeadType.getValue());
-        HeadType headType = headFile.getType();
-        
-        if (headType == HeadType.SINGLE_MATERIAL_HEAD)
-        {
-            nozzleOneStyle = nozzleTwoStyle;
-        }
-        
-        minFanSpeed.getStyleClass().removeAll(nozzleStyles);
-        minFanSpeed_n2.getStyleClass().removeAll(nozzleStyles);
-        maxFanSpeed.getStyleClass().removeAll(nozzleStyles);
-        maxFanSpeed_n2.getStyleClass().removeAll(nozzleStyles);
-        slowFanIfLayerTimeBelow.getStyleClass().removeAll(nozzleStyles);
-        slowFanIfLayerTimeBelow_n2.getStyleClass().removeAll(nozzleStyles);
-        minPrintSpeed.getStyleClass().removeAll(nozzleStyles);
-        minPrintSpeed_n2.getStyleClass().removeAll(nozzleStyles);
-        
-        if (nozzle1SettingsToggle.isSelected()) 
-        {
-            minFanSpeed.getStyleClass().add(nozzleOneStyle);
-            minFanSpeed_n2.getStyleClass().add(nozzleHiddenStyle);
-            maxFanSpeed.getStyleClass().add(nozzleOneStyle);
-            maxFanSpeed_n2.getStyleClass().add(nozzleHiddenStyle);
-            slowFanIfLayerTimeBelow.getStyleClass().add(nozzleOneStyle);
-            slowFanIfLayerTimeBelow_n2.getStyleClass().add(nozzleHiddenStyle);
-            minPrintSpeed.getStyleClass().add(nozzleOneStyle);
-            minPrintSpeed_n2.getStyleClass().add(nozzleHiddenStyle);
-        }
-        else if (nozzle2SettingsToggle.isSelected())
-        {
-            minFanSpeed_n2.getStyleClass().add(nozzleTwoStyle);
-            minFanSpeed.getStyleClass().add(nozzleHiddenStyle);
-            maxFanSpeed_n2.getStyleClass().add(nozzleTwoStyle);
-            maxFanSpeed.getStyleClass().add(nozzleHiddenStyle);
-            slowFanIfLayerTimeBelow_n2.getStyleClass().add(nozzleTwoStyle);
-            slowFanIfLayerTimeBelow.getStyleClass().add(nozzleHiddenStyle);
-            minPrintSpeed_n2.getStyleClass().add(nozzleTwoStyle);
-            minPrintSpeed.getStyleClass().add(nozzleHiddenStyle);
-        }
     }
 }
