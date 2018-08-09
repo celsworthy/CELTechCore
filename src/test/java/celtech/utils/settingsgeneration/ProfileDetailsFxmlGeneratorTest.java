@@ -31,6 +31,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     
     private static final String SLICER_SETTING_NAME = "Slicer Setting Name";
     private static final String TOOLTIP = "this is a tooltip";
+    private static final String DEFAULT_FLOAT_VALUE = "1.234";
+    private static final String FLOAT_VALUE_TYPE = "float";
     private static final String UNIT = "mm";
     private static final String COLON_STYLE = "colon";
     
@@ -57,6 +59,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
         slicerSetting.setUnit(Optional.of(UNIT));
+        slicerSetting.setDefaultValue(DEFAULT_FLOAT_VALUE);
+        slicerSetting.setValueType(FLOAT_VALUE_TYPE);
         gridPane = profileDetailsFxmlGenerator.addSingleFieldRow(gridPane, slicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
@@ -68,6 +72,7 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         RestrictedNumberField restrictedNumberField = (RestrictedNumberField) hbox.getChildren().get(0);
         Label unitLabel = (Label) hbox.getChildren().get(1);
         
+        assertThat(restrictedNumberField.getText(), is(equalTo(DEFAULT_FLOAT_VALUE)));
         assertThat(restrictedNumberField.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertThat(unitLabel.getText(), is(equalTo(UNIT)));
     }
