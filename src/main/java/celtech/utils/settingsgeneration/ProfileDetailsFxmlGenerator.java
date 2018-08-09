@@ -3,11 +3,10 @@ package celtech.utils.settingsgeneration;
 import celtech.Lookup;
 import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.roboxbase.configuration.PrintProfileSetting;
 import java.util.Optional;
-import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
@@ -27,7 +26,7 @@ public class ProfileDetailsFxmlGenerator {
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    public GridPane addSingleFieldRow(GridPane gridPane, SlicerSetting slicerSetting, int row) {
+    public GridPane addSingleFieldRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
         gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
         gridPane.add(createInputFieldWithOptionalUnit(slicerSetting.getUnit(), slicerSetting.getTooltip()), 2, row);
         return gridPane;
@@ -42,7 +41,7 @@ public class ProfileDetailsFxmlGenerator {
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    public GridPane addComboBoxRow(GridPane gridPane, SlicerSetting slicerSetting, int row) {
+    public GridPane addComboBoxRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
         gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
         gridPane.add(createComboBox(slicerSetting.getTooltip()), 2, row);
         return gridPane;
@@ -58,7 +57,7 @@ public class ProfileDetailsFxmlGenerator {
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    public GridPane addSelectionAndValueRow(GridPane gridPane, SlicerSetting slicerSetting, int row) {
+    public GridPane addSelectionAndValueRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
         gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement(Lookup.i18n("extrusion.nozzle"), true), 1, row);
         gridPane.add(createComboBox(slicerSetting.getTooltip()), 2, row);
@@ -76,7 +75,7 @@ public class ProfileDetailsFxmlGenerator {
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    public GridPane addPerExtruderValueRow(GridPane gridPane, SlicerSetting slicerSetting, int row) {
+    public GridPane addPerExtruderValueRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
         gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("Left Nozzle", true), 1, row);
         gridPane.add(createInputFieldWithOptionalUnit(Optional.empty(), slicerSetting.getTooltip()), 2, row);

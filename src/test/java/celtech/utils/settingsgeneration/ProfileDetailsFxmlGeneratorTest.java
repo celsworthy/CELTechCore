@@ -9,6 +9,7 @@ import static org.junit.Assert.assertFalse;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.roboxbase.configuration.PrintProfileSetting;
 import java.util.Optional;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -52,7 +53,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddSingleFieldRow() {
-        SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
+        PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
         slicerSetting.setUnit(Optional.of(UNIT));
         gridPane = profileDetailsFxmlGenerator.addSingleFieldRow(gridPane, slicerSetting, 0);
@@ -72,7 +74,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddComboBoxRow() {
-        SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
+        PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
         gridPane = profileDetailsFxmlGenerator.addComboBoxRow(gridPane, slicerSetting, 0);
         
@@ -88,7 +91,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddSelectionAndValueRow() {
-        SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
+        PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
         slicerSetting.setUnit(Optional.empty());
         gridPane = profileDetailsFxmlGenerator.addSelectionAndValueRow(gridPane, slicerSetting, 0);
@@ -114,7 +118,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddPerExtruderValueRow() {
-        SlicerSetting slicerSetting = new SlicerSetting(SLICER_SETTING_NAME);
+        PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
         slicerSetting.setUnit(Optional.of(UNIT));
         gridPane = profileDetailsFxmlGenerator.addPerExtruderValueRow(gridPane, slicerSetting, 0);
