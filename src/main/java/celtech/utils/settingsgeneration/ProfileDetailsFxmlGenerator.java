@@ -7,13 +7,22 @@ import celtech.roboxbase.configuration.PrintProfileSetting;
 import celtech.roboxbase.configuration.PrintProfileSettings;
 import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * Class to provide methods for adding generated settings to the FXML print profile pages.
@@ -21,6 +30,8 @@ import javafx.scene.layout.RowConstraints;
  * @author George Salter
  */
 public class ProfileDetailsFxmlGenerator {
+    
+    private static final Stenographer STENO = StenographerFactory.getStenographer(ProfileDetailsFxmlGenerator.class.getName());
     
     PrintProfileSettings printProfileSettings;
     
@@ -37,10 +48,42 @@ public class ProfileDetailsFxmlGenerator {
         
         for(PrintProfileSetting printProfileSetting : profileSettingsForTab) {
             gridPane.getRowConstraints().add(new RowConstraints());
-            addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
-            rowNumber++;
+            
+            String valueType = printProfileSetting.getValueType();
+            switch(valueType) {
+                case "float":
+                    if(printProfileSetting.isPerExtruder()) {
+                        addPerExtruderValueRow(gridPane, printProfileSetting, rowNumber);
+                    } else {
+                        addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
+                    }
+                    rowNumber++;
+                    break;
+                case "int":
+                    addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
+                    rowNumber++;
+                    break;
+                case "boolean":
+                    addCheckBoxRow(gridPane, printProfileSetting, rowNumber);
+                    rowNumber++;
+                case "option":
+                    if(printProfileSetting.getOptions().isPresent()) {
+                        addComboBoxRow(gridPane, printProfileSetting, rowNumber);
+                        rowNumber++;
+                    } else {
+                        STENO.error("Option setting has no options, setting will be ignored");
+                    }
+                    break;
+                case "extrusion":
+                    addSelectionAndValueRow(gridPane, printProfileSetting, rowNumber);
+                    rowNumber++;
+                    break;
+                default:
+                    STENO.error("Value type of " + valueType + " not recognised, setting will be ignored");
+            }
         }
     }
+    
     /**
      * Sets up the {@link ColumnConstraints} for the provided {@link GridPane}
      * This set up is for a clean and consistent setting generation.
@@ -56,11 +99,13 @@ public class ProfileDetailsFxmlGenerator {
         
         label0Col.setPercentWidth(20);
         label1Col.setPercentWidth(15);
-        field0Col.setPercentWidth(25);
+        field0Col.setPercentWidth(20);
         label2Col.setPercentWidth(15);
-        field1Col.setPercentWidth(25);
+        field1Col.setPercentWidth(20);
         
         label0Col.setHalignment(HPos.LEFT);
+        label1Col.setHalignment(HPos.RIGHT);
+        label2Col.setHalignment(HPos.RIGHT);
         
         gridPane.getColumnConstraints().addAll(label0Col, label1Col, field0Col, label2Col, field1Col);
     }
@@ -70,13 +115,13 @@ public class ProfileDetailsFxmlGenerator {
      * It consists of a {@link Label} and a {@link RestrictedNumberField}.
      * 
      * @param gridPane the pane to add to
-     * @param slicerSetting the setting parameters
+     * @param printProfileSetting the setting parameters
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    protected GridPane addSingleFieldRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
-        gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
-        gridPane.add(createInputFieldWithOptionalUnit(slicerSetting), 2, row);
+    protected GridPane addSingleFieldRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+        gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 2, row);
         return gridPane;
     }
     
@@ -85,13 +130,13 @@ public class ProfileDetailsFxmlGenerator {
      * It consists of a {@link Label} and a {@link ComboBox}.
      * 
      * @param gridPane the pane to add to
-     * @param slicerSetting the setting parameters
+     * @param printProfileSetting the setting parameters
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    protected GridPane addComboBoxRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
-        gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
-        gridPane.add(createComboBox(slicerSetting.getTooltip()), 2, row);
+    protected GridPane addComboBoxRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+        gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
+        gridPane.add(createComboBox(printProfileSetting), 2, row);
         return gridPane;
     }
     
@@ -101,15 +146,15 @@ public class ProfileDetailsFxmlGenerator {
      * and a {@link RestrictedNumberField} for the value.
      * 
      * @param gridPane the pane to add to
-     * @param slicerSetting the setting parameters
+     * @param printProfileSetting the setting parameters
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    protected GridPane addSelectionAndValueRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
-        gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
+    protected GridPane addSelectionAndValueRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+        gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("extrusion.nozzle", true), 1, row);
-        gridPane.add(createComboBox(slicerSetting.getTooltip()), 2, row);
-        gridPane.add(createInputFieldWithOptionalUnit(slicerSetting), 4, row);
+        gridPane.add(createComboBox(printProfileSetting), 2, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 4, row);
         return gridPane;
     }
     
@@ -119,16 +164,30 @@ public class ProfileDetailsFxmlGenerator {
      * It consists of a {@link Label} and two {@link RestrictedNumberField}
      * 
      * @param gridPane the pane to add to
-     * @param slicerSetting the setting parameters
+     * @param printProfileSetting the setting parameters
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    protected GridPane addPerExtruderValueRow(GridPane gridPane, PrintProfileSetting slicerSetting, int row) {
-        gridPane.add(createLabelElement(slicerSetting.getSettingName(), true), 0, row);
+    protected GridPane addPerExtruderValueRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+        gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("Left Nozzle", true), 1, row);
-        gridPane.add(createInputFieldWithOptionalUnit(slicerSetting), 2, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 2, row);
         gridPane.add(createLabelElement("Right Nozzle", true), 3, row);
-        gridPane.add(createInputFieldWithOptionalUnit(slicerSetting), 4, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 4, row);
+        return gridPane;
+    }
+    
+    /**
+     * Add a check box row to the given {@link GridPane}.
+     * 
+     * @param gridPane the pane to add to
+     * @param printProfileSetting the setting parameters
+     * @param row the row number of the grid to add to
+     * @return the GridPane
+     */
+    protected GridPane addCheckBoxRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+        gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
+        gridPane.add(createCheckBoxElement(printProfileSetting), 2, row);
         return gridPane;
     }
     
@@ -144,7 +203,7 @@ public class ProfileDetailsFxmlGenerator {
         if(addColon) {
             label.getStyleClass().add("colon");
         }
-        
+        label.setPadding(new Insets(0, 4, 0, 0));
         return label;
     }
     
@@ -159,18 +218,32 @@ public class ProfileDetailsFxmlGenerator {
         tooltip.setText(Lookup.i18n(text));
         return tooltip;
     }
+    
+    /**
+     * Create a {@link CheckBox} element.
+     * 
+     * @param selected is the check box selected
+     * @return the CheckBox
+     */
+    private CheckBox createCheckBoxElement(PrintProfileSetting printProfileSetting) {
+        HideableTooltip hideableTooltip = createTooltipElement(printProfileSetting.getTooltip());
+        CheckBox checkBox = new CheckBox();
+        checkBox.setSelected(Boolean.valueOf(printProfileSetting.getDefaultValue()));
+        checkBox.setTooltip(hideableTooltip);
+        return checkBox;
+    }
    
     /**
      * Create a {@link RestrictedNumberField}.
      * 
-     * @param hideableTooltip the tooltip to add to the field
+     * @param printProfileSetting the setting parameters
      * @return the RestrictedNumberField
      */
-    private RestrictedNumberField createRestrictedNumberField(PrintProfileSetting slicerSetting) {
-        HideableTooltip hideableTooltip = createTooltipElement(slicerSetting.getTooltip());
+    private RestrictedNumberField createRestrictedNumberField(PrintProfileSetting printProfileSetting) {
+        HideableTooltip hideableTooltip = createTooltipElement(printProfileSetting.getTooltip());
         RestrictedNumberField restrictedNumberField = new RestrictedNumberField();
         restrictedNumberField.setTooltip(hideableTooltip);
-        restrictedNumberField.setText(slicerSetting.getDefaultValue());
+        restrictedNumberField.setText(printProfileSetting.getDefaultValue());
         restrictedNumberField.setPrefWidth(50);
         return restrictedNumberField;
     }
@@ -178,12 +251,26 @@ public class ProfileDetailsFxmlGenerator {
     /**
      * Create a {@link ComboBox} element.
      * 
-     * @param tooltipText text to display in the tooltip
+     * @param printProfileSetting the setting parameters
      * @return the ComboBox
      */
-    private ComboBox createComboBox(String tooltipText) {
+    private ComboBox createComboBox(PrintProfileSetting printProfileSetting) {
         ComboBox comboBox = new ComboBox();
-        comboBox.setTooltip(createTooltipElement(tooltipText));
+        if(printProfileSetting.getOptions().isPresent()) {
+            Map<String, String> optionMap = printProfileSetting.getOptions().get();
+            ObservableList<Option> options = optionMap.entrySet().stream()
+                .map(entry -> new Option(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toCollection(FXCollections::observableArrayList));
+            comboBox.setItems(options);
+
+            Optional<Option> value = options.stream()
+                    .filter(option -> option.getOptionId().equals(printProfileSetting.getDefaultValue()))
+                    .findFirst();
+            if(value.isPresent()) {
+                comboBox.setValue(value.get());
+            }
+        }
+        comboBox.setTooltip(createTooltipElement(printProfileSetting.getTooltip()));
         comboBox.getStyleClass().add("cmbCleanCombo");
         return comboBox;
     }
@@ -192,15 +279,14 @@ public class ProfileDetailsFxmlGenerator {
      * Crate a {@link HBox} that contains a {@link RestrictedNumberField} with an
      * Optional {@link Label} for the unit.
      * 
-     * @param unit the text for the unit label
-     * @param tooltipText the text for the tooltip
+     * @param printProfileSetting the setting parameters
      * @return a HBox
      */
-    private HBox createInputFieldWithOptionalUnit(PrintProfileSetting slicerSetting) {
-        RestrictedNumberField field = createRestrictedNumberField(slicerSetting);
+    private HBox createInputFieldWithOptionalUnit(PrintProfileSetting printProfileSetting) {
+        RestrictedNumberField field = createRestrictedNumberField(printProfileSetting);
         HBox hbox = new HBox(field);
-        if(slicerSetting.getUnit().isPresent()) {
-            Label unitLabel = createLabelElement(slicerSetting.getUnit().get(), false);
+        if(printProfileSetting.getUnit().isPresent()) {
+            Label unitLabel = createLabelElement(printProfileSetting.getUnit().get(), false);
             hbox.getChildren().add(unitLabel);
         }
         hbox.setSpacing(4);

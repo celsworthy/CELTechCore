@@ -10,7 +10,10 @@ import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.PrintProfileSetting;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
@@ -29,12 +32,21 @@ import org.junit.Test;
  */
 public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
     
+    private static final String FLOAT_VALUE_TYPE = "float";
+    private static final String OPTION_VALUE_TYPE = "option";
+    private static final String EXTRUSION_VALUE_TYPE = "extrusion";
+    
     private static final String SLICER_SETTING_NAME = "Slicer Setting Name";
     private static final String TOOLTIP = "this is a tooltip";
     private static final String DEFAULT_FLOAT_VALUE = "1.234";
-    private static final String FLOAT_VALUE_TYPE = "float";
+    private static final String BOOLEAN_TRUE_VALUE = "true";
     private static final String UNIT = "mm";
     private static final String COLON_STYLE = "colon";
+    
+    private static final String OPTION_ID_1 = "line";
+    private static final String OPTION_ID_2 = "tri";
+    private static final String OPTION_VALUE_1 = "Line";
+    private static final String OPTION_VALUE_2 = "Triangle";
     
     ProfileDetailsFxmlGenerator profileDetailsFxmlGenerator = new ProfileDetailsFxmlGenerator();
     
@@ -82,6 +94,13 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
+        slicerSetting.setValueType(OPTION_VALUE_TYPE);
+        Map<String, String> optionsMap = new HashMap<>();
+        optionsMap.put(OPTION_ID_1, OPTION_VALUE_1);
+        optionsMap.put(OPTION_ID_2, OPTION_VALUE_2);
+        Optional<Map<String, String>> options = Optional.of(optionsMap);
+        slicerSetting.setOptions(options);
+        slicerSetting.setDefaultValue(OPTION_ID_2);
         gridPane = profileDetailsFxmlGenerator.addComboBoxRow(gridPane, slicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
@@ -90,6 +109,11 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
         
+        Option value = (Option) combo.getValue();
+        
+        assertThat(value.getOptionId(), is(equalTo(OPTION_ID_2)));
+        assertThat(value.getOptionValue(), is(equalTo(OPTION_VALUE_2)));
+        assertThat(combo.getItems().size(), is(equalTo(2)));
         assertThat(combo.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertTrue(combo.getStyleClass().contains("cmbCleanCombo"));
     }
@@ -100,6 +124,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
         slicerSetting.setUnit(Optional.empty());
+        slicerSetting.setValueType(EXTRUSION_VALUE_TYPE);
+        slicerSetting.setDefaultValue(OPTION_ID_1);
         gridPane = profileDetailsFxmlGenerator.addSelectionAndValueRow(gridPane, slicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
@@ -111,6 +137,8 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
         
         assertThat(boxLabel.getText(), is(equalTo(Lookup.i18n("extrusion.nozzle"))));
+        assertThat("Expecting no items in ComboBox at this point, for extrusion value",
+                combo.getItems().size(), is(equalTo(0)));
         assertThat(combo.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertTrue(combo.getStyleClass().contains("cmbCleanCombo"));
         
@@ -153,5 +181,23 @@ public class ProfileDetailsFxmlGeneratorTest extends JavaFXConfiguredTest {
         assertThat(rightField.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertThat(rightUnitLabel.getText(), is(equalTo(UNIT)));
         assertFalse(rightUnitLabel.getStyleClass().contains(COLON_STYLE));
+    }
+    
+    @Test
+    public void testAddCheckBoxRow() {
+        PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        slicerSetting.setSettingName(SLICER_SETTING_NAME);
+        slicerSetting.setTooltip(TOOLTIP);
+        slicerSetting.setDefaultValue(BOOLEAN_TRUE_VALUE);
+        gridPane = profileDetailsFxmlGenerator.addCheckBoxRow(gridPane, slicerSetting, 0);
+        
+        Label label = (Label) gridPane.getChildren().get(0);
+        CheckBox checkBox = (CheckBox) gridPane.getChildren().get(1);
+        
+        assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
+        assertTrue(label.getStyleClass().contains(COLON_STYLE));
+        
+        assertTrue(checkBox.isSelected());
+        assertThat(checkBox.getTooltip().getText(), is(equalTo(TOOLTIP)));
     }
 }
