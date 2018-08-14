@@ -5,13 +5,14 @@ import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.PrintProfileSetting;
 import celtech.roboxbase.configuration.PrintProfileSettings;
-import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventType;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
@@ -29,17 +30,38 @@ import libertysystems.stenographer.StenographerFactory;
  * 
  * @author George Salter
  */
-public class ProfileDetailsFxmlGenerator {
+public class ProfileDetailsGenerator {
     
-    private static final Stenographer STENO = StenographerFactory.getStenographer(ProfileDetailsFxmlGenerator.class.getName());
+    private static final Stenographer STENO = StenographerFactory.getStenographer(ProfileDetailsGenerator.class.getName());
     
-    PrintProfileSettings printProfileSettings;
+    private final BooleanProperty isDirty;
+    
+    enum Nozzle {
+        LEFT,
+        RIGHT,
+        SINGLE
+    }
+    
+    private static final String FLOAT = "float";
+    private static final String INT = "int";
+    private static final String BOOLEAN = "boolean";
+    private static final String OPTION = "option";
+    private static final String EXTRUSION = "extrusion";
+    
+    private PrintProfileSettings printProfileSettings;
+    
+    public ProfileDetailsGenerator(PrintProfileSettings printProfileSettings, BooleanProperty isDirty) {
+        this.printProfileSettings = printProfileSettings;
+        this.isDirty = isDirty;
+    }
+    
+    public void setPrintProfilesettings(PrintProfileSettings printProfileSettings) {
+        this.printProfileSettings = printProfileSettings;
+    }
     
     public void generateProfileSettingsForTab(GridPane gridPane) {
+        clearGrid(gridPane);
         String gridId = gridPane.getId();
-        if(printProfileSettings == null) {
-            printProfileSettings = PrintProfileSettingsContainer.getInstance().getPrintProfileSettings();
-        }
         List<PrintProfileSetting> profileSettingsForTab = printProfileSettings.getPrintProfileSettings().get(gridId);
         
         setupColumnsForGridPane(gridPane);
@@ -51,22 +73,22 @@ public class ProfileDetailsFxmlGenerator {
             
             String valueType = printProfileSetting.getValueType();
             switch(valueType) {
-                case "float":
-                    if(printProfileSetting.isPerExtruder()) {
+                case FLOAT:
+                    if(printProfileSetting.isPerExtruder() && printProfileSetting.getValue().contains(":")) {
                         addPerExtruderValueRow(gridPane, printProfileSetting, rowNumber);
                     } else {
                         addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
                     }
                     rowNumber++;
                     break;
-                case "int":
+                case INT:
                     addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
                     rowNumber++;
                     break;
-                case "boolean":
+                case BOOLEAN:
                     addCheckBoxRow(gridPane, printProfileSetting, rowNumber);
                     rowNumber++;
-                case "option":
+                case OPTION:
                     if(printProfileSetting.getOptions().isPresent()) {
                         addComboBoxRow(gridPane, printProfileSetting, rowNumber);
                         rowNumber++;
@@ -74,7 +96,7 @@ public class ProfileDetailsFxmlGenerator {
                         STENO.error("Option setting has no options, setting will be ignored");
                     }
                     break;
-                case "extrusion":
+                case EXTRUSION:
                     addSelectionAndValueRow(gridPane, printProfileSetting, rowNumber);
                     rowNumber++;
                     break;
@@ -82,6 +104,17 @@ public class ProfileDetailsFxmlGenerator {
                     STENO.error("Value type of " + valueType + " not recognised, setting will be ignored");
             }
         }
+    }
+    
+    /**
+     * Clear the {@link GridPane} for regeneration.
+     * 
+     * @param gridPane 
+     */
+    private void clearGrid(GridPane gridPane) {
+        gridPane.getChildren().clear();
+        gridPane.getColumnConstraints().clear();
+        gridPane.getRowConstraints().clear();
     }
     
     /**
@@ -121,7 +154,7 @@ public class ProfileDetailsFxmlGenerator {
      */
     protected GridPane addSingleFieldRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
         gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
-        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 2, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting, printProfileSetting.getValue(), Nozzle.SINGLE), 2, row);
         return gridPane;
     }
     
@@ -154,7 +187,7 @@ public class ProfileDetailsFxmlGenerator {
         gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("extrusion.nozzle", true), 1, row);
         gridPane.add(createComboBox(printProfileSetting), 2, row);
-        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 4, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting, printProfileSetting.getValue(), Nozzle.SINGLE), 4, row);
         return gridPane;
     }
     
@@ -169,11 +202,12 @@ public class ProfileDetailsFxmlGenerator {
      * @return the GridPane
      */
     protected GridPane addPerExtruderValueRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+        String[] values = printProfileSetting.getValue().split(":");
         gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("Left Nozzle", true), 1, row);
-        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 2, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting, values[0], Nozzle.LEFT), 2, row);
         gridPane.add(createLabelElement("Right Nozzle", true), 3, row);
-        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting), 4, row);
+        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting, values[1], Nozzle.RIGHT), 4, row);
         return gridPane;
     }
     
@@ -228,8 +262,12 @@ public class ProfileDetailsFxmlGenerator {
     private CheckBox createCheckBoxElement(PrintProfileSetting printProfileSetting) {
         HideableTooltip hideableTooltip = createTooltipElement(printProfileSetting.getTooltip());
         CheckBox checkBox = new CheckBox();
-        checkBox.setSelected(Boolean.valueOf(printProfileSetting.getDefaultValue()));
+        checkBox.setSelected(Boolean.valueOf(printProfileSetting.getValue()));
         checkBox.setTooltip(hideableTooltip);
+        checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            printProfileSetting.setValue(String.valueOf(newValue));
+            isDirty.set(true);
+        });
         return checkBox;
     }
    
@@ -239,12 +277,35 @@ public class ProfileDetailsFxmlGenerator {
      * @param printProfileSetting the setting parameters
      * @return the RestrictedNumberField
      */
-    private RestrictedNumberField createRestrictedNumberField(PrintProfileSetting printProfileSetting) {
+    private RestrictedNumberField createRestrictedNumberField(PrintProfileSetting printProfileSetting, String value, Nozzle nozzle) {
         HideableTooltip hideableTooltip = createTooltipElement(printProfileSetting.getTooltip());
         RestrictedNumberField restrictedNumberField = new RestrictedNumberField();
         restrictedNumberField.setTooltip(hideableTooltip);
-        restrictedNumberField.setText(printProfileSetting.getDefaultValue());
+        restrictedNumberField.setText(value);
         restrictedNumberField.setPrefWidth(50);
+        if(printProfileSetting.getValueType().equals(FLOAT)) {
+            restrictedNumberField.setAllowedDecimalPlaces(2);
+        }
+        restrictedNumberField.setMaxLength(5);
+        
+        restrictedNumberField.textProperty().addListener((observable, oldValue, newValue) -> {
+            String originalValues = printProfileSetting.getValue();
+            switch(nozzle) {
+            case SINGLE:
+                printProfileSetting.setValue(newValue);
+                break;
+            case LEFT:
+                String updatedLeftValue = newValue + ":" + originalValues.split(":")[1];
+                printProfileSetting.setValue(updatedLeftValue);
+                break;
+            case RIGHT:
+                String updatedRightValue = originalValues.split(":")[0] + ":" + newValue;
+                printProfileSetting.setValue(updatedRightValue);
+                break;
+            }
+            
+            isDirty.set(true);
+        });
         return restrictedNumberField;
     }
     
@@ -264,7 +325,7 @@ public class ProfileDetailsFxmlGenerator {
             comboBox.setItems(options);
 
             Optional<Option> value = options.stream()
-                    .filter(option -> option.getOptionId().equals(printProfileSetting.getDefaultValue()))
+                    .filter(option -> option.getOptionId().equals(printProfileSetting.getValue()))
                     .findFirst();
             if(value.isPresent()) {
                 comboBox.setValue(value.get());
@@ -272,6 +333,17 @@ public class ProfileDetailsFxmlGenerator {
         }
         comboBox.setTooltip(createTooltipElement(printProfileSetting.getTooltip()));
         comboBox.getStyleClass().add("cmbCleanCombo");
+        
+        comboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            if(printProfileSetting.getValueType().equals(EXTRUSION)) {
+                
+            } else {
+                printProfileSetting.setValue(String.valueOf(newValue));
+            }
+            
+            isDirty.set(true);
+        });
+        
         return comboBox;
     }
     
@@ -282,8 +354,8 @@ public class ProfileDetailsFxmlGenerator {
      * @param printProfileSetting the setting parameters
      * @return a HBox
      */
-    private HBox createInputFieldWithOptionalUnit(PrintProfileSetting printProfileSetting) {
-        RestrictedNumberField field = createRestrictedNumberField(printProfileSetting);
+    private HBox createInputFieldWithOptionalUnit(PrintProfileSetting printProfileSetting, String value, Nozzle nozzle) {
+        RestrictedNumberField field = createRestrictedNumberField(printProfileSetting, value, nozzle);
         HBox hbox = new HBox(field);
         if(printProfileSetting.getUnit().isPresent()) {
             Label unitLabel = createLabelElement(printProfileSetting.getUnit().get(), false);
