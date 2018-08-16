@@ -90,7 +90,8 @@ public class ProjectTab extends Tab implements ProjectCallback
     private LoadedPanelData settingsInsetPanelData = null;
     private LoadedPanelData timeCostInsetPanelData = null;
     private LoadedPanelData modelActionsInsetPanelData = null;
-
+    private LoadedPanelData previewInsetPanelData = null;
+    
     private class LoadedPanelData
     {
 
@@ -152,6 +153,12 @@ public class ProjectTab extends Tab implements ProjectCallback
                     rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
                     timeCostInsetPanelData = null;
                 }
+                if (previewInsetPanelData != null)
+                {
+                    previewInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(previewInsetPanelData.getNode());
+                    previewInsetPanelData = null;
+                }
             } else
             {
                 if (settingsInsetPanelData == null)
@@ -165,6 +172,12 @@ public class ProjectTab extends Tab implements ProjectCallback
                     timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
                     timeCostInsetPanelData.getNode().setVisible(false);
                     rhInsetContainer.getChildren().add(0, timeCostInsetPanelData.getNode());
+                }
+                if (previewInsetPanelData == null)
+                {
+                    previewInsetPanelData = loadInsetPanel("previewInsetPanel.fxml", project);
+                    previewInsetPanelData.getNode().setVisible(false);
+                    rhInsetContainer.getChildren().add(previewInsetPanelData.getNode());
                 }
             }
         }

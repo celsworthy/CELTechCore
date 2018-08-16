@@ -79,35 +79,9 @@ public class Lookup
         steno.debug("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
 
-        Locale appLocale;
-        String languageTag = userPreferences.getLanguageTag();
-        steno.debug("Starting AutoMaker - language tag is " + languageTag);
-        if (languageTag == null || languageTag.length() == 0)
-        {
-            appLocale = Locale.getDefault();
-        } else
-        {
-            String[] languageElements = languageTag.split("-");
-            switch (languageElements.length)
-            {
-                case 1:
-                    appLocale = new Locale(languageElements[0]);
-                    break;
-                case 2:
-                    appLocale = new Locale(languageElements[0], languageElements[1]);
-                    break;
-                case 3:
-                    appLocale = new Locale(languageElements[0], languageElements[1],
-                            languageElements[2]);
-                    break;
-                default:
-                    appLocale = Locale.getDefault();
-                    break;
-            }
-        }
-
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
-                appLocale, new SystemNotificationManagerJavaFX());
+									  BaseLookup.getApplicationLocal(),
+									  new SystemNotificationManagerJavaFX());
 
         setNotificationDisplay(new NotificationDisplay());
         setProgressDisplay(new ProgressDisplay());

@@ -55,6 +55,8 @@ public class ApplicationConfiguration
 
     public static final String timeAndCostFileSubpath = "TimeCostTemp/";
 
+    public static final String previewGCodeFileSubpath = "GCodePreviewTemp/";
+
     private static final String mainCSSFile = cssResourcePath + "JMetroDarkTheme.css";
 
     private static final String dialogsCSSFile = cssResourcePath + "dialogsOverride.css";
