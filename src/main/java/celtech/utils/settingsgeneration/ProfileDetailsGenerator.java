@@ -5,6 +5,12 @@ import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.PrintProfileSetting;
 import celtech.roboxbase.configuration.PrintProfileSettings;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.configuration.fileRepresentation.NozzleData;
+import celtech.roboxbase.printerControl.model.Head;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +18,6 @@ import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventType;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
@@ -46,9 +51,23 @@ public class ProfileDetailsGenerator {
     private static final String INT = "int";
     private static final String BOOLEAN = "boolean";
     private static final String OPTION = "option";
+    private static final String NOZZLE = "nozzle";
     private static final String EXTRUSION = "extrusion";
     
+    private static final double POINT_8_MIN_WIDTH = 0.5;
+    private static final double POINT_8_MAX_WIDTH = 1.2;
+    private static final double POINT_6_MIN_WIDTH = 0.4;
+    private static final double POINT_6_MAX_WIDTH = 0.8;
+    private static final double POINT_4_MIN_WIDTH = 0.2;
+    private static final double POINT_4_MAX_WIDTH = 0.6;
+    private static final double POINT_3_MIN_WIDTH = 0.2;
+    private static final double POINT_3_MAX_WIDTH = 0.6;
+    
     private PrintProfileSettings printProfileSettings;
+    
+    private String headType;
+    
+    private ObservableList<String> nozzleOptions;
     
     public ProfileDetailsGenerator(PrintProfileSettings printProfileSettings, BooleanProperty isDirty) {
         this.printProfileSettings = printProfileSettings;
@@ -57,6 +76,14 @@ public class ProfileDetailsGenerator {
     
     public void setPrintProfilesettings(PrintProfileSettings printProfileSettings) {
         this.printProfileSettings = printProfileSettings;
+    }
+    
+    public void setHeadType(String headType) {
+        this.headType = headType;
+    }
+    
+    public void setNozzleOptions(ObservableList<String> nozzleOptions) {
+        this.nozzleOptions = nozzleOptions;
     }
     
     public void generateProfileSettingsForTab(GridPane gridPane) {
@@ -71,6 +98,15 @@ public class ProfileDetailsGenerator {
         for(PrintProfileSetting printProfileSetting : profileSettingsForTab) {
             gridPane.getRowConstraints().add(new RowConstraints());
             
+            // Some changes to nozzle settings if there are no valves on the head
+            boolean valvesFitted = HeadContainer.getHeadByID(headType).getValves() == Head.ValveType.FITTED;
+            if(printProfileSetting.getId().equals("ejectionVolume")) {
+                changeLabelingOfEjectionVolumeBasedOnValves(printProfileSetting, valvesFitted);
+            }
+            if(printProfileSetting.getId().equals("partialBMinimum") && !valvesFitted) {
+                continue;
+            }
+            
             String valueType = printProfileSetting.getValueType();
             switch(valueType) {
                 case FLOAT:
@@ -82,21 +118,26 @@ public class ProfileDetailsGenerator {
                     rowNumber++;
                     break;
                 case INT:
-                    addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
+                    if(printProfileSetting.isPerExtruder() && printProfileSetting.getValue().contains(":")) {
+                        addPerExtruderValueRow(gridPane, printProfileSetting, rowNumber);
+                    } else {
+                        addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
+                    }
                     rowNumber++;
                     break;
                 case BOOLEAN:
                     addCheckBoxRow(gridPane, printProfileSetting, rowNumber);
                     rowNumber++;
+                    break;
                 case OPTION:
                     if(printProfileSetting.getOptions().isPresent()) {
                         addComboBoxRow(gridPane, printProfileSetting, rowNumber);
                         rowNumber++;
                     } else {
-                        STENO.error("Option setting has no options, setting will be ignored");
+                        STENO.warning("Option setting, "+ printProfileSetting.getId() + ", has no options, setting will be ignored");
                     }
                     break;
-                case EXTRUSION:
+                case NOZZLE:
                     addSelectionAndValueRow(gridPane, printProfileSetting, rowNumber);
                     rowNumber++;
                     break;
@@ -186,8 +227,12 @@ public class ProfileDetailsGenerator {
     protected GridPane addSelectionAndValueRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
         gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("extrusion.nozzle", true), 1, row);
-        gridPane.add(createComboBox(printProfileSetting), 2, row);
-        gridPane.add(createInputFieldWithOptionalUnit(printProfileSetting, printProfileSetting.getValue(), Nozzle.SINGLE), 4, row);
+        ComboBox comboBox = createComboBox(printProfileSetting);
+        gridPane.add(comboBox, 2, row);
+        if(printProfileSetting.getChildren().isPresent()) {
+            PrintProfileSetting extrusionSetting = printProfileSetting.getChildren().get().get(0);
+            gridPane.add(createInputFieldForNozzleSelection(extrusionSetting, extrusionSetting.getValue(), comboBox), 4, row);
+        }
         return gridPane;
     }
     
@@ -283,10 +328,18 @@ public class ProfileDetailsGenerator {
         restrictedNumberField.setTooltip(hideableTooltip);
         restrictedNumberField.setText(value);
         restrictedNumberField.setPrefWidth(50);
-        if(printProfileSetting.getValueType().equals(FLOAT)) {
+        if(printProfileSetting.getValueType().equals(FLOAT) || 
+                printProfileSetting.getValueType().equals(EXTRUSION)) {
             restrictedNumberField.setAllowedDecimalPlaces(2);
         }
         restrictedNumberField.setMaxLength(5);
+        
+        if(printProfileSetting.getMinimumValue().isPresent()) {
+            restrictedNumberField.setMinValue(Double.valueOf(printProfileSetting.getMinimumValue().get()));
+        }
+        if(printProfileSetting.getMaximumValue().isPresent()) {
+            restrictedNumberField.setMaxValue(Double.valueOf(printProfileSetting.getMaximumValue().get()));
+        }
         
         restrictedNumberField.textProperty().addListener((observable, oldValue, newValue) -> {
             String originalValues = printProfileSetting.getValue();
@@ -318,37 +371,71 @@ public class ProfileDetailsGenerator {
     private ComboBox createComboBox(PrintProfileSetting printProfileSetting) {
         ComboBox comboBox = new ComboBox();
         if(printProfileSetting.getOptions().isPresent()) {
-            Map<String, String> optionMap = printProfileSetting.getOptions().get();
-            ObservableList<Option> options = optionMap.entrySet().stream()
-                .map(entry -> new Option(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toCollection(FXCollections::observableArrayList));
-            comboBox.setItems(options);
-
-            Optional<Option> value = options.stream()
-                    .filter(option -> option.getOptionId().equals(printProfileSetting.getValue()))
-                    .findFirst();
-            if(value.isPresent()) {
-                comboBox.setValue(value.get());
-            }
+            comboBox = setupStandardComboBox(printProfileSetting);
+        } else if(printProfileSetting.getValueType().equals(NOZZLE)) {
+            comboBox = setupComboBoxForNozzleSelection(printProfileSetting, printProfileSetting.getChildren().isPresent());
         }
         comboBox.setTooltip(createTooltipElement(printProfileSetting.getTooltip()));
         comboBox.getStyleClass().add("cmbCleanCombo");
         
-        comboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-            if(printProfileSetting.getValueType().equals(EXTRUSION)) {
-                
-            } else {
-                printProfileSetting.setValue(String.valueOf(newValue));
-            }
+        return comboBox;
+    }
+    
+    private ComboBox setupStandardComboBox(PrintProfileSetting printProfileSetting) {
+        ComboBox comboBox = new ComboBox();
+        Map<String, String> optionMap = printProfileSetting.getOptions().get();
             
+        ObservableList<Option> options = optionMap.entrySet().stream()
+            .map(entry -> new Option(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toCollection(FXCollections::observableArrayList));
+
+        comboBox.setItems(options);
+
+        Optional<Option> value = options.stream()
+                .filter(option -> option.getOptionId().equals(printProfileSetting.getValue()))
+                .findFirst();
+
+        if(value.isPresent()) {
+            comboBox.setValue(value.get());
+        }
+        
+        comboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            Option option = (Option) newValue;
+            printProfileSetting.setValue(option.getOptionId());
             isDirty.set(true);
         });
         
         return comboBox;
     }
     
+    private ComboBox setupComboBoxForNozzleSelection(PrintProfileSetting printProfileSetting, boolean hasExtrusionWidth) {
+        ComboBox comboBox = new ComboBox(); 
+        List<String> nozzles = new ArrayList<>();
+        nozzles.addAll(nozzleOptions);
+        
+        HeadFile currentHead = HeadContainer.getHeadByID(headType);
+        if(currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
+            if(Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura3) {
+                nozzles.set(0, nozzleOptions.get(0) + " (right)");
+                nozzles.set(1, nozzleOptions.get(1) + " (left)");
+            } else {
+                comboBox.setDisable(true);
+            }
+        }
+        comboBox.setItems(FXCollections.observableList(nozzles));
+        int selectionIndex = Integer.parseInt(printProfileSetting.getValue());
+        comboBox.getSelectionModel().select(selectionIndex); 
+
+        comboBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            printProfileSetting.setValue(String.valueOf(newValue));
+            isDirty.set(true);
+        });
+                    
+        return comboBox;
+    }
+    
     /**
-     * Crate a {@link HBox} that contains a {@link RestrictedNumberField} with an
+     * Create a {@link HBox} that contains a {@link RestrictedNumberField} with an
      * Optional {@link Label} for the unit.
      * 
      * @param printProfileSetting the setting parameters
@@ -363,5 +450,85 @@ public class ProfileDetailsGenerator {
         }
         hbox.setSpacing(4);
         return hbox;
+    }
+    
+    /**
+     * Create a {@link HBox} that contains a {@link RestrictedNumberField} with an
+     * Optional {@link Label} for the unit. Also pass in the {@link ComboBox} that links
+     * to the field.
+     * 
+     * @param printProfileSetting the setting parameters
+     * @return a HBox
+     */
+    private HBox createInputFieldForNozzleSelection(PrintProfileSetting printProfileSetting, String value, ComboBox nozzleSelection) {
+        RestrictedNumberField field = createRestrictedNumberField(printProfileSetting, value, Nozzle.SINGLE);
+       
+        setExtrusionWidthLimits(nozzleSelection.getSelectionModel().getSelectedIndex(), field);
+        nozzleSelection.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+            setExtrusionWidthLimits(newValue, field);
+        });
+        
+        HBox hbox = new HBox(field);
+        if(printProfileSetting.getUnit().isPresent()) {
+            Label unitLabel = createLabelElement(printProfileSetting.getUnit().get(), false);
+            hbox.getChildren().add(unitLabel);
+        }
+        hbox.setSpacing(4);
+        return hbox;
+    }
+    
+    private void setExtrusionWidthLimits(Number newValue, RestrictedNumberField extrusionSetting) {
+        int index = newValue.intValue();
+        index = index < 0 ? 0 : index;
+        String widthOption = nozzleOptions.get(index);
+        Optional<NozzleData> optionalNozzleData = HeadContainer.getHeadByID(headType).getNozzles()
+                .stream()
+                .filter(nozzle -> nozzle.getMinExtrusionWidth() > 0.0)
+                .filter(nozzle -> (Float.toString(nozzle.getDiameter()) + " mm").equals(widthOption))
+                .findFirst();
+        
+        if (optionalNozzleData.isPresent()) {
+            NozzleData nozzleData = optionalNozzleData.get();
+            extrusionSetting.setMinValue(nozzleData.getMinExtrusionWidth());
+            extrusionSetting.setMaxValue(nozzleData.getMaxExtrusionWidth());
+        // For some reason these don't actually exist in the head file so we always do this...
+        } else {
+            switch (widthOption) {
+                case "0.3mm":
+                    extrusionSetting.setMinValue(POINT_3_MIN_WIDTH);
+                    extrusionSetting.setMaxValue(POINT_3_MAX_WIDTH);
+                    break;
+                case "0.4mm":
+                    extrusionSetting.setMinValue(POINT_4_MIN_WIDTH);
+                    extrusionSetting.setMaxValue(POINT_4_MAX_WIDTH);
+                    break;
+                case "0.6mm":
+                    extrusionSetting.setMinValue(POINT_6_MIN_WIDTH);
+                    extrusionSetting.setMaxValue(POINT_6_MAX_WIDTH);
+                    break;
+                case "0.8mm":
+                    extrusionSetting.setMinValue(POINT_8_MIN_WIDTH);
+                    extrusionSetting.setMaxValue(POINT_8_MAX_WIDTH);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    /**
+     * A very specific method. We need to change the label and tooltip text if
+     * there are no valves, i.e. it's actually a retraction amount.
+     * 
+     * @param ejectionVolume
+     */
+    private void changeLabelingOfEjectionVolumeBasedOnValves(PrintProfileSetting ejectionVolume, boolean valvesFitted) {
+        if(valvesFitted) {
+            ejectionVolume.setSettingName("nozzle.ejectionVolume");
+            ejectionVolume.setTooltip("profileLibraryHelp.nozzleEjectionVolume");
+        } else {
+            ejectionVolume.setSettingName("nozzle.retractionVolume");
+            ejectionVolume.setTooltip("profileLibraryHelp.nozzleRetractionVolume");
+        }
     }
 }

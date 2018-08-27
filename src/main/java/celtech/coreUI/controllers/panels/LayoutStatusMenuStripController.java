@@ -34,7 +34,8 @@ import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.comms.RoboxCommsManager;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.RoboxProfile;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -373,7 +374,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     extruderForModel,
                     currentProject.getProjectName(),
                     ((ModelContainerProject) currentProject).getLastPrintJobID(),
-                    currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get()),
+                    currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get(), getSlicerType()),
                     currentProject.getPrinterSettings(),
                     currentProject.getPrintQuality(),
                     Lookup.getUserPreferences().getSlicerType(),
@@ -1328,16 +1329,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         boolean aModelIsOffTheBedWithHead = false;
         boolean aModelIsOffTheBedWithRaft = false;
         boolean aModelIsOffTheBedWithSpiral = false;
-        SlicerParametersFile slicerParameters = null; // This is sometimes returned as null. Not sure why.
+        RoboxProfile profileSettings = null; // This is sometimes returned as null. Not sure why.
         if (selectedProject != null
                 && currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
         {
-            slicerParameters = selectedProject.getPrinterSettings().getSettings(currentPrinter.headProperty().get().typeCodeProperty().get());
+            profileSettings = selectedProject.getPrinterSettings()
+                    .getSettings(currentPrinter.headProperty().get().typeCodeProperty().get(), getSlicerType());
         }
-        if (slicerParameters == null)
+        if (profileSettings == null)
         {
-            steno.debug("slicerParameters == null!");
+            steno.debug("profileSettings == null!");
         }
         else
         {
@@ -1345,13 +1347,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
 
             //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-            final double raftOffset = slicerParameters.getRaftBaseThickness_mm()
-                     //Raft interface thickness
-                     + 0.28
-                     //Raft surface layer thickness * surface layers
-                     + (slicerParameters.getInterfaceLayers() * 0.27)
-                     + slicerParameters.getRaftAirGapLayer0_mm()
-                     + zReduction;
+            double raftOffset = profileSettings.getSpecificFloatSetting("raftBaseThickness_mm")
+                    //Raft interface thickness
+                    + 0.28
+                    //Raft surface layer thickness * surface layers
+                    + (profileSettings.getSpecificIntSetting("interfaceLayers")* 0.27)
+                    + profileSettings.getSpecificFloatSetting("raftAirGapLayer0_mm")
+                    + zReduction;
 
             //TODO use settings derived offset values
             final double spiralOffset = 0.5 + zReduction;
@@ -1707,4 +1709,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     }
 
+    private SlicerType getSlicerType() {
+        return Lookup.getUserPreferences().getSlicerType();
+    }
 }

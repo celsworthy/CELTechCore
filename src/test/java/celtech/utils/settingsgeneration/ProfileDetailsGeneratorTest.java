@@ -16,7 +16,6 @@ import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsCon
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;

@@ -29,7 +29,7 @@ import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DummyPrinterCommandInterface;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.io.File;
@@ -175,12 +175,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         steno.debug("end load projects");
     }
 
-    public void showAndSelectPrintProfile(SlicerParametersFile printProfile)
+    public void showAndSelectPrintProfile(RoboxProfile roboxProfile)
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.LIBRARY);
         Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
         LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
-        controller.showAndSelectPrintProfile(printProfile);
+        controller.showAndSelectPrintProfile(roboxProfile);
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
