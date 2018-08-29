@@ -414,14 +414,14 @@ public class ProfileDetailsGenerator {
         nozzles.addAll(nozzleOptions);
         
         HeadFile currentHead = HeadContainer.getHeadByID(headType);
-        if(currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
-            if(Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura3) {
-                nozzles.set(0, nozzleOptions.get(0) + " (right)");
-                nozzles.set(1, nozzleOptions.get(1) + " (left)");
-            } else {
-                comboBox.setDisable(true);
-            }
+        if(currentHead.getNozzleHeaters().size() == 2 && 
+                Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura3) {
+            nozzles.set(0, nozzleOptions.get(0) + " (right)");
+            nozzles.set(1, nozzleOptions.get(1) + " (left)");
+        } else if (currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
+            comboBox.setDisable(true);
         }
+        
         comboBox.setItems(FXCollections.observableList(nozzles));
         int selectionIndex = Integer.parseInt(printProfileSetting.getValue());
         comboBox.getSelectionModel().select(selectionIndex); 

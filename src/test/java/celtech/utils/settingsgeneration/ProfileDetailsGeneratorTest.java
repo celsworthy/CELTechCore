@@ -13,10 +13,14 @@ import celtech.roboxbase.configuration.PrintProfileSetting;
 import celtech.roboxbase.configuration.PrintProfileSettings;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -38,6 +42,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     private static final String FLOAT_VALUE_TYPE = "float";
     private static final String OPTION_VALUE_TYPE = "option";
+    private static final String NOZZLE_VALUE_TYPE = "nozzle";
     private static final String EXTRUSION_VALUE_TYPE = "extrusion";
     
     private static final String SLICER_SETTING_NAME = "Slicer Setting Name";
@@ -53,6 +58,9 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     private static final String OPTION_VALUE_1 = "Line";
     private static final String OPTION_VALUE_2 = "Triangle";
     
+    private static final String NOZZLE_OPTION_1 = "0.3mm";
+    private static final String NOZZLE_OPTION_2 = "0.6mm";
+    
     PrintProfileSettings printProfileSettings;
     ProfileDetailsGenerator profileDetailsGenerator;
     
@@ -62,6 +70,14 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     public void setup() {
         printProfileSettings = PrintProfileSettingsContainer.getInstance().getPrintProfileSettingsForSlicer(SlicerType.Cura);
         profileDetailsGenerator = new ProfileDetailsGenerator(printProfileSettings, new SimpleBooleanProperty(false));
+        
+        List<String> nozzleList = new ArrayList<>();
+        nozzleList.add(NOZZLE_OPTION_1);
+        nozzleList.add(NOZZLE_OPTION_2);
+        ObservableList nozzleOptions = FXCollections.observableArrayList(nozzleList);
+        profileDetailsGenerator.setNozzleOptions(nozzleOptions);
+        
+        profileDetailsGenerator.setHeadType("RBX01-SM");
         
         gridPane = new GridPane();
         
@@ -131,13 +147,23 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddSelectionAndValueRow() {
-        PrintProfileSetting slicerSetting = new PrintProfileSetting();
-        slicerSetting.setSettingName(SLICER_SETTING_NAME);
-        slicerSetting.setTooltip(TOOLTIP);
-        slicerSetting.setUnit(Optional.empty());
-        slicerSetting.setValueType(EXTRUSION_VALUE_TYPE);
-        slicerSetting.setValue(OPTION_ID_1);
-        gridPane = profileDetailsGenerator.addSelectionAndValueRow(gridPane, slicerSetting, 0);
+        PrintProfileSetting extrusionSlicerSetting = new PrintProfileSetting();
+        extrusionSlicerSetting.setSettingName(SLICER_SETTING_NAME);
+        extrusionSlicerSetting.setTooltip(TOOLTIP);
+        extrusionSlicerSetting.setUnit(Optional.empty());
+        extrusionSlicerSetting.setValueType(EXTRUSION_VALUE_TYPE);
+        extrusionSlicerSetting.setValue(DEFAULT_FLOAT_VALUE);
+        
+        PrintProfileSetting nozzleSlicerSetting = new PrintProfileSetting();
+        nozzleSlicerSetting.setSettingName(SLICER_SETTING_NAME);
+        nozzleSlicerSetting.setTooltip(TOOLTIP);
+        nozzleSlicerSetting.setValueType(NOZZLE_VALUE_TYPE);
+        nozzleSlicerSetting.setValue("0");
+        List<PrintProfileSetting> children = new ArrayList<>();
+        children.add(extrusionSlicerSetting);
+        nozzleSlicerSetting.setChildren(Optional.of(children));
+        
+        gridPane = profileDetailsGenerator.addSelectionAndValueRow(gridPane, nozzleSlicerSetting, 0);
         
         Label label = (Label) gridPane.getChildren().get(0);
         Label boxLabel = (Label) gridPane.getChildren().get(1);
@@ -148,8 +174,9 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
         
         assertThat(boxLabel.getText(), is(equalTo(Lookup.i18n("extrusion.nozzle"))));
-        assertThat("Expecting no items in ComboBox at this point, for extrusion value",
-                combo.getItems().size(), is(equalTo(0)));
+        assertThat(combo.getItems().size(), is(equalTo(2)));
+        assertThat(combo.getItems().get(0), is(equalTo(NOZZLE_OPTION_1)));
+        assertThat(combo.getItems().get(1), is(equalTo(NOZZLE_OPTION_2)));
         assertThat(combo.getTooltip().getText(), is(equalTo(TOOLTIP)));
         assertTrue(combo.getStyleClass().contains("cmbCleanCombo"));
         
