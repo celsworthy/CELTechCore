@@ -77,6 +77,7 @@ public class JavaFXConfiguredTest
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
         RoboxProfileSettingsContainer.getInstance();
+        PrintProfileSettingsContainer.getInstance();
 
         BaseLookup.setTaskExecutor(new TestTaskExecutor());
         BaseLookup.setSystemNotificationHandler(new TestSystemNotificationManager());
