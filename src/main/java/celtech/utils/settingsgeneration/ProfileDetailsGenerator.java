@@ -416,8 +416,8 @@ public class ProfileDetailsGenerator {
         HeadFile currentHead = HeadContainer.getHeadByID(headType);
         if(currentHead.getNozzleHeaters().size() == 2 && 
                 Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura3) {
-            nozzles.set(0, nozzleOptions.get(0) + " (right)");
-            nozzles.set(1, nozzleOptions.get(1) + " (left)");
+            nozzles.set(0, nozzleOptions.get(0) + " (left)");
+            nozzles.set(1, nozzleOptions.get(1) + " (right)");
         } else if (currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
             comboBox.setDisable(true);
         }
