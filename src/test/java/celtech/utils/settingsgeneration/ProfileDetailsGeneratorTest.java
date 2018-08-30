@@ -66,8 +66,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     GridPane gridPane;
     
-    @Before
-    public void setup() {
+    private void setup() {
         printProfileSettings = PrintProfileSettingsContainer.getInstance().getPrintProfileSettingsForSlicer(SlicerType.Cura);
         profileDetailsGenerator = new ProfileDetailsGenerator(printProfileSettings, new SimpleBooleanProperty(false));
         
@@ -94,6 +93,8 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddSingleFieldRow() {
+        setup();
+        
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
@@ -118,6 +119,8 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddComboBoxRow() {
+        setup();
+        
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
@@ -147,6 +150,8 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddSelectionAndValueRow() {
+        setup();
+        
         PrintProfileSetting extrusionSlicerSetting = new PrintProfileSetting();
         extrusionSlicerSetting.setSettingName(SLICER_SETTING_NAME);
         extrusionSlicerSetting.setTooltip(TOOLTIP);
@@ -189,6 +194,8 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddPerExtruderValueRow() {
+        setup();
+        
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
@@ -231,6 +238,8 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     @Test
     public void testAddCheckBoxRow() {
+        setup();
+        
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
