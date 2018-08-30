@@ -8,8 +8,8 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.postprocessor.TestGCodeOutputWriter;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.utils.AppSpecificLanguageDataResourceBundleTest;
+import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
+import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
 import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
@@ -76,7 +76,7 @@ public class JavaFXConfiguredTest
         // force initialisation
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
-        SlicerParametersContainer.getInstance();
+        RoboxProfileSettingsContainer.getInstance();
 
         BaseLookup.setTaskExecutor(new TestTaskExecutor());
         BaseLookup.setSystemNotificationHandler(new TestSystemNotificationManager());

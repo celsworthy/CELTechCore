@@ -7,8 +7,6 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
@@ -16,7 +14,9 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
+import celtech.roboxbase.configuration.RoboxProfile;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -27,6 +27,7 @@ import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javafx.beans.value.ChangeListener;
@@ -54,6 +55,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private final Stenographer steno = StenographerFactory.getStenographer(
             TimeCostInsetPanelController.class.getName());
 
+    private static final RoboxProfileSettingsContainer ROBOX_PROFILE_SETTINGS_CONTAINER = RoboxProfileSettingsContainer.getInstance();
+    
     @FXML
     private HBox timeCostInsetRoot;
 
@@ -379,25 +382,28 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             headTypeToUse = currentPrinter.headProperty().get().typeCodeProperty().get();
         }
         
-        SlicerParametersFile slicerParameters = null; // This is sometimes returned as null. Not sure why.
-        if (currentProject != null
-                && currentProject.getNumberOfProjectifiableElements() > 0)
+        RoboxProfile profileSettings = null; // This is sometimes returned as null. Not sure why.
+        if (currentProject != null && currentProject.getNumberOfProjectifiableElements() > 0)
         {
-            slicerParameters = currentProject.getPrinterSettings().getSettings(headTypeToUse);
+            profileSettings = currentProject.getPrinterSettings().getSettings(headTypeToUse, getSlicerType());
         }
-        if (slicerParameters == null)
+        if (profileSettings == null)
         {
-            steno.error("slicerParameters == null!");
+            steno.error("profileSettings == null!");
         }
         else
         {
+            // Needed as heads differ in size and will need to adjust print volume for this
+            final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+            
             //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-            double raftOffset = slicerParameters.getRaftBaseThickness_mm()
+            double raftOffset = profileSettings.getSpecificFloatSetting("raftBaseThickness_mm")
                     //Raft interface thickness
                     + 0.28
                     //Raft surface layer thickness * surface layers
-                    + (slicerParameters.getInterfaceLayers() * 0.27)
-                    + slicerParameters.getRaftAirGapLayer0_mm();
+                    + (profileSettings.getSpecificIntSetting("interfaceLayers")* 0.27)
+                    + profileSettings.getSpecificFloatSetting("raftAirGapLayer0_mm")
+                    + zReduction;
 
             boolean aModelIsOffTheBed = false;
             for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
@@ -439,8 +445,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
                             && !currentProject.getPrinterSettings().getSettingsName().equals(""))
                     {
-                        SlicerParametersFile customSettings = currentProject.getPrinterSettings().getSettings(
-                                currentHeadType);
+                        Optional<RoboxProfile> customSettings = Optional.ofNullable(
+                                currentProject.getPrinterSettings().getSettings( currentHeadType, getSlicerType()));
                         updateFieldsForProfile(project, customSettings, lblCustomTime,
                                 lblCustomWeight,
                                 lblCustomCost, cancellable);
@@ -449,9 +455,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                             return;
                         }
                     }
-                    SlicerParametersFile settings = SlicerParametersContainer.getSettings(
-                            BaseConfiguration.draftSettingsProfileName,
-                            currentHeadType);
+                    Optional<RoboxProfile> settings = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(
+                            BaseConfiguration.draftSettingsProfileName, getSlicerType(), currentHeadType);
                     updateFieldsForProfile(project, settings, lblDraftTime,
                             lblDraftWeight,
                             lblDraftCost, cancellable);
@@ -459,9 +464,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     {
                         return;
                     }
-                    settings = SlicerParametersContainer.getSettings(
-                            BaseConfiguration.normalSettingsProfileName,
-                            currentHeadType);
+                    settings = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(
+                            BaseConfiguration.normalSettingsProfileName, getSlicerType(), currentHeadType);
                     updateFieldsForProfile(project, settings, lblNormalTime,
                             lblNormalWeight,
                             lblNormalCost, cancellable);
@@ -469,9 +473,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     {
                         return;
                     }
-                    settings = SlicerParametersContainer.getSettings(
-                            BaseConfiguration.fineSettingsProfileName,
-                            currentHeadType);
+                    settings = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(
+                            BaseConfiguration.fineSettingsProfileName, getSlicerType(), currentHeadType);
                     updateFieldsForProfile(project, settings, lblFineTime,
                             lblFineWeight,
                             lblFineCost, cancellable);
@@ -488,14 +491,14 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
      * Update the time, cost and weight fields for the given profile and fields.
      * Long running calculations must be performed in a background thread.
      */
-    private void updateFieldsForProfile(Project project, SlicerParametersFile settings,
+    private void updateFieldsForProfile(Project project, Optional<RoboxProfile> settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         boolean slicedAndPostProcessed = false;
 
         if (project instanceof ModelContainerProject)
         {
-            if (settings != null)
+            if (settings.isPresent())
             {
                 String working = Lookup.i18n("timeCost.working");
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
@@ -505,14 +508,14 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     lblCost.setText(working);
                 });
 
-                GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, settings,
+                GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, settings.get(),
                         lblTime, lblWeight,
                         lblCost, cancellable);
 
                 try
                 {
                     slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
-                } catch (Exception ex)
+                } catch (IOException ex)
                 {
                     ex.printStackTrace();
                 }
@@ -573,5 +576,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
         ApplicationStatus.getInstance()
                 .modeProperty().removeListener(applicationModeChangeListener);
+    }
+    
+    private SlicerType getSlicerType() {
+        return Lookup.getUserPreferences().getSlicerType();
     }
 }
