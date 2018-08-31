@@ -278,11 +278,8 @@ public class ProfileDetailsGenerator {
      * @return the Label
      */
     private Label createLabelElement(String labelText, boolean addColon) {
-         System.out.println("0");
         String translation = Lookup.i18n(labelText);
-         System.out.println("2");
         Label label = new Label(translation);
-        System.out.println("3");
         if(addColon) {
             label.getStyleClass().add("colon");
         }
