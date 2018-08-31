@@ -76,6 +76,7 @@ public class JavaFXConfiguredTest
         // force initialisation
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
+        
         RoboxProfileSettingsContainer.getInstance();
         PrintProfileSettingsContainer.getInstance();
 
