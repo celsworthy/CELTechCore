@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 CEL UK
  */
-package celtech.coreUI.controllers.panels;
+package celtech.coreUI.gcodepreview;
 
 import celtech.roboxbase.utils.tasks.Cancellable;
 import java.util.concurrent.ExecutorService;
@@ -14,15 +14,15 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author tony
  */
-public class GCodePreviewThreadManager
+public class GCodePreviewManager
 {
 
     private final ExecutorService executorService;
     private Future previewFuture;
     private Cancellable cancellable;
-    private static GCodePreviewThreadManager instance;
+    private static GCodePreviewManager instance;
     
-    private GCodePreviewThreadManager()
+    private GCodePreviewManager()
     {
         ThreadFactory threadFactory = (Runnable runnable) ->
         {
@@ -33,11 +33,11 @@ public class GCodePreviewThreadManager
         executorService = Executors.newFixedThreadPool(1, threadFactory);
     }
     
-    public static GCodePreviewThreadManager getInstance()
+    public static GCodePreviewManager getInstance()
     {
         if (instance == null)
         {
-            instance = new GCodePreviewThreadManager();
+            instance = new GCodePreviewManager();
         }
         
         return instance;

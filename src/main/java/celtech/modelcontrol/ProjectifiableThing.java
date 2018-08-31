@@ -265,6 +265,11 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
     {
         this.bed = bed;
     }
+    
+    public Group getBed()
+    {
+        return this.bed;
+    }
 
     public abstract void setBedCentreOffsetTransform();
 

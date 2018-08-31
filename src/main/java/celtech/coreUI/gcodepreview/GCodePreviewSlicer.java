@@ -1,45 +1,38 @@
 /*
  * Copyright 2015 CEL UK
  */
-package celtech.coreUI.controllers.panels;
+package celtech.coreUI.gcodepreview;
 
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
-import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.configuration.Filament;
+import celtech.coreUI.controllers.panels.GetTimeWeightCost;
 import celtech.roboxbase.configuration.SlicerType;
-import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.slicer.Cura3ConfigConvertor;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriter;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriterFactory;
-import celtech.roboxbase.postprocessor.PrintJobStatistics;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
 import celtech.roboxbase.services.postProcessor.PostProcessorTask;
 import celtech.roboxbase.services.slicer.SliceResult;
 import celtech.roboxbase.services.slicer.SlicerTask;
-import celtech.roboxbase.utils.cura.CuraDefaultSettingsEditor;
 import celtech.roboxbase.utils.models.MeshForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
-import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -50,11 +43,10 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author tony
  */
-public class GetGCodePreview
+public class GCodePreviewSlicer
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(
-            GetTimeWeightCost.class.getName());
+    private final Stenographer steno = StenographerFactory.getStenographer(GCodePreviewSlicer.class.getName());
 
     //We are allowed to use ModelContainerProject here since this class can only run calcs for projects with meshes
     private final ModelContainerProject project;
@@ -64,7 +56,7 @@ public class GetGCodePreview
     private final Cancellable cancellable;
     private Random random = new Random();
 
-    public GetGCodePreview(ModelContainerProject project, Cancellable cancellable)
+    public GCodePreviewSlicer(ModelContainerProject project, Cancellable cancellable)
     {
         this.project = project;
         this.cancellable = cancellable;
@@ -141,8 +133,8 @@ public class GetGCodePreview
                 meshesForProcessing,
                 project.getUsedExtruders(printer),
                 extruderForModel,
-                "Time and Cost",
-                "bart",
+                "Preview",
+                "preview",
                 settings,
                 project.getPrinterSettings(),
                 project.getPrintQuality(),
@@ -172,7 +164,7 @@ public class GetGCodePreview
             return Optional.empty();
         }
 
-        return Optional.empty().of(result);
+        return Optional.of(result);
     }
 
     /**

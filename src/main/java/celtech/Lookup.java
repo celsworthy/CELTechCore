@@ -15,7 +15,6 @@ import celtech.coreUI.components.Notifications.ProgressDisplay;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -80,8 +79,8 @@ public class Lookup
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
 
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
-									  BaseLookup.getApplicationLocal(),
-									  new SystemNotificationManagerJavaFX());
+				      BaseLookup.getDefaultApplicationLocale(),
+				      new SystemNotificationManagerJavaFX());
 
         setNotificationDisplay(new NotificationDisplay());
         setProgressDisplay(new ProgressDisplay());

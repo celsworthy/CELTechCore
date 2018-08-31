@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
+import celtech.coreUI.gcodepreview.representation.PreviewContainer;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
@@ -79,6 +80,8 @@ public class ModelContainerProject extends Project
     private BooleanProperty modelColourChanged;
     private BooleanBinding hasInvalidMeshes;
 
+    private ObjectProperty<PreviewContainer> previewContainerProperty;
+    
     private FilamentContainer filamentContainer;
 
     //Changed to make this list always include both extruders
@@ -117,6 +120,7 @@ public class ModelContainerProject extends Project
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
         modelColourChanged = new SimpleBooleanProperty();
+        previewContainerProperty = new SimpleObjectProperty<>();
         filamentContainer = FilamentContainer.getInstance();
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
 
@@ -384,8 +388,11 @@ public class ModelContainerProject extends Project
         Set<ProjectifiableThing> allModelContainers = new HashSet<>();
         for (ProjectifiableThing loadedModel : topLevelThings)
         {
-            allModelContainers.add(loadedModel);
-            allModelContainers.addAll(((ModelContainer) loadedModel).getDescendentModelContainers());
+            if (loadedModel instanceof ModelContainer)
+            {
+                allModelContainers.add(loadedModel);
+                allModelContainers.addAll(((ModelContainer) loadedModel).getDescendentModelContainers());
+            }
         }
         return allModelContainers;
     }
@@ -1078,5 +1085,9 @@ public class ModelContainerProject extends Project
         modelGroup.checkOffBed();
         return modelGroup;
     }
-
+    
+    public ObjectProperty getPreviewContainerProperty()
+    {
+        return previewContainerProperty;
+    }
 }
