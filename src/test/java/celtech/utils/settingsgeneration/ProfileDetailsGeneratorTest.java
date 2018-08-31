@@ -66,6 +66,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     GridPane gridPane;
     
     private void setup() {
+        System.out.print("ProfileDetailsGeneratorTest setup");
         printProfileSettings = PrintProfileSettingsContainer.getInstance().getPrintProfileSettingsForSlicer(SlicerType.Cura);
         profileDetailsGenerator = new ProfileDetailsGenerator(printProfileSettings, new SimpleBooleanProperty(false));
         
@@ -93,7 +94,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     @Test
     public void testAddSingleFieldRow() {
         setup();
-        
+        System.out.print("ProfileDetailsGeneratorTest testAddSingleFieldRow");
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
@@ -119,7 +120,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     @Test
     public void testAddComboBoxRow() {
         setup();
-        
+        System.out.print("ProfileDetailsGeneratorTest testAddComboBoxRow");
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
@@ -150,7 +151,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     @Test
     public void testAddSelectionAndValueRow() {
         setup();
-        
+        System.out.print("ProfileDetailsGeneratorTest testAddSelectionAndValueRow");
         PrintProfileSetting extrusionSlicerSetting = new PrintProfileSetting();
         extrusionSlicerSetting.setSettingName(SLICER_SETTING_NAME);
         extrusionSlicerSetting.setTooltip(TOOLTIP);
@@ -194,7 +195,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     @Test
     public void testAddPerExtruderValueRow() {
         setup();
-        
+        System.out.print("ProfileDetailsGeneratorTest testAddPerExtruderValueRow");
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
@@ -238,7 +239,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     @Test
     public void testAddCheckBoxRow() {
         setup();
-        
+        System.out.print("ProfileDetailsGeneratorTest testAddCheckBoxRow");
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
         slicerSetting.setTooltip(TOOLTIP);
