@@ -77,7 +77,6 @@ public class JavaFXConfiguredTest
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
 
-        BaseLookup.setupDefaultValues();
         BaseLookup.setTaskExecutor(new TestTaskExecutor());
         BaseLookup.setSystemNotificationHandler(new TestSystemNotificationManager());
 

@@ -209,7 +209,6 @@ public class ProfileDetailsGenerator {
      * @return the GridPane
      */
     protected GridPane addComboBoxRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
-        System.out.println("1");
         gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createComboBox(printProfileSetting), 2, row);
         return gridPane;
@@ -279,9 +278,7 @@ public class ProfileDetailsGenerator {
      * @return the Label
      */
     private Label createLabelElement(String labelText, boolean addColon) {
-        System.out.println("2");
         Label label = new Label(Lookup.i18n(labelText));
-        System.out.println("3");
         if(addColon) {
             label.getStyleClass().add("colon");
         }
