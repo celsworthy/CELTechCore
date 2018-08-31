@@ -193,6 +193,7 @@ public class Lookup
 
     public static String i18n(String stringId)
     {
+        System.out.println("1");
         return BaseLookup.i18n(stringId);
     }
 }
