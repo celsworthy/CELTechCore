@@ -77,10 +77,8 @@ public class JavaFXConfiguredTest
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
         
-        System.out.print("in JvaFXConfiguredTest - attempting to initialise singletons");
         RoboxProfileSettingsContainer.getInstance();
         PrintProfileSettingsContainer.getInstance();
-        System.out.print("in JvaFXConfiguredTest - finished initialising singletons");
 
         BaseLookup.setTaskExecutor(new TestTaskExecutor());
         BaseLookup.setSystemNotificationHandler(new TestSystemNotificationManager());

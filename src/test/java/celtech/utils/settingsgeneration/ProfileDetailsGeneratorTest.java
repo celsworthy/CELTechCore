@@ -241,18 +241,29 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
         setup();
         System.out.print("ProfileDetailsGeneratorTest testAddCheckBoxRow");
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        System.out.print("1");
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
+        System.out.print("2");
         slicerSetting.setTooltip(TOOLTIP);
+        System.out.print("3");
         slicerSetting.setValue(BOOLEAN_TRUE_VALUE);
+        System.out.print("4");
         gridPane = profileDetailsGenerator.addCheckBoxRow(gridPane, slicerSetting, 0);
+        System.out.print("5");
         
         Label label = (Label) gridPane.getChildren().get(0);
+        System.out.print("6");
         CheckBox checkBox = (CheckBox) gridPane.getChildren().get(1);
+        System.out.print("7");
         
         assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
+        System.out.print("8");
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
+        System.out.print("9");
         
         assertTrue(checkBox.isSelected());
+        System.out.print("10");
         assertThat(checkBox.getTooltip().getText(), is(equalTo(TOOLTIP)));
+        System.out.print("11");
     }
 }
