@@ -76,14 +76,15 @@ public class JavaFXConfiguredTest
         // force initialisation
         String installDir = BaseConfiguration.getApplicationInstallDirectory(
             Lookup.class);
-        
-        RoboxProfileSettingsContainer.getInstance();
-        PrintProfileSettingsContainer.getInstance();
 
+        BaseLookup.setupDefaultValues();
         BaseLookup.setTaskExecutor(new TestTaskExecutor());
         BaseLookup.setSystemNotificationHandler(new TestSystemNotificationManager());
 
         BaseLookup.setPostProcessorOutputWriterFactory(TestGCodeOutputWriter::new);
+        
+        RoboxProfileSettingsContainer.getInstance();
+        PrintProfileSettingsContainer.getInstance();
     }
 
     public static class AsNonApp extends Application
