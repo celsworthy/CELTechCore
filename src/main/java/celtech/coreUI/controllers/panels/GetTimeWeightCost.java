@@ -120,13 +120,16 @@ public class GetTimeWeightCost
         List<Integer> extruderForModel = new ArrayList<>();
 
         // Only to be run on a ModelContainerProject
-        for (ProjectifiableThing modelContainer : project.getTopLevelThings())
+        for (ProjectifiableThing thing : project.getTopLevelThings())
         {
-            for (ModelContainer modelContainerWithMesh : ((ModelContainer)modelContainer).getModelsHoldingMeshViews())
+            if (thing instanceof ModelContainer)
             {
-                MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
-                meshesForProcessing.add(meshForProcessing);
-                extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
+                for (ModelContainer modelContainerWithMesh : ((ModelContainer)thing).getModelsHoldingMeshViews())
+                {
+                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                    meshesForProcessing.add(meshForProcessing);
+                    extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
+                }
             }
         }
 

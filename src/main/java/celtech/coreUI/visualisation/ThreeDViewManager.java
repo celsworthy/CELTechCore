@@ -10,6 +10,7 @@ import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.StandardColours;
+import celtech.coreUI.gcodepreview.representation.PreviewContainer;
 import celtech.coreUI.visualisation.collision.CollisionManager;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.modelDisplay.SelectionHighlighter;
@@ -96,7 +97,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     double CONTROL_MULTIPLIER = 0.1;
     double SHIFT_MULTIPLIER = 0.1;
     double ALT_MULTIPLIER = 0.5;
-
+    
     /*
      * Model moving
      */
@@ -110,6 +111,9 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
     private final Box zCutDisplayPlane = new Box(dragPlaneHalfSize * 2, 0.1, dragPlaneHalfSize * 2);
 
     private final Group models = new Group();
+
+    private PreviewContainer previewContainer = null;
+    
     /*
      * Selection stuff
      */
@@ -979,6 +983,22 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             ((ModelContainer) model).cameraViewOfYouHasChanged(cameraDistance.get());
             ((ModelContainer) model).heresYourCamera(camera);
         }
+        
+        project.getPreviewContainerProperty().addListener((ob, o, v) -> {
+                PreviewContainer newPVC = (PreviewContainer)v;
+                if (previewContainer != null && newPVC != previewContainer)
+                {
+                    bedTranslateXform.getChildren().remove(previewContainer);
+                    previewContainer = null;
+                }
+                
+                if (newPVC != null)
+                {
+                    previewContainer = newPVC;
+                    bedTranslateXform.getChildren().add(previewContainer);
+                    previewContainer.setBedReference(bed);
+                }
+            });
     }
 
     private void addBedReferenceToModel(ModelContainer model)

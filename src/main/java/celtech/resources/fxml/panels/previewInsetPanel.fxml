@@ -16,20 +16,18 @@
     <children>
         <VBox alignment="CENTER" fillWidth="true" spacing="10.0">
             <children>
-				<HBox fx:id="showPreviewHBox" alignment="CENTER" spacing="5.0">
-					<children>
-						<Label text="Show GCode Preview" />
-						<CheckBox fx:id="showPreviewButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
-					</children>
-				</HBox>
-				<HBox fx:id="layerHBox" alignment="CENTER_LEFT" spacing="5.0">
+                <HBox fx:id="showPreviewHBox" alignment="CENTER" spacing="5.0">
+                        <children>
+                                <Label text="Show GCode Preview" />
+                                <CheckBox fx:id="showPreviewButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
+                        </children>
+                </HBox>
+                <HBox fx:id="layerHBox" alignment="CENTER_LEFT" spacing="20.0">
                     <children>
-                        <Label text="layerTop" />
-                        <Slider fx:id="layerTopSlider" blockIncrement="1.0" majorTickUnit="2.0" max="8.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" HBox.hgrow="ALWAYS">
-                            <opaqueInsets>
-                                <Insets />
-                            </opaqueInsets>
-                        </Slider>
+                        <Label text="Top Layer" />
+                        <Slider fx:id="topVisibleLayerSlider" blockIncrement="5.0" majorTickUnit="20.0" max="100.0" minorTickCount="1" showTickLabels="true" snapToTicks="true" HBox.hgrow="ALWAYS" />
+                        <Label text="Show Moves" />
+                        <CheckBox fx:id="movesVisibleButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
                     </children>
                 </HBox>
 				

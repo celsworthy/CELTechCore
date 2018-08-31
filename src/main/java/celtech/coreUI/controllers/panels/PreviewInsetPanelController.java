@@ -1,5 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
+import celtech.coreUI.gcodepreview.GCodePreviewSlicer;
+import celtech.coreUI.gcodepreview.GCodePreviewManager;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
@@ -9,48 +11,47 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
+import celtech.coreUI.gcodepreview.model.GCodeModel;
+import celtech.coreUI.gcodepreview.representation.PreviewContainer;
+import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
-import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.roboxbase.postprocessor.PrintJobStatistics;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.services.gcodepreview.GCodePreviewTask;
 import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
-import celtech.roboxbase.services.postProcessor.PostProcessorTask;
-import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
-import celtech.roboxbase.utils.models.MeshForProcessing;
-import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.SimpleCancellable;
-import celtech.roboxbase.utils.threed.CentreCalculations;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Bounds;
+import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
+import javafx.scene.transform.Rotate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  * FXML Controller class
@@ -73,7 +74,10 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
     private CheckBox showPreviewButton;
 
     @FXML
-    private Slider layerTopSlider;
+    private Slider topVisibleLayerSlider;
+
+    @FXML
+    private CheckBox movesVisibleButton;
     
     private Printer currentPrinter = null;
     private String currentHeadTypeCode = null;
@@ -104,10 +108,7 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
             {
                 previewInsetRoot.setVisible(false);
                 previewInsetRoot.setMouseTransparent(true);
-                GCodePreviewThreadManager.getInstance().cancelRunningTasks();
-                if (previewTask != null)
-                    previewTask.terminatePreview();
-                previewTask = null;
+                hidePreview();
             }
         }
     };
@@ -142,6 +143,13 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
             updatePreview();
         }
     };
+    
+    private final ChangeListener<Number> layerCountChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+    {
+        double value = newValue.intValue();
+        topVisibleLayerSlider.setMax(value);
+        topVisibleLayerSlider.setValue(value);
+    };
 
     /**
      * Initialises the controller class.
@@ -155,30 +163,38 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
             ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
             //whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
             BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
+            topVisibleLayerSlider.disableProperty().set(true);
+            topVisibleLayerSlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
+            {
+                if (currentProject != null && currentProject instanceof ModelContainerProject)
+                {
+                    PreviewContainer pvc = (PreviewContainer)((ModelContainerProject)currentProject).getPreviewContainerProperty().getValue();
+                    if (pvc != null)
+                        pvc.setTopVisibleLayerIndex(newValue.intValue());
+                }
+            });
+            
+            movesVisibleButton.selectedProperty().addListener((ob, ov, nv) -> {
+                if (currentProject != null && currentProject instanceof ModelContainerProject)
+                {
+                    PreviewContainer pvc = (PreviewContainer)((ModelContainerProject)currentProject).getPreviewContainerProperty().getValue();
+                    if (pvc != null)
+                        pvc.setMovesVisibility(nv);
+                }
+            });
+            movesVisibleButton.disableProperty().bind(showPreviewButton.selectedProperty().not());
+
             showPreviewButton.selectedProperty().set(false);
             showPreviewButton.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
                 {
                     if (selected)
                     {
-                        if (previewTask == null) {
-                            previewTask = new GCodePreviewTask();
-                            Thread t = new Thread(previewTask);
-                            t.start();
-                        }
                         updatePreview();
                     }
                     else
                     {
-                        if (previewTask != null)
-                            previewTask.terminatePreview();
-                        previewTask = null;
-                    }
-                });
-            layerTopSlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-                {
-                    if (previewTask != null) {
-                        previewTask.setTopLayer(newValue.intValue());
+                        removePreview();
                     }
                 });
         } catch (Exception ex)
@@ -214,7 +230,7 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
             }
             currentHeadTypeCode = headTypeCode;
         }
-        updatePreview();
+        hidePreview();
     }
 
     @Override
@@ -235,51 +251,49 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
     private void whenProjectChanged(Project project)
     {
         currentProject = project;
-        updatePreview();
+        hidePreview();
     }
 
     @Override
     public void whenModelAdded(ProjectifiableThing modelContainer)
     {
-        updatePreview();
+        hidePreview();
      }
 
     @Override
     public void whenModelsRemoved(Set<ProjectifiableThing> modelContainers)
     {
-        updatePreview();
+        hidePreview();
     }
 
     @Override
     public void whenAutoLaidOut()
     {
-        updatePreview();
+        hidePreview();
     }
 
     @Override
     public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
     {
-        updatePreview();
+        hidePreview();
     }
 
     @Override
     public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
     {
-        updatePreview();
+        hidePreview();
     }
 
     @Override
     public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
-        updatePreview();
+        hidePreview();
     }
 
     @Override
     public void shutdownController()
     {
-        if (previewTask != null)
-            previewTask.terminatePreview();
-        previewTask = null;
+        hidePreview();
 
         if (currentPrinter != null)
         {
@@ -369,40 +383,83 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
         }
     }
     
+    private void hidePreview()
+    {
+        showPreviewButton.selectedProperty().set(false);
+        //removePreview();
+    }
+    
+    private void removePreview()
+    {
+        if (currentProject != null && currentProject instanceof ModelContainerProject)
+        {
+            ModelContainerProject mProject = (ModelContainerProject)currentProject;
+            
+            GCodePreviewManager.getInstance().cancelRunningTasks();
+            mProject.getPreviewContainerProperty().setValue(null);
+            mProject.getAllModels()
+                    .stream()
+                    .filter(m -> !(m instanceof ModelGroup))
+                    .map(ModelContainer.class::cast)
+                    .forEach(mc -> mc.setVisible(true));
+            topVisibleLayerSlider.disableProperty().set(true);
+        }
+    }
+    
     private void updatePreview()
     {
-        if (previewTask != null && modelIsSuitable())
+        boolean showPreview = showPreviewButton.selectedProperty().get();
+        if (!modelIsSuitable() || !showPreview)
         {
-            Cancellable cancellable = new SimpleCancellable();        
-            {
-                Runnable runUpdatePreview = () ->
-                {
-                    if (cancellable.cancelled().get())
-                    {
-                        return;
-                    }
-                    
-                    GetGCodePreview gcodePreviewGetter = new GetGCodePreview((ModelContainerProject) currentProject, cancellable);
-                    
-                    try
-                    {
-                        Optional<GCodePostProcessingResult> result = gcodePreviewGetter.runSlicerAndPostProcessor();
-                        if (previewTask != null && result.isPresent())
-                            previewTask.loadGCodeFile(result.get().getOutputFilename());
-                    } catch (Exception ex)
-                    {
-                        ex.printStackTrace();
-                    }
-                };
-
-                clearPrintJobDirectories();
-
-                GCodePreviewThreadManager.getInstance().cancelRunningAndRun(runUpdatePreview, cancellable);
-            }
+            removePreview();
         }
         else
         {
-            GCodePreviewThreadManager.getInstance().cancelRunningTasks();
+            Cancellable cancellable = new SimpleCancellable();        
+            Runnable runUpdatePreview = () ->
+            {
+                if (cancellable.cancelled().get())
+                {
+                    return;
+                }
+
+                GCodePreviewSlicer gcodePreviewGetter = new GCodePreviewSlicer((ModelContainerProject) currentProject, cancellable);
+
+                try
+                {
+                    Optional<GCodePostProcessingResult> result = gcodePreviewGetter.runSlicerAndPostProcessor();
+                    if (result.isPresent())
+                    {   steno.info("GCodePostProcessingResult = " + result.get().getOutputFilename());
+
+
+                        PreviewContainer previewContainer = new PreviewContainer(result.get().getOutputFilename());
+                        previewContainer.render(movesVisibleButton.selectedProperty().get());
+                        Platform.runLater(() -> {
+                            currentProject.getAllModels()
+                                          .stream()
+                                          .filter(mc -> !(mc instanceof ModelGroup))
+                                          .map(ModelContainer.class::cast)
+                                          .forEach(m -> m.setVisible(false));
+                            ModelContainerProject mProject = (ModelContainerProject)currentProject;
+                            mProject.getPreviewContainerProperty().setValue(previewContainer);
+                            topVisibleLayerSlider.setMax(previewContainer.getNumberOfLayers());
+                            topVisibleLayerSlider.setValue(previewContainer.getNumberOfLayers());
+                            topVisibleLayerSlider.disableProperty().set(false);
+                        });
+                    }
+                    else
+                        steno.info("GCodePostProcessingResult = NotPresent");
+
+                } catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+                steno.info("Finished post processing");
+            };
+
+            clearPrintJobDirectories();
+
+            GCodePreviewManager.getInstance().cancelRunningAndRun(runUpdatePreview, cancellable);
         }
     }
 }
