@@ -122,30 +122,51 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
         setup();
         System.out.print("ProfileDetailsGeneratorTest testAddComboBoxRow");
         PrintProfileSetting slicerSetting = new PrintProfileSetting();
+        System.out.print("1");
         slicerSetting.setSettingName(SLICER_SETTING_NAME);
+        System.out.print("2");
         slicerSetting.setTooltip(TOOLTIP);
+        System.out.print("3");
         slicerSetting.setValueType(OPTION_VALUE_TYPE);
+        System.out.print("4");
         Map<String, String> optionsMap = new HashMap<>();
+        System.out.print("5");
         optionsMap.put(OPTION_ID_1, OPTION_VALUE_1);
+        System.out.print("6");
         optionsMap.put(OPTION_ID_2, OPTION_VALUE_2);
+        System.out.print("7");
         Optional<Map<String, String>> options = Optional.of(optionsMap);
+        System.out.print("8");
         slicerSetting.setOptions(options);
+        System.out.print("9");
         slicerSetting.setValue(OPTION_ID_2);
+        System.out.print("10");
         gridPane = profileDetailsGenerator.addComboBoxRow(gridPane, slicerSetting, 0);
+        System.out.print("11");
         
         Label label = (Label) gridPane.getChildren().get(0);
+        System.out.print("12");
         ComboBox combo = (ComboBox) gridPane.getChildren().get(1);
+        System.out.print("13");
         
         assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
+        System.out.print("14");
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
+        System.out.print("15");
         
         Option value = (Option) combo.getValue();
+        System.out.print("16");
         
         assertThat(value.getOptionId(), is(equalTo(OPTION_ID_2)));
+        System.out.print("17");
         assertThat(value.getOptionValue(), is(equalTo(OPTION_VALUE_2)));
+        System.out.print("18");
         assertThat(combo.getItems().size(), is(equalTo(2)));
+        System.out.print("19");
         assertThat(combo.getTooltip().getText(), is(equalTo(TOOLTIP)));
+        System.out.print("20");
         assertTrue(combo.getStyleClass().contains("cmbCleanCombo"));
+        System.out.print("21");
     }
     
     @Test
