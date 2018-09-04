@@ -10,7 +10,7 @@ import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.PrintProfileSetting;
-import celtech.roboxbase.configuration.PrintProfileSettings;
+import celtech.roboxbase.configuration.PrintProfileSettingsWrapper;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     private static final String NOZZLE_OPTION_1 = "0.3mm";
     private static final String NOZZLE_OPTION_2 = "0.6mm";
     
-    PrintProfileSettings printProfileSettings;
+    PrintProfileSettingsWrapper printProfileSettings;
     ProfileDetailsGenerator profileDetailsGenerator;
     
     GridPane gridPane;

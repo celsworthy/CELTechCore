@@ -3,7 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.roboxbase.configuration.PrintProfileSetting;
-import celtech.roboxbase.configuration.PrintProfileSettings;
+import celtech.roboxbase.configuration.PrintProfileSettingsWrapper;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.SlicerType;
@@ -164,7 +164,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         canDelete.bind(state.isNotEqualTo(State.NEW).and(state.isNotEqualTo(State.ROBOX)));
         isEditable.bind(state.isNotEqualTo(State.ROBOX));
 
-        PrintProfileSettings printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
+        PrintProfileSettingsWrapper printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
                 .getPrintProfileSettingsForSlicer(getSlicerType());
         profileDetailsFxmlGenerator = new ProfileDetailsGenerator(printProfileSettings, isDirty);
         
@@ -320,14 +320,14 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private void updateSettingsFromProfile(RoboxProfile roboxProfile) {
         profileNameField.setText(roboxProfile.getName());
         
-        PrintProfileSettings printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
+        PrintProfileSettingsWrapper printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
                 .getPrintProfileSettingsForSlicer(getSlicerType());
         overwriteSettingsFromProfle(printProfileSettings, roboxProfile);
         
         regenerateSettings(getSlicerType());
     }
     
-    private void overwriteSettingsFromProfle(PrintProfileSettings settingsToOverwrite, RoboxProfile roboxProfile) {
+    private void overwriteSettingsFromProfle(PrintProfileSettingsWrapper settingsToOverwrite, RoboxProfile roboxProfile) {
         Map<String, PrintProfileSetting> printProfileSettingsMap = new HashMap<>();
         settingsToOverwrite.getAllSettings().forEach(setting -> printProfileSettingsMap.put(setting.getId(), setting));
        
@@ -364,12 +364,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     void whenSavePressed() {
         assert (state.get() != ProfileLibraryPanelController.State.ROBOX);
         if (validateProfileName()) {
-            PrintProfileSettings defaultSettings = PRINT_PROFILE_SETTINGS_CONTAINER.getDefaultPrintProfileSettingsForSlicer(getSlicerType());
-            PrintProfileSettings settingsForHead = defaultSettings.copy();
+            PrintProfileSettingsWrapper defaultSettings = PRINT_PROFILE_SETTINGS_CONTAINER.getDefaultPrintProfileSettingsForSlicer(getSlicerType());
+            PrintProfileSettingsWrapper settingsForHead = defaultSettings.copy();
             RoboxProfile headProfile = ROBOX_PROFILE_SETTINGS_CONTAINER.loadHeadProfileForSlicer(currentHeadType.get(), getSlicerType());
             overwriteSettingsFromProfle(settingsForHead, headProfile);
             
-            PrintProfileSettings currentSettings = PRINT_PROFILE_SETTINGS_CONTAINER.getPrintProfileSettingsForSlicer(getSlicerType());
+            PrintProfileSettingsWrapper currentSettings = PRINT_PROFILE_SETTINGS_CONTAINER.getPrintProfileSettingsForSlicer(getSlicerType());
             Map<String, List<PrintProfileSetting>> settingsToWrite = 
                     PRINT_PROFILE_SETTINGS_CONTAINER.compareAndGetDifferencesBetweenSettings(settingsForHead, currentSettings);
 
