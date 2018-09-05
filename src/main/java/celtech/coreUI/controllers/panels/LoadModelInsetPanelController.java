@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
@@ -15,7 +10,8 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.InsetPanelMenu;
 import celtech.coreUI.components.InsetPanelMenuItem;
 import celtech.coreUI.visualisation.ModelLoader;
-import celtech.utils.SystemUtils;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.utils.SystemUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -95,8 +91,7 @@ public class LoadModelInsetPanelController implements Initializable
                                                 ApplicationConfiguration.getSupportedFileExtensionWildcards(
                                                     ProjectMode.MESH)));
 
-            modelFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(
-                DirectoryMemoryProperty.MODEL)));
+            modelFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
 
             List<File> files;
 
@@ -105,10 +100,10 @@ public class LoadModelInsetPanelController implements Initializable
             if (files != null && !files.isEmpty())
             {
                 ApplicationConfiguration.setLastDirectory(
-                    DirectoryMemoryProperty.MODEL,
+                    DirectoryMemoryProperty.LAST_MODEL_DIRECTORY,
                     files.get(0).getParentFile().getAbsolutePath());
                 modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), files,
-                                               true);
+                                               true, null, false);
             }
         });
     }
@@ -185,7 +180,7 @@ public class LoadModelInsetPanelController implements Initializable
                 URL downloadURL = new URL(fileURL);
 
                 String extension = FilenameUtils.getExtension(fileURL);
-                final String tempFilename = ApplicationConfiguration.getApplicationStorageDirectory()
+                final String tempFilename = BaseConfiguration.getApplicationStorageDirectory()
                     + File.separator + tempID + "." + extension;
 
                 URLConnection urlConn = downloadURL.openConnection();
@@ -195,7 +190,7 @@ public class LoadModelInsetPanelController implements Initializable
                 if (extension.equalsIgnoreCase("stl"))
                 {
                     steno.debug("Got stl file from My Mini Factory");
-                    final String targetname = ApplicationConfiguration.getUserStorageDirectory()
+                    final String targetname = BaseConfiguration.getUserStorageDirectory()
                         + File.separator + FileUtils.basename(fileURL);
                     writeStreamToFile(webInputStream, targetname);
                 } else if (extension.equalsIgnoreCase("zip"))
@@ -210,13 +205,13 @@ public class LoadModelInsetPanelController implements Initializable
                         while (entries.hasMoreElements())
                         {
                             final ZipEntry entry = entries.nextElement();
-                            final String tempTargetname = ApplicationConfiguration.getUserStorageDirectory()
+                            final String tempTargetname = BaseConfiguration.getUserStorageDirectory()
                                 + File.separator + entry.getName();
                             writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
                             filesToLoad.add(new File(tempTargetname));
                         }
                         modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
-                                                       filesToLoad);
+                                                       filesToLoad, null);
                     } finally
                     {
                         zipFile.close();

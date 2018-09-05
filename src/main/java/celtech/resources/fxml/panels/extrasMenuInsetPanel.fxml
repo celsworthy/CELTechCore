@@ -23,19 +23,19 @@
                                 <Insets bottom="30.0" top="95.0" />
                             </HBox.margin>
                         </Separator>
-                        <VBox>
+                        <VBox fillWidth="true" HBox.hgrow="ALWAYS">
                             <children>
                                 <VBox prefHeight="95" minHeight="0">
                                     <children>
                                     </children>
                                 </VBox>
-                                <VBox fx:id="insetNodeContainer" minHeight="-Infinity">
+                                <VBox fx:id="insetNodeContainer" minHeight="-Infinity" maxHeight="100000000000" VBox.vgrow="ALWAYS">
                                     <children>
                                     </children>
                                 </VBox>
                             </children>
                             <HBox.margin>
-                                <Insets left="20.0" bottom="20.0"/>
+                                <Insets left="20.0" bottom="20.0" right="20.0"/>
                             </HBox.margin>
                         </VBox>
                     </children>

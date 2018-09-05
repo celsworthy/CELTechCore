@@ -1,6 +1,9 @@
 package celtech.utils;
 
+import celtech.roboxbase.utils.SystemUtils;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.utils.FileUtilities;
 import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
 import com.github.junrar.impl.FileVolumeManager;
@@ -52,7 +55,7 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
             URL downloadURL = new URL(fileURL);
 
             String extension = FilenameUtils.getExtension(fileURL);
-            final String tempFilename = ApplicationConfiguration.getApplicationStorageDirectory() + File.separator + tempID + "." + extension;
+            final String tempFilename = BaseConfiguration.getApplicationStorageDirectory() + File.separator + tempID + "." + extension;
 
             URLConnection urlConn = downloadURL.openConnection();
 
@@ -64,7 +67,7 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
             {
                 steno.info("Got stl file from My Mini Factory");
                 final String targetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + file;
-                writeStreamToFile(webInputStream, targetname);
+                FileUtilities.writeStreamToFile(webInputStream, targetname);
                 final List<File> filesToLoad = new ArrayList<>();
                 filesToLoad.add(new File(targetname));
                 result.setFilesToLoad(filesToLoad);
@@ -72,34 +75,50 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
             } else if (extension.equalsIgnoreCase("zip"))
             {
                 steno.info("Got zip file from My Mini Factory");
-                writeStreamToFile(webInputStream, tempFilename);
+                FileUtilities.writeStreamToFile(webInputStream, tempFilename);
                 ZipFile zipFile = new ZipFile(tempFilename);
 
-                try
+                final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                final List<File> filesToLoad = new ArrayList<>();
+                while (entries.hasMoreElements())
                 {
-                    final Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                    final List<File> filesToLoad = new ArrayList<>();
-                    while (entries.hasMoreElements())
+                    final ZipEntry entry = entries.nextElement();
+                    final String tempTargetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + entry.getName();
+                    try
                     {
-                        final ZipEntry entry = entries.nextElement();
-                        final String tempTargetname = ApplicationConfiguration.getMyMiniFactoryDownloadDirectory() + entry.getName();
-                        writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
-                        filesToLoad.add(new File(tempTargetname));
+                        FileUtilities.writeStreamToFile(zipFile.getInputStream(entry), tempTargetname);
+                        if (entry.getName().toLowerCase().endsWith("stl")
+                                || entry.getName().toLowerCase().endsWith("obj"))
+                        {
+                            boolean loadModel = true;
+                            for (File fileToCheck : filesToLoad)
+                            {
+                                if (fileToCheck.getName().equals(entry.getName()))
+                                {
+                                    loadModel = false;
+                                    break;
+                                }
+                            }
+
+                            if (loadModel)
+                            {
+                                filesToLoad.add(new File(tempTargetname));
+                            }
+                        }
+                    } catch (IOException ex)
+                    {
+                        steno.error("Error unwrapping zip - " + ex.getMessage());
                     }
-                    result.setFilesToLoad(filesToLoad);
-                    result.setSuccess(true);
-                } catch (IOException ex)
-                {
-                    steno.error("Error unwrapping zip - " + ex.getMessage());
-                } finally
-                {
-                    zipFile.close();
-                    FileUtils.deleteQuietly(new File(tempFilename));
                 }
+                result.setFilesToLoad(filesToLoad);
+                result.setSuccess(true);
+
+                zipFile.close();
+                FileUtils.deleteQuietly(new File(tempFilename));
             } else if (extension.equalsIgnoreCase("rar"))
             {
                 steno.info("Got rar file from My Mini Factory");
-                writeStreamToFile(webInputStream, tempFilename);
+                FileUtilities.writeStreamToFile(webInputStream, tempFilename);
                 File inputfile = new File(tempFilename);
                 Archive archive = null;
                 try
@@ -123,8 +142,8 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
                         try
                         {
                             File out = new File(ApplicationConfiguration.getMyMiniFactoryDownloadDirectory()
-                                + File.separator
-                                + fh.getFileNameString().trim());
+                                    + File.separator
+                                    + fh.getFileNameString().trim());
                             FileOutputStream os = new FileOutputStream(out);
                             archive.extractFile(fh, os);
                             os.close();
@@ -166,41 +185,5 @@ public class MyMiniFactoryLoader extends Task<MyMiniFactoryLoadResult>
         }
 
         return result;
-    }
-
-    private void writeStreamToFile(InputStream is, String localFilename) throws IOException
-    {
-        FileOutputStream fos = null;
-
-        File localFile = new File(localFilename);
-        fos = FileUtils.openOutputStream(localFile);
-
-        try
-        {
-
-            byte[] buffer = new byte[4096];              //declare 4KB buffer
-            int len;
-
-            //while we have availble data, continue downloading and storing to local file
-            while ((len = is.read(buffer)) > 0)
-            {
-                fos.write(buffer, 0, len);
-            }
-        } finally
-        {
-            try
-            {
-                if (is != null)
-                {
-                    is.close();
-                }
-            } finally
-            {
-                if (fos != null)
-                {
-                    fos.close();
-                }
-            }
-        }
     }
 }

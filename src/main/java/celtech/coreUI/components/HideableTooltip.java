@@ -15,5 +15,5 @@ public class HideableTooltip extends Tooltip
         this.setWrapText(true);
         this.setMaxWidth(600);
     }
-    
+
 }

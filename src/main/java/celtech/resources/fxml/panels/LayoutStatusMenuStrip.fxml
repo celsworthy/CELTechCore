@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import celtech.coreUI.components.buttons.*?>
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.layout.*?>
+<?import celtech.coreUI.components.buttons.GraphicButtonWithLabel?>
+<?import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" styleClass="menubar" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
+<VBox alignment="CENTER" styleClass="menubar" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.LayoutStatusMenuStripController">
     <children>
         <BorderPane>
             <right>
@@ -63,8 +66,8 @@
                                         <GraphicButtonWithLabel fx:id="homeButton" fxmlFileName="homeAxesButton" labelText="%buttonText.home" onAction="#homeAll" />
                                         <GraphicButtonWithLabel fx:id="removeHeadButton" fxmlFileName="removeHeadButton" labelText="%buttonText.removeHead" onAction="#removeHead" />
                                         <GraphicToggleButtonWithLabel fx:id="headFanButton" fxmlFileName="headFanButton" labelText="%buttonText.headFan" onAction="#toggleHeadFan" />
-                                        <GraphicButtonWithLabel fx:id="headLightsButton" fxmlFileName="lightsButton" labelText="%buttonText.headLights" onAction="#toggleHeadLights" />
-                                        <GraphicButtonWithLabel fx:id="ambientLightsButton" fxmlFileName="lightsButton" labelText="%buttonText.ambientLights" onAction="#toggleAmbientLights" />
+                                        <GraphicButtonWithLabel fx:id="lightsButton" fxmlFileName="lightsButton" labelText="%buttonText.lights" onAction="#toggleLight" />
+                                        <GraphicButtonWithLabel fx:id="reprintButton" fxmlFileName="reprintButton" labelText="%buttonText.reprint" onAction="#showReprintDialog" />
                                     </children>
                                 </FlowPane>
                                 <FlowPane fx:id="layoutButtonHBox" alignment="CENTER" prefWrapLength="200">

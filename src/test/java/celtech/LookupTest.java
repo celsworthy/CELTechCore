@@ -3,6 +3,7 @@
  */
 package celtech;
 
+import celtech.roboxbase.BaseLookup;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.ClassRule;
@@ -31,7 +32,7 @@ public class LookupTest extends JavaFXConfiguredTest
     public void testSubstituteTemplatesSimpleSubstitution()
     {
         String t01 = Lookup.i18n("*T01");
-        String e01 = Lookup.substituteTemplates("*T01");
+        String e01 = BaseLookup.substituteTemplates("*T01");
         assertEquals(t01, e01);
     }
     
@@ -39,7 +40,7 @@ public class LookupTest extends JavaFXConfiguredTest
     public void testSubstituteTemplatesDoubleSubstitution()
     {
         String t01 = Lookup.i18n("*T01");
-        String e01 = Lookup.substituteTemplates("*T01*T01");
+        String e01 = BaseLookup.substituteTemplates("*T01*T01");
         assertEquals(t01 + t01, e01);
     }    
     
@@ -48,7 +49,7 @@ public class LookupTest extends JavaFXConfiguredTest
     {
         String t01 = Lookup.i18n("*T01");
         String t02 = Lookup.i18n("*T02");
-        String mess = Lookup.substituteTemplates("ABCD *T01*T01 EFG *T02 ZZZ");
+        String mess = BaseLookup.substituteTemplates("ABCD *T01*T01 EFG *T02 ZZZ");
         assertEquals("ABCD " + t01 + t01 + " EFG " + t02 + " ZZZ", mess);
     }        
 

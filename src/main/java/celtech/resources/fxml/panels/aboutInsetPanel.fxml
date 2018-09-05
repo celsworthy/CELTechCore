@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import celtech.coreUI.components.buttons.*?>
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.buttons.GraphicButton?>
+<?import celtech.coreUI.components.buttons.GraphicButtonWithLabel?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
-<VBox styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<VBox styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <StackPane alignment="TOP_CENTER" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <VBox.margin>
@@ -66,7 +75,7 @@
                                         <String fx:value="aboutBodyTextRegular" />
                                     </styleClass>
                                 </Text>
-                                <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Kenneth Tam" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Christopher Elsworthy" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                     <styleClass>
                                         <String fx:value="aboutBodyText" />
                                         <String fx:value="blue-inset-panel-text" />
@@ -98,7 +107,7 @@
                                         <String fx:value="aboutBodyTextRegular" />
                                     </styleClass>
                                 </Text>
-                                <Text fx:id="swengNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ian Hudson, Ben Willcocks and Tony Abdulhaq Lynch" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                <Text fx:id="swengNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ian Hudson, Ben Willcocks, Tony Abdulhaq Lynch and Tony Aldhous" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                     <styleClass>
                                         <String fx:value="aboutBodyText" />
                                         <String fx:value="blue-inset-panel-text" />

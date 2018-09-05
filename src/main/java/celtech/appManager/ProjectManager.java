@@ -127,7 +127,7 @@ public class ProjectManager implements Savable, Serializable
             int numberOfProjectsWithModels = 0;
             for (Project candidateProject : openProjects)
             {
-                if (!candidateProject.getTopLevelModels().isEmpty())
+                if (candidateProject.getNumberOfProjectifiableElements() > 0)
                 {
                     numberOfProjectsWithModels++;
                 }
@@ -137,7 +137,7 @@ public class ProjectManager implements Savable, Serializable
             
             for (Project project : openProjects)
             {
-                if (project.getTopLevelModels().size() > 0)
+                if (project.getNumberOfProjectifiableElements() > 0)
                 {
                     out.writeUTF(project.getAbsolutePath());
                 }

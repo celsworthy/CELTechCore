@@ -3,28 +3,31 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.appManager.SystemNotificationManager.NotificationType;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.MaterialType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile.SupportType;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
-import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.PrinterListChangesAdapter;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.MaterialType;
+import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -60,7 +63,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class SettingsInsetPanelController implements Initializable, ProjectAwareController, Project.ProjectChangesListener
+public class SettingsInsetPanelController implements Initializable, ProjectAwareController, ModelContainerProject.ProjectChangesListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -128,7 +131,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private Printer currentPrinter;
     private Project currentProject;
-    private PrinterSettings printerSettings;
+    private PrinterSettingsOverrides printerSettings;
     private String currentHeadType = HeadContainer.defaultHeadID;
     private ObjectProperty<PrintQualityEnumeration> printQuality;
     private boolean populatingForProject = false;
@@ -136,7 +139,73 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private final BooleanProperty inPLACompatibilityMode = new SimpleBooleanProperty(false);
     private ConditionalNotificationBar PLACompatibilityModeNotificationBar;
 
-    private MapChangeListener<Integer, Filament> filamentListener = new MapChangeListener<Integer, Filament>()
+    private final ChangeListener<Printer> selectedPrinterChangeListener = new ChangeListener<Printer>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
+        {
+            whenPrinterChanged(newValue);
+        }
+    };
+
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+        {
+            if (newValue == ApplicationMode.SETTINGS)
+            {
+                settingsInsetRoot.setVisible(true);
+                settingsInsetRoot.setMouseTransparent(false);
+                if (currentProject != null
+                        && currentPrinter != null)
+                {
+                    dealWithPrintOptimisation();
+                }
+            } else
+            {
+                settingsInsetRoot.setVisible(false);
+                settingsInsetRoot.setMouseTransparent(true);
+            }
+        }
+    };
+
+    private final ListChangeListener<SlicerParametersFile> slicerParamChangeListener = new ListChangeListener<SlicerParametersFile>()
+    {
+
+        @Override
+        public void onChanged(ListChangeListener.Change<? extends SlicerParametersFile> c)
+        {
+            populateCustomProfileChooser();
+            showPleaseCreateProfile(
+                    SlicerParametersContainer.getUserProfileList().isEmpty());
+        }
+    };
+
+    private final PrinterListChangesListener printerListChangesListener = new PrinterListChangesAdapter()
+    {
+        @Override
+        public void whenHeadAdded(Printer printer)
+        {
+            if (printer == currentPrinter)
+            {
+                whenPrinterChanged(printer);
+                updateSupportCombo(printer);
+            }
+        }
+
+        @Override
+        public void whenExtruderAdded(Printer printer, int extruderIndex)
+        {
+            if (printer == currentPrinter)
+            {
+                updateSupportCombo(printer);
+            }
+        }
+
+    };
+
+    private final MapChangeListener<Integer, Filament> filamentListener = new MapChangeListener<Integer, Filament>()
     {
         @Override
         public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
@@ -163,62 +232,18 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             setupOverrides();
 
-            Lookup.getSelectedPrinterProperty().addListener(
-                    (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                    {
-                        whenPrinterChanged(newValue);
-                    });
+            Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
 
-            ApplicationStatus.getInstance().modeProperty().addListener(
-                    (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
-                    {
-                        if (newValue == ApplicationMode.SETTINGS)
-                        {
-                            settingsInsetRoot.setVisible(true);
-                            settingsInsetRoot.setMouseTransparent(false);
-                        } else
-                        {
-                            settingsInsetRoot.setVisible(false);
-                            settingsInsetRoot.setMouseTransparent(true);
-                        }
-                    });
+            ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
 
-            SlicerParametersContainer.getUserProfileList().addListener(
-                    (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-                    {
-                        populateCustomProfileChooser();
-                        showPleaseCreateProfile(
-                                SlicerParametersContainer.getUserProfileList().isEmpty());
-                    });
+            SlicerParametersContainer.getUserProfileList().addListener(slicerParamChangeListener);
 
             showPleaseCreateProfile(
                     SlicerParametersContainer.getUserProfileList().isEmpty());
 
             whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
 
-            Lookup.getPrinterListChangesNotifier().addListener(new PrinterListChangesAdapter()
-            {
-
-                @Override
-                public void whenHeadAdded(Printer printer)
-                {
-                    if (printer == currentPrinter)
-                    {
-                        whenPrinterChanged(printer);
-                        updateSupportCombo(printer);
-                    }
-                }
-
-                @Override
-                public void whenExtruderAdded(Printer printer, int extruderIndex)
-                {
-                    if (printer == currentPrinter)
-                    {
-                        updateSupportCombo(printer);
-                    }
-                }
-
-            });
+            BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
 
         } catch (Exception ex)
         {
@@ -266,22 +291,21 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
         });
 
-        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
-            {
-                if (t1 == ApplicationMode.SETTINGS)
-                {
-                    if (currentProject != null
-                            && currentPrinter != null)
-                    {
-                        dealWithPrintOptimisation();
-                    }
-                }
-            }
-        });
-
+//        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
+//        {
+//            @Override
+//            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
+//            {
+//                if (t1 == ApplicationMode.SETTINGS)
+//                {
+//                    if (currentProject != null
+//                            && currentPrinter != null)
+//                    {
+//                        dealWithPrintOptimisation();
+//                    }
+//                }
+//            }
+//        });
         raftSupportBrimChooserBox.disableProperty().bind(spiralPrintCheckbox.selectedProperty()
                 .or(supportButton.selectedProperty().not()
                         .and(brimSlider.valueProperty().lessThanOrEqualTo(0))
@@ -310,39 +334,39 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
                 (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
-                {
+        {
 
-                    if (populatingForProject)
-                    {
-                        return;
-                    }
+            if (populatingForProject)
+            {
+                return;
+            }
 
-                    if (newValue != null)
-                    {
-                        if (printerSettings != null && printerSettings.getPrintQuality()
+            if (newValue != null)
+            {
+                if (printerSettings != null && printerSettings.getPrintQuality()
                         == PrintQualityEnumeration.CUSTOM)
-                        {
-                            whenCustomProfileChanges(newValue);
-                        } else if (printerSettings != null)
-                        {
-                            steno.error("custom profile chosen but quality not CUSTOM");
-                        }
+                {
+                    whenCustomProfileChanges(newValue);
+                } else if (printerSettings != null)
+                {
+                    steno.error("custom profile chosen but quality not CUSTOM");
+                }
 
-                    }
-                });
+            }
+        });
 
         SlicerParametersContainer.getUserProfileList().addListener(
                 (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-                {
-                    clearSettingsIfNoCustomProfileAvailable();
-                });
+        {
+            clearSettingsIfNoCustomProfileAvailable();
+        });
     }
 
     private void populateCustomProfileChooser()
     {
         List filesForHeadType = SlicerParametersContainer.getUserProfileList().stream().
                 filter(profile -> profile.getHeadType() != null
-                        && profile.getHeadType().equals(currentHeadType)).collect(Collectors.toList());
+                && profile.getHeadType().equals(currentHeadType)).collect(Collectors.toList());
         customProfileChooser.setItems(FXCollections.observableArrayList(filesForHeadType));
         if (currentProject != null
                 && currentProject.getPrinterSettings().getPrintQuality() == PrintQualityEnumeration.CUSTOM)
@@ -370,68 +394,68 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         supportComboBox.valueProperty().addListener(
                 (ObservableValue<? extends SlicerParametersFile.SupportType> ov, SlicerParametersFile.SupportType lastSupportValue, SlicerParametersFile.SupportType newSupportValue) ->
-                {
-                    if (populatingForProject)
-                    {
-                        return;
-                    }
+        {
+            if (populatingForProject)
+            {
+                return;
+            }
 
-                    dealWithPrintOptimisation();
+            dealWithPrintOptimisation();
 
-                    if (printerSettings != null
+            if (printerSettings != null
                     && lastSupportValue != newSupportValue)
-                    {
-                        printerSettings.setPrintSupportTypeOverride(newSupportValue);
-                    }
-                });
+            {
+                printerSettings.setPrintSupportTypeOverride(newSupportValue);
+            }
+        });
 
         supportButton.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
-                {
-                    if (populatingForProject)
-                    {
-                        return;
-                    }
+        {
+            if (populatingForProject)
+            {
+                return;
+            }
 
-                    updateSupportCombo(currentPrinter);
-                    dealWithPrintOptimisation();
+            updateSupportCombo(currentPrinter);
+            dealWithPrintOptimisation();
 
-                    printerSettings.setPrintSupportOverride(selected);
-                });
+            printerSettings.setPrintSupportOverride(selected);
+        });
 
         supportGapButton.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
-                {
-                    if (populatingForProject)
-                    {
-                        return;
-                    }
+        {
+            if (populatingForProject)
+            {
+                return;
+            }
 
-                    printerSettings.setPrintSupportGapEnabledOverride(selected);
-                });
+            printerSettings.setPrintSupportGapEnabledOverride(selected);
+        });
 
         raftButton.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
-                {
-                    if (populatingForProject)
-                    {
-                        return;
-                    }
+        {
+            if (populatingForProject)
+            {
+                return;
+            }
 
-                    printerSettings.setRaftOverride(selected);
-                });
+            printerSettings.setRaftOverride(selected);
+        });
 
         fillDensitySlider.valueProperty()
                 .addListener(
                         (ObservableValue<? extends Number> observable, Number was, Number now) ->
-                        {
-                            if (!fillDensitySlider.isValueChanging()
+                {
+                    if (!fillDensitySlider.isValueChanging()
                             || now.doubleValue() >= fillDensitySlider.getMax()
                             || now.doubleValue() <= fillDensitySlider.getMin())
-                            {
-                                printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
-                            }
-                        });
+                    {
+                        printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
+                    }
+                });
 
         brimSlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
         {
@@ -445,14 +469,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         spiralPrintCheckbox.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
-                {
-                    if (populatingForProject)
-                    {
-                        return;
-                    }
+        {
+            if (populatingForProject)
+            {
+                return;
+            }
 
-                    printerSettings.setSpiralPrintOverride(selected);
-                });
+            printerSettings.setSpiralPrintOverride(selected);
+        });
     }
 
     @FXML
@@ -552,8 +576,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             currentProject.removeProjectChangesListener(this);
         }
-        project.addProjectChangesListener(this);
-        whenProjectChanged(project);
+
+        if (project != null)
+        {
+            project.addProjectChangesListener(this);
+            whenProjectChanged(project);
+        }
     }
 
     private void whenProjectChanged(Project project)
@@ -577,9 +605,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         printQuality.addListener(
                 (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) ->
-                {
-                    printQualityWidgetsUpdate(newValue);
-                });
+        {
+            printQualityWidgetsUpdate(newValue);
+        });
         printQualityWidgetsUpdate(printQuality.get());
 
         // just in case custom settings are changing through some other mechanism
@@ -600,8 +628,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             @Override
             public void changed(ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue)
             {
+                populatingForProject = true;
                 supportComboBox.getSelectionModel().select(newValue);
                 updateSupportCombo(currentPrinter);
+                populatingForProject = false;
             }
         });
 
@@ -635,12 +665,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void dealWithSpiralness()
     {
-        spiralPrintHBox.disableProperty().set(currentProject.getAllModels().size() != 1
-                || !currentProject.allModelsOnSameExtruder(currentPrinter));
+        if (currentProject instanceof ModelContainerProject)
+        {
+            spiralPrintHBox.disableProperty().set(currentProject.getAllModels().size() != 1
+                    || !((ModelContainerProject) currentProject).allModelsOnSameExtruder(currentPrinter));
 
-        spiralPrintCheckbox.setSelected(spiralPrintCheckbox.selectedProperty().get()
-                && currentProject.getAllModels().size() == 1
-                && currentProject.allModelsOnSameExtruder(currentPrinter));
+            spiralPrintCheckbox.setSelected(spiralPrintCheckbox.selectedProperty().get()
+                    && currentProject.getAllModels().size() == 1
+                    && ((ModelContainerProject) currentProject).allModelsOnSameExtruder(currentPrinter));
+        }
     }
 
     private void dealWithSupportGap()
@@ -650,7 +683,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         boolean supportGapEnabledDriver = currentPrinter != null
                 && supportButton.isSelected()
                 && !(currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() != currentPrinter.effectiveFilamentsProperty().get(1).getMaterial()
-                && !currentProject.getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
+                && !((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
 
         supportGapButton.setSelected(supportGapEnabledDriver);
     }
@@ -666,8 +699,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 //One of the materials is PLA
                 && (currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() == MaterialType.PLA || currentPrinter.effectiveFilamentsProperty().get(1).getMaterial() == MaterialType.PLA)
                 //Both materials are required for the print
-                && currentProject.getPrintingExtruders(currentPrinter).get(0)
-                && currentProject.getPrintingExtruders(currentPrinter).get(1);
+                && currentProject instanceof ModelContainerProject
+                && ((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(0)
+                && ((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(1);
 
         if (triggerPLAIncompatibility)
         {
@@ -675,7 +709,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             raftButton.setSelected(true);
             supportComboBox.getSelectionModel().select(requiredSupportType);
         }
-        
+
         if (triggerPLAIncompatibility != inPLACompatibilityMode.get())
         {
             inPLACompatibilityMode.set(triggerPLAIncompatibility);
@@ -716,17 +750,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             case DRAFT:
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.draftSettingsProfileName, currentHeadType);
+                        BaseConfiguration.draftSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case NORMAL:
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.normalSettingsProfileName, currentHeadType);
+                        BaseConfiguration.normalSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case FINE:
                 settings = SlicerParametersContainer.getSettings(
-                        ApplicationConfiguration.fineSettingsProfileName, currentHeadType);
+                        BaseConfiguration.fineSettingsProfileName, currentHeadType);
                 enableCustomChooser(false);
                 break;
             case CUSTOM:
@@ -771,13 +805,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     }
 
     @Override
-    public void whenModelAdded(ModelContainer modelContainer)
+    public void whenModelAdded(ProjectifiableThing modelContainer)
     {
         updateSupportCombo(currentPrinter);
     }
 
     @Override
-    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
+    public void whenModelsRemoved(Set<ProjectifiableThing> modelContainers)
     {
         updateSupportCombo(currentPrinter);
     }
@@ -788,19 +822,43 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     }
 
     @Override
-    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
     {
     }
 
     @Override
-    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
     {
         updateSupportCombo(currentPrinter);
     }
 
     @Override
-    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+    public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
     }
 
+    @Override
+    public void shutdownController()
+    {
+        if (currentPrinter != null)
+        {
+            currentPrinter.effectiveFilamentsProperty().removeListener(filamentListener);
+        }
+
+        if (currentProject != null)
+        {
+            currentProject.removeProjectChangesListener(this);
+        }
+        currentProject = null;
+
+        Lookup.getSelectedPrinterProperty().removeListener(selectedPrinterChangeListener);
+
+        ApplicationStatus.getInstance().modeProperty().removeListener(applicationModeChangeListener);
+
+        SlicerParametersContainer.getUserProfileList().removeListener(slicerParamChangeListener);
+
+        BaseLookup.getPrinterListChangesNotifier().removeListener(printerListChangesListener);
+
+        PLACompatibilityModeNotificationBar.destroyBar();
+    }
 }

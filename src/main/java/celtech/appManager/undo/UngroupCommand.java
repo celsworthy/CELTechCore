@@ -3,8 +3,9 @@
  */
 package celtech.appManager.undo;
 
-import celtech.appManager.Project;
-import celtech.configuration.PrintBed;
+import celtech.appManager.ModelContainerProject;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import java.util.HashMap;
@@ -24,13 +25,13 @@ public class UngroupCommand extends Command
     private final Stenographer steno = StenographerFactory.getStenographer(
             UngroupCommand.class.getName());
 
-    Project project;
-    Map<Integer, Set<ModelContainer>> groupIds;
-    private Set<ModelContainer.State> originalStates;
-    private Set<ModelContainer.State> newStates;
+    ModelContainerProject project;
+    Map<Integer, Set<Groupable>> groupIds;
+    private Set<ItemState> originalStates;
+    private Set<ItemState> newStates;
     private Set<ModelContainer> containersToRecentre = new HashSet<>();
 
-    public UngroupCommand(Project project, Set<ModelContainer> modelContainers)
+    public UngroupCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
     {
         this.project = project;
         groupIds = new HashMap<>();
@@ -39,7 +40,7 @@ public class UngroupCommand extends Command
             if (modelContainer instanceof ModelGroup)
             {
                 containersToRecentre.addAll(modelContainer.getChildModelContainers());
-                groupIds.put(modelContainer.getModelId(), ((ModelGroup) modelContainer).getChildModelContainers());
+                groupIds.put(modelContainer.getModelId(), (Set) ((ModelGroup) modelContainer).getChildModelContainers());
             }
         }
     }
@@ -69,11 +70,10 @@ public class UngroupCommand extends Command
             try
             {
                 project.ungroup(project.getModelContainersOfIds(groupIds.keySet()));
-            } catch (Project.ProjectLoadException ex)
+            } catch (ModelContainerProject.ProjectLoadException ex)
             {
                 steno.exception("Could not ungroup", ex);
             }
-            project.translateModelsTo(containersToRecentre, PrintBed.getPrintVolumeCentre().getX(), PrintBed.getPrintVolumeCentre().getZ());
             newStates = project.getModelStates();
         } catch (Exception ex)
         {

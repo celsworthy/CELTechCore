@@ -1,8 +1,8 @@
 package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;

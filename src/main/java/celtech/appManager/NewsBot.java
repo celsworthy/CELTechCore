@@ -1,27 +1,20 @@
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -39,9 +32,9 @@ public class NewsBot
     private final List<NewsArticle> unreadNewsArticles = new ArrayList<>();
     private String lastTimeThereWasNewNewsDateString = null;
     private int strikes = 0;
-    private final int NORMAL_FREQUENCY_POLLING_PERIOD_MS = 120000;
+    private final int NORMAL_FREQUENCY_POLLING_PERIOD_MS = 60000;
     private final int LOWER_FREQUENCY_POLLING_THRESHOLD = 3;
-    private final int LOWER_FREQUENCY_POLLING_PERIOD_MS = 240000;
+    private final int LOWER_FREQUENCY_POLLING_PERIOD_MS = 120000;
     private final int STRIKES_AND_YOURE_OUT = 6;
 
     public class NewsArticle
@@ -159,7 +152,7 @@ public class NewsBot
                 con.setRequestMethod("GET");
 
                 //add request header
-                con.setRequestProperty("User-Agent", ApplicationConfiguration.getApplicationName());
+                con.setRequestProperty("User-Agent", BaseConfiguration.getApplicationName());
 
                 con.setConnectTimeout(5000);
                 int responseCode = con.getResponseCode();
@@ -171,7 +164,7 @@ public class NewsBot
                     {
                         List<NewsArticle> articlesToAdd = new ArrayList<>();
 
-                        Iterator<JsonNode> elementIterator = jsonNode.getElements();
+                        Iterator<JsonNode> elementIterator = jsonNode.elements();
                         while (elementIterator.hasNext())
                         {
                             JsonNode childNode = elementIterator.next();

@@ -4,8 +4,8 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
-import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;

@@ -1,13 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package celtech.coreUI.visualisation.metaparts;
 
-import celtech.modelcontrol.ModelContainer;
-import java.util.ArrayList;
-import java.util.List;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.Set;
 
 /**
@@ -17,18 +10,25 @@ import java.util.Set;
 public class ModelLoadResult
 {
 
-    private ModelLoadResultType resultType = ModelLoadResultType.Mesh;
-    private String filename = null;
-    private Set<ModelContainer> modelContainers;
-    // File lines are only used for gcode at present
-    private final List<String> fileLines = new ArrayList<>();
-    private String fullFilename;
+    private final ModelLoadResultType type;
+    private final String filename;
+    private final String fullFilename;
+    private final Set<ProjectifiableThing> projectifiableThings;
 
-    public ModelLoadResult(String fullFilename, String filename, Set<ModelContainer> modelContainers)
+    public ModelLoadResult(ModelLoadResultType type,
+            String fullFilename,
+            String filename,
+            Set<ProjectifiableThing> projectifiableThings)
     {
+        this.type = type;
         this.fullFilename = fullFilename;
         this.filename = filename;
-        this.modelContainers = modelContainers;
+        this.projectifiableThings = projectifiableThings;
+    }
+
+    public ModelLoadResultType getType()
+    {
+        return type;
     }
 
     public String getModelFilename()
@@ -41,23 +41,8 @@ public class ModelLoadResult
         return fullFilename;
     }
 
-    public Set<ModelContainer> getModelContainers()
+    public Set<ProjectifiableThing> getProjectifiableThings()
     {
-        return modelContainers;
-    }
-
-    public void setFileLines(ArrayList<String> fileData)
-    {
-        this.fileLines.addAll(0, fileData);
-    }
-
-    public List<String> getFileLines()
-    {
-        return fileLines;
-    }
-
-    public ModelLoadResultType getResultType()
-    {
-        return resultType;
+        return projectifiableThings;
     }
 }

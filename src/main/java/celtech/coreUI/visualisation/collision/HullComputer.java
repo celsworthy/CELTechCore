@@ -1,12 +1,9 @@
 package celtech.coreUI.visualisation.collision;
 
-import eu.mihosoft.vrl.v3d.CSG;
-import eu.mihosoft.vrl.v3d.MeshContainer;
 import javafx.concurrent.Task;
 import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.fxyz.utils.MeshUtils;
 
 /**
  *
@@ -27,9 +24,9 @@ public class HullComputer extends Task<MeshView>
     public MeshView call() throws Exception
     {
         steno.info("Starting hull computation ");
-        CSG modelAsCSG = MeshUtils.mesh2CSG(meshView);
-        CSG hull = modelAsCSG.hull();
-        MeshContainer javafxMesh = hull.toJavaFXMesh(null);
+//        CSG modelAsCSG = MeshUtils.mesh2CSG(meshView);
+//        CSG hull = modelAsCSG.hull();
+//        MeshContainer javafxMesh = hull.toJavaFXMesh(null);
         
 //        List<Polygon> hullPolys = hull.getPolygons();
 //
@@ -47,6 +44,7 @@ public class HullComputer extends Task<MeshView>
 //        CollisionShape hullShape= new ConvexHullShape(vectors);
         
         steno.info("Finished hull computation");
-        return javafxMesh.getAsMeshViews().get(0);
+//        return javafxMesh.getAsMeshViews().get(0);
+        return null;
     }
 }

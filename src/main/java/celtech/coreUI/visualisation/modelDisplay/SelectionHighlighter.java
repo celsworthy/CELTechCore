@@ -2,11 +2,11 @@ package celtech.coreUI.visualisation.modelDisplay;
 
 import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.ShapeProvider;
+import celtech.coreUI.visualisation.ShapeProviderThreeD;
 import celtech.coreUI.visualisation.Xform;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.utils.Math.MathUtils;
-import java.text.SimpleDateFormat;
+import celtech.roboxbase.utils.Math.MathUtils;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Group;
@@ -41,8 +41,8 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     private DoubleProperty boxScaleProperty = new SimpleDoubleProperty(1.0);
 
-    //Leave out for 1.01.05
 //    private final ScaleControls scaleControls;
+
     /**
      *
      * @param modelContainer
@@ -50,7 +50,7 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     public SelectionHighlighter(final ModelContainer modelContainer, double cameraDistance)
     {
         cameraDistanceChange(cameraDistance);
-        
+
         this.setId(idString);
         if (modelContainer instanceof ModelGroup)
         {
@@ -89,52 +89,57 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
     }
 
     @Override
-    public void shapeChanged(ShapeProvider shapeProvider)
+    public void shapeChanged(ShapeProvider shapeProviderRaw)
     {
-        double halfWidth = shapeProvider.getScaledWidth() / 2;
-        double halfDepth = shapeProvider.getScaledDepth() / 2;
-        double halfHeight = shapeProvider.getScaledHeight() / 2;
-        double minX = shapeProvider.getCentreX() - halfWidth;
-        double maxX = shapeProvider.getCentreX() + halfWidth;
-        double minZ = shapeProvider.getCentreZ() - halfDepth;
-        double maxZ = shapeProvider.getCentreZ() + halfDepth;
-        double minY = shapeProvider.getCentreY() - halfHeight;
-        double maxY = shapeProvider.getCentreY() + halfHeight;
+        if (shapeProviderRaw instanceof ShapeProviderThreeD)
+        {
+            ShapeProviderThreeD shapeProvider = (ShapeProviderThreeD) shapeProviderRaw;
 
-        selectionBoxBackLeftBottom.setTz(maxZ);
-        selectionBoxBackLeftBottom.setTx(minX);
-        selectionBoxBackLeftBottom.setTy(maxY);
+            double halfWidth = shapeProvider.getScaledWidth() / 2;
+            double halfDepth = shapeProvider.getScaledDepth() / 2;
+            double halfHeight = shapeProvider.getScaledHeight() / 2;
+            double minX = shapeProvider.getCentreX() - halfWidth;
+            double maxX = shapeProvider.getCentreX() + halfWidth;
+            double minZ = shapeProvider.getCentreZ() - halfDepth;
+            double maxZ = shapeProvider.getCentreZ() + halfDepth;
+            double minY = shapeProvider.getCentreY() - halfHeight;
+            double maxY = shapeProvider.getCentreY() + halfHeight;
 
-        selectionBoxBackRightBottom.setTz(maxZ);
-        selectionBoxBackRightBottom.setTx(maxX);
-        selectionBoxBackRightBottom.setTy(maxY);
+            selectionBoxBackLeftBottom.setTz(maxZ);
+            selectionBoxBackLeftBottom.setTx(minX);
+            selectionBoxBackLeftBottom.setTy(maxY);
 
-        selectionBoxFrontLeftBottom.setTz(minZ);
-        selectionBoxFrontLeftBottom.setTx(minX);
-        selectionBoxFrontLeftBottom.setTy(maxY);
+            selectionBoxBackRightBottom.setTz(maxZ);
+            selectionBoxBackRightBottom.setTx(maxX);
+            selectionBoxBackRightBottom.setTy(maxY);
 
-        selectionBoxFrontRightBottom.setTz(minZ);
-        selectionBoxFrontRightBottom.setTx(maxX);
-        selectionBoxFrontRightBottom.setTy(maxY);
+            selectionBoxFrontLeftBottom.setTz(minZ);
+            selectionBoxFrontLeftBottom.setTx(minX);
+            selectionBoxFrontLeftBottom.setTy(maxY);
 
-        selectionBoxBackLeftTop.setTz(maxZ);
-        selectionBoxBackLeftTop.setTx(minX);
-        selectionBoxBackLeftTop.setTy(minY);
+            selectionBoxFrontRightBottom.setTz(minZ);
+            selectionBoxFrontRightBottom.setTx(maxX);
+            selectionBoxFrontRightBottom.setTy(maxY);
 
-        selectionBoxBackRightTop.setTz(maxZ);
-        selectionBoxBackRightTop.setTx(maxX);
-        selectionBoxBackRightTop.setTy(minY);
+            selectionBoxBackLeftTop.setTz(maxZ);
+            selectionBoxBackLeftTop.setTx(minX);
+            selectionBoxBackLeftTop.setTy(minY);
 
-        selectionBoxFrontLeftTop.setTz(minZ);
-        selectionBoxFrontLeftTop.setTx(minX);
-        selectionBoxFrontLeftTop.setTy(minY);
+            selectionBoxBackRightTop.setTz(maxZ);
+            selectionBoxBackRightTop.setTx(maxX);
+            selectionBoxBackRightTop.setTy(minY);
 
-        selectionBoxFrontRightTop.setTz(minZ);
-        selectionBoxFrontRightTop.setTx(maxX);
-        selectionBoxFrontRightTop.setTy(minY);
+            selectionBoxFrontLeftTop.setTz(minZ);
+            selectionBoxFrontLeftTop.setTx(minX);
+            selectionBoxFrontLeftTop.setTy(minY);
 
-        //Place the scale boxes
-//        scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
+            selectionBoxFrontRightTop.setTz(minZ);
+            selectionBoxFrontRightTop.setTx(maxX);
+            selectionBoxFrontRightTop.setTy(minY);
+
+            //Place the scale boxes
+//            scaleControls.place(minX, maxX, minY, maxY, minZ, maxZ);
+        }
     }
 
     private Xform generateSelectionCornerGroup(double xRotate, double yRotate, double zRotate)
@@ -189,12 +194,11 @@ public class SelectionHighlighter extends Group implements ShapeProvider.ShapeCh
 
     public final void cameraDistanceChange(double cameraDistance)
     {
-      double newScale = cameraDistance / 350;
+        double newScale = cameraDistance / 350;
         if (newScale < 0.3)
         {
             newScale = 0.3;
-        }
-        else if (newScale > 1.5)
+        } else if (newScale > 1.5)
         {
             newScale = 1.5;
         }

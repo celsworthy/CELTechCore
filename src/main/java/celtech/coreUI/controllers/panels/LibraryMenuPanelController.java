@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 
 /**
  *

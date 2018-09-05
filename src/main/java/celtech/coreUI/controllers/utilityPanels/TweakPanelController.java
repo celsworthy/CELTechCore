@@ -1,16 +1,17 @@
 package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
+import celtech.roboxbase.printerControl.model.HeaterMode;
 import celtech.coreUI.controllers.StatusInsetController;
-import celtech.gcodetranslator.PrintJobStatistics;
-import celtech.printerControl.PrintJob;
-import celtech.printerControl.PrintQueueStatus;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.postprocessor.PrintJobStatistics;
+import celtech.roboxbase.printerControl.PrintJob;
+import celtech.roboxbase.printerControl.PrintQueueStatus;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -340,7 +341,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                     }
                 });
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         if (Lookup.getSelectedPrinterProperty().get() != null)
         {
@@ -364,7 +365,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             {
                 bind();
             }
-            Lookup.getPrinterListChangesNotifier().addListener(this);
+            BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         }
     }
@@ -578,7 +579,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().addListener(heaterModeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().addListener(lastFilamentTempChangeListener);
-            } else
+            } else if (currentPrinter.headProperty().get().getNozzleHeaters().size() > 0)
             {
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().addListener(material1TargetTempChangeListener);
@@ -612,7 +613,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).nozzleTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).heaterModeProperty().removeListener(heaterModeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(1).lastFilamentTemperatureProperty().removeListener(lastFilamentTempChangeListener);
-            } else
+            } else if (currentPrinter.headProperty().get().getNozzleHeaters().size() > 0)
             {
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleFirstLayerTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);
                 currentPrinter.headProperty().get().getNozzleHeaters().get(0).nozzleTargetTemperatureProperty().removeListener(material1TargetTempChangeListener);

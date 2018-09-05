@@ -7,7 +7,7 @@ package celtech.coreUI.components;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.ProgressDialogController;
-import celtech.services.ControllableService;
+import celtech.roboxbase.services.ControllableService;
 import java.io.IOException;
 import java.net.URL;
 import javafx.event.EventHandler;

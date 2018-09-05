@@ -10,8 +10,8 @@
             <columnConstraints>
                 <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="100.0" minWidth="10.0" prefWidth="100.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="50.0" minWidth="10.0" prefWidth="50.0" />
-            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="100.0" minWidth="10.0" prefWidth="100.0" />
-            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="50.0" minWidth="10.0" prefWidth="50.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="100.0" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="50.0" minWidth="10.0" prefWidth="50.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints />
@@ -24,8 +24,8 @@
                 <RowConstraints />
                 <RowConstraints />
                 <RowConstraints />
-<RowConstraints />
-            <RowConstraints />
+                <RowConstraints />
+                <RowConstraints />
             </rowConstraints>
             <children>
                 <Label styleClass="regularText" text="%diagnosticPanel.xLimit" GridPane.rowIndex="2" />
@@ -40,16 +40,16 @@
                 <Label fx:id="extruder1Label" style="-fx-font-size: 12pt;" styleClass="regularText" text="%diagnosticPanel.extruder2" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
                 <Label fx:id="extruder1LoadedLabel" styleClass="regularText" text="%diagnosticPanel.loaded" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="6" />
                 <Label fx:id="extruder1IndexLabel" styleClass="regularText" text="%diagnosticPanel.index" GridPane.columnIndex="2" GridPane.halignment="RIGHT" GridPane.rowIndex="7" />
-            <RadioButton fx:id="rbXLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
-            <RadioButton fx:id="rbYLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
-            <RadioButton fx:id="rbZLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
-            <RadioButton fx:id="rbZPositiveLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
-            <RadioButton fx:id="rbDoor" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
-            <RadioButton fx:id="rbReel" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
-            <RadioButton fx:id="rbLoaded0" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
-            <RadioButton fx:id="rbIndex0" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
-            <RadioButton fx:id="rbLoaded1" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
-            <RadioButton fx:id="rbIndex1" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
+                <RadioButton fx:id="rbXLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" />
+                <RadioButton fx:id="rbYLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                <RadioButton fx:id="rbZLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                <RadioButton fx:id="rbZPositiveLimit" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="5" />
+                <RadioButton fx:id="rbDoor" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
+                <RadioButton fx:id="rbReel" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
+                <RadioButton fx:id="rbLoaded0" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="3" />
+                <RadioButton fx:id="rbIndex0" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
+                <RadioButton fx:id="rbLoaded1" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
+                <RadioButton fx:id="rbIndex1" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.halignment="CENTER" GridPane.rowIndex="7" />
             </children>
         </GridPane>
     </children>

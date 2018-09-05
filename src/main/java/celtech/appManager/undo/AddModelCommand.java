@@ -4,7 +4,7 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
-import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.HashSet;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
@@ -21,11 +21,11 @@ public class AddModelCommand extends Command
             AddModelCommand.class.getName());
 
     Project project;
-    // by keeping the ModelContainer we keep the modelId which is essential for subsequent
+    // by keeping the ProjectifiableThing we keep the modelId which is essential for subsequent
     // transform redos to work.
-    ModelContainer modelContainer;
+    ProjectifiableThing modelContainer;
 
-    public AddModelCommand(Project project, ModelContainer modelContainer)
+    public AddModelCommand(Project project, ProjectifiableThing modelContainer)
     {
         this.project = project;
         this.modelContainer = modelContainer;
@@ -40,8 +40,8 @@ public class AddModelCommand extends Command
     @Override
     public void undo()
     {
-//        modelContainer.clearMeshes();
-        Set<ModelContainer> modelContainers = new HashSet<>();
+//        modelContainer.clearElements();
+        Set<ProjectifiableThing> modelContainers = new HashSet<>();
         modelContainers.add(modelContainer);
         project.removeModels(modelContainers);
     }
@@ -50,44 +50,20 @@ public class AddModelCommand extends Command
     public void redo()
     {
         do_();
-        //TODO ensure that user does not try to undo/redo while this is still loading
+//        //TODO ensure that user does not try to undo/redo while this is still loading
 //        List<File> modelFiles = new ArrayList<>();
 //        modelFiles.add(modelContainer.getModelFile());
 //        ModelLoaderTask modelLoaderTask = new ModelLoaderTask(modelFiles);
-//        
-//                modelLoaderTask.setOnSucceeded((WorkerStateEvent event) ->
-//        {
-//            ModelLoadResults modelLoadResults = modelLoaderTask.getValue();
-//            ModelLoadResult modelLoadResult = modelLoadResults.getResults().get(0);
-//            Set<ModelContainer> loadedModelContainers = modelLoadResult.getModelContainers();
-//            
-//            modelContainer.getChildren().clear();
-//            for (ModelContainer loadedModelContainer : loadedModelContainers)
-//            {
-//                modelContainer.addChildNodes(loadedModelContainer.getMeshGroupChildren());
-//            }
-//            project.addModel(modelContainer);    
-//            
-//        });
-        
 //        modelLoaderTask.setOnSucceeded((WorkerStateEvent event) ->
 //        {
+//            //Mesh-only operation
 //            ModelLoadResults modelLoadResults = modelLoaderTask.getValue();
-//            ModelLoadResult modelLoadResult = modelLoadResults.getResults().get(0);
-//            Set<ModelContainer> loadedModelContainers = modelLoadResult.getModelContainers();
 //
-//            modelContainer.getChildren().clear();
-//            for (ModelContainer loadedModelContainer : loadedModelContainers)
+//            ModelLoadResult modelLoadResult = (ModelLoadResult) modelLoadResults.getResults().get(0);
+//            Set<ProjectifiableThing> loadedProjectifiableThings = modelLoadResult.getProjectifiableThings();
+//            for (ProjectifiableThing loadedProjectifiableThing : loadedProjectifiableThings)
 //            {
-//                List<Node> meshes = new ArrayList<>(loadedModelContainer.getChildren());
-//                meshes.forEach(mesh ->
-//                {
-//                    if (mesh instanceof MeshView)
-//                    {
-//                        loadedModelContainer.getChildren().remove(mesh);
-//                        modelContainer.setMeshView((MeshView) mesh);
-//                    }
-//                });
+//                modelContainer.addChildNodes(loadedProjectifiableThing.getChildNodes());
 //            }
 //            project.addModel(modelContainer);
 //

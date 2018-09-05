@@ -4,30 +4,22 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
-import celtech.configuration.Filament;
-import celtech.configuration.MaterialType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.MaterialType;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.StandardColours;
-import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -39,12 +31,12 @@ import javafx.scene.text.TextFlow;
  *
  * @author tony
  */
-public class MaterialComponent extends VBox implements PrinterListChangesListener
+public class MaterialComponent extends VBox implements PrinterListChangesListener, FilamentSelectionListener
 {
 
     private Printer printer;
     private int extruderNumber;
-    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    private final FilamentContainer filamentContainer = FilamentContainer.getInstance();
 
     public enum ReelType
     {
@@ -92,7 +84,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
     private TextFlow materialColourContainer;
 
     @FXML
-    private ComboBox<Filament> cmbMaterials;
+    private FilamentMenuButton filamentMenuButton;
 
     private Filament filamentInUse = FilamentContainer.UNKNOWN_FILAMENT;
 
@@ -120,17 +112,11 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
         this.printer = printer;
         this.extruderNumber = extruderNumber;
-        setupComboBox();
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
-
-        Lookup.getUserPreferences().advancedModeProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    repopulateCmbMaterials();
-                });
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         setUpFilamentLoadedListener();
+        filamentMenuButton.initialiseButton(this, null, true);
         configureDisplay();
     }
 
@@ -139,81 +125,13 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         return printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get();
     }
 
-    /**
-     * Initialisation code
-     */
-    private ObservableList<Filament> comboItems;
-
-    /**
-     * Set up the materials combo box. This displays a list of filaments and can
-     * also display an "Unknown" (string) option when required.
-     */
-    private void setupComboBox()
+    private void whenMaterialSelected(Filament filament)
     {
-        cmbMaterials.setCellFactory((ListView<Filament> param) -> new FilamentCellLong());
-        cmbMaterials.setButtonCell(new FilamentCell());
-
-        repopulateCmbMaterials();
-
-        if (printer != null
-                && printer.effectiveFilamentsProperty() != null)
+        if (Lookup.getSelectedPrinterProperty().get() != null)
         {
-            if (printer.effectiveFilamentsProperty().containsKey(extruderNumber))
-            {
-                cmbMaterials.setValue(printer.effectiveFilamentsProperty().get(extruderNumber));
-            }
-        } else
-        {
-            cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
+            Lookup.getSelectedPrinterProperty().get().overrideFilament(extruderNumber, filament);
         }
-        filamentContainer.getUserFilamentList().addListener(
-                (ListChangeListener.Change<? extends Filament> change) ->
-                {
-
-                    while (change.next())
-                    {
-                        if (change.wasAdded())
-                        {
-                            for (Filament filament : change.getAddedSubList())
-                            {
-                                cmbMaterials.getItems().add(filament);
-                            }
-                        } else if (change.wasRemoved())
-                        {
-                            for (Filament filament : change.getRemoved())
-                            {
-                                cmbMaterials.getItems().remove(filament);
-                            }
-                        } else if (change.wasReplaced())
-                        {
-                        } else if (change.wasUpdated())
-                        {
-                        }
-                    }
-
-                });
-    }
-
-    @FXML
-    public void whenMaterialSelected(ActionEvent e)
-    {
-        filamentInUse = cmbMaterials.getValue();
-
-        if (filamentInUse != null)
-        {
-            if (filamentInUse != FilamentContainer.UNKNOWN_FILAMENT)
-            {
-                Platform.runLater(() ->
-                {
-                    comboItems.remove(FilamentContainer.UNKNOWN_FILAMENT);
-                });
-            }
-            if (Lookup.getSelectedPrinterProperty().get() != null)
-            {
-                Lookup.getSelectedPrinterProperty().get().overrideFilament(extruderNumber, filamentInUse);
-            }
-            configureDisplay();
-        }
+        configureDisplay();
     }
 
     private void setUpFilamentLoadedListener()
@@ -222,50 +140,9 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         {
             printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().addListener(
                     (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                    {
-                        configureDisplay();
-                    });
-        }
-    }
-
-    private void repopulateCmbMaterials()
-    {
-        ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
-        ObservableList<Filament> userFilaments = FXCollections.observableArrayList();
-
-        try
-        {
-            if (Lookup.getUserPreferences().isAdvancedMode())
             {
-                allFilaments.addAll(filamentContainer.getCompleteFilamentList());
-                userFilaments.addAll(filamentContainer.getUserFilamentList());
-            } else
-            {
-                allFilaments.addAll(filamentContainer.getAppFilamentList());
-            }
-        } catch (NoClassDefFoundError exception)
-        {
-            // this should only happen in SceneBuilder            
-        }
-
-        Filament currentVal = cmbMaterials.getValue();
-
-        List<Filament> filamentsList = new ArrayList<>();
-        filamentsList.add(FilamentContainer.UNKNOWN_FILAMENT);
-        filamentsList.addAll(allFilaments);
-
-        comboItems = FXCollections.observableArrayList(filamentsList);
-        cmbMaterials.setItems(comboItems);
-
-        if (comboItems.contains(currentVal))
-        {
-            cmbMaterials.setValue(currentVal);
-        } else if (comboItems.contains(FilamentContainer.UNKNOWN_FILAMENT))
-        {
-            cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
-        } else
-        {
-            cmbMaterials.setValue(null);
+                configureDisplay();
+            });
         }
     }
 
@@ -275,7 +152,7 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         if (printer.reelsProperty().containsKey(extruderNumber))
         {
             //Reel is attached
-            cmbMaterials.setVisible(false);
+            filamentMenuButton.setVisible(false);
             setReelType(ReelType.ROBOX);
             Reel reel = printer.reelsProperty().get(extruderNumber);
             filamentInUse = filamentContainer.getFilamentByID(reel.filamentIDProperty().get());
@@ -283,13 +160,14 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
         } else if (printer.extrudersProperty().get(extruderNumber).filamentLoadedProperty().get())
         {
             //Loaded but no reel attached
-            cmbMaterials.setVisible(true);
+            filamentMenuButton.setVisible(true);
             materialRemaining.setVisible(false);
             filamentInUse = printer.effectiveFilamentsProperty().get(extruderNumber);
+            filamentMenuButton.displayFilamentOnButton(filamentInUse);
         } else
         {
             //No reel and not loaded
-            cmbMaterials.setVisible(false);
+            filamentMenuButton.setVisible(false);
             materialRemaining.setVisible(false);
             resetFilament();
         }
@@ -475,11 +353,6 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
 
     private void resetFilament()
     {
-        if (!comboItems.contains(FilamentContainer.UNKNOWN_FILAMENT))
-        {
-            comboItems.add(0, FilamentContainer.UNKNOWN_FILAMENT);
-            cmbMaterials.setValue(FilamentContainer.UNKNOWN_FILAMENT);
-        }
         filamentInUse = FilamentContainer.UNKNOWN_FILAMENT;
     }
 
@@ -514,5 +387,12 @@ public class MaterialComponent extends VBox implements PrinterListChangesListene
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
+    }
+
+    @Override
+    public void filamentSelected(Filament filament)
+    {
+        whenMaterialSelected(filament);
+        filamentMenuButton.hide();
     }
 }

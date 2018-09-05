@@ -2,8 +2,10 @@ package celtech;
 
 import celtech.appManager.TestSystemNotificationManager;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.gcodetranslator.TestGCodeOutputWriter;
+import celtech.postprocessor.TestGCodeOutputWriter;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
@@ -113,19 +115,19 @@ public class JavaFXThreadingRule implements TestRule
             userStorageFolderPath = temporaryUserStorageFolder.getRoot().getAbsolutePath()
                     + File.separator;
 
-            ApplicationConfiguration.setInstallationProperties(
+            BaseConfiguration.setInstallationProperties(
                     testProperties,
                     applicationInstallURL.getFile(),
                     userStorageFolderPath);
 
             File filamentDir = new File(userStorageFolderPath
-                    + ApplicationConfiguration.filamentDirectoryPath
+                    + BaseConfiguration.filamentDirectoryPath
                     + File.separator);
 
             filamentDir.mkdirs();
 
             new File(userStorageFolderPath
-                    + ApplicationConfiguration.printSpoolStorageDirectoryPath
+                    + BaseConfiguration.printSpoolStorageDirectoryPath
                     + File.separator).mkdirs();
 
             new File(userStorageFolderPath
@@ -139,17 +141,17 @@ public class JavaFXThreadingRule implements TestRule
 
             System.setProperty(
                     "libertySystems.configFile", configURL.getFile());
-            String installDir = ApplicationConfiguration.getApplicationInstallDirectory(
+            String installDir = BaseConfiguration.getApplicationInstallDirectory(
                     Lookup.class);
 
             SlicerParametersContainer.getInstance();
 
-            Lookup.setTaskExecutor(
+            BaseLookup.setTaskExecutor(
                     new TestTaskExecutor());
-            Lookup.setSystemNotificationHandler(
+            BaseLookup.setSystemNotificationHandler(
                     new TestSystemNotificationManager());
 
-            Lookup.setPostProcessorOutputWriterFactory(TestGCodeOutputWriter::new);
+            BaseLookup.setPostProcessorOutputWriterFactory(TestGCodeOutputWriter::new);
 
             long timeMillis = System.currentTimeMillis();
 

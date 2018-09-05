@@ -3,8 +3,8 @@
  */
 package celtech.appManager.undo;
 
-import celtech.appManager.Project;
-import celtech.configuration.Filament;
+import celtech.appManager.ModelContainerProject;
+import celtech.roboxbase.configuration.Filament;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -18,12 +18,12 @@ public class SetExtruderFilamentCommand extends Command
     private final Stenographer steno = StenographerFactory.getStenographer(
         SetExtruderFilamentCommand.class.getName());
 
-    Project project;
+    ModelContainerProject project;
     Filament filament;
     Filament previousFilament;
     private final int extruderNumber;
 
-    public SetExtruderFilamentCommand(Project project, Filament filament, int extruderNumber)
+    public SetExtruderFilamentCommand(ModelContainerProject project, Filament filament, int extruderNumber)
     {
         this.project = project;
         this.filament = filament;

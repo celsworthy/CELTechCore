@@ -4,10 +4,12 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.StateTransitionManager.GUIName;
-import celtech.printerControl.model.StateTransition;
-import celtech.printerControl.model.calibration.NozzleOpeningCalibrationState;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager.GUIName;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransition;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningCalibrationState;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.beans.value.ChangeListener;
@@ -24,14 +26,14 @@ public class CalibrationNozzleOpeningGUI
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
-        CalibrationNozzleOpeningGUI.class.getName());
+            CalibrationNozzleOpeningGUI.class.getName());
 
     private final CalibrationInsetPanelController controller;
     StateTransitionManager<NozzleOpeningCalibrationState> stateManager;
     Map<GUIName, Region> namesToButtons = new HashMap<>();
 
     public CalibrationNozzleOpeningGUI(CalibrationInsetPanelController controller,
-        StateTransitionManager<NozzleOpeningCalibrationState> stateManager)
+            StateTransitionManager<NozzleOpeningCalibrationState> stateManager)
     {
         this.controller = controller;
         this.stateManager = stateManager;
@@ -67,11 +69,15 @@ public class CalibrationNozzleOpeningGUI
     public void setState(NozzleOpeningCalibrationState state)
     {
         steno.debug("GUI going to state " + state);
-        controller.calibrationStatus.setText(state.getStepTitle());
+        controller.calibrationStatus.replaceText(state.getStepTitle());
         showAppropriateButtons(state);
-        if (state.getDiagramFXMLFileName().isPresent())
+        if (state.getDiagramName().isPresent())
         {
-            controller.showDiagram(state.getDiagramFXMLFileName().get());
+            URL fxmlURL = getClass().getResource(
+                    ApplicationConfiguration.fxmlDiagramsResourcePath
+                    + "nozzleopening" + "/" + state.getDiagramName().get());
+
+            controller.showDiagram(fxmlURL);
         }
         int stepNo = 0;
         switch (state)
@@ -83,49 +89,52 @@ public class CalibrationNozzleOpeningGUI
                 controller.calibrationMenu.disableNonSelectedItems();
                 stepNo = 1;
                 break;
-            case NO_MATERIAL_CHECK:
-                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
-                controller.buttonB.setText(Lookup.i18n("misc.No"));
+            case HEAD_CLEAN_CHECK_BEFORE_LEAK_TEST:
                 stepNo = 2;
                 break;
-            case T0_EXTRUDING:
+            case NO_MATERIAL_CHECK:
                 controller.buttonA.setText(Lookup.i18n("misc.Yes"));
                 controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 3;
                 break;
-            case T1_EXTRUDING:
+            case T0_EXTRUDING:
                 controller.buttonA.setText(Lookup.i18n("misc.Yes"));
                 controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 4;
                 break;
-            case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
+            case T1_EXTRUDING:
+                controller.buttonA.setText(Lookup.i18n("misc.Yes"));
+                controller.buttonB.setText(Lookup.i18n("misc.No"));
                 stepNo = 5;
+                break;
+            case HEAD_CLEAN_CHECK_AFTER_EXTRUDE:
+                stepNo = 6;
                 break;
             case PRE_CALIBRATION_PRIMING_FINE:
                 break;
             case CALIBRATE_FINE_NOZZLE:
                 controller.buttonA.setText(Lookup.i18n("calibrationPanel.present"));
                 controller.buttonB.setText(Lookup.i18n("calibrationPanel.notPresent"));
-                stepNo = 6;
+                stepNo = 7;
                 break;
             case CALIBRATE_FILL_NOZZLE:
                 controller.buttonA.setText(Lookup.i18n("calibrationPanel.present"));
                 controller.buttonB.setText(Lookup.i18n("calibrationPanel.notPresent"));
-                stepNo = 7;
+                stepNo = 8;
                 break;
             case HEAD_CLEAN_CHECK_FILL_NOZZLE:
-                stepNo = 8;
+                stepNo = 9;
                 break;
             case CONFIRM_NO_MATERIAL_NO_YESNO_BUTTONS:
             case CONFIRM_NO_MATERIAL:
                 controller.buttonA.setText(Lookup.i18n("misc.Yes"));
                 controller.buttonB.setText(Lookup.i18n("misc.No"));
-                stepNo = 9;
+                stepNo = 10;
                 break;
             case FINISHED:
                 controller.calibrationMenu.reset();
                 break;
-            case CANCELLED:    
+            case CANCELLED:
                 controller.resetMenuAndGoToChoiceMode();
                 break;
             case FAILED:
@@ -134,7 +143,7 @@ public class CalibrationNozzleOpeningGUI
         }
         if (stepNo != 0)
         {
-            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf9"), stepNo));
+            controller.stepNumber.setText(String.format(Lookup.i18n("calibrationPanel.stepXOf10"), stepNo));
         }
     }
 

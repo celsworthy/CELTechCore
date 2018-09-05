@@ -4,8 +4,8 @@
 package celtech.coreUI.components.material;
 
 import celtech.Lookup;
-import celtech.configuration.Filament;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 
 /**
  *

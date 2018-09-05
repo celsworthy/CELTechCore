@@ -1,9 +1,9 @@
 package celtech.webserver;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -38,7 +38,7 @@ public class AutoMakerController implements HttpHandler
 
         String statusResponse;
 
-        List<Printer> connectedPrinters = Lookup.getConnectedPrinters();
+        List<Printer> connectedPrinters = BaseLookup.getConnectedPrinters();
 
         steno.info(t.getRequestURI().getPath());
         if (t.getRequestURI().getPath().matches(abortPrintPage))
@@ -48,7 +48,7 @@ public class AutoMakerController implements HttpHandler
             {
                 try
                 {
-                    connectedPrinters.get(0).cancel(null);
+                    connectedPrinters.get(0).cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.error("Error attempting to abort");
@@ -76,7 +76,7 @@ public class AutoMakerController implements HttpHandler
             statusResponse = "<h3>AutoMaker Remote</h3>"
                 + "<p>Attached Printers:";
 
-            for (Printer printer : Lookup.getConnectedPrinters())
+            for (Printer printer : BaseLookup.getConnectedPrinters())
             {
                 statusResponse += printer.getPrinterIdentity().printerUniqueIDProperty().get()
                     + "\r";

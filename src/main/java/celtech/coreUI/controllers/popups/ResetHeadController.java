@@ -2,14 +2,15 @@ package celtech.coreUI.controllers.popups;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.EEPROMState;
-import celtech.configuration.datafileaccessors.HeadContainer;
-import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.comms.commands.rx.AckResponse;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.comms.rx.AckResponse;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ResetHeadController implements Initializable
     @FXML
     private void cancel()
     {
-        Lookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
+        BaseLookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
     }
 
     @Override
@@ -55,7 +56,11 @@ public class ResetHeadController implements Initializable
 
         for (HeadFile headFile : headFiles)
         {
-            URL headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png");
+            URL headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "_FRONT.png");
+            if (headImageURL == null)
+            {
+                headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/" + headFile.getTypeCode() + "-side.png");
+            }
             if (headImageURL == null)
             {
                 headImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "heads/Unknown.png");
@@ -84,28 +89,31 @@ public class ResetHeadController implements Initializable
                 //Retain the last filament temperature and hours if they are available
                 if (currentPrinter.getHeadEEPROMStateProperty().get() == EEPROMState.PROGRAMMED)
                 {
-                    head.headHoursProperty().set(currentPrinter.headProperty().get().headHoursProperty().get());
-
-                    for (int nozzleHeaterCounter = 0; nozzleHeaterCounter < currentPrinter.headProperty().get().getNozzleHeaters().size(); nozzleHeaterCounter++)
+                    if (currentPrinter.headProperty().get() != null)
                     {
-                        if (head.getNozzleHeaters().size() > nozzleHeaterCounter)
+                        head.headHoursProperty().set(currentPrinter.headProperty().get().headHoursProperty().get());
+
+                        for (int nozzleHeaterCounter = 0; nozzleHeaterCounter < currentPrinter.headProperty().get().getNozzleHeaters().size(); nozzleHeaterCounter++)
                         {
-                            head.getNozzleHeaters().get(nozzleHeaterCounter)
-                                    .lastFilamentTemperatureProperty().set(currentPrinter.headProperty().get()
-                                            .getNozzleHeaters().get(nozzleHeaterCounter).lastFilamentTemperatureProperty().get());
+                            if (head.getNozzleHeaters().size() > nozzleHeaterCounter)
+                            {
+                                head.getNozzleHeaters().get(nozzleHeaterCounter)
+                                        .lastFilamentTemperatureProperty().set(currentPrinter.headProperty().get()
+                                                .getNozzleHeaters().get(nozzleHeaterCounter).lastFilamentTemperatureProperty().get());
+                            }
                         }
-                    }
 
-                    if (currentPrinter.headProperty().get().typeCodeProperty().get().equals(head.typeCodeProperty().get())
-                            && currentPrinter.headProperty().get().getChecksum() != null
-                            && !currentPrinter.headProperty().get().getChecksum().equals(""))
-                    {
-                        head.setUniqueID(currentPrinter.headProperty().get().typeCodeProperty().get(),
-                                currentPrinter.headProperty().get().getWeekNumber(),
-                                currentPrinter.headProperty().get().getYearNumber(),
-                                currentPrinter.headProperty().get().getPONumber(),
-                                currentPrinter.headProperty().get().getSerialNumber(),
-                                currentPrinter.headProperty().get().getChecksum());
+                        if (currentPrinter.headProperty().get().typeCodeProperty().get().equals(head.typeCodeProperty().get())
+                                && currentPrinter.headProperty().get().getChecksum() != null
+                                && !currentPrinter.headProperty().get().getChecksum().equals(""))
+                        {
+                            head.setUniqueID(currentPrinter.headProperty().get().typeCodeProperty().get(),
+                                    currentPrinter.headProperty().get().getWeekNumber(),
+                                    currentPrinter.headProperty().get().getYearNumber(),
+                                    currentPrinter.headProperty().get().getPONumber(),
+                                    currentPrinter.headProperty().get().getSerialNumber(),
+                                    currentPrinter.headProperty().get().getChecksum());
+                        }
                     }
                 }
 
@@ -121,7 +129,7 @@ public class ResetHeadController implements Initializable
                     steno.exception("Couldn't format and write head data", ex);
                 }
 
-                Lookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
+                BaseLookup.getSystemNotificationHandler().hideProgramInvalidHeadDialog();
             });
             headHolder.getChildren().add(imageButton);
         }

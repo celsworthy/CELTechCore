@@ -4,9 +4,21 @@
 package celtech.appManager.undo;
 
 import celtech.Lookup;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.configuration.Filament;
+import celtech.modelcontrol.Groupable;
+import celtech.roboxbase.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.RotatableThreeD;
+import celtech.modelcontrol.RotatableTwoD;
+import celtech.modelcontrol.ScaleableThreeD;
+import celtech.modelcontrol.ScaleableTwoD;
+import celtech.modelcontrol.Translateable;
+import celtech.modelcontrol.TranslateableThreeD;
+import celtech.modelcontrol.TranslateableTwoD;
 import java.util.Set;
 import javafx.scene.shape.MeshView;
 import libertysystems.stenographer.Stenographer;
@@ -54,7 +66,7 @@ public class UndoableProject
         commandStack = Lookup.getProjectGUIState(project).getCommandStack();
     }
 
-    public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
+    public void translateModelsXTo(Set<TranslateableTwoD> modelContainers, double x)
     {
         doTransformCommand(() ->
         {
@@ -62,15 +74,15 @@ public class UndoableProject
         });
     }
 
-    public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
+    public void translateModelsDepthPositionTo(Set<Translateable> modelContainers, double position)
     {
         doTransformCommand(() ->
         {
-            project.translateModelsZTo(modelContainers, z);
+            project.translateModelsDepthPositionTo(modelContainers, position);
         });
     }
 
-    public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
+    public void scaleXModels(Set<ScaleableTwoD> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
@@ -79,7 +91,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
+    public void scaleYModels(Set<ScaleableTwoD> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
@@ -88,7 +100,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
+    public void scaleZModels(Set<ScaleableThreeD> modelContainers, double newScale,
             boolean preserveAspectRatio)
     {
         doTransformCommand(() ->
@@ -97,7 +109,7 @@ public class UndoableProject
         });
     }
 
-    public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
+    public void scaleXYZRatioSelection(Set<ScaleableThreeD> modelContainers, double ratio)
     {
         doTransformCommand(() ->
         {
@@ -105,7 +117,15 @@ public class UndoableProject
         });
     }
 
-    public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
+    public void scaleXYRatioSelection(Set<ScaleableTwoD> modelContainers, double ratio)
+    {
+        doTransformCommand(() ->
+        {
+            project.scaleXYRatioSelection(modelContainers, ratio);
+        });
+    }
+
+    public void resizeModelsDepth(Set<ResizeableThreeD> modelContainers, double depth)
     {
         doTransformCommand(() ->
         {
@@ -113,7 +133,7 @@ public class UndoableProject
         });
     }
 
-    public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
+    public void resizeModelsHeight(Set<ResizeableTwoD> modelContainers, double height)
     {
         doTransformCommand(() ->
         {
@@ -121,7 +141,7 @@ public class UndoableProject
         });
     }
 
-    public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
+    public void resizeModelsWidth(Set<ResizeableTwoD> modelContainers, double width)
     {
         doTransformCommand(() ->
         {
@@ -129,45 +149,54 @@ public class UndoableProject
         });
     }
 
-    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateLeanModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
-        doTransformCommand(() ->
+        if (project instanceof ModelContainerProject)
         {
-            project.rotateLeanModels(modelContainers, rotation);
-        });
+            doTransformCommand(() ->
+            {
+                ((ModelContainerProject) project).rotateLeanModels(modelContainers, rotation);
+            });
+        }
     }
 
-    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateTwistModels(Set<RotatableThreeD> modelContainers, double rotation)
     {
-        doTransformCommand(() ->
+        if (project instanceof ModelContainerProject)
         {
-            project.rotateTwistModels(modelContainers, rotation);
-        });
+            doTransformCommand(() ->
+            {
+                ((ModelContainerProject) project).rotateTwistModels(modelContainers, rotation);
+            });
+        }
     }
 
-    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
+    public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
     {
-        doTransformCommand(() ->
+        if (project instanceof ModelContainerProject)
         {
-            project.rotateTurnModels(modelContainers, rotation);
-        });
+            doTransformCommand(() ->
+            {
+                ((ModelContainerProject) project).rotateTurnModels(modelContainers, rotation);
+            });
+        }
     }
 
-    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z,
+    public void translateModelsBy(Set<TranslateableTwoD> modelContainers, double x, double y,
             boolean canMerge)
     {
         doTransformCommand(() ->
         {
-            project.translateModelsBy(modelContainers, x, z);
+            project.translateModelsBy(modelContainers, x, y);
         }, canMerge);
     }
 
-    public void translateModelsTo(Set<ModelContainer> modelContainers, double x, double z,
+    public void translateModelsTo(Set<TranslateableTwoD> modelContainers, double x, double y,
             boolean canMerge)
     {
         doTransformCommand(() ->
         {
-            project.translateModelsTo(modelContainers, x, z);
+            project.translateModelsTo(modelContainers, x, y);
         }, canMerge);
     }
 
@@ -181,33 +210,39 @@ public class UndoableProject
 
     public void dropToBed(Set<ModelContainer> modelContainers)
     {
-        doTransformCommand(() ->
+        if (project instanceof ModelContainerProject)
         {
-            project.dropToBed(modelContainers);
-        });
+            doTransformCommand(() ->
+            {
+                ((ModelContainerProject) project).dropToBed(modelContainers);
+            });
+        }
     }
 
     public void snapToGround(ModelContainer modelContainer, MeshView meshView, int faceNumber)
     {
-        doTransformCommand(() ->
+        if (project instanceof ModelContainerProject)
         {
-            project.snapToGround(modelContainer, meshView, faceNumber);
-        });
+            doTransformCommand(() ->
+            {
+                ((ModelContainerProject) project).snapToGround(modelContainer, meshView, faceNumber);
+            });
+        }
     }
 
-    public void addModel(ModelContainer modelContainer)
+    public void addModel(ProjectifiableThing modelContainer)
     {
         Command addModelCommand = new AddModelCommand(project, modelContainer);
         commandStack.do_(addModelCommand);
     }
 
-    public void deleteModels(Set<ModelContainer> modelContainers)
+    public void deleteModels(Set<ProjectifiableThing> modelContainers)
     {
         Command deleteModelCommand = new DeleteModelsCommand(project, modelContainers);
         commandStack.do_(deleteModelCommand);
     }
 
-    public void copyModels(Set<ModelContainer> modelContainers)
+    public void copyModels(Set<ProjectifiableThing> modelContainers)
     {
         Command copyModelsCommand = new CopyModelsCommand(project, modelContainers);
         commandStack.do_(copyModelsCommand);
@@ -216,38 +251,48 @@ public class UndoableProject
     public void assignModelToExtruder(ModelContainer modelContainer,
             boolean assignToExtruder0)
     {
-        Command setUserExtruder0Command = new AssignModelToExtruderCommand(project,
-                modelContainer,
-                assignToExtruder0);
-        commandStack.do_(setUserExtruder0Command);
+        if (project instanceof ModelContainerProject)
+        {
+            Command setUserExtruder0Command = new AssignModelToExtruderCommand((ModelContainerProject)project,
+                    modelContainer,
+                    assignToExtruder0);
+            commandStack.do_(setUserExtruder0Command);
+        }
     }
 
     public void assignModelsToExtruders(Set<ModelContainer> modelContainersToAssignToExtruder0,
             Set<ModelContainer> modelContainersToAssignToExtruder1)
     {
-        Command setUserExtruder0Command = new AssignModelToExtruderCommand(project,
+        Command setUserExtruder0Command = new AssignModelToExtruderCommand((ModelContainerProject)project,
                 modelContainersToAssignToExtruder0,
                 modelContainersToAssignToExtruder1);
         commandStack.do_(setUserExtruder0Command);
     }
 
-    public void group(Set<ModelContainer> modelContainers)
+    public void group(Set<Groupable> modelContainers)
     {
-        Command groupCommand = new GroupCommand(project, modelContainers);
-        commandStack.do_(groupCommand);
-
+        if (project instanceof ModelContainerProject)
+        {
+            Command groupCommand = new GroupCommand(((ModelContainerProject) project), modelContainers);
+            commandStack.do_(groupCommand);
+        }
     }
 
     public void ungroup(Set<ModelContainer> modelContainers)
     {
-        Command ungroupCommand = new UngroupCommand(project, modelContainers);
-        commandStack.do_(ungroupCommand);
+        if (project instanceof ModelContainerProject)
+        {
+            Command ungroupCommand = new UngroupCommand(((ModelContainerProject) project), modelContainers);
+            commandStack.do_(ungroupCommand);
+        }
     }
 
     public void cut(Set<ModelContainer> modelContainers, float cutHeightValue)
     {
-        Command cutCommand = new CutCommand(project, modelContainers, cutHeightValue);
-        commandStack.do_(cutCommand);
+        if (project instanceof ModelContainerProject)
+        {
+            Command cutCommand = new CutCommand(((ModelContainerProject) project), modelContainers, cutHeightValue);
+            commandStack.do_(cutCommand);
+        }
     }
-
 }

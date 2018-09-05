@@ -1,5 +1,8 @@
 package celtech.utils.tasks;
 
+import celtech.roboxbase.utils.tasks.TaskExecutor;
+import celtech.roboxbase.utils.tasks.TaskResponder;
+import celtech.roboxbase.utils.tasks.TaskResponse;
 import javafx.concurrent.Task;
 
 /**
@@ -48,7 +51,19 @@ public class TestTaskExecutor implements TaskExecutor
     public void runOnBackgroundThread(Runnable runnable)
     {
         runnable.run();
-    }    
+    }
+    
+    @Override
+    public void runDelayedOnBackgroundThread(Runnable runnable, long delay)
+    {
+        try {
+            Thread.sleep(delay);
+        }
+        catch (InterruptedException ex)
+        {
+        }
+        runnable.run();
+    }
 
     @Override
     public void runAsTask(NoArgsVoidFunc action, NoArgsVoidFunc successHandler,

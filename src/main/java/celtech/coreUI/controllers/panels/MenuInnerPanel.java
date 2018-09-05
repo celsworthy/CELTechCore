@@ -4,6 +4,7 @@
 package celtech.coreUI.controllers.panels;
 
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
 
 /**

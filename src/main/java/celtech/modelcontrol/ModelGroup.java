@@ -4,7 +4,7 @@
 package celtech.modelcontrol;
 
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.utils.threed.ThreeDUtils;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,9 +161,10 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
     /**
      * Calculate max/min X,Y,Z before the transforms have been applied (ie the
      * original model dimensions before any transforms).
+     * @return 
      */
     @Override
-    ModelBounds calculateBoundsInLocal()
+    protected RectangularBounds calculateBoundsInLocal()
     {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
@@ -174,7 +175,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
 
         for (ModelContainer modelContainer : childModelContainers)
         {
-            ModelBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child is this model
+            RectangularBounds bounds = modelContainer.lastTransformedBoundsInParent; // parent of child is this model
             minX = Math.min(bounds.getMinX(), minX);
             minY = Math.min(bounds.getMinY(), minY);
             minZ = Math.min(bounds.getMinZ(), minZ);
@@ -192,7 +193,7 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
         double newcentreY = minY + (newheight / 2);
         double newcentreZ = minZ + (newdepth / 2);
 
-        return new ModelBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
+        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
                 newheight, newdepth, newcentreX, newcentreY,
                 newcentreZ);
     }
@@ -232,14 +233,14 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
         Set<ModelContainer> childModels = new HashSet<>();
         for (ModelContainer childModel : childModelContainers)
         {
-            ModelContainer modelContainerCopy = childModel.makeCopy();
+            ModelContainer modelContainerCopy = (ModelContainer)childModel.makeCopy();
             modelContainerCopy.setState(childModel.getState());
             childModels.add(modelContainerCopy);
         }
         ModelGroup copy = new ModelGroup(childModels);
-        copy.setXScale(this.getXScale());
-        copy.setYScale(this.getYScale());
-        copy.setZScale(this.getZScale());
+        copy.setXScale(this.getXScale(), true);
+        copy.setYScale(this.getYScale(), true);
+        copy.setZScale(this.getZScale(), true);
         copy.setRotationLean(this.getRotationLean());
         copy.setRotationTwist(this.getRotationTwist());
         copy.setRotationTurn(this.getRotationTurn());
@@ -264,10 +265,10 @@ public class ModelGroup extends ModelContainer implements ScreenExtentsProvider.
 //        for (ModelContainer modelContainer : getChildModelContainers())
 //        {
 //            modelContainer.setRotationTurn(value);
-//            Point3D newPosition = turnRotate.deltaTransform(modelContainer.getTransformedCentreX(), modelContainer.getTransformedCentreY(), modelContainer.getTransformedCentreZ());
+//            Point3D newPosition = turnRotate.deltaTransform(modelContainer.getTransformedCentreX(), modelContainer.getTransformedCentreY(), modelContainer.getTransformedCentreDepth());
 //            double newX = newPosition.getX() - modelContainer.getTransformedCentreX();
 //            double newY = newPosition.getY() - modelContainer.getTransformedCentreY();
-//            double newZ = newPosition.getZ() - modelContainer.getTransformedCentreZ();
+//            double newZ = newPosition.getZ() - modelContainer.getTransformedCentreDepth();
 //            modelContainer.translateBy(newX, newY, newZ);
 //        }
 //

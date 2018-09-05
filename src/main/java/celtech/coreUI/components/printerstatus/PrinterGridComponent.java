@@ -4,14 +4,15 @@
 package celtech.coreUI.components.printerstatus;
 
 import celtech.Lookup;
-import celtech.configuration.PrinterColourMap;
+import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.components.PrinterIDDialog;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.PrinterIdentity;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterIdentity;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,11 +31,11 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class PrinterGridComponent extends FlowPane implements PrinterListChangesListener, ComponentIsolationInterface
 {
-
+    
     private ObservableList<Printer> connectedPrinters;
     private final Map<Printer, PrinterComponent> printerComponentsByPrinter = new HashMap<>();
     private PrinterIDDialog printerIDDialog = null;
-
+    
     public PrinterGridComponent()
     {
         final int width = 260;
@@ -44,11 +45,11 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         this.setPrefHeight(120);
         this.setMaxHeight(260);
         this.setPrefWrapLength(261);
-
+        
         try
         {
-            connectedPrinters = Lookup.getConnectedPrinters();
-            Lookup.getPrinterListChangesNotifier().addListener(this);
+            connectedPrinters = BaseLookup.getConnectedPrinters();
+            BaseLookup.getPrinterListChangesNotifier().addListener(this);
         } catch (NoClassDefFoundError error)
         {
             // this should only happen in SceneBuilder
@@ -74,13 +75,13 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         {
             size = PrinterComponent.Size.SIZE_LARGE;
         }
-
+        
         printerComponent.setSize(size);
         this.setHgap(size.getSpacing());
         this.setVgap(size.getSpacing());
         this.getChildren().add(printerComponent);
     }
-
+    
     private void removeAllPrintersFromGrid()
     {
         printerComponentsByPrinter.clear();
@@ -98,11 +99,11 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         printerComponentsByPrinter.remove(printer);
         actOnComponentInterruptible();
     }
-
+    
     public final void clearAndAddAllPrintersToGrid()
     {
         removeAllPrintersFromGrid();
-
+        
         if (connectedPrinters.size() > 0)
         {
             for (Printer printer : connectedPrinters)
@@ -110,7 +111,7 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
                 PrinterComponent printerComponent = createPrinterComponentForPrinter(printer);
                 addPrinterComponentToGrid(printerComponent);
             }
-
+            
             actOnComponentInterruptible();
         } else
         {
@@ -152,7 +153,7 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
             showEditPrinterDetails(printer);
         }
     }
-
+    
     private void selectPrinter(Printer printer)
     {
         if (Lookup.getSelectedPrinterProperty().get() != null)
@@ -188,16 +189,18 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
                     printerIdentity.printerColourProperty().get()));
             printerIDDialog.
                     setChosenPrinterName(printerIdentity.printerFriendlyNameProperty().get());
-
+            
             boolean okPressed = printerIDDialog.show();
-
+            
             if (okPressed)
             {
                 try
                 {
-                    printer.updatePrinterName(printerIDDialog.getChosenPrinterName());
-                    printer.updatePrinterDisplayColour(colourMap.displayToPrinterColour(
+                    PrinterIdentity clonedID = printer.getPrinterIdentity().clone();
+                    clonedID.printerFriendlyNameProperty().set(printerIDDialog.getChosenPrinterName());
+                    clonedID.printerColourProperty().set(colourMap.displayToPrinterColour(
                             printerIDDialog.getChosenDisplayColour()));
+                    printer.updatePrinterIdentity(clonedID);
                 } catch (PrinterException ex)
                 {
                     steno.error("Error writing printer ID");
@@ -218,17 +221,16 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         } else
         {
             selectPrinter(null);
-            Lookup.setSelectedPrinter(null);
         }
     }
-
+    
     @Override
     public void whenPrinterAdded(Printer printer)
     {
         clearAndAddAllPrintersToGrid();
         selectPrinter(printer);
     }
-
+    
     @Override
     public void whenPrinterRemoved(Printer printer)
     {
@@ -236,48 +238,48 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         clearAndAddAllPrintersToGrid();
         selectOnePrinter();
     }
-
+    
     @Override
     public void whenHeadAdded(Printer printer)
     {
     }
-
+    
     @Override
     public void whenHeadRemoved(Printer printer, Head head)
     {
     }
-
+    
     @Override
     public void whenReelAdded(Printer printer, int reelIndex)
     {
     }
-
+    
     @Override
     public void whenReelRemoved(Printer printer, Reel reel, int reelIndex)
     {
     }
-
+    
     @Override
     public void whenReelChanged(Printer printer, Reel reel)
     {
     }
-
+    
     @Override
     public void whenExtruderAdded(Printer printer, int extruderIndex)
     {
     }
-
+    
     @Override
     public void whenExtruderRemoved(Printer printer, int extruderIndex)
     {
     }
-
+    
     @Override
     public void interruptibilityUpdated(PrinterComponent component)
     {
         actOnComponentInterruptible();
     }
-
+    
     private void actOnComponentInterruptible()
     {
         if (Lookup.getSelectedPrinterProperty().get() != null)
@@ -293,8 +295,7 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
                     if (componentToExamine != null && !componentToExamine.isInterruptible())
                     {
                         componentEntry.getValue().setDisable(true);
-                    }
-                    else
+                    } else
                     {
                         componentEntry.getValue().setDisable(false);
                     }

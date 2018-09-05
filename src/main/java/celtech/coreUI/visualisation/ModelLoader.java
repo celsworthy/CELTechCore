@@ -4,14 +4,21 @@
 package celtech.coreUI.visualisation;
 
 import celtech.Lookup;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ProjectCallback;
+import celtech.appManager.ProjectMode;
+import celtech.appManager.ShapeContainerProject;
 import celtech.appManager.undo.UndoableProject;
-import celtech.configuration.PrintBed;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
+import celtech.modelcontrol.Groupable;
+import celtech.roboxbase.utils.RectangularBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.printerControl.model.Printer;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.services.modelLoader.ModelLoadResults;
 import celtech.services.modelLoader.ModelLoaderService;
 import celtech.utils.threed.MeshUtils;
@@ -41,7 +48,9 @@ public class ModelLoader
      */
     public static final ModelLoaderService modelLoaderService = new ModelLoaderService();
 
-    private void offerShrinkAndAddToProject(Project project, boolean relayout)
+    private void offerShrinkAndAddToProject(Project project, boolean relayout, ProjectCallback callMeBack,
+            boolean dontGroupModelsOverride,
+            Printer printer)
     {
         ModelLoadResults loadResults = modelLoaderService.getValue();
         if (loadResults.getResults().isEmpty())
@@ -49,78 +58,105 @@ public class ModelLoader
             return;
         }
 
-        // validate incoming meshes
-        // Associate the loaded meshes with extruders in turn, respecting the original groups / model files
-        int numExtruders = 1;
-
-        Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
-        if (selectedPrinter != null)
+        if (loadResults.getType() == ModelLoadResultType.Mesh)
         {
-            numExtruders = selectedPrinter.extrudersProperty().size();
-        }
+            project.setMode(ProjectMode.MESH);
+            // validate incoming meshes
+            // Associate the loaded meshes with extruders in turn, respecting the original groups / model files
+            int numExtruders = 1;
 
-        int currentExtruder = 0;
-
-        for (ModelLoadResult loadResult : loadResults.getResults())
-        {
-            Set<ModelContainer> modelContainers = loadResult.getModelContainers();
-            Set<String> invalidModelNames = new HashSet<>();
-            for (ModelContainer modelContainer : modelContainers)
+            Printer selectedPrinter = Lookup.getSelectedPrinterProperty().get();
+            if (selectedPrinter != null)
             {
-                Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
-                if (error.isPresent())
+                numExtruders = selectedPrinter.extrudersProperty().size();
+            }
+
+            int currentExtruder = 0;
+
+            for (ModelLoadResult loadResult : loadResults.getResults())
+            {
+                Set<ModelContainer> modelContainers = (Set) loadResult.getProjectifiableThings();
+                Set<String> invalidModelNames = new HashSet<>();
+                for (ModelContainer modelContainer : modelContainers)
                 {
-                    invalidModelNames.add(modelContainer.getModelName());
-                    modelContainer.setIsInvalidMesh(true);
+                    Optional<MeshUtils.MeshError> error = MeshUtils.validate((TriangleMesh) modelContainer.getMeshView().getMesh());
+                    if (error.isPresent())
+                    {
+                        invalidModelNames.add(modelContainer.getModelName());
+                        modelContainer.setIsInvalidMesh(true);
+                        steno.debug("Model load - " + error.get().name());
+                    }
+
+                    //Assign the models incrementally to the extruders
+                    modelContainer.getAssociateWithExtruderNumberProperty().set(currentExtruder);
                 }
 
-                //Assign the models incrementally to the extruders
-                modelContainer.getAssociateWithExtruderNumberProperty().set(currentExtruder);
-            }
-
-            if (currentExtruder < numExtruders - 1)
-            {
-                currentExtruder++;
-            } else
-            {
-                currentExtruder = 0;
-            }
-
-            if (!invalidModelNames.isEmpty())
-            {
-                boolean load
-                        = Lookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
-                if (!load)
+                if (currentExtruder < numExtruders - 1)
                 {
-                    return;
-                }
-            }
-        }
-
-        boolean projectIsEmpty = project.getTopLevelModels().isEmpty();
-        Set<ModelContainer> allModelContainers = new HashSet<>();
-        for (ModelLoadResult loadResult : loadResults.getResults())
-        {
-            if (loadResult != null)
-            {
-                if (Lookup.getUserPreferences().isLoosePartSplitOnLoad())
-                {
-                    allModelContainers.add(makeGroup(loadResult.getModelContainers()));
+                    currentExtruder++;
                 } else
                 {
-                    allModelContainers.addAll(loadResult.getModelContainers());
+                    currentExtruder = 0;
                 }
-            } else
-            {
-                steno.error("Error whilst attempting to load model");
+
+                if (!invalidModelNames.isEmpty())
+                {
+                    boolean load
+                            = BaseLookup.getSystemNotificationHandler().showModelIsInvalidDialog(invalidModelNames);
+                    if (!load)
+                    {
+                        return;
+                    }
+                }
             }
-        }
-        addToProject(project, allModelContainers);
-        if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
-        {
+
+            boolean projectIsEmpty = project.getNumberOfProjectifiableElements() == 0;
+            Set<ModelContainer> allModelContainers = new HashSet<>();
+            boolean shouldCentre = loadResults.isShouldCentre();
+
+            for (ModelLoadResult loadResult : loadResults.getResults())
+            {
+                if (loadResult != null)
+                {
+                    Set<ModelContainer> modelContainersToOperateOn = (Set) loadResult.getProjectifiableThings();
+                    if (Lookup.getUserPreferences().isLoosePartSplitOnLoad())
+                    {
+                        allModelContainers.add(makeGroup(modelContainersToOperateOn));
+                    } else
+                    {
+                        allModelContainers.addAll(modelContainersToOperateOn);
+                    }
+                } else
+                {
+                    steno.error("Error whilst attempting to load model");
+                }
+            }
+            Set<ProjectifiableThing> allProjectifiableThings = (Set) allModelContainers;
+
+            addToProject(project, allProjectifiableThings, shouldCentre, dontGroupModelsOverride, printer);
+            if (relayout && projectIsEmpty && loadResults.getResults().size() > 1)
+            {
 //            project.autoLayout();
+            }
+        } else if (loadResults.getType() == ModelLoadResultType.SVG)
+        {
+
+            project.setMode(ProjectMode.SVG);
+            Set<ProjectifiableThing> allProjectifiableThings = new HashSet<>();
+            for (ModelLoadResult result : loadResults.getResults())
+            {
+                allProjectifiableThings.addAll(result.getProjectifiableThings());
+            }
+
+            addToProject(project, allProjectifiableThings, false, dontGroupModelsOverride, printer);
+
         }
-        return;
+
+        if (project != null
+                && callMeBack != null)
+        {
+            callMeBack.modelAddedToProject(project);
+        }
     }
 
     public ReadOnlyBooleanProperty modelLoadingProperty()
@@ -130,24 +166,55 @@ public class ModelLoader
 
     /**
      * Load each model in modelsToLoad, do not lay them out on the bed.
+     *
+     * @param project
+     * @param modelsToLoad
+     * @param callMeBack
      */
-    public void loadExternalModels(Project project, List<File> modelsToLoad)
+    public void loadExternalModels(Project project, List<File> modelsToLoad, ProjectCallback callMeBack)
     {
-        loadExternalModels(project, modelsToLoad, false);
+        loadExternalModels(project, modelsToLoad, false, callMeBack, false);
     }
 
     /**
      * Load each model in modelsToLoad and relayout if requested. If there are
      * already models loaded in the project then do not relayout even if
      * relayout=true;
+     *
+     * @param project
+     * @param modelsToLoad
+     * @param relayout
+     * @param callMeBack
      */
-    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout)
+    public void loadExternalModels(Project project, List<File> modelsToLoad, boolean relayout, ProjectCallback callMeBack,
+            boolean dontGroupModelsOverride)
     {
         modelLoaderService.reset();
         modelLoaderService.setModelFilesToLoad(modelsToLoad);
         modelLoaderService.setOnSucceeded((WorkerStateEvent t) ->
         {
-            offerShrinkAndAddToProject(project, relayout);
+            Project projectToUse = null;
+
+            if (project == null)
+            {
+                ModelLoadResults loadResults = modelLoaderService.getValue();
+                if (!loadResults.getResults().isEmpty())
+                {
+                    switch (loadResults.getType())
+                    {
+                        case Mesh:
+                            projectToUse = new ModelContainerProject();
+                            break;
+                        case SVG:
+                            projectToUse = new ShapeContainerProject();
+                            break;
+                    }
+                }
+            } else
+            {
+                projectToUse = project;
+            }
+            offerShrinkAndAddToProject(projectToUse, relayout, callMeBack, dontGroupModelsOverride, Lookup.getSelectedPrinterProperty().get());
         });
         modelLoaderService.start();
     }
@@ -157,38 +224,74 @@ public class ModelLoader
      * there is more than one ModelContainer/Group then put them in one
      * overarching group.
      */
-    private void addToProject(Project project, Set<ModelContainer> modelContainers)
+    private void addToProject(Project project, Set<ProjectifiableThing> modelContainers,
+            boolean shouldCentre,
+            boolean dontGroupModelsOverride,
+            Printer printer)
     {
         UndoableProject undoableProject = new UndoableProject(project);
 
-        ModelContainer modelContainer;
-        if (modelContainers.size() == 1)
+        if (project instanceof ModelContainerProject)
         {
-            modelContainer = modelContainers.iterator().next();
+            ModelContainer modelContainer;
+
+            if (modelContainers.size() == 1)
+            {
+                modelContainer = (ModelContainer) modelContainers.iterator().next();
+                addModelSequence(undoableProject, modelContainer, shouldCentre, printer);
+            } else if (!dontGroupModelsOverride)
+            {
+                Set<Groupable> thingsToGroup = (Set) modelContainers;
+                modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(thingsToGroup);
+                addModelSequence(undoableProject, modelContainer, shouldCentre, printer);
+            } else
+            {
+                modelContainers.iterator().forEachRemaining(mc ->
+                {
+                    addModelSequence(undoableProject, mc, shouldCentre, printer);
+                });
+            }
         } else
         {
-            modelContainer = project.createNewGroupAndAddModelListeners(modelContainers);
+            addModelSequence(undoableProject, modelContainers.iterator().next(), shouldCentre, printer);
         }
-        modelContainer.moveToCentre();
-        modelContainer.dropToBed();
-        shrinkIfRequested(modelContainer);
-        modelContainer.checkOffBed();
-        undoableProject.addModel(modelContainer);
     }
 
-    private void shrinkIfRequested(ModelContainer modelContainer)
+    private void addModelSequence(UndoableProject undoableProject,
+            ProjectifiableThing projectifiableThing,
+            boolean shouldCentre,
+            Printer printer)
+    {
+        shrinkIfRequested(projectifiableThing, printer);
+        if (shouldCentre)
+        {
+            projectifiableThing.moveToCentre();
+            if (projectifiableThing instanceof ModelContainer)
+            {
+                ((ModelContainer)projectifiableThing).dropToBed();
+            }
+        }
+        projectifiableThing.checkOffBed();
+        undoableProject.addModel(projectifiableThing);
+    }
+
+    private void shrinkIfRequested(ProjectifiableThing projectifiableThing, Printer printer)
     {
         boolean shrinkModel = false;
-        ModelBounds originalBounds = modelContainer.getOriginalModelBounds();
-        boolean modelIsTooLarge = PrintBed.isBiggerThanPrintVolume(originalBounds);
-        if (modelIsTooLarge)
+        RectangularBounds originalBounds = projectifiableThing.getOriginalModelBounds();
+
+        if (printer != null)
         {
-            shrinkModel = Lookup.getSystemNotificationHandler().
-                    showModelTooBigDialog(modelContainer.getModelName());
-        }
-        if (shrinkModel)
-        {
-            modelContainer.shrinkToFitBed();
+            boolean modelIsTooLarge = printer.isBiggerThanPrintVolume(originalBounds);
+            if (modelIsTooLarge)
+            {
+                shrinkModel = BaseLookup.getSystemNotificationHandler().
+                        showModelTooBigDialog(projectifiableThing.getModelName());
+            }
+            if (shrinkModel)
+            {
+                projectifiableThing.shrinkToFitBed();
+            }
         }
     }
 

@@ -5,10 +5,17 @@ package celtech.coreUI.visualisation;
 
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
-import celtech.coreUI.controllers.PrinterSettings;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.RotatableThreeD;
+import celtech.modelcontrol.RotatableTwoD;
+import celtech.modelcontrol.ScaleableThreeD;
+import celtech.modelcontrol.ScaleableTwoD;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.DoubleProperty;
@@ -28,7 +35,7 @@ import javafx.collections.ObservableSet;
 public class ProjectSelection implements ProjectChangesListener
 {
 
-    private final ObservableSet<ModelContainer> modelContainers;
+    private final ObservableSet<ProjectifiableThing> modelContainers;
     private final PrimarySelectedModelDetails primarySelectedModelDetails;
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
     private final IntegerProperty numGroupsSelected = new SimpleIntegerProperty(0);
@@ -55,9 +62,10 @@ public class ProjectSelection implements ProjectChangesListener
             @Override
             protected boolean computeValue()
             {
-                for (ModelContainer modelContainer : modelContainers)
+                for (ProjectifiableThing modelContainer : modelContainers)
                 {
-                    if (modelContainer.getParentModelContainer() != null)
+                    if ((modelContainer instanceof ModelContainer)
+                            && ((ModelContainer) modelContainer).getParentModelContainer() != null)
                     {
                         return true;
                     }
@@ -76,7 +84,7 @@ public class ProjectSelection implements ProjectChangesListener
     /**
      * Add the given modelContainer to the set of selected ModelContainers.
      */
-    public void addModelContainer(ModelContainer modelContainer)
+    public void addSelectedItem(ProjectifiableThing modelContainer)
     {
         if (!modelContainers.contains(modelContainer))
         {
@@ -87,9 +95,12 @@ public class ProjectSelection implements ProjectChangesListener
             if (modelContainer instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() + 1);
-                modelContainer.updateOriginalModelBounds();
-                modelContainer.notifyScreenExtentsChange();
-                modelContainer.notifyShapeChange();
+                if (modelContainer instanceof ModelContainer)
+                {
+                    ((ModelContainer) modelContainer).updateOriginalModelBounds();
+                    ((ModelContainer) modelContainer).notifyScreenExtentsChange();
+                    ((ModelContainer) modelContainer).notifyShapeChange();
+                }
             }
             for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
             {
@@ -100,24 +111,27 @@ public class ProjectSelection implements ProjectChangesListener
 
     /**
      * Remove the given modelContainer from the set of selected ModelContainers.
+     *
+     * @param projectifiableThing
      */
-    public void removeModelContainer(ModelContainer modelContainer)
+    public void removeModelContainer(ProjectifiableThing projectifiableThing)
     {
-        if (modelContainers.contains(modelContainer))
+        if (modelContainers.contains(projectifiableThing))
         {
-            modelContainer.setSelected(false);
-            modelContainers.remove(modelContainer);
+            projectifiableThing.setSelected(false);
+            modelContainers.remove(projectifiableThing);
             numModelsSelected.set(numModelsSelected.get() - 1);
-            if (modelContainer instanceof ModelGroup)
+            if (projectifiableThing instanceof ModelGroup)
             {
                 numGroupsSelected.set(numGroupsSelected.get() - 1);
-                modelContainer.updateOriginalModelBounds();
-                modelContainer.notifyScreenExtentsChange();
-                modelContainer.notifyShapeChange();
+                ModelGroup modelGroup = (ModelGroup) projectifiableThing;
+                modelGroup.updateOriginalModelBounds();
+                modelGroup.notifyScreenExtentsChange();
+                modelGroup.notifyShapeChange();
             }
             for (SelectedModelContainersListener selectedModelContainersListener : selectedModelContainersListeners)
             {
-                selectedModelContainersListener.whenRemoved(modelContainer);
+                selectedModelContainersListener.whenRemoved(projectifiableThing);
             }
         }
 
@@ -139,8 +153,8 @@ public class ProjectSelection implements ProjectChangesListener
      */
     public void deselectAllModels()
     {
-        Set<ModelContainer> allSelectedModelContainers = new HashSet<>(modelContainers);
-        for (ModelContainer modelContainer : allSelectedModelContainers)
+        Set<ProjectifiableThing> allSelectedModelContainers = new HashSet<>(modelContainers);
+        for (ProjectifiableThing modelContainer : allSelectedModelContainers)
         {
             removeModelContainer(modelContainer);
         }
@@ -148,14 +162,39 @@ public class ProjectSelection implements ProjectChangesListener
 
     /**
      * Return a copy of the set of selected models.
+     *
+     * @return
      */
-    public Set<ModelContainer> getSelectedModelsSnapshot()
+    public Set<ProjectifiableThing> getSelectedModelsSnapshot()
     {
         return new HashSet<>(modelContainers);
     }
 
     /**
+     * Return a copy of the set of selected models.
+     *
+     * @param desiredClass
+     * @return
+     */
+    public <T> Set<T> getSelectedModelsSnapshot(Class desiredClass)
+    {
+        Set<T> returnedModels = new HashSet<>();
+
+        for (ProjectifiableThing container : modelContainers)
+        {
+            if (desiredClass.isInstance(container))
+            {
+                returnedModels.add((T) container);
+            }
+        }
+
+        return returnedModels;
+    }
+
+    /**
      * Return the number of selected ModelContainers as an observable number.
+     *
+     * @return
      */
     public ReadOnlyIntegerProperty getNumModelsSelectedProperty()
     {
@@ -164,6 +203,8 @@ public class ProjectSelection implements ProjectChangesListener
 
     /**
      * Return the number of selected ModelGroups as an observable number.
+     *
+     * @return
      */
     public ReadOnlyIntegerProperty getNumGroupsSelectedProperty()
     {
@@ -172,6 +213,8 @@ public class ProjectSelection implements ProjectChangesListener
 
     /**
      * Return the details of the primary selected ModelContainer.
+     *
+     * @return
      */
     public PrimarySelectedModelDetails getPrimarySelectedModelDetails()
     {
@@ -188,14 +231,16 @@ public class ProjectSelection implements ProjectChangesListener
     }
 
     @Override
-    public void whenModelAdded(ModelContainer modelContainer)
+    public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
     }
 
     @Override
-    public void whenModelsRemoved(Set<ModelContainer> modelContainers)
+    public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThings)
     {
-        for (ModelContainer modelContainer : modelContainers)
+        List<ProjectifiableThing> thingsToRemove = new ArrayList<>();
+        thingsToRemove.addAll(modelContainers);
+        for (ProjectifiableThing modelContainer : thingsToRemove)
         {
             removeModelContainer(modelContainer);
         }
@@ -204,27 +249,30 @@ public class ProjectSelection implements ProjectChangesListener
     @Override
     public void whenAutoLaidOut()
     {
+        updateSelectedValues();
     }
 
     @Override
-    public void whenModelsTransformed(Set<ModelContainer> modelContainers)
+    public void whenModelsTransformed(Set<ProjectifiableThing> projectifiableThings)
     {
         updateSelectedValues();
     }
 
     @Override
-    public void whenModelChanged(ModelContainer modelContainer, String propertyName)
+    public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
     {
     }
 
     @Override
-    public void whenPrinterSettingsChanged(PrinterSettings printerSettings)
+    public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
     }
 
     /**
      * Add a listener that will be notified whenever a ModelContainer is
      * selected or deselected.
+     *
+     * @param selectedModelContainersListener
      */
     public void addListener(SelectedModelContainersListener selectedModelContainersListener)
     {
@@ -234,6 +282,8 @@ public class ProjectSelection implements ProjectChangesListener
     /**
      * Remove a listener that will be notified whenever a ModelContainer is
      * selected or deselected.
+     *
+     * @param selectedModelContainersListener
      */
     public void removeListener(SelectedModelContainersListener selectedModelContainersListener)
     {
@@ -246,12 +296,12 @@ public class ProjectSelection implements ProjectChangesListener
         /**
          * Called when a ModelContainer is selected.
          */
-        public void whenAdded(ModelContainer modelContainer);
+        public void whenAdded(ProjectifiableThing projectifiableThing);
 
         /**
          * Called when a ModelContainer is removed.
          */
-        public void whenRemoved(ModelContainer modelContainer);
+        public void whenRemoved(ProjectifiableThing projectifiableThing);
     }
 
     /**
@@ -261,12 +311,12 @@ public class ProjectSelection implements ProjectChangesListener
     public class PrimarySelectedModelDetails
     {
 
-        ModelContainer boundModelContainer;
+        ProjectifiableThing boundModelContainer;
 
         // initing values to -1 forces a change update when value first set to 0 (e.g. rotY)
         private final DoubleProperty width = new SimpleDoubleProperty(-1);
         private final DoubleProperty centreX = new SimpleDoubleProperty(-1);
-        private final DoubleProperty centreZ = new SimpleDoubleProperty(-1);
+        private final DoubleProperty centreDepth = new SimpleDoubleProperty(-1);
         private final DoubleProperty height = new SimpleDoubleProperty(-1);
         private final DoubleProperty depth = new SimpleDoubleProperty(-1);
         private final DoubleProperty scaleX = new SimpleDoubleProperty(-1);
@@ -285,7 +335,7 @@ public class ProjectSelection implements ProjectChangesListener
             return width;
         }
 
-        public void setTo(ModelContainer modelContainer)
+        public void setTo(ProjectifiableThing modelContainer)
         {
             boundModelContainer = modelContainer;
             updateSelectedProperties();
@@ -295,23 +345,47 @@ public class ProjectSelection implements ProjectChangesListener
         {
             if (boundModelContainer != null)
             {
-                width.set(boundModelContainer.getScaledWidth());
-                centreX.set(boundModelContainer.getTransformedCentreX());
-                centreZ.set(boundModelContainer.getTransformedCentreZ());
-                height.set(boundModelContainer.getScaledHeight());
-                depth.set(boundModelContainer.getScaledDepth());
-                scaleX.set(boundModelContainer.getXScale());
-                scaleY.set(boundModelContainer.getYScale());
-                scaleZ.set(boundModelContainer.getZScale());
-                rotationLean.set(boundModelContainer.getRotationLean());
-                rotationTwist.set(boundModelContainer.getRotationTwist());
-                rotationTurn.set(boundModelContainer.getRotationTurn());
+                if (boundModelContainer instanceof ShapeProviderThreeD)
+                {
+                    width.set(((ShapeProviderTwoD) boundModelContainer).getScaledWidth());
+                    height.set(((ShapeProviderTwoD) boundModelContainer).getScaledHeight());
+                    depth.set(((ShapeProviderThreeD) boundModelContainer).getScaledDepth());
+                    centreX.set(boundModelContainer.getTransformedCentreX());
+                    centreDepth.set(boundModelContainer.getTransformedCentreDepth());
+                } else if (boundModelContainer instanceof ShapeProviderTwoD)
+                {
+                    width.set(((ShapeProviderTwoD) boundModelContainer).getScaledWidth());
+                    height.set(((ShapeProviderTwoD) boundModelContainer).getScaledHeight());
+                    centreX.set(boundModelContainer.getTransformedCentreX());
+                    centreDepth.set(boundModelContainer.getTransformedCentreDepth());
+                }
+
+                if (boundModelContainer instanceof ScaleableThreeD)
+                {
+                    scaleX.set(((ScaleableTwoD) boundModelContainer).getXScale());
+                    scaleY.set(((ScaleableTwoD) boundModelContainer).getYScale());
+                    scaleZ.set(((ScaleableThreeD) boundModelContainer).getZScale());
+                } else if (boundModelContainer instanceof ScaleableTwoD)
+                {
+                    scaleX.set(((ScaleableTwoD) boundModelContainer).getXScale());
+                    scaleY.set(((ScaleableTwoD) boundModelContainer).getYScale());
+                }
+
+                if (boundModelContainer instanceof RotatableThreeD)
+                {
+                    rotationLean.set(((RotatableThreeD) boundModelContainer).getRotationLean());
+                    rotationTwist.set(((RotatableThreeD) boundModelContainer).getRotationTwist());
+                    rotationTurn.set(((RotatableTwoD) boundModelContainer).getRotationTurn());
+                } else if (boundModelContainer instanceof RotatableTwoD)
+                {
+                    rotationTurn.set(((RotatableTwoD) boundModelContainer).getRotationTurn());
+                }
             }
         }
 
-        public DoubleProperty getCentreZ()
+        public DoubleProperty getCentreDepth()
         {
-            return centreZ;
+            return centreDepth;
         }
 
         public DoubleProperty getCentreX()

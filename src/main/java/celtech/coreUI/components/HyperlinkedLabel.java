@@ -1,7 +1,7 @@
 package celtech.coreUI.components;
 
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +15,7 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 
 /**
@@ -33,12 +34,14 @@ public class HyperlinkedLabel extends TextFlow
     {
         getChildren().clear();
         hyperlinkMap.clear();
+        text.set("");
+        setTextAlignment(TextAlignment.CENTER);
 
         Matcher matcher = hyperlinkPattern.matcher(newText);
         int matches = 0;
         int currentIndex = 0;
 
-        while (matcher.find())
+        while (matcher.find(currentIndex))
         {
             matches++;
             if (matcher.start() > 0)
@@ -65,9 +68,9 @@ public class HyperlinkedLabel extends TextFlow
                         {
                             URI linkToVisit = hyperlinkMap.get(clickedLinkText);
                             if (Desktop.isDesktopSupported()
-                                    && ApplicationConfiguration.getMachineType()
+                                    && BaseConfiguration.getMachineType()
                                     != MachineType.LINUX_X86
-                                    && ApplicationConfiguration.getMachineType()
+                                    && BaseConfiguration.getMachineType()
                                     != MachineType.LINUX_X64)
                             {
                                 try
@@ -77,7 +80,26 @@ public class HyperlinkedLabel extends TextFlow
                                 {
                                     System.err.println("Error when attempting to browse to "
                                             + linkToVisit.
-                                            toString());
+                                                    toString());
+                                }
+                            } else if (BaseConfiguration.getMachineType() == MachineType.LINUX_X86
+                                    || BaseConfiguration.getMachineType() == MachineType.LINUX_X64)
+                            {
+                                try
+                                {
+                                    if (Runtime.getRuntime().exec(new String[]
+                                    {
+                                        "which", "xdg-open"
+                                    }).getInputStream().read() != -1)
+                                    {
+                                        Runtime.getRuntime().exec(new String[]
+                                        {
+                                            "xdg-open", linkToVisit.toString()
+                                        });
+                                    }
+                                } catch (IOException ex)
+                                {
+                                    System.err.println("Failed to run linux-specific browser command");
                                 }
                             } else
                             {
@@ -88,6 +110,7 @@ public class HyperlinkedLabel extends TextFlow
                     });
                     hyperlink.setText(linkText);
                     getChildren().add(hyperlink);
+                    currentIndex = matcher.end();
                 } catch (URISyntaxException ex)
                 {
                     System.err.println("Error attempting to create UI hyperlink from "
@@ -98,11 +121,19 @@ public class HyperlinkedLabel extends TextFlow
                 System.err.println("Error rendering dialog text: " + newText);
             }
         }
-
+        
         if (matches == 0)
         {
             //We didn't have any hyperlinks here
+            currentIndex = newText.length();
             addPlainText(newText);
+        }
+
+        if (currentIndex < newText.length()) 
+        {
+            // Add any final text after the hyperlinks
+            String textPortion = newText.substring(currentIndex);
+            addPlainText(textPortion);
         }
     }
 
@@ -111,6 +142,7 @@ public class HyperlinkedLabel extends TextFlow
         Text plainText = new Text(textPortion);
         plainText.getStyleClass().add("hyperlink-plaintext");
         getChildren().add(plainText);
+        text.set(text.get() + textPortion);
     }
 
     public String getText()

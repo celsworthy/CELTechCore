@@ -1,12 +1,16 @@
 package celtech.appManager;
 
-import celtech.configuration.fileRepresentation.HeadFile;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
-import celtech.printerControl.comms.commands.rx.FirmwareError;
-import celtech.printerControl.model.Printer;
-import celtech.services.firmware.FirmwareLoadResult;
-import celtech.services.firmware.FirmwareLoadService;
-import celtech.utils.tasks.TaskResponder;
+import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.appManager.PurgeResponse;
+import celtech.roboxbase.appManager.SystemNotificationManager;
+import celtech.roboxbase.comms.RoboxResetIDResult;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.comms.rx.FirmwareError;
+import celtech.roboxbase.comms.rx.PrinterIDResponse;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.firmware.FirmwareLoadResult;
+import celtech.roboxbase.services.firmware.FirmwareLoadService;
+import celtech.roboxbase.utils.tasks.TaskResponder;
 import java.util.Optional;
 import java.util.Set;
 
@@ -21,6 +25,12 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     public boolean askUserToUpdateFirmware()
     {
         return false;
+    }
+
+    @Override
+    public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
+    {
+        return RoboxResetIDResult.RESET_NOT_DONE;
     }
 
     @Override

@@ -4,12 +4,13 @@ import celtech.Lookup;
 import celtech.appManager.Project;
 import celtech.coreUI.visualisation.DimensionLine.LineDirection;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Pane;
@@ -21,78 +22,97 @@ import javafx.scene.layout.Pane;
 public class DimensionLineManager
 {
 
-    private final Map<ModelContainer, List<DimensionLine>> dimensionLines = new HashMap<>();
+    private final Map<ProjectifiableThing, List<DimensionLine>> dimensionLines = new HashMap<>();
 
-    private final ChangeListener<DragMode> dragModeListener = (ObservableValue<? extends DragMode> observable, DragMode oldValue, DragMode newValue) ->
+    private final ChangeListener<Boolean> dragModeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         for (List<DimensionLine> dimensionLineList : dimensionLines.values())
         {
             for (DimensionLine dimensionLine : dimensionLineList)
             {
-                dimensionLine.getDimensionLabel().setVisible(newValue == DragMode.IDLE);
+                dimensionLine.getDimensionLabel().setVisible(newValue == false);
             }
         }
     };
 
-    public DimensionLineManager(Pane paneToAddDimensionsTo, Project project, ReadOnlyObjectProperty<DragMode> dragModeProperty)
+    public DimensionLineManager(Pane paneToAddDimensionsTo, Project project, ReadOnlyBooleanProperty hideDimensionsProperty)
     {
-        dragModeProperty.addListener(dragModeListener);
+        hideDimensionsProperty.addListener(dragModeListener);
 
         Lookup.getProjectGUIState(project).getProjectSelection().addListener(
                 new ProjectSelection.SelectedModelContainersListener()
                 {
 
                     @Override
-                    public void whenAdded(ModelContainer modelContainer)
+                    public void whenAdded(ProjectifiableThing projectifiableThing)
                     {
+                        boolean addDimensionLines = false;
                         ArrayList<DimensionLine> lineList = new ArrayList<>();
                         DimensionLine verticalDimension = new DimensionLine();
-                        modelContainer.addScreenExtentsChangeListener(verticalDimension);
-                        paneToAddDimensionsTo.getChildren().add(verticalDimension);
-                        verticalDimension.initialise(project,
-                                modelContainer,
-                                LineDirection.VERTICAL);
-                        lineList.add(verticalDimension);
-
-                        DimensionLine horizontalDimension = new DimensionLine();
-                        modelContainer.addScreenExtentsChangeListener(horizontalDimension);
-                        paneToAddDimensionsTo.getChildren().add(horizontalDimension);
-                        horizontalDimension.initialise(project, modelContainer, LineDirection.HORIZONTAL);
-                        lineList.add(horizontalDimension);
-
                         DimensionLine frontBackDimension = new DimensionLine();
-                        modelContainer.addScreenExtentsChangeListener(frontBackDimension);
-                        paneToAddDimensionsTo.getChildren().add(frontBackDimension);
-                        frontBackDimension.initialise(project, modelContainer, LineDirection.FORWARD_BACK);
-                        lineList.add(frontBackDimension);
+                        DimensionLine horizontalDimension = new DimensionLine();
 
-                        paneToAddDimensionsTo.getChildren().add(verticalDimension.getDimensionLabel());
-                        paneToAddDimensionsTo.getChildren().add(horizontalDimension.getDimensionLabel());
-                        paneToAddDimensionsTo.getChildren().add(frontBackDimension.getDimensionLabel());
+                        if (projectifiableThing instanceof ScreenExtentsProviderTwoD)
+                        {
+                            projectifiableThing.addScreenExtentsChangeListener(verticalDimension);
+                            paneToAddDimensionsTo.getChildren().add(verticalDimension);
+                            verticalDimension.initialise(project,
+                                    projectifiableThing,
+                                    LineDirection.VERTICAL);
+                            lineList.add(verticalDimension);
 
-                        dimensionLines.put(modelContainer, lineList);
+                            projectifiableThing.addScreenExtentsChangeListener(horizontalDimension);
+                            paneToAddDimensionsTo.getChildren().add(horizontalDimension);
+                            horizontalDimension.initialise(project, projectifiableThing, LineDirection.HORIZONTAL);
+                            lineList.add(horizontalDimension);
 
-                        Platform.runLater(() ->
-                                {
-                                    verticalDimension.screenExtentsChanged(modelContainer);
-                                    horizontalDimension.screenExtentsChanged(modelContainer);
-                                    frontBackDimension.screenExtentsChanged(modelContainer);
-                        });
+                            paneToAddDimensionsTo.getChildren().add(verticalDimension.getDimensionLabel());
+                            paneToAddDimensionsTo.getChildren().add(horizontalDimension.getDimensionLabel());
+                            addDimensionLines = true;
+                        }
+
+                        if (projectifiableThing instanceof ScreenExtentsProviderThreeD)
+                        {
+
+                            projectifiableThing.addScreenExtentsChangeListener(frontBackDimension);
+                            paneToAddDimensionsTo.getChildren().add(frontBackDimension);
+                            frontBackDimension.initialise(project, projectifiableThing, LineDirection.FORWARD_BACK);
+                            lineList.add(frontBackDimension);
+
+                            paneToAddDimensionsTo.getChildren().add(frontBackDimension.getDimensionLabel());
+                        }
+
+                        if (addDimensionLines)
+                        {
+                            dimensionLines.put(projectifiableThing, lineList);
+
+                            Platform.runLater(() ->
+                                    {
+                                        verticalDimension.screenExtentsChanged(projectifiableThing);
+                                        horizontalDimension.screenExtentsChanged(projectifiableThing);
+                                        if (projectifiableThing instanceof ModelContainer)
+                                        {
+                                            frontBackDimension.screenExtentsChanged(projectifiableThing);
+                                        }
+                            });
+                        }
                     }
 
                     @Override
-                    public void whenRemoved(ModelContainer modelContainer)
+
+                    public void whenRemoved(ProjectifiableThing projectifiableThing)
                     {
                         List<DimensionLine> dimensionLinesToRemove = dimensionLines
-                        .get(modelContainer);
+                        .get(projectifiableThing);
                         dimensionLinesToRemove.forEach(line ->
                                 {
-                                    modelContainer.removeScreenExtentsChangeListener(line);
+                                    projectifiableThing.removeScreenExtentsChangeListener(line);
                                     paneToAddDimensionsTo.getChildren().remove(line);
                                     paneToAddDimensionsTo.getChildren().remove(line.getDimensionLabel());
                         });
-                        dimensionLines.remove(modelContainer);
+                        dimensionLines.remove(projectifiableThing);
                     }
-                });
+                }
+        );
     }
 }

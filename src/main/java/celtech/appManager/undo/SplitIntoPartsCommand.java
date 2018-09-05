@@ -3,9 +3,10 @@
  */
 package celtech.appManager.undo;
 
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
+import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelContainer.State;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -17,12 +18,12 @@ import java.util.Set;
 public class SplitIntoPartsCommand extends Command
 {
 
-    Project project;
+    ModelContainerProject project;
     Set<ModelContainer> modelContainers;
     Set<ModelContainer> newModelContainers;
-    Map<ModelContainer, State> states;
+    Map<ModelContainer, ItemState> states;
 
-    public SplitIntoPartsCommand(Project project, Set<ModelContainer> modelContainers)
+    public SplitIntoPartsCommand(ModelContainerProject project, Set<ModelContainer> modelContainers)
     {
         this.project = project;
         this.modelContainers = modelContainers;
@@ -46,7 +47,8 @@ public class SplitIntoPartsCommand extends Command
         {
             return;
         }
-        project.removeModels(newModelContainers);
+        Set<ProjectifiableThing> projectifiableThings = (Set) newModelContainers;
+        project.removeModels(projectifiableThings);
         for (ModelContainer modelContainer : modelContainers)
         {
             project.addModel(modelContainer);
@@ -60,7 +62,8 @@ public class SplitIntoPartsCommand extends Command
         {
             return;
         }
-        project.removeModels(modelContainers);
+        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
+        project.removeModels(projectifiableThings);
         for (ModelContainer modelContainer : newModelContainers)
         {
             project.addModel(modelContainer);

@@ -5,10 +5,11 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.HeaterMode;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterAncillarySystems;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.HeaterMode;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterAncillarySystems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,9 +39,9 @@ class ChartManager
     private final LineChart.Series<Number, Number> ambientTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Series<Number, Number> bedTargetTemperatureSeries = new LineChart.Series<>();
     private final LineChart.Data<Number, Number> ambientTargetPoint = new LineChart.Data<>(
-            ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+            BaseConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
     private final LineChart.Data<Number, Number> bedTargetPoint = new LineChart.Data<>(
-            ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+            BaseConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
 
     private ReadOnlyIntegerProperty bedTargetTemperatureProperty;
     private ReadOnlyIntegerProperty bedFirstLayerTargetTemperatureProperty;

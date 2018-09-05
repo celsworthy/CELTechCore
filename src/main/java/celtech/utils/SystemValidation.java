@@ -3,11 +3,11 @@
  */
 package celtech.utils;
 
-import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.util.ResourceBundle;
 import javafx.application.ConditionalFeature;
 import javafx.application.Platform;
@@ -31,7 +31,7 @@ public class SystemValidation
      */
     public static boolean checkMachineTypeRecognised(ResourceBundle i18nBundle)
     {
-        MachineType machineType = ApplicationConfiguration.getMachineType();
+        MachineType machineType = BaseConfiguration.getMachineType();
         if (machineType.equals(MachineType.UNKNOWN))
         {
             ChoiceLinkDialogBox unknownMachineBox = new ChoiceLinkDialogBox(false);
@@ -47,9 +47,10 @@ public class SystemValidation
             steno.error("Closing down due to unrecognised machine type.");
             Platform.exit();
             return false;
+        } else
+        {
+            return true;
         }
-
-        return true;
     }
 
     /**
@@ -81,7 +82,7 @@ public class SystemValidation
         {
             if (!Platform.isSupported(ConditionalFeature.SCENE3D))
             {
-                Lookup.getTaskExecutor().runOnGUIThread(() ->
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
                     ChoiceLinkDialogBox threeDProblemBox = new ChoiceLinkDialogBox(false);
                     threeDProblemBox.setTitle(i18nBundle.getString("dialogs.fatalErrorNo3DSupport"));

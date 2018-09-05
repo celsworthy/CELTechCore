@@ -3,23 +3,25 @@ package celtech.coreUI.controllers;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.visualisation.ModelLoader;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import celtech.web.AllCookiePolicy;
 import celtech.web.PersistentCookieStore;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
-import java.net.HttpURLConnection;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -56,7 +58,7 @@ public class MyMiniFactoryLoaderController implements Initializable
 
     private final StringProperty fileDownloadLocation = new SimpleStringProperty("");
 
-    private final String myMiniFactoryURLString = "http://cel-robox.myminifactory.com";
+    private final String myMiniFactoryURLString = "https://cel-robox.myminifactory.com";
     private boolean forwardsPossible = false;
     private final ModelLoader modelLoader = new ModelLoader();
 
@@ -106,12 +108,15 @@ public class MyMiniFactoryLoaderController implements Initializable
     {
         addToProjectButton.disableProperty().bind(Bindings.equal("", fileDownloadLocation));
 
-        boolean siteReachable = checkSiteIsReachable();
-
-        if (siteReachable)
+        Platform.runLater(() ->
         {
-            loadWebData();
-        }
+            boolean siteReachable = checkSiteIsReachable();
+
+            if (siteReachable)
+            {
+                loadWebData();
+            }
+        });
     }
 
     public void loadWebData()
@@ -127,6 +132,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         VBox.setVgrow(webView, Priority.ALWAYS);
 
         webEngine = webView.getEngine();
+        webEngine.setUserDataDirectory(new File(BaseConfiguration.getUserTempDirectory()));
 
         webContentContainer.getChildren().addAll(webView);
 
@@ -134,39 +140,39 @@ public class MyMiniFactoryLoaderController implements Initializable
 
         webEngine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) ->
-                {
-                    switch (newState)
-                    {
-                        case RUNNING:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().startSpinning(webContentContainer);
-                            break;
-                        case SUCCEEDED:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().stopSpinning();
-                            Object fileLinkFunction = webEngine
+        {
+            switch (newState)
+            {
+                case RUNNING:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().startSpinning(webContentContainer);
+                    break;
+                case SUCCEEDED:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().stopSpinning();
+                    Object fileLinkFunction = webEngine
                             .executeScript("window.autoMakerGetFileLink");
-                            if (fileLinkFunction instanceof JSObject)
-                            {
-                                fileDownloadLocation.set((String) webEngine
-                                        .executeScript("window.autoMakerGetFileLink()"));
-                            }
-                            boolean okForBackwards = webEngine.getLocation().matches(".*\\/object\\/.*");
-                            forwardsPossible |= okForBackwards;
-                            boolean okForForwards = !okForBackwards && forwardsPossible;
-                            backwardButton.disableProperty().set(!okForBackwards);
-                            forwardButton.disableProperty().set(!okForForwards);
-                            break;
-                        case CANCELLED:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().stopSpinning();
-                            break;
-                        case FAILED:
-                            fileDownloadLocation.set("");
-                            DisplayManager.getInstance().stopSpinning();
-                            break;
+                    if (fileLinkFunction instanceof JSObject)
+                    {
+                        fileDownloadLocation.set((String) webEngine
+                                .executeScript("window.autoMakerGetFileLink()"));
                     }
-                });
+                    boolean okForBackwards = webEngine.getLocation().matches(".*\\/object\\/.*");
+                    forwardsPossible |= okForBackwards;
+                    boolean okForForwards = !okForBackwards && forwardsPossible;
+                    backwardButton.disableProperty().set(!okForBackwards);
+                    forwardButton.disableProperty().set(!okForForwards);
+                    break;
+                case CANCELLED:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().stopSpinning();
+                    break;
+                case FAILED:
+                    fileDownloadLocation.set("");
+                    DisplayManager.getInstance().stopSpinning();
+                    break;
+            }
+        });
     }
 
     private boolean alreadyDownloading = false;
@@ -185,8 +191,7 @@ public class MyMiniFactoryLoaderController implements Initializable
                 MyMiniFactoryLoadResult result = (MyMiniFactoryLoadResult) event.getSource().getValue();
                 if (result.isSuccess())
                 {
-                    modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(),
-                            result.getFilesToLoad());
+                    modelLoader.loadExternalModels(Lookup.getSelectedProjectProperty().get(), result.getFilesToLoad(), true, DisplayManager.getInstance(), false);
                 }
                 finishedWithEngines();
                 ApplicationStatus.getInstance().setMode(ApplicationMode.LAYOUT);
@@ -224,7 +229,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         try
         {
             URL obj = new URL(myMiniFactoryURLString);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
             con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.44 (KHTML, like Gecko) JavaFX/8.0 Safari/537.44");
 
             // optional default is GET
@@ -234,8 +239,7 @@ public class MyMiniFactoryLoaderController implements Initializable
             con.setConnectTimeout(500);
             int responseCode = con.getResponseCode();
 
-            if (responseCode == 200
-                    && con.getContentLength() > 0)
+            if (responseCode == 200)
             {
                 available = true;
             } else

@@ -1,7 +1,7 @@
 package celtech.coreUI.keycommands;
 
 import celtech.Lookup;
-import celtech.printerControl.comms.DummyPrinterCommandInterface;
+import celtech.roboxbase.comms.DummyPrinterCommandInterface;
 import java.util.ArrayList;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -253,7 +253,7 @@ public class HiddenKey
     {
         parameterCaptureSequences.add(commandPrefix);
     }
-
+    
     public void addUnhandledKeyListener(UnhandledKeyListener listener)
     {
         unhandledKeyListener = listener;

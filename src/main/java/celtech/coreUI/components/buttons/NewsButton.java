@@ -2,8 +2,8 @@ package celtech.coreUI.components.buttons;
 
 import celtech.appManager.NewsBot;
 import celtech.appManager.NewsListener;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.MachineType;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
@@ -42,9 +42,9 @@ public class NewsButton extends GraphicButton implements NewsListener
         setOnAction((event) ->
         {
             if (Desktop.isDesktopSupported()
-                    && ApplicationConfiguration.getMachineType()
+                    && BaseConfiguration.getMachineType()
                     != MachineType.LINUX_X86
-                    && ApplicationConfiguration.getMachineType()
+                    && BaseConfiguration.getMachineType()
                     != MachineType.LINUX_X64)
             {
                 try
@@ -56,6 +56,25 @@ public class NewsButton extends GraphicButton implements NewsListener
                 {
                     System.err.println("Error when attempting to browse to "
                             + allAutoMakerNewsFlashesURL);
+                }
+            } else if (BaseConfiguration.getMachineType() == MachineType.LINUX_X86
+                    || BaseConfiguration.getMachineType() == MachineType.LINUX_X64)
+            {
+                try
+                {
+                    if (Runtime.getRuntime().exec(new String[]
+                    {
+                        "which", "xdg-open"
+                    }).getInputStream().read() != -1)
+                    {
+                        Runtime.getRuntime().exec(new String[]
+                        {
+                            "xdg-open", allAutoMakerNewsFlashesURL
+                        });
+                    }
+                } catch (IOException ex)
+                {
+                    System.err.println("Failed to run linux-specific browser command");
                 }
             } else
             {

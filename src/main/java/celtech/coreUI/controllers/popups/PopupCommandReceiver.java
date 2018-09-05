@@ -24,8 +24,8 @@ public interface PopupCommandReceiver
     public void triggerSaveAs(Object source);     
 
     /**
-     * 
-     * @param profile
+     *
+     * @param profileName 
      */
     public void triggerSave(Object profile);     
 }

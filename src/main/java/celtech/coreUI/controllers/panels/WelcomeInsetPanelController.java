@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.configuration.ApplicationConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,7 +51,7 @@ public class WelcomeInsetPanelController implements Initializable
     public void initialize(URL location, ResourceBundle resources)
     {
         String protocol = "file:///";
-        String basePath = ApplicationConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
+        String basePath = BaseConfiguration.getApplicationInstallDirectory(WelcomeInsetPanelController.class) + "README/README_AutoMaker.html";
         basePath = basePath.replace("\\", "/");
         String urlEncodedPath = "";
 

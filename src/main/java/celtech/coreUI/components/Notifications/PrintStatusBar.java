@@ -3,15 +3,14 @@
  */
 package celtech.coreUI.components.Notifications;
 
-import celtech.coreUI.components.Notifications.AppearingProgressBar;
 import celtech.Lookup;
-import celtech.configuration.BusyStatus;
-import celtech.configuration.Macro;
-import celtech.configuration.PauseStatus;
-import celtech.printerControl.PrintQueueStatus;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
+import celtech.roboxbase.comms.remote.BusyStatus;
+import celtech.roboxbase.configuration.Macro;
+import celtech.roboxbase.comms.remote.PauseStatus;
+import celtech.roboxbase.printerControl.PrintQueueStatus;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -80,7 +79,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
     {
         try
         {
-            printer.cancel(null);
+            printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
         } catch (PrinterException ex)
         {
             System.out.println("Couldn't resume print");
@@ -130,7 +129,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             case UNLOADING_FILAMENT_D:
                 statusProcessed = true;
                 barShouldBeDisplayed = true;
-                largeProgressDescription.setText(printer.busyStatusProperty().get().getI18nString());
+                largeProgressDescription.setText(Lookup.i18n(printer.busyStatusProperty().get().getI18nString()));
                 progressRequired(false);
                 targetLegendRequired(false);
                 targetValueRequired(false);
@@ -154,7 +153,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 case RESUME_PENDING:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
-                    largeProgressDescription.setText(printer.pauseStatusProperty().get().getI18nString());
+                    largeProgressDescription.setText(Lookup.i18n(printer.pauseStatusProperty().get().getI18nString()));
                     progressRequired(false);
                     targetLegendRequired(false);
                     targetValueRequired(false);

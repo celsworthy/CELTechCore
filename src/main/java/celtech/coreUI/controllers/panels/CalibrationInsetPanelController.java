@@ -3,24 +3,28 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
-import celtech.appManager.SystemNotificationManager.NotificationType;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.SpinnerControl;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.VerticalMenu;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
-import celtech.printerControl.model.Head;
-import celtech.printerControl.model.Head.HeadType;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.printerControl.model.StateTransitionManager;
-import celtech.printerControl.model.calibration.CalibrationXAndYState;
-import celtech.printerControl.model.calibration.NozzleHeightCalibrationState;
-import celtech.printerControl.model.calibration.NozzleOpeningCalibrationState;
-import celtech.utils.PrinterListChangesListener;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Head.HeadType;
+import celtech.roboxbase.printerControl.model.Head.ValveType;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.CalibrationXAndYState;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightCalibrationState;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningCalibrationState;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightCalibrationState;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -30,7 +34,13 @@ import javafx.animation.Timeline;
 import javafx.animation.Transition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -61,10 +71,12 @@ public class CalibrationInsetPanelController implements Initializable,
 {
 
     final CalibrationMenuConfiguration calibrationMenuConfiguration;
-    CalibrationMode calibrationMode;
+    ObjectProperty<CalibrationMode> calibrationMode = new SimpleObjectProperty<CalibrationMode>(null);
     CalibrationXAndYGUI calibrationXAndYGUI;
     CalibrationNozzleHeightGUI calibrationNozzleHeightGUI;
+    CalibrationSingleNozzleHeightGUI calibrationSingleNozzleHeightGUI;
     CalibrationNozzleOpeningGUI calibrationNozzleOpeningGUI;
+    
     StateTransitionManager stateManager;
     SpinnerControl spinnerControl;
     private ApplicationStatus applicationStatus = null;
@@ -131,7 +143,7 @@ public class CalibrationInsetPanelController implements Initializable,
     protected GraphicButtonWithLabel cancelCalibrationButton;
 
     @FXML
-    protected Label calibrationStatus;
+    protected HyperlinkedLabel calibrationStatus;
 
     @FXML
     private VBox informationCentre;
@@ -170,13 +182,14 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private ConditionalNotificationBar oneExtruderNoFilamentSelectedNotificationBar;
     private ConditionalNotificationBar oneExtruderNoFilamentNotificationBar;
-    private ConditionalNotificationBar twoExtrudersNoFilament0SelectedNotificationBar;
-    private ConditionalNotificationBar twoExtrudersNoFilament0NotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1SelectedNotificationBar;
     private ConditionalNotificationBar twoExtrudersNoFilament1NotificationBar;
+    private ConditionalNotificationBar twoExtrudersNoFilament2SelectedNotificationBar;
+    private ConditionalNotificationBar twoExtrudersNoFilament2NotificationBar;
 
     private ConditionalNotificationBar cantCalibrateHeadIsDetachedNotificationBar;
-
+    private boolean notRequiredMessagesShown = false;
+    
     @FXML
     void buttonAAction(ActionEvent event)
     {
@@ -198,13 +211,19 @@ public class CalibrationInsetPanelController implements Initializable,
     @FXML
     void backToStatusAction(ActionEvent event)
     {
-        if (calibrationMode == CalibrationMode.CHOICE
+        if (calibrationMode.get() == CalibrationMode.CHOICE
                 || stateManager == null)
         {
             ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
         } else
         {
-            stateManager.followTransition(StateTransitionManager.GUIName.BACK);
+            try
+            {
+                stateManager.followTransition(StateTransitionManager.GUIName.BACK);
+            }
+            catch (RuntimeException ex)
+            {
+            }
             ApplicationStatus.getInstance().setMode(ApplicationMode.STATUS);
             calibrationMenu.reset();
         }
@@ -233,6 +252,17 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         stateManager.followTransition(StateTransitionManager.GUIName.RETRY);
     }
+    
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
+    {
+        @Override
+        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+        {
+            if (newValue == ApplicationMode.CALIBRATION_CHOICE)
+                resetMenuAndGoToChoiceMode();
+        }
+    };
+
 
     protected void hideAllInputControlsExceptStepNumber()
     {
@@ -269,12 +299,12 @@ public class CalibrationInsetPanelController implements Initializable,
     {
         applicationStatus = ApplicationStatus.getInstance();
 
-        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage", NotificationType.CAUTION);
+        oneExtruderNoFilamentSelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintAttachRoboxReelMessage", NotificationType.CAUTION);
         oneExtruderNoFilamentNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage", NotificationType.CAUTION);
-        twoExtrudersNoFilament0SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage0", NotificationType.CAUTION);
-        twoExtrudersNoFilament0NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
-        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentSelectedMessage1", NotificationType.CAUTION);
-        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
+        twoExtrudersNoFilament1SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintAttachRoboxReelMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament1NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage0", NotificationType.CAUTION);
+        twoExtrudersNoFilament2SelectedNotificationBar = new ConditionalNotificationBar("dialogs.cantPrintAttachRoboxReelMessage1", NotificationType.CAUTION);
+        twoExtrudersNoFilament2NotificationBar = new ConditionalNotificationBar("dialogs.cantPrintNoFilamentMessage1", NotificationType.CAUTION);
 
         cantCalibrateHeadIsDetachedNotificationBar = new ConditionalNotificationBar("dialogs.cantCalibrateHeadIsDetached", NotificationType.CAUTION);
 
@@ -283,7 +313,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
         setCalibrationMode(CalibrationMode.CHOICE);
 
-        Lookup.getPrinterListChangesNotifier().addListener(this);
+        BaseLookup.getPrinterListChangesNotifier().addListener(this);
 
         calibrationMenuConfiguration.configureCalibrationMenu(calibrationMenu, this);
 
@@ -291,8 +321,25 @@ public class CalibrationInsetPanelController implements Initializable,
         animatedFilamentTransition.setAutoReverse(false);
 
         addDiagramMoveScaleListeners();
-
-    }
+        
+        // If the application mode changes, or a different printer is selected, then the calibration page should reset to a known state.
+        ApplicationStatus.getInstance().modeProperty().addListener(
+                (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
+                {
+                    if (newValue == ApplicationMode.CALIBRATION_CHOICE)
+                        resetMenuAndGoToChoiceMode();
+                });
+        
+        Lookup.getSelectedPrinterProperty().addListener(
+                (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
+                {
+                    if (ApplicationStatus.getInstance().getMode() == ApplicationMode.CALIBRATION_CHOICE &&
+                        currentPrinter != newValue)
+                    {
+                        resetMenuAndGoToChoiceMode();
+                    }
+                });
+     }
 
     private void addDiagramMoveScaleListeners()
     {
@@ -422,7 +469,9 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void switchToPrinter(Printer printer)
     {
-        if (printer != null)
+       if (printer == null || printer != currentPrinter)
+           notRequiredMessagesShown = false;
+       if (printer != null)
         {
             bindPrinter(printer);
         }
@@ -431,10 +480,10 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void bindPrinter(Printer printer)
     {
-        configureStartButtonForMode(calibrationMode, printer);
+        configureStartButtonForMode(printer);
     }
 
-    private void configureStartButtonForMode(CalibrationMode calibrationMode, Printer printer)
+    private void configureStartButtonForMode(Printer printer)
     {
         if (printer == null)
         {
@@ -444,40 +493,46 @@ public class CalibrationInsetPanelController implements Initializable,
         cantCalibrateHeadIsDetachedNotificationBar.setAppearanceCondition(Bindings.isNull(printer.headProperty())
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not();
+        BooleanBinding oneExtruderPrinter = printer.extrudersProperty().get(0).isFittedProperty().not();
         BooleanBinding twoExtruderPrinter = printer.extrudersProperty().get(1).isFittedProperty().not().not();
-        BooleanBinding noFilament0Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
-        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT);
+        BooleanBinding noFilament1Selected = Bindings.valueAt(printer.reelsProperty(), 0).isNull();
+        BooleanBinding noFilament2Selected = Bindings.valueAt(printer.reelsProperty(), 1).isNull();
         noFilament1Selected.get();
+        noFilament2Selected.get();
 
         oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(
-                noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+                noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
         oneExtruderNoFilamentNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        twoExtrudersNoFilament0SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
-                noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
+        twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
+                noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-        twoExtrudersNoFilament0NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
+        twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(
                 printer.extrudersProperty().get(0).
                 filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
         if (printer.headProperty().get() != null)
         {
-            twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
+            twoExtrudersNoFilament2SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
                     .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
-                    .and(noFilament1Selected)
+                    .and(noFilament2Selected)
                     .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
 
-            twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter
+            twoExtrudersNoFilament2NotificationBar.setAppearanceCondition(twoExtruderPrinter
                     .and(printer.headProperty().get().headTypeProperty().isEqualTo(HeadType.DUAL_MATERIAL_HEAD))
                     .and(printer.extrudersProperty().get(1).
                             filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)));
         }
+        else
+        {
+            twoExtrudersNoFilament2SelectedNotificationBar.clearAppearanceCondition();
+            twoExtrudersNoFilament2NotificationBar.clearAppearanceCondition();
+        }
 
-        switch (calibrationMode)
+        switch (calibrationMode.get())
         {
             case NOZZLE_OPENING:
                 startCalibrationButton.disableProperty().bind(
@@ -491,22 +546,33 @@ public class CalibrationInsetPanelController implements Initializable,
                 startCalibrationButton.disableProperty().bind(
                         printer.canCalibrateXYAlignmentProperty().not());
                 break;
-
+            case CHOICE:
+                if (!notRequiredMessagesShown &&
+                    printer.headProperty().get() != null &&
+                    printer.headProperty().get().valveTypeProperty().get() == ValveType.NOT_FITTED)
+                {
+                    notRequiredMessagesShown = true;
+                    BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("openNozzleCalibrationNotRequired.title"),
+                                                                                          Lookup.i18n("openNozzleCalibrationNotRequired.message"));
+                    BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("xyAlignmentNotRequired.title"),
+                                                                                          Lookup.i18n("xyAlignmentNotRequired.message"));
+                }
+                break;
         }
     }
 
     public void setCalibrationMode(CalibrationMode calibrationMode)
     {
-        this.calibrationMode = calibrationMode;
+        this.calibrationMode.set(calibrationMode);
         switchToPrinter(Lookup.getSelectedPrinterProperty().get());
-        configureStartButtonForMode(calibrationMode, currentPrinter);
+        configureStartButtonForMode(currentPrinter);
         switch (calibrationMode)
         {
             case NOZZLE_OPENING:
             {
                 try
                 {
-                    stateManager = currentPrinter.startCalibrateNozzleOpening();
+                    stateManager = currentPrinter.startCalibrateNozzleOpening(Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.warning("Can't switch to calibration: " + ex);
@@ -518,25 +584,43 @@ public class CalibrationInsetPanelController implements Initializable,
             break;
 
             case NOZZLE_HEIGHT:
+            if (currentPrinter.headProperty().get() != null &&
+                currentPrinter.headProperty().get().getNozzles().size() == 1)
             {
                 try
                 {
-                    stateManager = currentPrinter.startCalibrateNozzleHeight();
+                    stateManager = currentPrinter.startCalibrateSingleNozzleHeight(Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.warning("Can't switch to calibration: " + ex);
                     return;
                 }
+            
+                calibrationSingleNozzleHeightGUI = new CalibrationSingleNozzleHeightGUI(this, stateManager);
+                calibrationSingleNozzleHeightGUI.setState(SingleNozzleHeightCalibrationState.IDLE);
             }
-            calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
-            calibrationNozzleHeightGUI.setState(NozzleHeightCalibrationState.IDLE);
+            else
+            {
+                try
+                {
+                    stateManager = currentPrinter.startCalibrateNozzleHeight(Lookup.getUserPreferences().isSafetyFeaturesOn());
+                } catch (PrinterException ex)
+                {
+                    steno.warning("Can't switch to calibration: " + ex);
+                    return;
+                }
+            
+                calibrationNozzleHeightGUI = new CalibrationNozzleHeightGUI(this, stateManager);
+                calibrationNozzleHeightGUI.setState(NozzleHeightCalibrationState.IDLE);
+            }
+
             break;
 
             case X_AND_Y_OFFSET:
             {
                 try
                 {
-                    stateManager = currentPrinter.startCalibrateXAndY();
+                    stateManager = currentPrinter.startCalibrateXAndY(Lookup.getUserPreferences().isSafetyFeaturesOn());
                 } catch (PrinterException ex)
                 {
                     steno.warning("Can't switch to calibration: " + ex);
@@ -554,7 +638,7 @@ public class CalibrationInsetPanelController implements Initializable,
 
     private void setupChoice()
     {
-        calibrationStatus.setText(Lookup.i18n("calibrationPanel.chooseCalibration"));
+        calibrationStatus.replaceText(Lookup.i18n("calibrationPanel.chooseCalibration"));
         calibrationMenu.reset();
         hideAllInputControlsExceptStepNumber();
         stepNumber.setVisible(false);

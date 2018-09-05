@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
+import javafx.scene.Node;
 
 /**
  *
@@ -16,9 +17,9 @@ import javafx.scene.transform.Scale;
  */
 public class PrinterSVGComponent extends Pane
 {
-
-    @FXML
-    Pane printerIcon;
+    private final String printerIconSuffix = "PrinterIcon";
+    private final String defaultPrinterTypeCode = "RBX01";
+    Pane printerIcon = null;
 
     @FXML
     Pane readyIcon;
@@ -30,6 +31,8 @@ public class PrinterSVGComponent extends Pane
     Pane notificationIcon;
     @FXML
     Pane errorIcon;
+    @FXML
+    Pane rootIndicator;
 
     private void hideAllIcons()
     {
@@ -37,7 +40,6 @@ public class PrinterSVGComponent extends Pane
         printingIcon.setVisible(false);
         pausedIcon.setVisible(false);
         notificationIcon.setVisible(false);
-        errorIcon.setVisible(false);
     }
 
     public PrinterSVGComponent()
@@ -54,8 +56,45 @@ public class PrinterSVGComponent extends Pane
         {
             throw new RuntimeException(exception);
         }
+        
+        errorIcon.setVisible(false);
     }
 
+    public void setPrinterIcon(String printerTypeCode)
+    {
+        if (printerIcon != null)
+        {
+            printerIcon.setVisible(false);
+            printerIcon = null;
+        }
+        
+        Pane defaultPrinterIcon = null;
+        String printerIconName = printerTypeCode.toUpperCase() + printerIconSuffix;
+        String defaultPrinterIconName = defaultPrinterTypeCode + printerIconSuffix;
+        for (Node pNode : getChildren())
+        {
+            String pNodeName = pNode.getId();
+            if (pNodeName != null && pNodeName.endsWith(printerIconSuffix))
+            {
+                Pane p =  (Pane)pNode;
+                if (pNodeName.equals(printerIconName))
+                    printerIcon = p;
+                else
+                {
+                    p.setVisible(false);
+                    if (defaultPrinterIcon == null && pNodeName.equals(defaultPrinterIconName))
+                        defaultPrinterIcon = p;
+                }
+                
+            }
+        }
+        if (printerIcon == null)
+            printerIcon = defaultPrinterIcon;
+        
+        if (printerIcon != null)
+            printerIcon.setVisible(true);
+    }
+    
     public void setStatus(PrinterComponent.Status status)
     {
         hideAllIcons();
@@ -74,12 +113,14 @@ public class PrinterSVGComponent extends Pane
             case PRINTING:
                 printingIcon.setVisible(true);
                 break;
-            case ERROR:
-                errorIcon.setVisible(true);
-                break;
             case NO_INDICATOR:
                 break;
         }
+    }
+
+    public void showErrorIndicator(boolean showErrorIndicator)
+    {
+        errorIcon.setVisible(showErrorIndicator);
     }
 
     public void setSize(double size)
@@ -89,4 +130,8 @@ public class PrinterSVGComponent extends Pane
         getTransforms().add(scale);
     }
 
+    public void setIsRoot(boolean isARoot)
+    {
+        rootIndicator.setVisible(isARoot);
+    }
 }

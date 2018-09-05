@@ -3,7 +3,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.utils.tasks.Cancellable;
+import celtech.roboxbase.utils.tasks.Cancellable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -20,8 +20,9 @@ public class TimeCostThreadManager
     private final ExecutorService executorService;
     private Future timeCostFuture;
     private Cancellable cancellable;
+    private static TimeCostThreadManager instance;
     
-    public TimeCostThreadManager()
+    private TimeCostThreadManager()
     {
         ThreadFactory threadFactory = (Runnable runnable) ->
         {
@@ -31,13 +32,25 @@ public class TimeCostThreadManager
         };
         executorService = Executors.newFixedThreadPool(1, threadFactory);
     }
+    
+    public static TimeCostThreadManager getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new TimeCostThreadManager();
+        }
+        
+        return instance;
+    }
 
     public void cancelRunningTimeCostTasks()
     {
+//        executorService.shutdownNow();
         if (cancellable != null)
         {
             cancellable.cancelled().set(true);
             timeCostFuture.cancel(true);
+            cancellable = null;
         }
     }
 

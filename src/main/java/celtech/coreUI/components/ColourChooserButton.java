@@ -5,7 +5,7 @@
  */
 package celtech.coreUI.components;
 
-import celtech.utils.AxisSpecifier;
+import celtech.roboxbase.utils.AxisSpecifier;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ToggleButton;

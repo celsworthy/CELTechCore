@@ -13,9 +13,21 @@ import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.coreUI.visualisation.ProjectSelection;
+import celtech.coreUI.visualisation.ShapeProviderThreeD;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.utils.Math.MathUtils;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.TranslateableTwoD;
+import celtech.modelcontrol.ScaleableTwoD;
+import celtech.modelcontrol.ScaleableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.RotatableThreeD;
+import celtech.modelcontrol.RotatableTwoD;
+import celtech.modelcontrol.Translateable;
+import celtech.modelcontrol.TranslateableThreeD;
+import celtech.roboxbase.utils.Math.MathUtils;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.HashSet;
@@ -199,42 +211,46 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @FXML
     private void flipMaterials(ActionEvent event)
     {
-        Set<ModelContainer> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ProjectifiableThing> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         Set<ModelContainer> modelContainersToFlipToFilament0 = new HashSet<>();
         Set<ModelContainer> modelContainersToFlipToFilament1 = new HashSet<>();
 
-        for (ModelContainer modelContainer : selectedModelContainers)
+        for (ProjectifiableThing projectifiableThing : selectedModelContainers)
         {
-            if (modelContainer instanceof ModelGroup)
+            if (projectifiableThing instanceof ModelContainer)
             {
-                Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
-                for (ModelContainer descendentModelContainer : descendentModels)
+                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+                if (modelContainer instanceof ModelGroup)
                 {
-                    // getDescendentModelContainers give us all children - including group nodes
-                    if (!(descendentModelContainer instanceof ModelGroup))
+                    Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
+                    for (ModelContainer descendentModelContainer : descendentModels)
                     {
-                        if (descendentModelContainer.getAssociateWithExtruderNumberProperty().get() == 1)
+                        // getDescendentModelContainers give us all children - including group nodes
+                        if (!(descendentModelContainer instanceof ModelGroup))
                         {
-                            modelContainersToFlipToFilament0.add(descendentModelContainer);
-                        } else
-                        {
-                            modelContainersToFlipToFilament1.add(descendentModelContainer);
+                            if (descendentModelContainer.getAssociateWithExtruderNumberProperty().get() == 1)
+                            {
+                                modelContainersToFlipToFilament0.add(descendentModelContainer);
+                            } else
+                            {
+                                modelContainersToFlipToFilament1.add(descendentModelContainer);
+                            }
                         }
                     }
-                }
-            } else
-            {
-                steno.info("Changing " + modelContainer.getId()
-                        + " from "
-                        + modelContainer.getAssociateWithExtruderNumberProperty().get()
-                        + " to extruder 0 = "
-                        + (modelContainer.getAssociateWithExtruderNumberProperty().get() == 1));
-                if (modelContainer.getAssociateWithExtruderNumberProperty().get() == 1)
-                {
-                    modelContainersToFlipToFilament0.add(modelContainer);
                 } else
                 {
-                    modelContainersToFlipToFilament1.add(modelContainer);
+                    steno.info("Changing " + modelContainer.getId()
+                            + " from "
+                            + modelContainer.getAssociateWithExtruderNumberProperty().get()
+                            + " to extruder 0 = "
+                            + (modelContainer.getAssociateWithExtruderNumberProperty().get() == 1));
+                    if (modelContainer.getAssociateWithExtruderNumberProperty().get() == 1)
+                    {
+                        modelContainersToFlipToFilament0.add(modelContainer);
+                    } else
+                    {
+                        modelContainersToFlipToFilament1.add(modelContainer);
+                    }
                 }
             }
         }
@@ -284,11 +300,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         setUpNumSelectedModelsListener();
         preserveAspectRatio.setSelected(true);
 
-        Lookup.getSelectedProjectProperty().addListener(
-                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-                {
-                    whenProjectChanged(newValue);
-                });
+        Lookup.getSelectedProjectProperty().addListener((ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+        {
+            whenProjectChanged(newValue);
+        });
 
         ApplicationStatus.getInstance().modeProperty().addListener(
                 (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) ->
@@ -359,7 +374,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
         if (currentProject != null)
         {
-            Set<ModelContainer> selectedModels = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+            Set<ProjectifiableThing> selectedModels = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
 
             if (selectedModels.size() > 1)
             {
@@ -378,45 +393,92 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             {
                 boolean foundMaterial0 = false;
                 boolean foundMaterial1 = false;
+                boolean displayMaterialButtons = false;
 
-                Iterator<ModelContainer> selectedModelIterator = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator();
-                while (selectedModelIterator.hasNext())
+                if (Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().size() > 0)
                 {
-                    ModelContainer container = selectedModelIterator.next();
-                    if (container instanceof ModelGroup)
+                    Iterator<ProjectifiableThing> selectedModelIterator = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator();
+
+                    while (selectedModelIterator.hasNext())
                     {
-                        Set<ModelContainer> childModels = container.getDescendentModelContainers();
-                        for (ModelContainer childModel : childModels)
+                        ProjectifiableThing container = selectedModelIterator.next();
+                        if (container instanceof ModelGroup)
                         {
-                            if (childModel.getAssociateWithExtruderNumberProperty().get() == 0)
+                            Set<ModelContainer> childModels = ((ModelGroup) container).getDescendentModelContainers();
+                            for (ModelContainer childModel : childModels)
+                            {
+                                if (childModel.getAssociateWithExtruderNumberProperty().get() == 0)
+                                {
+                                    foundMaterial0 = true;
+                                } else
+                                {
+                                    foundMaterial1 = true;
+                                }
+                            }
+                            displayMaterialButtons = true;
+                        } else if (container instanceof ModelContainer)
+                        {
+                            if (((ModelContainer) container).getAssociateWithExtruderNumberProperty().get() == 0)
                             {
                                 foundMaterial0 = true;
                             } else
                             {
                                 foundMaterial1 = true;
                             }
-                        }
-                    } else
-                    {
-                        if (container.getAssociateWithExtruderNumberProperty().get() == 0)
-                        {
-                            foundMaterial0 = true;
-                        } else
-                        {
-                            foundMaterial1 = true;
+                            displayMaterialButtons = true;
                         }
                     }
+
+                    ProjectifiableThing firstModel = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot().iterator().next();
+
+                    boolean isTwoDTranslateable = TranslateableTwoD.class.isInstance(firstModel);
+                    boolean isThreeDTranslateable = TranslateableThreeD.class.isInstance(firstModel);
+
+                    xAxisTextField.setVisible(isTwoDTranslateable || isThreeDTranslateable);
+                    yAxisTextField.setVisible(isTwoDTranslateable || isThreeDTranslateable);
+
+                    boolean isTwoDScaleable = ScaleableTwoD.class.isInstance(firstModel);
+                    boolean isThreeDScaleable = ScaleableThreeD.class.isInstance(firstModel);
+
+                    scaleXCaption.setVisible((isTwoDScaleable || isThreeDScaleable) && useProportionalScaleSwitch.selectedProperty().get());
+                    widthCaption.setVisible((isTwoDScaleable || isThreeDScaleable) && !useProportionalScaleSwitch.selectedProperty().get());
+                    widthTextField.setVisible((isTwoDScaleable || isThreeDScaleable) && !useProportionalScaleSwitch.selectedProperty().get());
+                    scaleTextWidthField.setVisible((isTwoDScaleable || isThreeDScaleable) && useProportionalScaleSwitch.selectedProperty().get());
+                    scaleYCaption.setVisible((isTwoDScaleable || isThreeDScaleable) && useProportionalScaleSwitch.selectedProperty().get());
+                    heightCaption.setVisible((isTwoDScaleable || isThreeDScaleable) && !useProportionalScaleSwitch.selectedProperty().get());
+                    heightTextField.setVisible((isTwoDScaleable || isThreeDScaleable) && !useProportionalScaleSwitch.selectedProperty().get());
+                    scaleTextHeightField.setVisible((isTwoDScaleable || isThreeDScaleable) && useProportionalScaleSwitch.selectedProperty().get());
+                    scaleZCaption.setVisible(isThreeDScaleable && useProportionalScaleSwitch.selectedProperty().get());
+                    depthCaption.setVisible(isThreeDScaleable && !useProportionalScaleSwitch.selectedProperty().get());
+                    depthTextField.setVisible(isThreeDScaleable && !useProportionalScaleSwitch.selectedProperty().get());
+                    scaleTextDepthField.setVisible(isThreeDScaleable && useProportionalScaleSwitch.selectedProperty().get());
+
+                    boolean isTwoDRotatable = RotatableTwoD.class.isInstance(firstModel);
+                    boolean isThreeDRotatable = RotatableThreeD.class.isInstance(firstModel);
+
+                    rotationXTextField.setVisible(isThreeDRotatable);
+                    rotationYTextField.setVisible(isThreeDRotatable);
+                    rotationZTextField.setVisible(isTwoDRotatable || isThreeDRotatable);
                 }
 
-                if (foundMaterial0 && !foundMaterial1)
+                if (displayMaterialButtons)
                 {
-                    materialButtons.selectToggle(setMaterial0Button);
-                } else if (!foundMaterial0 && foundMaterial1)
-                {
-                    materialButtons.selectToggle(setMaterial1Button);
+                    setMaterial0Button.setVisible(true);
+                    setMaterial1Button.setVisible(true);
+                    if (foundMaterial0 && !foundMaterial1)
+                    {
+                        materialButtons.selectToggle(setMaterial0Button);
+                    } else if (!foundMaterial0 && foundMaterial1)
+                    {
+                        materialButtons.selectToggle(setMaterial1Button);
+                    } else
+                    {
+                        materialButtons.selectToggle(null);
+                    }
                 } else
                 {
-                    materialButtons.selectToggle(null);
+                    setMaterial0Button.setVisible(false);
+                    setMaterial1Button.setVisible(false);
                 }
             }
         }
@@ -445,7 +507,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             projectSelection.getPrimarySelectedModelDetails().getDepth().removeListener(depthListener);
 
             projectSelection.getPrimarySelectedModelDetails().getCentreX().removeListener(xAxisListener);
-            projectSelection.getPrimarySelectedModelDetails().getCentreZ().removeListener(yAxisListener);
+            projectSelection.getPrimarySelectedModelDetails().getCentreDepth().removeListener(yAxisListener);
 
             projectSelection.getPrimarySelectedModelDetails().getScaleX().removeListener(modelScaleXChangeListener);
             projectSelection.getPrimarySelectedModelDetails().getScaleY().removeListener(modelScaleYChangeListener);
@@ -473,7 +535,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             selectedModelDetails.getDepth().addListener(depthListener);
 
             selectedModelDetails.getCentreX().addListener(xAxisListener);
-            selectedModelDetails.getCentreZ().addListener(yAxisListener);
+            selectedModelDetails.getCentreDepth().addListener(yAxisListener);
 
             selectedModelDetails.getScaleX().addListener(modelScaleXChangeListener);
             selectedModelDetails.getScaleY().addListener(modelScaleYChangeListener);
@@ -499,17 +561,17 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @FXML
     void doGroup(ActionEvent event)
     {
-        Set<ModelContainer> modelGroups = currentProject.getTopLevelModels().stream().filter(
+        Set<ModelContainer> modelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<Groupable> modelContainers = (Set) Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
-        Set<ModelContainer> changedModelGroups = currentProject.getTopLevelModels().stream().filter(
+        Set<ModelContainer> changedModelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
         changedModelGroups.removeAll(modelGroups);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
         if (changedModelGroups.size() == 1)
         {
-            Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(
+            Lookup.getProjectGUIState(currentProject).getProjectSelection().addSelectedItem(
                     changedModelGroups.iterator().next());
         }
     }
@@ -517,19 +579,19 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @FXML
     void doSelectSameMaterial(ActionEvent event)
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = (Set) Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         if (modelContainers.size() > 0)
         {
             ModelContainer firstModelContainer = modelContainers.iterator().next();
             int associatedExtruder = firstModelContainer.getAssociateWithExtruderNumberProperty().get();
-            Set<ModelContainer> allModels = currentProject.getAllModels();
+            Set<ProjectifiableThing> allModels = currentProject.getAllModels();
 
-            allModels.forEach(candidateModel ->
+            allModels.stream().map(ModelContainer.class::cast).forEach(candidateModel ->
             {
                 if (candidateModel.getAssociateWithExtruderNumberProperty().get()
                         == associatedExtruder)
                 {
-                    Lookup.getProjectGUIState(currentProject).getProjectSelection().addModelContainer(candidateModel);
+                    Lookup.getProjectGUIState(currentProject).getProjectSelection().addSelectedItem(candidateModel);
                 }
             });
         }
@@ -547,26 +609,30 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @FXML
     void setMaterial0(ActionEvent event)
     {
-        Set<ModelContainer> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ProjectifiableThing> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         Set<ModelContainer> modelContainersToFlipToFilament0 = new HashSet<>();
         Set<ModelContainer> modelContainersToFlipToFilament1 = null;
 
-        for (ModelContainer modelContainer : selectedModelContainers)
+        for (ProjectifiableThing projectifiableThing : selectedModelContainers)
         {
-            if (modelContainer instanceof ModelGroup)
+            if (projectifiableThing instanceof ModelContainer)
             {
-                Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
-                for (ModelContainer descendentModelContainer : descendentModels)
+                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+                if (modelContainer instanceof ModelGroup)
                 {
-                    // getDescendentModelContainers give us all children - including group nodes
-                    if (!(descendentModelContainer instanceof ModelGroup))
+                    Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
+                    for (ModelContainer descendentModelContainer : descendentModels)
                     {
-                        modelContainersToFlipToFilament0.add(descendentModelContainer);
+                        // getDescendentModelContainers give us all children - including group nodes
+                        if (!(descendentModelContainer instanceof ModelGroup))
+                        {
+                            modelContainersToFlipToFilament0.add(descendentModelContainer);
+                        }
                     }
+                } else
+                {
+                    modelContainersToFlipToFilament0.add(modelContainer);
                 }
-            } else
-            {
-                modelContainersToFlipToFilament0.add(modelContainer);
             }
         }
 
@@ -578,43 +644,48 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     @FXML
     void setMaterial1(ActionEvent event)
     {
-        Set<ModelContainer> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ProjectifiableThing> selectedModelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         Set<ModelContainer> modelContainersToFlipToFilament0 = null;
         Set<ModelContainer> modelContainersToFlipToFilament1 = new HashSet<>();
 
-        for (ModelContainer modelContainer : selectedModelContainers)
+        for (ProjectifiableThing projectifiableThing : selectedModelContainers)
         {
-            if (modelContainer instanceof ModelGroup)
+            if (projectifiableThing instanceof ModelContainer)
             {
-                Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
-                for (ModelContainer descendentModelContainer : descendentModels)
+                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+                if (modelContainer instanceof ModelGroup)
                 {
-                    // getDescendentModelContainers give us all children - including group nodes
-                    if (!(descendentModelContainer instanceof ModelGroup))
+                    Set<ModelContainer> descendentModels = modelContainer.getDescendentModelContainers();
+                    for (ModelContainer descendentModelContainer : descendentModels)
                     {
-                        modelContainersToFlipToFilament1.add(descendentModelContainer);
+                        // getDescendentModelContainers give us all children - including group nodes
+                        if (!(descendentModelContainer instanceof ModelGroup))
+                        {
+                            modelContainersToFlipToFilament1.add(descendentModelContainer);
+                        }
                     }
+                } else
+                {
+                    modelContainersToFlipToFilament1.add(modelContainer);
                 }
-            } else
-            {
-                modelContainersToFlipToFilament1.add(modelContainer);
             }
         }
-
         undoableProject.assignModelsToExtruders(modelContainersToFlipToFilament0, modelContainersToFlipToFilament1);
 
         updateDisplay();
     }
 
     @FXML
-    void doDropToBed(ActionEvent event)
+    void doDropToBed(ActionEvent event
+    )
     {
-        Set<ModelContainer> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ModelContainer> modelContainers = (Set) Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.dropToBed(modelContainers);
     }
 
     @Override
-    public void setProject(Project project)
+    public void setProject(Project project
+    )
     {
         whenProjectChanged(project);
     }
@@ -636,7 +707,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         populateHeightField(selectedModelDetails.getHeight().get());
         populateDepthField(selectedModelDetails.getDepth().get());
         populateXAxisField(selectedModelDetails.getCentreX().get());
-        populateYAxisField(selectedModelDetails.getCentreZ().get());
+        populateYAxisField(selectedModelDetails.getCentreDepth().get());
     }
 
     private void setUpNumSelectedModelsListener()
@@ -669,11 +740,10 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
 
     private void setupProjectSelectedListener()
     {
-        Lookup.getSelectedProjectProperty().addListener(
-                (ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
-                {
-                    whenProjectChanged(newValue);
-                });
+        Lookup.getSelectedProjectProperty().addListener((ObservableValue<? extends Project> observable, Project oldValue, Project newValue) ->
+        {
+            whenProjectChanged(newValue);
+        });
     }
 
     private void setUpModelGeometryListeners()
@@ -972,7 +1042,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastRotationX = newRotationX;
         }
-        undoableProject.rotateLeanModels(projectSelection.getSelectedModelsSnapshot(),
+        undoableProject.rotateLeanModels((Set) projectSelection.getSelectedModelsSnapshot(),
                 rotationXTextField.getAsDouble());
     }
 
@@ -986,7 +1056,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastRotationY = newRotationY;
         }
-        undoableProject.rotateTwistModels(projectSelection.getSelectedModelsSnapshot(),
+        undoableProject.rotateTwistModels((Set) projectSelection.getSelectedModelsSnapshot(),
                 rotationYTextField.getAsDouble());
     }
 
@@ -1000,7 +1070,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastRotationZ = newRotationZ;
         }
-        undoableProject.rotateTurnModels(projectSelection.getSelectedModelsSnapshot(),
+        undoableProject.rotateTurnModels((Set) projectSelection.getSelectedModelsSnapshot(),
                 rotationZTextField.getAsDouble());
     }
 
@@ -1014,7 +1084,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastY = newY;
         }
-        undoableProject.translateModelsZTo(projectSelection.getSelectedModelsSnapshot(), newY);
+        undoableProject.translateModelsDepthPositionTo(projectSelection.getSelectedModelsSnapshot(Translateable.class), newY);
     }
 
     private void updateX()
@@ -1027,7 +1097,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastX = newX;
         }
-        undoableProject.translateModelsXTo(projectSelection.getSelectedModelsSnapshot(), newX);
+        undoableProject.translateModelsXTo(projectSelection.getSelectedModelsSnapshot(TranslateableTwoD.class), newX);
     }
 
     private void updateDepth()
@@ -1042,15 +1112,17 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         }
         if (inFixedAR())
         {
-            ModelContainer modelContainer = getSingleSelection();
-            double ratio = newDepth / modelContainer.getScaledDepth();
+            ProjectifiableThing modelContainer = getSingleSelection();
+            if (modelContainer instanceof ModelContainer)
+            {
+                double ratio = newDepth / ((ModelContainer) modelContainer).getScaledDepth();
 
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(), ratio);
-
+                undoableProject.scaleXYZRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class), ratio);
+            }
         } else
         {
-            undoableProject.resizeModelsDepth(projectSelection.getSelectedModelsSnapshot(),
+            undoableProject.resizeModelsDepth(projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class),
                     newDepth);
         }
     }
@@ -1065,15 +1137,28 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
         {
             lastHeight = newHeight;
         }
+
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ResizeableThreeD.class);
+
         if (inFixedAR())
         {
-            ModelContainer modelContainer = getSingleSelection();
-            double ratio = newHeight / modelContainer.getScaledHeight();
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(), ratio);
+            ProjectifiableThing modelContainer = getSingleSelection();
+            if (modelContainer instanceof ModelContainer)
+            {
+                double ratio = newHeight / ((ModelContainer) modelContainer).getScaledHeight();
+                if (selectedThreeDShapes.size() > 0)
+                {
+                    undoableProject.scaleXYZRatioSelection(
+                            selectedThreeDShapes, ratio);
+                } else
+                {
+                    undoableProject.scaleXYRatioSelection(
+                            projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
+                }
+            }
         } else
         {
-            undoableProject.resizeModelsHeight(projectSelection.getSelectedModelsSnapshot(),
+            undoableProject.resizeModelsHeight(projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class),
                     newHeight);
         }
     }
@@ -1096,19 +1181,22 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private double limitScaleFactor(final double scaleFactor, final ApplicableDimension applicableDimension)
     {
         double minDimension = 9999999;
-        for (ModelContainer modelContainer : projectSelection.getSelectedModelsSnapshot())
+        for (ProjectifiableThing projectifiableThing : projectSelection.getSelectedModelsSnapshot())
         {
             if (applicableDimension == ApplicableDimension.WIDTH || inFixedAR())
             {
-                minDimension = Math.min(modelContainer.getScaledWidth(), minDimension);
+                minDimension = Math.min(projectifiableThing.getScaledWidth(), minDimension);
             }
             if (applicableDimension == ApplicableDimension.HEIGHT || inFixedAR())
             {
-                minDimension = Math.min(modelContainer.getScaledHeight(), minDimension);
+                minDimension = Math.min(projectifiableThing.getScaledHeight(), minDimension);
             }
             if (applicableDimension == ApplicableDimension.DEPTH || inFixedAR())
             {
-                minDimension = Math.min(modelContainer.getScaledDepth(), minDimension);
+                if (projectifiableThing instanceof ShapeProviderThreeD)
+                {
+                    minDimension = Math.min(((ShapeProviderThreeD) projectifiableThing).getScaledDepth(), minDimension);
+                }
             }
         }
 
@@ -1124,30 +1212,40 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private void updateWidth()
     {
         double newWidth = limitDimension(widthTextField.getAsDouble());
-        if (MathUtils.compareDouble(lastWidth, newWidth, 0.00000000001) == MathUtils.EQUAL)
+        if (newWidth == lastWidth)
         {
             return;
         } else
         {
             lastWidth = newWidth;
         }
+
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ResizeableThreeD.class);
+
         if (inFixedAR())
         {
-            ModelContainer modelContainer = getSingleSelection();
+            ProjectifiableThing modelContainer = getSingleSelection();
             double ratio = newWidth / modelContainer.getScaledWidth();
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(), ratio);
+            if (selectedThreeDShapes.size() > 0)
+            {
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes, ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class), ratio);
+            }
         } else
         {
-            undoableProject.resizeModelsWidth(projectSelection.getSelectedModelsSnapshot(),
+            undoableProject.resizeModelsWidth(projectSelection.getSelectedModelsSnapshot(ResizeableTwoD.class),
                     newWidth);
         }
     }
 
-    private ModelContainer getSingleSelection()
+    private ProjectifiableThing getSingleSelection()
     {
         assert (projectSelection.getNumModelsSelectedProperty().get() == 1);
-        ModelContainer modelContainer = projectSelection.getSelectedModelsSnapshot().iterator().next();
+        ProjectifiableThing modelContainer = projectSelection.getSelectedModelsSnapshot().iterator().next();
         return modelContainer;
     }
 
@@ -1175,12 +1273,12 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             double ratio = scaleFactor / lastScaleRatio;
             lastScaleRatio = scaleFactor;
             undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(),
+                    projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class),
                     ratio);
             showScaleForXYZ(lastScaleRatio);
         } else
         {
-            undoableProject.scaleZModels(projectSelection.getSelectedModelsSnapshot(),
+            undoableProject.scaleZModels(projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class),
                     scaleFactor, inFixedAR());
         }
     }
@@ -1188,7 +1286,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private void updateScaleHeight()
     {
         double newScaleHeight = scaleTextHeightField.getAsDouble();
-
         if (MathUtils.compareDouble(newScaleHeight, lastScaleHeight, 0.001) == MathUtils.EQUAL
                 || newScaleHeight < 0)
         {
@@ -1205,17 +1302,28 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             lastScaleDepth = newScaleHeight;
         }
 
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class);
+
         if (inMultiSelectWithFixedAR())
         {
             double ratio = scaleFactor / lastScaleRatio;
             lastScaleRatio = scaleFactor;
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(),
-                    ratio);
+
+            if (selectedThreeDShapes.size() > 0)
+            {
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes,
+                        ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
+                        ratio);
+            }
             showScaleForXYZ(lastScaleRatio);
         } else
         {
-            undoableProject.scaleYModels(projectSelection.getSelectedModelsSnapshot(),
+            undoableProject.scaleYModels(projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
                     scaleFactor, inFixedAR());
         }
     }
@@ -1223,7 +1331,6 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     private void updateScaleWidth()
     {
         double newScaleWidth = scaleTextWidthField.getAsDouble();
-
         if (MathUtils.compareDouble(newScaleWidth, lastScaleWidth, 0.001) == MathUtils.EQUAL
                 || newScaleWidth < 0)
         {
@@ -1240,17 +1347,28 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             lastScaleDepth = newScaleWidth;
         }
 
+        Set<ScaleableThreeD> selectedThreeDShapes = projectSelection.getSelectedModelsSnapshot(ScaleableThreeD.class);
+
         if (inMultiSelectWithFixedAR())
         {
             double ratio = scaleFactor / lastScaleRatio;
             lastScaleRatio = scaleFactor;
-            undoableProject.scaleXYZRatioSelection(
-                    projectSelection.getSelectedModelsSnapshot(),
-                    ratio);
+
+            if (selectedThreeDShapes.size() > 0)
+            {
+                undoableProject.scaleXYZRatioSelection(
+                        selectedThreeDShapes,
+                        ratio);
+            } else
+            {
+                undoableProject.scaleXYRatioSelection(
+                        projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
+                        ratio);
+            }
             showScaleForXYZ(lastScaleRatio);
         } else
         {
-            undoableProject.scaleXModels(projectSelection.getSelectedModelsSnapshot(),
+            undoableProject.scaleXModels(projectSelection.getSelectedModelsSnapshot(ScaleableTwoD.class),
                     scaleFactor, inFixedAR());
         }
     }
@@ -1280,12 +1398,21 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
             showScaleForXYZ(1.0d);
         } else if (projectSelection.getNumModelsSelectedProperty().get() == 1)
         {
-            ModelContainer modelContainer = getSingleSelection();
-            populateScaleXField(modelContainer.getXScale());
-            populateScaleYField(modelContainer.getYScale());
-            populateScaleZField(modelContainer.getZScale());
+            ProjectifiableThing modelContainer = getSingleSelection();
+            if (modelContainer instanceof ScaleableTwoD)
+            {
+                populateScaleXField(((ScaleableTwoD) modelContainer).getXScale());
+                populateScaleYField(((ScaleableTwoD) modelContainer).getYScale());
+            } else if (modelContainer instanceof ScaleableThreeD)
+            {
+                populateScaleZField(((ScaleableThreeD) modelContainer).getZScale());
+            }
         }
         updateDisplay();
     }
-
+    
+    @Override
+    public void shutdownController()
+    {
+    }
 }

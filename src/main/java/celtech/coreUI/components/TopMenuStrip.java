@@ -25,10 +25,10 @@ public class TopMenuStrip extends HBox
 
     @FXML
     private GraphicButton extrasMenuButton;
-    
+
     @FXML
     private GraphicButton libraryButton;
-    
+
     @FXML
     void extrasMenuPressed(ActionEvent event)
     {
@@ -40,13 +40,13 @@ public class TopMenuStrip extends HBox
     {
         applicationStatus.setMode(ApplicationMode.ABOUT);
     }
-    
+
     @FXML
     void libraryPressed(ActionEvent event)
     {
         applicationStatus.setMode(ApplicationMode.LIBRARY);
     }
-    
+
     public TopMenuStrip()
     {
         super();
@@ -69,18 +69,15 @@ public class TopMenuStrip extends HBox
     void initialize()
     {
         applicationStatus = ApplicationStatus.getInstance();
-        
-        BooleanBinding buttonDisabled = 
-            applicationStatus.modeProperty().isEqualTo(ApplicationMode.ABOUT).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE)).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.EXTRAS_MENU)).
-                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.LIBRARY));
-        
+
+        BooleanBinding buttonDisabled
+                = applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE).
+                or(applicationStatus.modeProperty().isEqualTo(ApplicationMode.CALIBRATION_CHOICE));
+
         aboutButton.disableProperty().bind(buttonDisabled);
 
         extrasMenuButton.disableProperty().bind(buttonDisabled);
-        
+
         libraryButton.disableProperty().bind(buttonDisabled);
     }
 }

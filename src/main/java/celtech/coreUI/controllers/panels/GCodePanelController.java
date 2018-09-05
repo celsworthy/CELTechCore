@@ -1,13 +1,15 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.controllers.StatusInsetController;
-import celtech.printerControl.comms.commands.GCodeMacros;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.comms.commands.GCodeMacros;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -67,40 +69,84 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
         fireGCodeAtPrinter();
     }
 
-    private void fireGCodeAtPrinter()
-    {
+    Optional<String> getGCodeFileToUse(String text) {
+        String macroFilename;
+        String gcodeFileWithPathApp;
+        if (text.startsWith("!!"))
+        {
+            // with !! use scoring technique. Use current printer type
+            // and head type. Optionally add #N0 or #N1 to macro name to specify a nozzle
+            macroFilename = text.substring(2);
+
+            GCodeMacros.NozzleUseIndicator nozzleUse = GCodeMacros.NozzleUseIndicator.DONT_CARE;
+
+            int hashIx = macroFilename.indexOf('#');
+            if (hashIx != -1)
+            {
+                String nozzleSelect = macroFilename.substring(hashIx + 2);
+                if ("0".equals(nozzleSelect))
+                {
+                    nozzleUse = GCodeMacros.NozzleUseIndicator.NOZZLE_0;
+                } else if ("1".equals(nozzleSelect))
+                {
+                    nozzleUse = GCodeMacros.NozzleUseIndicator.NOZZLE_1;
+                }
+                macroFilename = macroFilename.substring(0, hashIx);
+            }
+
+            try
+            {
+                gcodeFileWithPathApp = GCodeMacros.getFilename(macroFilename,
+                        Optional.of(currentPrinter.findPrinterType()),
+                        currentPrinter.headProperty().get().typeCodeProperty().get(),
+                        nozzleUse,
+                        GCodeMacros.SafetyIndicator.DONT_CARE);
+            } catch (FileNotFoundException ex)
+            {
+                gcodeFileWithPathApp = "";
+            }
+        } else
+        {
+            macroFilename = text.substring(1);
+            gcodeFileWithPathApp = BaseConfiguration.getCommonApplicationDirectory() + BaseConfiguration.macroFileSubpath + macroFilename + ".gcode";
+        }
+        String gcodeFileWithPathUser = BaseConfiguration.getUserStorageDirectory() + BaseConfiguration.macroFileSubpath + macroFilename + ".gcode";
+
+        if (FileUtils.fileExists(gcodeFileWithPathUser))
+        {
+            return Optional.of(gcodeFileWithPathUser);
+        } else if (FileUtils.fileExists(gcodeFileWithPathApp))
+        {
+            return Optional.of(gcodeFileWithPathApp);
+        } else
+        {
+            steno.error("Failed to find macro: " + macroFilename);
+            return Optional.empty();
+        }
+    }
+
+    protected void fireGCodeAtPrinter() {
         gcodeEntryField.selectAll();
         String text = gcodeEntryField.getText();
 
         if (text.startsWith("!"))
         {
-            String macroFilename = text.substring(1);
-            String gcodeFileWithPathApp = ApplicationConfiguration.getCommonApplicationDirectory() + ApplicationConfiguration.macroFileSubpath + macroFilename + ".gcode";
-            String gcodeFileWithPathUser = ApplicationConfiguration.getUserStorageDirectory() + ApplicationConfiguration.macroFileSubpath + macroFilename + ".gcode";
-            String gcodeFileToUse = null;
-
-            if (FileUtils.fileExists(gcodeFileWithPathUser))
-            {
-                gcodeFileToUse = gcodeFileWithPathUser;
-            } else if (FileUtils.fileExists(gcodeFileWithPathApp))
-            {
-                gcodeFileToUse = gcodeFileWithPathApp;
-            }
+            Optional<String> gcodeFileToUse = getGCodeFileToUse(text);
 
             //See if we can run a macro
-            if (currentPrinter != null && gcodeFileToUse != null)
+            if (currentPrinter != null && gcodeFileToUse.isPresent())
             {
                 try
                 {
-                    currentPrinter.executeGCodeFile(gcodeFileToUse, false);
+                    currentPrinter.executeGCodeFile(gcodeFileToUse.get(), false);
                     currentPrinter.gcodeTranscriptProperty().add(text);
                 } catch (PrinterException ex)
                 {
-                    steno.error("Failed to run macro: " + macroFilename);
+                    steno.exception("Failed to run macro: " + text, ex);
                 }
             } else
             {
-                steno.error("Can't run requested macro: " + macroFilename);
+                steno.error("Can't run requested macro: " + text);
             }
         } else if (!text.equals(""))
         {
@@ -149,23 +195,22 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
 
         Lookup.getSelectedPrinterProperty().addListener(
                 (ObservableValue<? extends Printer> ov, Printer t, Printer t1) ->
-                {
-                    if (currentPrinter != null)
-                    {
-                        currentPrinter.gcodeTranscriptProperty().removeListener(gcodeTranscriptListener);
-                    }
+        {
+            if (currentPrinter != null)
+            {
+                currentPrinter.gcodeTranscriptProperty().removeListener(gcodeTranscriptListener);
+            }
 
-                    if (t1 != null)
-                    {
-                        gcodeTranscript.setItems(t1.gcodeTranscriptProperty());
-                        t1.gcodeTranscriptProperty().addListener(gcodeTranscriptListener);
-                    } else
-                    {
-                        gcodeTranscript.setItems(null);
-                    }
-
-                    currentPrinter = t1;
-                });
+            if (t1 != null)
+            {
+                gcodeTranscript.setItems(t1.gcodeTranscriptProperty());
+                t1.gcodeTranscriptProperty().addListener(gcodeTranscriptListener);
+            } else
+            {
+                gcodeTranscript.setItems(null);
+            }
+            currentPrinter = t1;
+        });
 
         gcodeEditParent.visibleProperty().bind(Lookup.getSelectedPrinterProperty().isNotNull());
 

@@ -2,70 +2,53 @@ package celtech.appManager;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.Filament;
-import celtech.configuration.PrintBed;
-import celtech.configuration.SlicerType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.coreUI.controllers.PrinterSettings;
-import celtech.coreUI.visualisation.modelDisplay.ModelBounds;
+import celtech.configuration.fileRepresentation.ProjectFileDeserialiser;
+import celtech.configuration.fileRepresentation.ShapeContainerProjectFile;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
-import celtech.printerControl.model.Head.HeadType;
-import celtech.printerControl.model.Printer;
-import celtech.services.slicer.PrintQualityEnumeration;
-import celtech.utils.Math.Packing.core.Bin;
-import celtech.utils.Math.Packing.core.BinPacking;
-import celtech.utils.Math.Packing.primitives.MArea;
-import celtech.utils.threed.MeshUtils;
-import java.awt.Dimension;
-import java.awt.geom.Rectangle2D;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.ScaleableThreeD;
+import celtech.modelcontrol.ScaleableTwoD;
+import celtech.modelcontrol.Translateable;
+import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.shape.MeshView;
-import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 
 /**
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class Project
+public abstract class Project
 {
 
     public static class ProjectLoadException extends Exception
@@ -79,48 +62,43 @@ public class Project
 
     private int version = -1;
 
-    private Filament DEFAULT_FILAMENT;
+    private static final Stenographer steno = StenographerFactory.getStenographer(Project.class.getName());
 
-    private static final String ASSOCIATE_WITH_EXTRUDER_NUMBER = "associateWithExtruderNumber";
+    protected Set<ProjectChangesListener> projectChangesListeners;
 
-    private static final Stenographer steno = StenographerFactory.getStenographer(
-            Project.class.getName());
-    private static final ObjectMapper mapper = new ObjectMapper();
+    protected BooleanProperty canPrint;
+    protected BooleanProperty customSettingsNotChosen;
 
-    Set<ProjectChangesListener> projectChangesListeners;
+    protected final PrinterSettingsOverrides printerSettings;
 
-    private ObservableList<ModelContainer> topLevelModels;
-    private String lastPrintJobID = "";
-    private ObjectProperty<Filament> extruder0Filament;
-    private ObjectProperty<Filament> extruder1Filament;
-    private BooleanProperty modelColourChanged;
-    private BooleanProperty canPrint;
-    private BooleanProperty customSettingsNotChosen;
-    private BooleanBinding hasInvalidMeshes;
+    protected final StringProperty projectNameProperty;
+    protected ObjectProperty<Date> lastModifiedDate;
 
-    private final PrinterSettings printerSettings;
+    protected boolean suppressProjectChanged = false;
 
-    private final StringProperty projectNameProperty;
-    private ObjectProperty<Date> lastModifiedDate;
-    private FilamentContainer filamentContainer;
+    protected ObjectProperty<ProjectMode> mode = new SimpleObjectProperty<>(ProjectMode.NONE);
 
-    private boolean suppressProjectChanged = false;
+    protected ObservableList<ProjectifiableThing> topLevelThings;
 
-    //Changed to make this list always include both extruders
-    private final ObservableList<Boolean> lastCalculatedUsedExtruders = FXCollections.observableArrayList();
+    protected String lastPrintJobID = "";
 
     public Project()
     {
+        topLevelThings = FXCollections.observableArrayList();
+
         initialise();
 
-        initialiseExtruderFilaments();
-        printerSettings = new PrinterSettings();
+        canPrint = new SimpleBooleanProperty(true);
+        customSettingsNotChosen = new SimpleBooleanProperty(true);
+        lastModifiedDate = new SimpleObjectProperty<>();
+        projectChangesListeners = new HashSet<>();
+
+        printerSettings = new PrinterSettingsOverrides();
         Date now = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("-hhmmss-ddMMYY");
         projectNameProperty = new SimpleStringProperty(Lookup.i18n("projectLoader.untitled")
                 + formatter.format(now));
         lastModifiedDate.set(now);
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
 
         customSettingsNotChosen.bind(
                 printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
@@ -143,40 +121,7 @@ public class Project
 
     }
 
-    private void initialise()
-    {
-        lastCalculatedUsedExtruders.add(0, false);
-        lastCalculatedUsedExtruders.add(1, false);
-
-        topLevelModels = FXCollections.observableArrayList();
-        hasInvalidMeshes = new BooleanBinding()
-        {
-            {
-                super.bind(topLevelModels);
-            }
-
-            @Override
-            protected boolean computeValue()
-            {
-                if (getModelContainersWithInvalidMesh().isEmpty())
-                {
-                    return false;
-                } else
-                {
-                    return true;
-                }
-            }
-        };
-        extruder0Filament = new SimpleObjectProperty<>();
-        extruder1Filament = new SimpleObjectProperty<>();
-        modelColourChanged = new SimpleBooleanProperty();
-        canPrint = new SimpleBooleanProperty(true);
-        customSettingsNotChosen = new SimpleBooleanProperty(true);
-        lastModifiedDate = new SimpleObjectProperty<>();
-        filamentContainer = Lookup.getFilamentContainer();
-        DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
-        projectChangesListeners = new HashSet<>();
-    }
+    protected abstract void initialise();
 
     public final void setProjectName(String value)
     {
@@ -200,321 +145,52 @@ public class Project
                 + ApplicationConfiguration.projectFileExtension;
     }
 
-    public Set<ModelContainer> getModelContainersWithInvalidMesh()
+    protected abstract void load(ProjectFile projectFile, String basePath) throws ProjectLoadException;
+
+    public static final Project loadProject(String basePath)
     {
-        Set<ModelContainer> invalidModelContainers = new HashSet<>();
-        getAllModels().stream().filter((modelContainer)
-                -> (modelContainer.isInvalidMesh())).forEach((modelContainer) ->
-                        {
-                            invalidModelContainers.add(modelContainer);
-                });
-        return invalidModelContainers;
-    }
-
-    public BooleanBinding hasInvalidMeshes()
-    {
-        return hasInvalidMeshes;
-    }
-
-    static Project loadProject(String basePath)
-    {
-        try
-        {
-            Project project = new Project();
-            char firstNonWhitespaceCharacter = getFirstNonWhitespaceCharacter(basePath);
-            if (firstNonWhitespaceCharacter == '{')
-            {
-                project.load(basePath);
-            } else
-            {
-                loadLegacyProjectFile(basePath, project);
-            }
-            return project;
-        } catch (Exception ex)
-        {
-            steno.exception("Unable to load project file at " + basePath, ex);
-        }
-        return null;
-    }
-
-    /**
-     * Load a Serialisable format project.
-     */
-    private static void loadLegacyProjectFile(String basePath, Project project)
-    {
-        try
-        {
-            FileInputStream projectFileStream = new FileInputStream(basePath
-                    + ApplicationConfiguration.projectFileExtension);
-            ObjectInputStream reader = new ObjectInputStream(new BufferedInputStream(
-                    projectFileStream));
-            Project loadedProject = (Project) reader.readObject();
-            reader.close();
-            for (ModelContainer modelContainer : loadedProject.topLevelModels)
-            {
-                project.addModel(modelContainer);
-            }
-            String[] fileNameElements = basePath.split(File.separator);
-            project.setProjectName(fileNameElements[fileNameElements.length - 1]);
-
-        } catch (Exception ex)
-        {
-            steno.exception("Unable to load old project format file", ex);
-        }
-    }
-
-    /**
-     * Get the first non-whitespace character in a file. If there is no
-     * non-whitespace character then return a space.
-     */
-    private static char getFirstNonWhitespaceCharacter(String basePath) throws FileNotFoundException, IOException
-    {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath
-                + ApplicationConfiguration.projectFileExtension));
-        String line;
-        while ((line = bufferedReader.readLine()) != null)
-        {
-            for (char c : line.toCharArray())
-            {
-                if (!Character.isWhitespace(c))
-                {
-                    return c;
-                }
-            }
-        }
-        return ' ';
-    }
-
-    private void load(String basePath) throws ProjectLoadException
-    {
-        suppressProjectChanged = true;
-
+        Project project = null;
         File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
 
         try
         {
+            ProjectFileDeserialiser deserializer
+                    = new ProjectFileDeserialiser();
+            SimpleModule module
+                    = new SimpleModule("LegacyProjectFileDeserialiserModule",
+                            new Version(1, 0, 0, null));
+            module.addDeserializer(ProjectFile.class, deserializer);
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(module);
             ProjectFile projectFile = mapper.readValue(file, ProjectFile.class);
 
-            version = projectFile.getVersion();
-
-            projectNameProperty.set(projectFile.getProjectName());
-            lastModifiedDate.set(projectFile.getLastModifiedDate());
-            lastPrintJobID = projectFile.getLastPrintJobID();
-
-            String filamentID0 = projectFile.getExtruder0FilamentID();
-            String filamentID1 = projectFile.getExtruder1FilamentID();
-            if (!filamentID0.equals("NULL"))
+            if (projectFile instanceof ModelContainerProjectFile)
             {
-                Filament filament0 = filamentContainer.getFilamentByID(filamentID0);
-                if (filament0 != null)
-                {
-                    extruder0Filament.set(filament0);
-                }
+                project = new ModelContainerProject();
+                project.load(projectFile, basePath);
+            } else if (projectFile instanceof ShapeContainerProjectFile)
+            {
+                project = new ShapeContainerProject();
+                project.load(projectFile, basePath);
             }
-            if (!filamentID1.equals("NULL"))
-            {
-                Filament filament1 = filamentContainer.getFilamentByID(filamentID1);
-                if (filament1 != null)
-                {
-                    extruder1Filament.set(filament1);
-                }
-            }
-
-            printerSettings.setSettingsName(projectFile.getSettingsName());
-            printerSettings.setPrintQuality(projectFile.getPrintQuality());
-            printerSettings.setBrimOverride(projectFile.getBrimOverride());
-            printerSettings.setFillDensityOverride(projectFile.getFillDensityOverride());
-            printerSettings.setPrintSupportOverride(projectFile.getPrintSupportOverride());
-            printerSettings.setPrintSupportTypeOverride(projectFile.getPrintSupportTypeOverride());
-            printerSettings.setRaftOverride(projectFile.getPrintRaft());
-            printerSettings.setSpiralPrintOverride(projectFile.getSpiralPrint());
-
-            loadModels(basePath);
-
-            recreateGroups(projectFile.getGroupStructure(), projectFile.getGroupState());
-
-        } catch (IOException ex)
+        } catch (Exception ex)
         {
-            steno.exception("Failed to load project " + basePath, ex);
-        } catch (ClassNotFoundException ex)
-        {
-            steno.exception("Failed to load project " + basePath, ex);
+            steno.exception("Unable to load project file at " + basePath, ex);
         }
-        suppressProjectChanged = false;
+        return project;
     }
 
-    private void loadModels(String basePath) throws IOException, ClassNotFoundException
-    {
-        FileInputStream fileInputStream = new FileInputStream(basePath
-                + ApplicationConfiguration.projectModelsFileExtension);
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-        ObjectInputStream modelsInput = new ObjectInputStream(bufferedInputStream);
-        int numModels = modelsInput.readInt();
+    protected abstract void save(String basePath);
 
-        for (int i = 0; i < numModels; i++)
+    public static final void saveProject(Project project)
+    {
+        if (project != null)
         {
-            ModelContainer modelContainer = (ModelContainer) modelsInput.readObject();
-            Optional<MeshUtils.MeshError> error = MeshUtils.validate(
-                    (TriangleMesh) modelContainer.getMeshView().getMesh());
-            if (error.isPresent())
-            {
-                modelContainer.setIsInvalidMesh(true);
-            }
-            addModel(modelContainer);
+            String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
+                    + project.getProjectName();
+            project.save(basePath);
         }
-    }
-
-    public static void saveProject(Project project)
-    {
-        String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-                + project.getProjectName();
-        project.save(basePath);
-    }
-
-    private void saveModels(String path) throws IOException
-    {
-        ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
-
-        Set<ModelContainer> modelsHoldingMeshViews = getModelsHoldingMeshViews();
-
-        modelsOutput.writeInt(modelsHoldingMeshViews.size());
-        for (ModelContainer modelsHoldingMeshView : modelsHoldingMeshViews)
-        {
-            modelsOutput.writeObject(modelsHoldingMeshView);
-        }
-    }
-
-    private void save(String basePath)
-    {
-        if (topLevelModels.size() > 0)
-        {
-            try
-            {
-                ProjectFile projectFile = new ProjectFile();
-                projectFile.populateFromProject(this);
-                File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
-                mapper.writeValue(file, projectFile);
-                saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
-            } catch (FileNotFoundException ex)
-            {
-                steno.exception("Failed to save project state", ex);
-            } catch (IOException ex)
-            {
-                steno.exception(
-                        "Couldn't write project state to file for project "
-                        + projectNameProperty.get(), ex);
-            }
-        }
-    }
-
-    public List<Boolean> getPrintingExtruders(Printer printer)
-    {
-        List<Boolean> localUsedExtruders = new ArrayList<>();
-        localUsedExtruders.add(false);
-        localUsedExtruders.add(false);
-
-        for (ModelContainer loadedModel : topLevelModels)
-        {
-            getUsedExtruders(loadedModel, localUsedExtruders, printer);
-        }
-
-        return localUsedExtruders;
-    }
-
-    /**
-     * Return true if all objects are on the same extruder, else return false.
-     */
-    public boolean allModelsOnSameExtruder(Printer printer)
-    {
-        List<Boolean> extruders = getPrintingExtruders(printer);
-        return !(extruders.get(0) && extruders.get(1));
-    }
-
-    private void getUsedExtruders(ModelContainer modelContainer, List<Boolean> usedExtruders, Printer printer)
-    {
-        if (modelContainer instanceof ModelGroup)
-        {
-            for (ModelContainer subModel : ((ModelGroup) modelContainer).getChildModelContainers())
-            {
-                getUsedExtruders(subModel, usedExtruders, printer);
-            }
-        } else
-        {
-            if (printer != null
-                    && printer.headProperty().get() != null)
-            {
-                //Single material heads can only use 1 material
-                if (printer.headProperty().get().headTypeProperty().get() == HeadType.SINGLE_MATERIAL_HEAD)
-                {
-                    usedExtruders.set(0, true);
-                } else if (printer.headProperty().get().headTypeProperty().get() == HeadType.DUAL_MATERIAL_HEAD)
-                {
-                    usedExtruders.set(modelContainer.getAssociateWithExtruderNumberProperty().get(), true);
-                }
-            } else
-            {
-                usedExtruders.set(modelContainer.getAssociateWithExtruderNumberProperty().get(), true);
-            }
-        }
-    }
-
-    /**
-     * Return which extruders are used by the project, as a set of the extruder
-     * numbers.
-     *
-     * @param printer
-     * @return
-     */
-    public ObservableList<Boolean> getUsedExtruders(Printer printer)
-    {
-        List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
-
-        // Don't add material 1 if there isn't a second extruder...
-        if (printerSettings.getPrintSupportOverride()
-                || printerSettings.getRaftOverride()
-                || printerSettings.getBrimOverride() > 0)
-        {
-            if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
-            {
-                if (!localUsedExtruders.get(0))
-                {
-                    localUsedExtruders.set(0, true);
-                }
-            } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
-                    && printer != null
-                    && printer.extrudersProperty().get(1).isFittedProperty().get())
-            {
-                if (!localUsedExtruders.get(1))
-                {
-                    localUsedExtruders.set(1, true);
-                }
-            }
-        }
-
-        lastCalculatedUsedExtruders.setAll(localUsedExtruders);
-        return lastCalculatedUsedExtruders;
-    }
-
-    /**
-     * Return all top-level groups and model containers.
-     */
-    public ObservableList<ModelContainer> getTopLevelModels()
-    {
-        return topLevelModels;
-    }
-
-    /**
-     * Return all ModelGroups and ModelContainers within the project.
-     */
-    public Set<ModelContainer> getAllModels()
-    {
-        Set<ModelContainer> allModelContainers = new HashSet<>();
-        for (ModelContainer loadedModel : topLevelModels)
-        {
-            allModelContainers.add(loadedModel);
-            allModelContainers.addAll(loadedModel.getDescendentModelContainers());
-        }
-        return allModelContainers;
     }
 
     @Override
@@ -523,36 +199,12 @@ public class Project
         return projectNameProperty.get();
     }
 
-    public void setLastPrintJobID(String printJobID)
-    {
-        lastPrintJobID = printJobID;
-    }
-
-    private void projectModified()
-    {
-        if (!suppressProjectChanged)
-        {
-            lastPrintJobID = "";
-            lastModifiedDate.set(new Date());
-        }
-    }
-
-    public String getLastPrintJobID()
-    {
-        return lastPrintJobID;
-    }
-
-    public ReadOnlyBooleanProperty getModelColourChanged()
-    {
-        return modelColourChanged;
-    }
-
-    public PrintQualityEnumeration getPrintQuality()
+    public final PrintQualityEnumeration getPrintQuality()
     {
         return printerSettings.getPrintQuality();
     }
 
-    public void setPrintQuality(PrintQualityEnumeration printQuality)
+    public final void setPrintQuality(PrintQualityEnumeration printQuality)
     {
         if (printerSettings.getPrintQuality() != printQuality)
         {
@@ -561,452 +213,38 @@ public class Project
         }
     }
 
-    public void setExtruder0Filament(Filament filament)
-    {
-        extruder0Filament.set(filament);
-    }
-
-    public void setExtruder1Filament(Filament filament)
-    {
-        extruder1Filament.set(filament);
-    }
-
-    public ObjectProperty<Filament> getExtruder0FilamentProperty()
-    {
-        return extruder0Filament;
-    }
-
-    public ObjectProperty<Filament> getExtruder1FilamentProperty()
-    {
-        return extruder1Filament;
-    }
-
-    /**
-     * For new projects this should be called to initialise the extruder
-     * filaments according to the currently selected printer.
-     */
-    private void initialiseExtruderFilaments()
-    {
-        // set defaults in case of no printer or reel
-        extruder0Filament.set(DEFAULT_FILAMENT);
-        extruder1Filament.set(DEFAULT_FILAMENT);
-
-        Printer printer = Lookup.getSelectedPrinterProperty().get();
-        if (printer != null)
-        {
-            if (printer.reelsProperty().containsKey(0))
-            {
-                String filamentID = printer.reelsProperty().get(0).filamentIDProperty().get();
-                extruder0Filament.set(filamentContainer.getFilamentByID(filamentID));
-            }
-            if (printer.reelsProperty().containsKey(1))
-            {
-                String filamentID = printer.reelsProperty().get(1).filamentIDProperty().get();
-                extruder1Filament.set(filamentContainer.getFilamentByID(filamentID));
-            }
-        }
-    }
-
-    public PrinterSettings getPrinterSettings()
+    public final PrinterSettingsOverrides getPrinterSettings()
     {
         return printerSettings;
     }
 
-    public void addModel(ModelContainer modelContainer)
-    {
-        topLevelModels.add(modelContainer);
+    public abstract void addModel(ProjectifiableThing projectifiableThing);
 
-        addModelListeners(modelContainer);
-        for (ModelContainer childModelContainer : modelContainer.getChildModelContainers())
-        {
-            addModelListeners(childModelContainer);
-        }
+    public abstract void removeModels(Set<ProjectifiableThing> projectifiableThings);
 
-        projectModified();
-        fireWhenModelAdded(modelContainer);
-    }
-
-    private void fireWhenModelAdded(ModelContainer modelContainer)
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelAdded(modelContainer);
-        }
-    }
-
-    private void fireWhenPrinterSettingsChanged(PrinterSettings printerSettings)
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenPrinterSettingsChanged(printerSettings);
-        }
-    }
-
-    public void removeModels(Set<ModelContainer> modelContainers)
-    {
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            assert modelContainer != null;
-        }
-
-        topLevelModels.removeAll(modelContainers);
-
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            removeModelListeners(modelContainer);
-        }
-        projectModified();
-        fireWhenModelsRemoved(modelContainers);
-    }
-
-    private void fireWhenModelsRemoved(Set<ModelContainer> modelContainers)
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsRemoved(modelContainers);
-        }
-    }
-
-    public void addProjectChangesListener(ProjectChangesListener projectChangesListener)
+    public final void addProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
         projectChangesListeners.add(projectChangesListener);
     }
 
-    public void removeProjectChangesListener(ProjectChangesListener projectChangesListener)
+    public final void removeProjectChangesListener(ProjectChangesListener projectChangesListener)
     {
         projectChangesListeners.remove(projectChangesListener);
     }
 
-    public ObjectProperty<Date> getLastModifiedDate()
+    public final ObjectProperty<Date> getLastModifiedDate()
     {
         return lastModifiedDate;
     }
 
-    private Map<ModelContainer, ChangeListener<Number>> modelExtruderNumberListener = new HashMap<>();
-
-    private void addModelListeners(ModelContainer modelContainer)
-    {
-        if (!(modelContainer instanceof ModelGroup)
-                && !modelExtruderNumberListener.containsKey(modelContainer))
-        {
-            ChangeListener<Number> changeListener = new ChangeListener()
-            {
-                @Override
-                public void changed(ObservableValue ov, Object t, Object t1)
-                {
-                    fireWhenModelChanged(modelContainer, ASSOCIATE_WITH_EXTRUDER_NUMBER);
-                    modelColourChanged.set(!modelColourChanged.get());
-                }
-            };
-
-            modelExtruderNumberListener.put(modelContainer, changeListener);
-            modelContainer.getAssociateWithExtruderNumberProperty().addListener(changeListener);
-        }
-    }
-
-    public void removeModelListeners(ModelContainer modelContainer)
-    {
-        if (!(modelContainer instanceof ModelGroup))
-        {
-            modelContainer.getAssociateWithExtruderNumberProperty().removeListener(modelExtruderNumberListener.get(modelContainer));
-            modelExtruderNumberListener.remove(modelContainer);
-        }
-    }
-
-    public BooleanProperty canPrintProperty()
+    public final BooleanProperty canPrintProperty()
     {
         return canPrint;
     }
 
-    public BooleanProperty customSettingsNotChosenProperty()
+    public final BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project.
-     */
-    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-
-        ModelGroup modelGroup = new ModelGroup(modelContainers);
-        modelGroup.checkOffBed();
-        modelGroup.notifyScreenExtentsChange();
-        return modelGroup;
-    }
-
-    private void checkNotAlreadyInGroup(Set<ModelContainer> modelContainers)
-    {
-        Set<ModelContainer> modelsAlreadyInGroups = getDescendentModelsInAllGroups();
-        for (ModelContainer model : modelContainers)
-        {
-            if (modelsAlreadyInGroups.contains(model))
-            {
-                throw new RuntimeException("Model " + model + " is already in a group");
-            }
-        }
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project, and add
-     * model listeners to all descendent children.
-     */
-    public ModelGroup createNewGroupAndAddModelListeners(Set<ModelContainer> modelContainers)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup(modelContainers);
-        addModelListeners(modelGroup);
-        for (ModelContainer childModelContainer : modelGroup.getDescendentModelContainers())
-        {
-            addModelListeners(childModelContainer);
-        }
-        modelGroup.checkOffBed();
-        return modelGroup;
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project.
-     */
-    public ModelGroup createNewGroup(Set<ModelContainer> modelContainers, int groupModelId)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup(modelContainers, groupModelId);
-        modelGroup.checkOffBed();
-        return modelGroup;
-    }
-
-    public ModelGroup group(Set<ModelContainer> modelContainers)
-    {
-        removeModels(modelContainers);
-        ModelGroup modelGroup = createNewGroup(modelContainers);
-        addModel(modelGroup);
-        return modelGroup;
-    }
-
-    public ModelGroup group(Set<ModelContainer> modelContainers, int groupModelId)
-    {
-        removeModels(modelContainers);
-        ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
-        addModel(modelGroup);
-        return modelGroup;
-    }
-
-    public void ungroup(Set<? extends ModelContainer> modelContainers)
-    {
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            if (modelContainer instanceof ModelGroup)
-            {
-                ModelGroup modelGroup = (ModelGroup) modelContainer;
-                Set<ModelContainer> modelGroups = new HashSet<>();
-                modelGroups.add(modelGroup);
-                removeModels(modelGroups);
-                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
-                {
-                    addModel(childModelContainer);
-                    childModelContainer.setBedCentreOffsetTransform();
-                    childModelContainer.applyGroupTransformToThis(modelGroup);
-                    childModelContainer.updateLastTransformedBoundsInParent();
-                    childModelContainer.checkOffBed();
-                }
-            }
-        }
-    }
-
-    private Set<ModelContainer> getModelsHoldingMeshViews()
-    {
-        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
-        for (ModelContainer model : topLevelModels)
-        {
-            modelsHoldingMeshViews.addAll(model.getModelsHoldingMeshViews());
-        }
-        return modelsHoldingMeshViews;
-    }
-
-    private Set<ModelContainer> getModelsHoldingModels()
-    {
-        Set<ModelContainer> modelsHoldingMeshViews = new HashSet<>();
-        for (ModelContainer model : topLevelModels)
-        {
-            modelsHoldingMeshViews.addAll(model.getModelsHoldingModels());
-        }
-        return modelsHoldingMeshViews;
-    }
-
-    /**
-     * Return the set of those ModelContainers which are in any group.
-     */
-    private Set<ModelContainer> getDescendentModelsInAllGroups()
-    {
-        Set<ModelContainer> modelsInGroups = new HashSet<>();
-        for (ModelContainer model : topLevelModels)
-        {
-            if (model instanceof ModelGroup)
-            {
-                modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
-            }
-        }
-        return modelsInGroups;
-    }
-
-    /**
-     * Return the set of those ModelContainers which are in any group descending
-     * from the given group.
-     */
-    private Set<ModelContainer> getDescendentModelsInGroup(ModelGroup modelGroup)
-    {
-        Set<ModelContainer> modelsInGroups = new HashSet<>();
-        for (ModelContainer model : modelGroup.getChildModelContainers())
-        {
-            if (model instanceof ModelGroup)
-            {
-                modelsInGroups.addAll(getDescendentModelsInGroup((ModelGroup) model));
-            } else
-            {
-                modelsInGroups.add(model);
-            }
-        }
-        return modelsInGroups;
-    }
-
-    /**
-     * Return a Map of child_model_id - parent_model_id for all model:group and
-     * group:group relationships.
-     */
-    public Map<Integer, Set<Integer>> getGroupStructure()
-    {
-        Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
-        for (ModelContainer modelContainer : getModelsHoldingModels())
-        {
-            modelContainer.addGroupStructure(groupStructure);
-        }
-        return groupStructure;
-    }
-
-    /**
-     * Return a Map of model_id - state for all models holding models (ie
-     * groups).
-     */
-    public Map<Integer, ModelContainer.State> getGroupState()
-    {
-        Map<Integer, ModelContainer.State> groupState = new HashMap<>();
-        for (ModelContainer modelContainer : getModelsHoldingModels())
-        {
-            groupState.put(modelContainer.getModelId(), modelContainer.getState());
-        }
-        return groupState;
-    }
-
-    /**
-     * Using the group function, reapply the groupings as given by the
-     * groupStructure. The first groups to be created must be those containing
-     * only non-groups, and then each level of the group hierarchy.<p>
-     * First create new groups where all children are already instantiated. Then
-     * repeat until no new groups are created.
-     * </p>
-     */
-    public void recreateGroups(Map<Integer, Set<Integer>> groupStructure,
-            Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
-    {
-        int numNewGroups;
-        do
-        {
-            numNewGroups = makeNewGroups(groupStructure, groupStates);
-        } while (numNewGroups > 0);
-    }
-
-    /**
-     * Create groups where all the children are already instantiated, based on
-     * the structure and state given in the parameters.
-     *
-     * @return the number of groups created
-     */
-    private int makeNewGroups(Map<Integer, Set<Integer>> groupStructure,
-            Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
-    {
-        int numGroups = 0;
-        for (Map.Entry<Integer, Set<Integer>> entry : groupStructure.entrySet())
-        {
-            if (allModelsInstantiated(entry.getValue()))
-            {
-                Set<ModelContainer> modelContainers = getModelContainersOfIds(entry.getValue());
-                int groupModelId = entry.getKey();
-                ModelGroup group = group(modelContainers, groupModelId);
-                recreateGroupState(group, groupStates);
-                numGroups++;
-            }
-        }
-        return numGroups;
-    }
-
-    /**
-     * Return true if loadedModels contains models for all the given modelIds,
-     * else return false.
-     */
-    private boolean allModelsInstantiated(Set<Integer> modelIds)
-    {
-        for (int modelId : modelIds)
-        {
-            boolean modelFound = false;
-            for (ModelContainer modelContainer : topLevelModels)
-            {
-                if (modelContainer.getModelId() == modelId)
-                {
-                    modelFound = true;
-                    break;
-                }
-
-            }
-            if (!modelFound)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Return the set of models for the given set of modelIds.
-     */
-    public Set<ModelContainer> getModelContainersOfIds(Set<Integer> modelIds) throws ProjectLoadException
-    {
-        Set<ModelContainer> modelContainers = new HashSet<>();
-        for (int modelId : modelIds)
-        {
-            Optional<ModelContainer> modelContainer = getModelContainerOfModelId(modelId);
-            if (modelContainer.isPresent())
-            {
-                modelContainers.add(modelContainer.get());
-            } else
-            {
-                throw new ProjectLoadException("unexpected model id when recreating groups");
-            }
-        }
-        return modelContainers;
-    }
-
-    private Optional<ModelContainer> getModelContainerOfModelId(int modelId)
-    {
-        for (ModelContainer modelContainer : topLevelModels)
-        {
-            if (modelContainer.getModelId() == modelId)
-            {
-                return Optional.of(modelContainer);
-            }
-        }
-        return Optional.empty();
-
-    }
-
-    /**
-     * Update the transforms of the given group as indicated by groupState.
-     */
-    private void recreateGroupState(ModelGroup group, Map<Integer, ModelContainer.State> groupStates) throws ProjectLoadException
-    {
-        group.setState(groupStates.get(group.getModelId()));
-        group.checkOffBed();
-
     }
 
     /**
@@ -1018,13 +256,17 @@ public class Project
 
         /**
          * This should be fired when a model is added to the project.
+         *
+         * @param projectifiableThing
          */
-        void whenModelAdded(ModelContainer modelContainer);
+        void whenModelAdded(ProjectifiableThing projectifiableThing);
 
         /**
          * This should be fired when a model is removed from the project.
+         *
+         * @param projectifiableThing
          */
-        void whenModelsRemoved(Set<ModelContainer> modelContainers);
+        void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing);
 
         /**
          * This should be fired when the project is auto laid out.
@@ -1035,14 +277,19 @@ public class Project
          * This should be fired when one or more models have been moved, rotated
          * or scaled etc. If possible try to fire just once for any given group
          * change.
+         *
+         * @param projectifiableThing
          */
-        void whenModelsTransformed(Set<ModelContainer> modelContainers);
+        void whenModelsTransformed(Set<ProjectifiableThing> projectifiableThing);
 
         /**
          * This should be fired when certain details of the model change.
          * Currently this is only: - associatedExtruder
+         *
+         * @param modelContainer
+         * @param propertyName
          */
-        void whenModelChanged(ModelContainer modelContainer, String propertyName);
+        void whenModelChanged(ProjectifiableThing modelContainer, String propertyName);
 
         /**
          * This should be fired whenever the PrinterSettings of the project
@@ -1050,443 +297,234 @@ public class Project
          *
          * @param printerSettings
          */
-        void whenPrinterSettingsChanged(PrinterSettings printerSettings);
+        void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings);
     }
 
-    public void autoLayout()
+    public abstract void autoLayout();
+
+    //This carries out the same function but leaves the existing things in place
+    public abstract void autoLayout(List<ProjectifiableThing> thingsToLayout);
+
+    /**
+     * Scale X, Y and Z by the given factor, apply the given ratio to the given
+     * scale. I.e. the ratio is not an absolute figure to be applied to the
+     * models but a ratio to be applied to the current scale.
+     *
+     * @param projectifiableThings
+     * @param ratio
+     */
+    public final void scaleXYZRatioSelection(Set<ScaleableThreeD> projectifiableThings, double ratio)
     {
-        autoLayout(topLevelModels);
-    }
-
-    public void autoLayout(List<ModelContainer> thingsToLayout)
-    {
-//        steno.info("Start layout");
-        Dimension binDimension = new Dimension((int) PrintBed.maxPrintableXSize, (int) PrintBed.maxPrintableZSize);
-        Bin layoutBin = null;
-
-        final double spacing = 2.5;
-        final double halfSpacing = spacing / 2.0;
-
-        Map<Integer, ModelContainer> partMap = new HashMap<>();
-
-        int numberOfPartsNotToLayout = topLevelModels.size() - thingsToLayout.size();
-
-//        steno.info("Stage 1");
-        if (numberOfPartsNotToLayout > 0)
+        for (ScaleableThreeD projectifiableThing : projectifiableThings)
         {
-            MArea[] existingPieces = new MArea[numberOfPartsNotToLayout];
-            int existingPartCounter = 0;
-            for (ModelContainer thingToConsider : topLevelModels)
-            {
-                if (!thingsToLayout.contains(thingToConsider))
-                {
-                    //We need to stop this part from being laid out
-                    ModelBounds pieceBounds = thingToConsider.calculateBoundsInBedCoordinateSystem();
-                    Rectangle2D.Double rectangle = new Rectangle2D.Double(pieceBounds.getMinX() - halfSpacing,
-                            PrintBed.maxPrintableZSize - pieceBounds.getMaxZ() - halfSpacing,
-                            pieceBounds.getWidth() + halfSpacing,
-                            pieceBounds.getDepth() + halfSpacing);
-                    MArea piece = new MArea(rectangle, existingPartCounter, ((ModelContainer) thingToConsider).getRotationTurn());
-                    existingPieces[existingPartCounter] = piece;
-                    partMap.put(existingPartCounter, thingToConsider);
-                    existingPartCounter++;
-                }
-            }
-            layoutBin = new Bin(binDimension, existingPieces);
+            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio, true);
+            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio, true);
+            projectifiableThing.setZScale(projectifiableThing.getZScale() * ratio, true);
         }
-
-//        steno.info("Stage 2");
-        int startingIndexForPartsToLayout = (numberOfPartsNotToLayout == 0) ? 0 : numberOfPartsNotToLayout - 1;
-
-        MArea[] partsToLayout = new MArea[thingsToLayout.size()];
-        int partsToLayoutCounter = 0;
-        for (ModelContainer thingToLayout : thingsToLayout)
-        {
-            ModelBounds pieceBounds = thingToLayout.calculateBoundsInBedCoordinateSystem();
-            //Change the coords so that every part is in the bottom left corner
-            Rectangle2D.Double rectangle = new Rectangle2D.Double(0, 0,
-                    pieceBounds.getWidth() + spacing,
-                    pieceBounds.getDepth() + spacing);
-            MArea piece = new MArea(rectangle, partsToLayoutCounter + startingIndexForPartsToLayout, 0);
-            partsToLayout[partsToLayoutCounter] = piece;
-            partMap.put(partsToLayoutCounter + startingIndexForPartsToLayout, thingToLayout);
-            partsToLayoutCounter++;
-        }
-
-//        steno.info("Stage 3");
-        if (layoutBin != null)
-        {
-            MArea[] unplacedParts = null;
-            unplacedParts = layoutBin.BBCompleteStrategy(partsToLayout);
-        } else
-        {
-            Bin[] bins = BinPacking.BinPackingStrategy(partsToLayout, binDimension, binDimension);
-            layoutBin = bins[0];
-        }
-
-//        steno.info("Stage 4");
-        int numberOfPartsInTotal = layoutBin.getPlacedPieces().length;
-        double newXPosition[] = new double[numberOfPartsInTotal];
-        double newDepthPosition[] = new double[numberOfPartsInTotal];
-        double newRotation[] = new double[numberOfPartsInTotal];
-        double minLayoutX = 999, maxLayoutX = -999, minLayoutY = 999, maxLayoutY = -999;
-
-        for (int pieceNumber = 0; pieceNumber < numberOfPartsInTotal; pieceNumber++)
-        {
-            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
-
-            newRotation[pieceNumber] = area.getRotation();
-
-            newDepthPosition[pieceNumber] = PrintBed.maxPrintableZSize - area.getBoundingBox2D().getMaxY() + area.getBoundingBox2D().getHeight() / 2.0;
-            newXPosition[pieceNumber] = area.getBoundingBox2D().getMinX() + (area.getBoundingBox2D().getWidth() / 2.0);
-
-            maxLayoutX = Math.max(maxLayoutX, area.getBoundingBox2D().getMaxX());
-            minLayoutX = Math.min(minLayoutX, area.getBoundingBox2D().getMinX());
-            maxLayoutY = Math.max(maxLayoutY, area.getBoundingBox2D().getMaxY());
-            minLayoutY = Math.min(minLayoutY, area.getBoundingBox2D().getMinY());
-        }
-
-        double xCentringOffset = (PrintBed.maxPrintableXSize - (maxLayoutX - minLayoutX)) / 2.0;
-        double yCentringOffset = (PrintBed.maxPrintableZSize - (maxLayoutY - minLayoutY)) / 2.0;
-//        steno.info("Stage 5");
-
-        for (int pieceNumber = 0; pieceNumber < layoutBin.getPlacedPieces().length; pieceNumber++)
-        {
-            MArea area = layoutBin.getPlacedPieces()[pieceNumber];
-            ModelContainer container = (ModelContainer) partMap.get(area.getID());
-
-            if (thingsToLayout.contains(container))
-            {
-                double rotation = newRotation[pieceNumber] + container.getRotationTurn();
-                if (rotation >= 360.0)
-                {
-                    rotation -= 360.0;
-                }
-                container.setRotationTurn(rotation);
-
-                //Only auto centre if we're laying out all of the parts
-                if (numberOfPartsNotToLayout == 0)
-                {
-                    container.translateTo(newXPosition[pieceNumber] + xCentringOffset, newDepthPosition[pieceNumber] + yCentringOffset);
-                } else
-                {
-                    container.translateTo(newXPosition[pieceNumber], newDepthPosition[pieceNumber]);
-                }
-            }
-        }
-//        steno.info("Stage 6");
-
         projectModified();
-        fireWhenAutoLaidOut();
-//        steno.info("Stage 7");
-
-    }
-
-    private void fireWhenAutoLaidOut()
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenAutoLaidOut();
-        }
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
     /**
      * Scale X, Y and Z by the given factor, apply the given ratio to the given
      * scale. I.e. the ratio is not an absolute figure to be applied to the
      * models but a ratio to be applied to the current scale.
+     *
+     * @param projectifiableThings
+     * @param ratio
      */
-    public void scaleXYZRatioSelection(Set<ModelContainer> modelContainers, double ratio)
+    public final void scaleXYRatioSelection(Set<ScaleableTwoD> projectifiableThings, double ratio)
     {
-        for (ModelContainer model : modelContainers)
+        for (ScaleableTwoD projectifiableThing : projectifiableThings)
         {
-            model.setXScale(model.getXScale() * ratio);
-            model.setYScale(model.getYScale() * ratio);
-            model.setZScale(model.getZScale() * ratio);
+            projectifiableThing.setXScale(projectifiableThing.getXScale() * ratio, true);
+            projectifiableThing.setYScale(projectifiableThing.getYScale() * ratio, true);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public void scaleXModels(Set<ModelContainer> modelContainers, double newScale,
+    public final void scaleXModels(Set<ScaleableTwoD> projectifiableThings, double newScale,
             boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert (modelContainers.size() == 1);
-            ModelContainer model = modelContainers.iterator().next();
-            double ratio = newScale / model.getXScale();
-            scaleXYZRatioSelection(modelContainers, ratio);
+            assert (projectifiableThings.size() == 1);
+            ScaleableTwoD projectifiableThing = projectifiableThings.iterator().next();
+            double ratio = newScale / projectifiableThing.getXScale();
+            if (projectifiableThing instanceof ScaleableThreeD)
+            {
+                scaleXYZRatioSelection((Set) projectifiableThings, ratio);
+            } else
+            {
+                scaleXYRatioSelection(projectifiableThings, ratio);
+            }
         } else
         {
-            for (ModelContainer model : modelContainers)
+            for (ScaleableTwoD projectifiableThing : projectifiableThings)
             {
                 {
-                    model.setXScale(newScale);
+                    projectifiableThing.setXScale(newScale, true);
                 }
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public void scaleYModels(Set<ModelContainer> modelContainers, double newScale,
+    public final void scaleYModels(Set<ScaleableTwoD> projectifiableThings, double newScale,
             boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert (modelContainers.size() == 1);
-            ModelContainer model = modelContainers.iterator().next();
-            double ratio = newScale / model.getYScale();
-            scaleXYZRatioSelection(modelContainers, ratio);
+            assert (projectifiableThings.size() == 1);
+            ScaleableTwoD projectifiableThing = projectifiableThings.iterator().next();
+            double ratio = newScale / projectifiableThing.getYScale();
+
+            if (projectifiableThing instanceof ScaleableThreeD)
+            {
+                scaleXYZRatioSelection((Set) projectifiableThings, ratio);
+            } else
+            {
+                scaleXYRatioSelection(projectifiableThings, ratio);
+            }
         } else
         {
-            for (ModelContainer model : modelContainers)
+            for (ScaleableTwoD projectifiableThing : projectifiableThings)
             {
                 {
-                    model.setYScale(newScale);
+                    projectifiableThing.setYScale(newScale, true);
                 }
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public void scaleZModels(Set<ModelContainer> modelContainers, double newScale,
+    public final void scaleZModels(Set<ScaleableThreeD> projectifiableThings, double newScale,
             boolean preserveAspectRatio)
     {
         if (preserveAspectRatio)
         {
             // this only happens for non-multiselect
-            assert (modelContainers.size() == 1);
-            ModelContainer model = modelContainers.iterator().next();
-            double ratio = newScale / model.getZScale();
-            scaleXYZRatioSelection(modelContainers, ratio);
+            assert (projectifiableThings.size() == 1);
+            ScaleableThreeD projectifiableThing = projectifiableThings.iterator().next();
+            double ratio = newScale / projectifiableThing.getZScale();
+            scaleXYZRatioSelection(projectifiableThings, ratio);
         } else
         {
-            for (ModelContainer model : modelContainers)
+            for (ScaleableThreeD projectifiableThing : projectifiableThings)
             {
                 {
-                    model.setZScale(newScale);
+                    projectifiableThing.setZScale(newScale, true);
                 }
             }
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) projectifiableThings);
     }
 
-    public void rotateLeanModels(Set<ModelContainer> modelContainers, double rotation)
+    public void translateModelsBy(Set<TranslateableTwoD> modelContainers, double x, double y)
     {
-        for (ModelContainer model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
-            {
-                model.setRotationLean(rotation);
-            }
+            model.translateBy(x, y);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void rotateTwistModels(Set<ModelContainer> modelContainers, double rotation)
+    public void translateModelsTo(Set<TranslateableTwoD> modelContainers, double x, double y)
     {
-        for (ModelContainer model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
-            {
-                model.setRotationTwist(rotation);
-            }
+            model.translateTo(x, y);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void rotateTurnModels(Set<ModelContainer> modelContainers, double rotation)
+    public void translateModelsXTo(Set<TranslateableTwoD> modelContainers, double x)
     {
-        for (ModelContainer model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
-            {
-                model.setRotationTurn(rotation);
-            }
+            model.translateXTo(x);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void dropToBed(Set<ModelContainer> modelContainers)
+    public void translateModelsDepthPositionTo(Set<Translateable> modelContainers, double z)
     {
-        for (ModelContainer model : modelContainers)
+        for (Translateable model : modelContainers)
         {
-            {
-                model.dropToBed();
-                model.checkOffBed();
-            }
+            model.translateDepthPositionTo(z);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void snapToGround(ModelContainer modelContainer, MeshView pickedMesh, int faceNumber)
+    public void resizeModelsDepth(Set<ResizeableThreeD> modelContainers, double depth)
     {
-        modelContainer.snapToGround(pickedMesh, faceNumber);
-        projectModified();
-        Set<ModelContainer> modelContainers = new HashSet<>();
-        modelContainers.add(modelContainer);
-        fireWhenModelsTransformed(modelContainers);
-    }
-
-    public void resizeModelsDepth(Set<ModelContainer> modelContainers, double depth)
-    {
-        for (ModelContainer model : modelContainers)
+        for (ResizeableThreeD model : modelContainers)
         {
-            {
-                model.resizeDepth(depth);
-            }
+            model.resizeDepth(depth);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void resizeModelsHeight(Set<ModelContainer> modelContainers, double height)
+    public void resizeModelsHeight(Set<ResizeableTwoD> modelContainers, double height)
     {
-        for (ModelContainer model : modelContainers)
+        for (ResizeableTwoD model : modelContainers)
         {
-            {
-                model.resizeHeight(height);
-            }
+            model.resizeHeight(height);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void resizeModelsWidth(Set<ModelContainer> modelContainers, double width)
+    public void resizeModelsWidth(Set<ResizeableTwoD> modelContainers, double width)
     {
-        for (ModelContainer model : modelContainers)
+        for (ResizeableTwoD model : modelContainers)
         {
-            {
-                model.resizeWidth(width);
-            }
+            model.resizeWidth(width);
         }
         projectModified();
-        fireWhenModelsTransformed(modelContainers);
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void translateModelsBy(Set<ModelContainer> modelContainers, double x, double z)
+    public abstract Set<ProjectifiableThing> getAllModels();
+
+    public final Set<ItemState> getModelStates()
     {
-        for (ModelContainer model : modelContainers)
+        Set<ItemState> states = new HashSet<>();
+        for (ProjectifiableThing model : getAllModels())
         {
-            {
-                model.translateBy(x, z);
-            }
+            states.add(model.getState());
         }
-        projectModified();
-        fireWhenModelsTransformed(modelContainers);
+        return states;
     }
 
-    public void translateModelsTo(Set<ModelContainer> modelContainers, double x, double z)
+    public final void setModelStates(Set<ItemState> modelStates)
     {
-        for (ModelContainer model : modelContainers)
+        Set<ProjectifiableThing> modelContainers = new HashSet<>();
+        for (ItemState modelState : modelStates)
         {
-            {
-                model.translateTo(x, z);
-            }
-        }
-        projectModified();
-        fireWhenModelsTransformed(modelContainers);
-    }
-
-    private void fireWhenModelsTransformed(Set<ModelContainer> modelContainers)
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelsTransformed(modelContainers);
-        }
-    }
-
-    private void fireWhenModelChanged(ModelContainer modelContainer, String propertyName)
-    {
-        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
-        {
-            projectChangesListener.whenModelChanged(modelContainer, propertyName);
-        }
-    }
-
-    public void translateModelsXTo(Set<ModelContainer> modelContainers, double x)
-    {
-        for (ModelContainer model : modelContainers)
-        {
-            {
-                model.translateXTo(x);
-            }
-        }
-        projectModified();
-        fireWhenModelsTransformed(modelContainers);
-    }
-
-    public void translateModelsZTo(Set<ModelContainer> modelContainers, double z)
-    {
-        for (ModelContainer model : modelContainers)
-        {
-            {
-                model.translateZTo(z);
-            }
-        }
-        projectModified();
-        fireWhenModelsTransformed(modelContainers);
-    }
-
-    public void setAssociatedExtruder(Set<ModelContainer> modelContainers, boolean useExtruder0)
-    {
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            modelContainer.setUseExtruder0(useExtruder0);
-        }
-
-        boolean usingDifferentExtruders = false;
-        int lastExtruder = -1;
-        for (ModelContainer model : getAllModels())
-        {
-            int thisExtruder = model.getAssociateWithExtruderNumberProperty().get();
-            if (lastExtruder >= 0
-                    && lastExtruder != thisExtruder)
-            {
-                usingDifferentExtruders = true;
-                break;
-            }
-            lastExtruder = thisExtruder;
-        }
-
-        if (!usingDifferentExtruders)
-        {
-            printerSettings.getPrintSupportTypeOverrideProperty().set(
-                    (useExtruder0 == true)
-                            ? SlicerParametersFile.SupportType.MATERIAL_1
-                            : SlicerParametersFile.SupportType.MATERIAL_2);
-            fireWhenPrinterSettingsChanged(printerSettings);
-        }
-
-        projectModified();
-    }
-
-    public Set<ModelContainer.State> getModelStates()
-    {
-        Set<ModelContainer.State> modelStates = new HashSet<>();
-        for (ModelContainer model : getAllModels())
-        {
-            modelStates.add(model.getState());
-        }
-        return modelStates;
-    }
-
-    public void setModelStates(Set<ModelContainer.State> modelStates)
-    {
-        Set<ModelContainer> modelContainers = new HashSet<>();
-        for (ModelContainer.State modelState : modelStates)
-        {
-            for (ModelContainer model : getAllModels())
+            for (ProjectifiableThing model : getAllModels())
             {
                 if (model.getModelId() == modelState.modelId)
                 {
                     model.setState(modelState);
+                    model.updateOriginalModelBounds();
                     modelContainers.add(model);
                 }
             }
@@ -1495,10 +533,146 @@ public class Project
         fireWhenModelsTransformed(modelContainers);
     }
 
+    public final ReadOnlyObjectProperty<ProjectMode> getModeProperty()
+    {
+        return mode;
+    }
+
+    public ProjectMode getMode()
+    {
+        return mode.get();
+    }
+
+    public final void setMode(ProjectMode mode)
+    {
+        this.mode.set(mode);
+    }
+
+    protected final void projectModified()
+    {
+        if (!suppressProjectChanged)
+        {
+            lastPrintJobID = "";
+            lastModifiedDate.set(new Date());
+        }
+    }
+
+    abstract protected void fireWhenModelsTransformed(Set<ProjectifiableThing> projectifiableThings);
+
+    abstract protected void fireWhenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings);
+
+    public int getNumberOfProjectifiableElements()
+    {
+        return getAllModels().size();
+    }
+
+    public ObservableList<ProjectifiableThing> getTopLevelThings()
+    {
+        return topLevelThings;
+    }
+
+    public void setLastPrintJobID(String lastPrintJobID)
+    {
+        this.lastPrintJobID = lastPrintJobID;
+    }
+
+    public String getLastPrintJobID()
+    {
+        return lastPrintJobID;
+    }
+
+    public ModelGroup group(Set<Groupable> modelContainers)
+    {
+        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
+
+        removeModels(projectifiableThings);
+        ModelGroup modelGroup = createNewGroup(modelContainers);
+        addModel(modelGroup);
+        return modelGroup;
+    }
+
+    public ModelGroup group(Set<Groupable> modelContainers, int groupModelId)
+    {
+        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
+
+        removeModels(projectifiableThings);
+        ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
+        addModel(modelGroup);
+        return modelGroup;
+    }
+
+    /**
+     * Create a new group from models that are not yet in the project.
+     *
+     * @param modelContainers
+     * @param groupModelId
+     * @return
+     */
+    public ModelGroup createNewGroup(Set<Groupable> modelContainers, int groupModelId)
+    {
+        checkNotAlreadyInGroup(modelContainers);
+        ModelGroup modelGroup = new ModelGroup((Set) modelContainers, groupModelId);
+        modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
+        return modelGroup;
+    }
+
+    /**
+     * Create a new group from models that are not yet in the project.
+     *
+     * @param modelContainers
+     * @return
+     */
+    public ModelGroup createNewGroup(Set<Groupable> modelContainers)
+    {
+        checkNotAlreadyInGroup(modelContainers);
+
+        ModelGroup modelGroup = new ModelGroup((Set) modelContainers);
+        modelGroup.checkOffBed();
+        modelGroup.notifyScreenExtentsChange();
+        return modelGroup;
+    }
+
+    public void ungroup(Set<? extends ModelContainer> modelContainers)
+    {
+        List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
+
+        for (ModelContainer modelContainer : modelContainers)
+        {
+            if (modelContainer instanceof ModelGroup)
+            {
+                ModelGroup modelGroup = (ModelGroup) modelContainer;
+                Set<ProjectifiableThing> modelGroups = new HashSet<>();
+                modelGroups.add(modelGroup);
+                removeModels(modelGroups);
+                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
+                {
+                    addModel(childModelContainer);
+                    childModelContainer.setBedCentreOffsetTransform();
+                    childModelContainer.applyGroupTransformToThis(modelGroup);
+                    childModelContainer.updateLastTransformedBoundsInParent();
+                    ungroupedModels.add(childModelContainer);
+                }
+                Set<ProjectifiableThing> changedModels = new HashSet<>(modelGroup.getChildModelContainers());
+                fireWhenModelsTransformed(changedModels);
+            }
+        }
+    }
+
+    protected abstract void checkNotAlreadyInGroup(Set<Groupable> modelContainers);
+
+    /**
+     * Create a new group from models that are not yet in the project, and add
+     * model listeners to all descendent children.
+     *
+     * @param modelContainers
+     * @return
+     */
+    public abstract ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers);
+
     @JsonIgnore
     public void invalidate()
     {
         projectModified();
     }
-
 }

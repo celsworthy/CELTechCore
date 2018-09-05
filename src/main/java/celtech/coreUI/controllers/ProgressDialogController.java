@@ -4,7 +4,7 @@
  */
 package celtech.coreUI.controllers;
 
-import celtech.services.ControllableService;
+import celtech.roboxbase.services.ControllableService;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
@@ -27,7 +27,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class ProgressDialogController implements Initializable
 {
-
+    
     private Stenographer steno = StenographerFactory.getStenographer(ProgressDialogController.class.getName());
     @FXML
     private StackPane progressDialog;
@@ -47,7 +47,7 @@ public class ProgressDialogController implements Initializable
      */
     private ControllableService serviceBeingMonitored = null;
     private ChangeListener<Boolean> registeredListener = null;
-
+    
     private Stage stage;
 
     /**
@@ -59,7 +59,7 @@ public class ProgressDialogController implements Initializable
     {
         serviceBeingMonitored.cancelRun();
     }
-
+    
     /**
      *
      * @param service
@@ -78,13 +78,13 @@ public class ProgressDialogController implements Initializable
         progressBar.progressProperty().bind(serviceBeingMonitored.progressProperty());
         progressPercent.textProperty().unbind();
         progressPercent.textProperty().bind(serviceBeingMonitored.progressProperty().multiply(100f).asString("%.0f%%"));
-
+        
         if (registeredListener != null)
         {
             serviceBeingMonitored.runningProperty().removeListener(registeredListener);
             registeredListener = null;
         }
-
+        
         ChangeListener<Boolean> serviceRunningListener = new ChangeListener<Boolean>()
         {
             @Override
@@ -101,9 +101,9 @@ public class ProgressDialogController implements Initializable
                 }
             }
         };
-
+        
         serviceBeingMonitored.runningProperty().addListener(serviceRunningListener);
-
+        
         serviceBeingMonitored.progressProperty().addListener(new ChangeListener<Number>()
         {
             @Override
@@ -120,7 +120,7 @@ public class ProgressDialogController implements Initializable
 
         registeredListener = serviceRunningListener;
     }
-
+    
     private void rebind()
     {
         /*
@@ -142,7 +142,6 @@ public class ProgressDialogController implements Initializable
 
     /**
      * Initializes the controller class.
-     *
      * @param url
      * @param rb
      */
@@ -154,6 +153,6 @@ public class ProgressDialogController implements Initializable
         progressTitle.setText("");
         progressMessage.setText("");
         progressBar.setProgress(0f);
-
+        
     }
 }

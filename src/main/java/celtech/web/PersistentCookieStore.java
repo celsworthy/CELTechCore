@@ -1,7 +1,8 @@
 package celtech.web;
 
-import celtech.configuration.ApplicationConfiguration;
-import celtech.crypto.CryptoFileStore;
+import celtech.roboxbase.crypto.CryptoFileStore;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookieStore;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  *
@@ -32,7 +32,7 @@ public class PersistentCookieStore implements CookieStore, Runnable
         // get the default in memory cookie store
         store = new CookieManager().getCookieStore();
 
-        cryptoFileStore = new CryptoFileStore(ApplicationConfiguration.getApplicationStorageDirectory() + filename);
+        cryptoFileStore = new CryptoFileStore(BaseConfiguration.getApplicationStorageDirectory() + filename, "ab54vi'vSDDAS5r433jjk's#a");
 //        steno.info("Reading cookie store");
         String encryptedCookieData = cryptoFileStore.readFile();
 

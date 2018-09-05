@@ -2,10 +2,10 @@ package celtech.coreUI.controllers.utilityPanels;
 
 import celtech.Lookup;
 import celtech.coreUI.controllers.StatusInsetController;
-import celtech.gcodetranslator.PrintJobStatistics;
-import celtech.printerControl.PrintJob;
-import celtech.printerControl.PrinterStatus;
-import celtech.printerControl.model.Printer;
+import celtech.roboxbase.postprocessor.PrintJobStatistics;
+import celtech.roboxbase.printerControl.PrintJob;
+import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Printer;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DecimalFormat;

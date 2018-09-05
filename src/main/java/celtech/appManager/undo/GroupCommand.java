@@ -4,7 +4,10 @@
 package celtech.appManager.undo;
 
 import celtech.appManager.Project;
+import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
+import celtech.modelcontrol.ProjectifiableThing;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,23 +19,23 @@ public class GroupCommand extends Command
 {
 
     Project project;
-    Set<ModelContainer> modelContainers;
-    private Set<ModelContainer.State> states;
+    Set<Groupable> modelContainers;
+    private Set<ItemState> states;
     ModelContainer group;
 
-    public GroupCommand(Project project, Set<ModelContainer> modelContainers)
+    public GroupCommand(Project project, Set<Groupable> modelContainers)
     {
         states = new HashSet<>();
         this.project = project;
-        this.modelContainers = modelContainers;
+        this.modelContainers = (Set)modelContainers;
     }
 
     @Override
     public void do_()
     {
-        for (ModelContainer modelContainer : modelContainers)
+        for (Groupable modelContainer : modelContainers)
         {
-            states.add(modelContainer.getState());
+            states.add(((ProjectifiableThing)modelContainer).getState());
         }
         doGroup();
     }
@@ -44,6 +47,7 @@ public class GroupCommand extends Command
         modelContainers.add(group);
         project.ungroup(modelContainers);
         project.setModelStates(states);
+        group.updateLastTransformedBoundsInParent();
     }
 
     @Override

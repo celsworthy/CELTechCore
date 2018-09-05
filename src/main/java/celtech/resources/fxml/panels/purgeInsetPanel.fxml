@@ -19,7 +19,7 @@
             <center>
                 <BorderPane styleClass="lightGreyBackground">
                     <center>
-                        <AnchorPane minHeight="100.0">
+                        <AnchorPane fx:id="centralPane" minHeight="100.0">
                             <children>
                                 <VBox alignment="TOP_CENTER" minHeight="100.0" style="-fx-background-color: &quot;0x636363&quot;;" styleClass="purgeBody" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
                                     <children>
@@ -993,8 +993,8 @@
                                     <children>
                                         <StackPane pickOnBounds="false">
                                             <children>
-                                                <GraphicButtonWithLabel fx:id="startPurgeButton" fxmlFileName="startButton" labelText="%purgeMaterial.StartPurge" onAction="#start" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
-                                                <GraphicButtonWithLabel fx:id="proceedButton" fxmlFileName="nextButton" labelText="%purgeMaterial.proceed" layoutX="10.0" layoutY="10.0" onAction="#proceed" />
+                                                <GraphicButtonWithLabel fx:id="startPurgeButton" fxmlFileName="nextButton" labelText="%purgeMaterial.StartPurge" onAction="#start" AnchorPane.rightAnchor="425.0" BorderPane.alignment="CENTER" />
+                                                <GraphicButtonWithLabel fx:id="proceedButton" fxmlFileName="startButton" labelText="%purgeMaterial.proceed" layoutX="10.0" layoutY="10.0" onAction="#proceed" />
                                             </children>
                                         </StackPane>
                                     </children>

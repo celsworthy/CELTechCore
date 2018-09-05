@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javafx.collections.ObservableFloatArray;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -335,7 +336,7 @@ public class MeshUtils
         }
         return false;
     }
-
+    
     public static void printFace(TriangleMesh mesh, int faceIndex,
         MeshCutter2.BedToLocalConverter bedToLocalConverter)
     {

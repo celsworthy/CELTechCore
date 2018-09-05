@@ -19,6 +19,7 @@ public class ExtrasMenuPanelController extends MenuPanelController
      * this is configuration information that could be e.g. stored in XML or in
      * a plugin.
      */
+    @Override
     protected void setupInnerPanels()
     {
         loadInnerPanel(
@@ -40,9 +41,15 @@ public class ExtrasMenuPanelController extends MenuPanelController
                 ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
                 new PreferencesInnerPanelController("preferences.timelapse",
                         Preferences.createTimelapsePreferences(userPreferences)));
+        
+        loadInnerPanel(
+                ApplicationConfiguration.fxmlPanelResourcePath + "rootScanner.fxml",
+                new RootScannerPanelController());
+        
         loadInnerPanel(
                 ApplicationConfiguration.fxmlPanelResourcePath + "MaintenanceInsetPanel.fxml",
                 new MaintenanceInsetPanelController());
+        
         loadInnerPanel(
                 ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
                 new PreferencesInnerPanelController("preferences.advanced",

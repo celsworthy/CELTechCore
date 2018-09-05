@@ -1,6 +1,6 @@
 package celtech.coreUI.components.Notifications;
 
-import celtech.appManager.SystemNotificationManager.NotificationType;
+import celtech.roboxbase.appManager.NotificationType;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 
@@ -26,86 +26,20 @@ public class NotificationDisplay extends VBox
         stepCountedNotifications.getChildren().add(noteNotifications);
 
         getChildren().add(stepCountedNotifications);
-
-//        Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer oldSelection, Printer newSelection) ->
-//        {
-//            unbindFromPrinter();
-//            if (newSelection != null)
-//            {
-//                bindToPrinter(newSelection);
-//            }
-//        });
-//        notificationBars.addListener(new ListChangeListener<AppearingNotificationBar>()
-//        {
-//            @Override
-//            public void onChanged(ListChangeListener.Change<? extends AppearingNotificationBar> change)
-//            {
-//                while(change.next())
-//                {
-//                    for (AppearingNotificationBar notificationBar : change.getRemoved())
-//                    {
-//                        notificationBar.startSlidingOutOfView();
-//                    }
-//                    
-//                    for (AppearingNotificationBar notificationBar : change.getAddedSubList())
-//                    {
-//                        notificationBar.startSlidingInToView();
-//                    }
-//                }
-//            }
-//        });
     }
 
-//    private void bindToPrinter(Printer printer)
-//    {
-//        if (this.printerInUse != null)
-//        {
-//            unbindFromPrinter();
-//        }
-//        this.printerInUse = printer;
-//        stateDisplayBar = new PrintStatusBar(printer);
-//        printPreparationDisplayBar = new PrintPreparationStatusBar(printer);
-//        bedTemperatureDisplayBar = new BedHeaterStatusBar(printer.getPrinterAncillarySystems());
-//        
-//        printer.headProperty().addListener(headListener);
-//        if (printer.headProperty().get() != null)
-//        {
-//            createNozzleHeaterBars(printer.headProperty().get());
-//        }
-//        
-//        getChildren().addAll(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
-//    }
-//    
-//    private void unbindFromPrinter()
-//    {
-//        if (printerInUse != null)
-//        {
-//            printerInUse.headProperty().removeListener(headListener);
-//            
-//            stateDisplayBar.unbindAll();
-//            printPreparationDisplayBar.unbindAll();
-//            bedTemperatureDisplayBar.unbindAll();
-//            
-//            if (nozzle1TemperatureDisplayBar != null)
-//            {
-//                nozzle1TemperatureDisplayBar.unbindAll();
-//                nozzle1TemperatureDisplayBar = null;
-//            }
-//            
-//            if (nozzle2TemperatureDisplayBar != null)
-//            {
-//                nozzle2TemperatureDisplayBar.unbindAll();
-//                nozzle2TemperatureDisplayBar = null;
-//            }
-//            getChildren().clear();
-//        }
-//        printerInUse = null;
-//    }
     public void displayTimedNotification(String title, String message, NotificationType notificationType)
     {
         //Check to see if any other identical notifications are on display
         TimedNotificationBar notificationBar = new TimedNotificationBar();
-        notificationBar.setMessage(title + " - " + message);
+        if (title != null
+                && !title.equals(""))
+        {
+            notificationBar.setMessage(title + " - " + message);
+        } else
+        {
+            notificationBar.setMessage(message);
+        }
         notificationBar.setType(notificationType);
         if (!isThisADuplicateBar(notificationBar))
         {

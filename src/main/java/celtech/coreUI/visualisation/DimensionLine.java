@@ -3,14 +3,14 @@ package celtech.coreUI.visualisation;
 import celtech.appManager.Project;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.controllers.panels.ModelEditInsetPanelController;
-import celtech.modelcontrol.ModelContainer;
-import static celtech.utils.Math.MathUtils.RAD_TO_DEG;
+import celtech.modelcontrol.ResizeableThreeD;
+import celtech.modelcontrol.ResizeableTwoD;
+import static celtech.roboxbase.utils.Math.MathUtils.RAD_TO_DEG;
 import java.util.HashSet;
 import java.util.Set;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -40,24 +40,32 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
     private final double arrowHeight = 18;
     private final double arrowWidth = 8;
-    private final double arrowOffsetFromCorner = 30;
 
     private LineDirection direction;
-    private Set<ModelContainer> modelContainerSet;
+    private ResizeableTwoD container;
     private UndoableProject undoableproject;
 
-    private void dimensionEntryChanged()
+    private final ChangeListener<Boolean> dimensionEntryChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         switch (direction)
         {
             case FORWARD_BACK:
-                undoableproject.resizeModelsDepth(modelContainerSet, dimensionLabel.getAsFloat());
+                if (ResizeableThreeD.class.isInstance(container))
+                {
+                    Set<ResizeableThreeD> containerSet = new HashSet<>();
+                    containerSet.add((ResizeableThreeD) container);
+                    undoableproject.resizeModelsDepth(containerSet, dimensionLabel.getAsFloat());
+                }
                 break;
             case HORIZONTAL:
-                undoableproject.resizeModelsWidth(modelContainerSet, dimensionLabel.getAsFloat());
+                Set<ResizeableTwoD> hcontainerSet = new HashSet<>();
+                hcontainerSet.add(container);
+                undoableproject.resizeModelsWidth(hcontainerSet, dimensionLabel.getAsFloat());
                 break;
             case VERTICAL:
-                undoableproject.resizeModelsHeight(modelContainerSet, dimensionLabel.getAsFloat());
+                Set<ResizeableTwoD> vcontainerSet = new HashSet<>();
+                vcontainerSet.add(container);
+                undoableproject.resizeModelsHeight(vcontainerSet, dimensionLabel.getAsFloat());
                 break;
         }
     };
@@ -68,11 +76,13 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         HORIZONTAL, VERTICAL, FORWARD_BACK
     }
 
-    public void initialise(Project project, ModelContainer modelContainer, LineDirection direction)
+    public void initialise(Project project, ScreenExtentsProviderTwoD screenExtentsProvider, LineDirection direction)
     {
         undoableproject = new UndoableProject(project);
-        modelContainerSet = new HashSet<>();
-        modelContainerSet.add(modelContainer);
+        if (ResizeableTwoD.class.isInstance(screenExtentsProvider))
+        {
+            container = (ResizeableTwoD) screenExtentsProvider;
+        }
 
         this.direction = direction;
 
@@ -81,7 +91,7 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         dimensionLabel.getStyleClass().add("dimension-label");
         dimensionLabel.setAllowNegative(false);
         dimensionLabel.setAllowedDecimalPlaces(2);
-        addNumberFieldListener(dimensionLabel, this::dimensionEntryChanged);
+        dimensionLabel.valueChangedProperty().addListener(dimensionEntryChangeListener);
 
         dimensionLine.setStroke(Color.WHITE);
         upArrow.setFill(Color.WHITE);
@@ -106,37 +116,43 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
         dimensionLine.setMouseTransparent(true);
         setPickOnBounds(false);
 
-        updateArrowAndTextPosition(modelContainer.getScreenExtents(),
-                modelContainer.getTransformedHeight(),
-                modelContainer.getTransformedWidth(),
-                modelContainer.getTransformedDepth());
+        updateArrowAndTextPosition(screenExtentsProvider);
     }
 
     @Override
     public void screenExtentsChanged(ScreenExtentsProvider screenExtentsProvider)
     {
-        updateArrowAndTextPosition(screenExtentsProvider.getScreenExtents(),
-                screenExtentsProvider.getTransformedHeight(),
-                screenExtentsProvider.getTransformedWidth(),
-                screenExtentsProvider.getTransformedDepth());
+        updateArrowAndTextPosition(screenExtentsProvider);
     }
 
-    private void updateArrowAndTextPosition(final ScreenExtents extents,
-            final double transformedHeight,
-            final double transformedWidth,
-            final double transformedDepth)
+    private void updateArrowAndTextPosition(ScreenExtentsProvider extentsProvider)
     {
+        if (extentsProvider instanceof ScreenExtentsProviderThreeD)
+        {
+            updateArrowAndTextPosition_3D((ScreenExtentsProviderThreeD) extentsProvider);
+        } else if (extentsProvider instanceof ScreenExtentsProviderTwoD)
+        {
+            updateArrowAndTextPosition_2D((ScreenExtentsProviderTwoD) extentsProvider);
+        }
+    }
+
+    private void updateArrowAndTextPosition_2D(ScreenExtentsProviderTwoD extentsProvider)
+    {
+        ScreenExtents extents = extentsProvider.getScreenExtents();
+        double transformedWidth = extentsProvider.getTransformedWidth();
+        double transformedHeight = extentsProvider.getTransformedHeight();
+
         if (direction == LineDirection.VERTICAL)
         {
-            dimensionLabel.setValue((float) transformedHeight);
+            dimensionLabel.setValue(transformedHeight);
 
-            Edge heightEdge = extents.heightEdges[0];
-            for (int edgeIndex = 1; edgeIndex < extents.heightEdges.length; edgeIndex++)
+            Edge heightEdge = extents.heightEdges.get(0);
+            for (int edgeIndex = 1; edgeIndex < extents.heightEdges.size(); edgeIndex++)
             {
-                if (extents.heightEdges[edgeIndex].getFirstPoint().getX() < heightEdge.
+                if (extents.heightEdges.get(edgeIndex).getFirstPoint().getX() < heightEdge.
                         getFirstPoint().getX())
                 {
-                    heightEdge = extents.heightEdges[edgeIndex];
+                    heightEdge = extents.heightEdges.get(edgeIndex);
                 }
             }
 
@@ -195,15 +211,15 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
             }
         } else if (direction == LineDirection.HORIZONTAL)
         {
-            dimensionLabel.setValue((float) transformedWidth);
+            dimensionLabel.setValue(transformedWidth);
 
-            Edge widthEdge = extents.widthEdges[0];
-            if (extents.widthEdges[1].getFirstPoint().getY()
+            Edge widthEdge = extents.widthEdges.get(0);
+            if (extents.widthEdges.get(1).getFirstPoint().getY()
                     > widthEdge.getFirstPoint().getY()
-                    && extents.widthEdges[1].getSecondPoint().getY()
+                    && extents.widthEdges.get(1).getSecondPoint().getY()
                     > widthEdge.getSecondPoint().getY())
             {
-                widthEdge = extents.widthEdges[1];
+                widthEdge = extents.widthEdges.get(1);
             }
 
             Point2D leftHorizontalPoint = widthEdge.getFirstPoint();
@@ -260,17 +276,27 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
 
                 arrowRotate.setAngle(angle);
             }
-        } else if (direction == LineDirection.FORWARD_BACK)
-        {
-            dimensionLabel.setValue((float) transformedDepth);
+        }
+    }
 
-            Edge depthEdge = extents.depthEdges[0];
-            if (extents.depthEdges[1].getFirstPoint().getY()
+    private void updateArrowAndTextPosition_3D(ScreenExtentsProviderThreeD extentsProvider)
+    {
+        updateArrowAndTextPosition_2D((ScreenExtentsProviderTwoD) extentsProvider);
+
+        ScreenExtents extents = extentsProvider.getScreenExtents();
+        double transformedDepth = extentsProvider.getTransformedDepth();
+
+        if (direction == LineDirection.FORWARD_BACK)
+        {
+            dimensionLabel.setValue(transformedDepth);
+
+            Edge depthEdge = extents.depthEdges.get(0);
+            if (extents.depthEdges.get(1).getFirstPoint().getY()
                     > depthEdge.getFirstPoint().getY()
-                    && extents.depthEdges[1].getSecondPoint().getY()
+                    && extents.depthEdges.get(1).getSecondPoint().getY()
                     > depthEdge.getSecondPoint().getY())
             {
-                depthEdge = extents.depthEdges[1];
+                depthEdge = extents.depthEdges.get(1);
             }
 
             Point2D backHorizontalPoint = null;
@@ -326,40 +352,6 @@ class DimensionLine extends Pane implements ScreenExtentsProvider.ScreenExtentsL
                 arrowRotate.setAngle(angle);
             }
         }
-    }
-
-    private void addNumberFieldListener(RestrictedNumberField textField, ModelEditInsetPanelController.NoArgsVoidFunc func)
-    {
-        textField.focusedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
-                {
-                    try
-                    {
-                        if (!newValue)
-                        {
-                            func.run();
-                        }
-                    } catch (Exception ex)
-                    {
-                        steno.warning("exception updating number field " + ex);
-                    }
-                });
-
-        textField.setOnKeyPressed((KeyEvent t) ->
-        {
-            switch (t.getCode())
-            {
-                case ENTER:
-                    try
-                    {
-                        func.run();
-                    } catch (Exception ex)
-                    {
-                        steno.warning("exception updating number field " + ex);
-                    }
-                    break;
-            }
-        });
     }
 
     public RestrictedNumberField getDimensionLabel()

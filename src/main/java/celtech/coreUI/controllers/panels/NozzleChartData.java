@@ -1,8 +1,8 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.HeaterMode;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.printerControl.model.HeaterMode;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -21,7 +21,7 @@ public class NozzleChartData
     private final LineChart.Series<Number, Number> nozzleTargetTemperatureSeries = new LineChart.Series<>();
 
     private final LineChart.Data<Number, Number> nozzleTargetPoint = new LineChart.Data<>(
-            ApplicationConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
+            BaseConfiguration.NUMBER_OF_TEMPERATURE_POINTS_TO_KEEP - 5, 0);
     private final ReadOnlyIntegerProperty nozzleTargetTemperatureProperty;
     private final ReadOnlyIntegerProperty nozzleFirstLayerTargetTemperatureProperty;
     private final ReadOnlyIntegerProperty nozzleTemperatureProperty;
@@ -87,7 +87,7 @@ public class NozzleChartData
             this.nozzleFirstLayerTargetTemperatureProperty.removeListener(
                     nozzleFirstLayerTargetTemperatureListener);
         }
-    }
+        }
 
     private void updateNozzleTargetPoint()
     {

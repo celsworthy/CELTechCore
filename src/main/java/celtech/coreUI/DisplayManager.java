@@ -3,12 +3,13 @@ package celtech.coreUI;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.coreUI.components.Notifications.NotificationArea;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectTab;
@@ -23,8 +24,14 @@ import celtech.coreUI.keycommands.KeyCommandListener;
 import celtech.coreUI.keycommands.UnhandledKeyListener;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
-import celtech.modelcontrol.ModelContainer;
-import celtech.printerControl.comms.RoboxCommsManager;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.DummyPrinterCommandInterface;
+import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -69,7 +76,8 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener, UnhandledKeyListener, SpinnerControl
+public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListener, UnhandledKeyListener, SpinnerControl,
+        ProjectCallback
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(
@@ -93,6 +101,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final HashMap<ApplicationMode, Initializable> insetPanelControllers;
     private VBox sidePanel;
 
+    private static AnchorPane interchangeablePanelAreaWithNotificationArea;
     private static TabPane tabDisplay;
     private static SingleSelectionModel<Tab> tabDisplaySelectionModel;
     private static Tab printerStatusTab;
@@ -113,6 +122,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private AnchorPane rootAnchorPane;
     private Pane spinnerContainer;
     private Spinner spinner;
+
+    private final NotificationArea notificationArea = new NotificationArea();
 
     //Display scaling
     private BooleanProperty nodesMayHaveMoved;
@@ -144,8 +155,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         AnchorPane.setRightAnchor(projectTabPaneHolder, 0.0);
         this.rhPanel = new AnchorPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
-        steno.debug("Starting AutoMaker - machine type is " + ApplicationConfiguration.
-                getMachineType());
+        steno.debug("Starting AutoMaker - machine type is " + BaseConfiguration.getMachineType());
     }
 
     private void loadProjectsAtStartup()
@@ -183,12 +193,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             Pane lastInsetPanel = insetPanels.get(oldMode);
             if (lastInsetPanel != null)
             {
-                rhPanel.getChildren().remove(lastInsetPanel);
+                interchangeablePanelAreaWithNotificationArea.getChildren().remove(lastInsetPanel);
             } else
             {
-                if (rhPanel.getChildren().contains(projectTabPaneHolder))
+                if (interchangeablePanelAreaWithNotificationArea.getChildren().contains(projectTabPaneHolder))
                 {
-                    rhPanel.getChildren().remove(projectTabPaneHolder);
+                    interchangeablePanelAreaWithNotificationArea.getChildren().remove(projectTabPaneHolder);
                 }
             }
         }
@@ -201,12 +211,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             AnchorPane.setTopAnchor(newInsetPanel, 0.0);
             AnchorPane.setLeftAnchor(newInsetPanel, 0.0);
             AnchorPane.setRightAnchor(newInsetPanel, 0.0);
-            rhPanel.getChildren().add(0, newInsetPanel);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, newInsetPanel);
         }
 
         if (newMode == ApplicationMode.LAYOUT)
         {
-            rhPanel.getChildren().add(0, projectTabPaneHolder);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
 
             //Switch tabs if necessary
             if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
@@ -225,10 +235,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             }
         } else if (newMode == ApplicationMode.SETTINGS)
         {
-            rhPanel.getChildren().add(0, projectTabPaneHolder);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
         } else if (newMode == ApplicationMode.STATUS)
         {
-            rhPanel.getChildren().add(0, projectTabPaneHolder);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
             tabDisplaySelectionModel.select(0);
         }
     }
@@ -261,17 +271,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     }
 
     /**
-     * Show the spinner, and keep it centred on the middle of the screen.
-     */
-    @Override
-    public void startSpinning()
-    {
-        spinner.setVisible(true);
-        spinner.startSpinning();
-        spinner.setCentreNode(rhPanel);
-    }
-
-    /**
      * Stop and hide the spinner.
      */
     @Override
@@ -289,10 +288,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         steno.debug("start configure display manager");
         this.mainStage = mainStage;
         mainStage.setTitle(applicationName + " - "
-                + ApplicationConfiguration.getApplicationVersion());
-        ApplicationConfiguration.setTitleAndVersion(Lookup.i18n(
+                + BaseConfiguration.getApplicationVersion());
+        BaseConfiguration.setTitleAndVersion(Lookup.i18n(
                 "application.title")
-                + " - " + ApplicationConfiguration.getApplicationVersion());
+                + " - " + BaseConfiguration.getApplicationVersion());
 
         rootAnchorPane = new AnchorPane();
 
@@ -337,7 +336,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath + "printerStatusSidePanel.fxml");
             steno.debug("About to load side panel fxml: " + fxmlFileName);
-            FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, Lookup.getLanguageBundle());
+            FXMLLoader sidePanelLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
             sidePanel = (VBox) sidePanelLoader.load();
         } catch (Exception ex)
         {
@@ -352,8 +351,18 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         HBox.setHgrow(rhPanel, Priority.ALWAYS);
 
-        addTopMenuStripController();
-        addNotificationArea();
+        interchangeablePanelAreaWithNotificationArea = new AnchorPane();
+        AnchorPane.setBottomAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        AnchorPane.setTopAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        AnchorPane.setLeftAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        AnchorPane.setRightAnchor(interchangeablePanelAreaWithNotificationArea, 0.0);
+        rhPanel.getChildren().add(interchangeablePanelAreaWithNotificationArea);
+
+        HBox topMenuStrip = new TopMenuStrip();
+        AnchorPane.setTopAnchor(topMenuStrip, 0.0);
+        AnchorPane.setLeftAnchor(topMenuStrip, 0.0);
+        AnchorPane.setRightAnchor(topMenuStrip, 0.0);
+        rhPanel.getChildren().add(topMenuStrip);
 
         mainHolder.getChildren().add(rhPanel);
 
@@ -368,13 +377,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         configureProjectDragNDrop(tabDisplay);
 
         VBox.setVgrow(tabDisplay, Priority.ALWAYS);
+        AnchorPane.setBottomAnchor(tabDisplay, 0.0);
+        AnchorPane.setTopAnchor(tabDisplay, 0.0);
+        AnchorPane.setLeftAnchor(tabDisplay, 0.0);
+        AnchorPane.setRightAnchor(tabDisplay, 0.0);
 
         // The printer status tab will always be visible - the page is static
         try
         {
             FXMLLoader printerStatusPageLoader = new FXMLLoader(getClass().getResource(
                     ApplicationConfiguration.fxmlResourcePath
-                    + "PrinterStatusPage.fxml"), Lookup.getLanguageBundle());
+                    + "PrinterStatusPage.fxml"), BaseLookup.getLanguageBundle());
             AnchorPane printerStatusPage = printerStatusPageLoader.load();
             PrinterStatusPageController printerStatusPageController = printerStatusPageLoader.
                     getController();
@@ -384,7 +397,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             printerStatusTab = new Tab();
             FXMLLoader printerStatusPageLabelLoader = new FXMLLoader(getClass().getResource(
                     ApplicationConfiguration.fxmlResourcePath
-                    + "infoScreenIndicator.fxml"), Lookup.getLanguageBundle());
+                    + "infoScreenIndicator.fxml"), BaseLookup.getLanguageBundle());
             VBox printerStatusLabelGroup = printerStatusPageLabelLoader.load();
             infoScreenIndicatorController = printerStatusPageLabelLoader.getController();
             printerStatusTab.setGraphic(printerStatusLabelGroup);
@@ -431,6 +444,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         }
                     });
 
+            AnchorPane.setBottomAnchor(notificationArea, 90.0);
+            AnchorPane.setLeftAnchor(notificationArea, 0.0);
+            AnchorPane.setRightAnchor(notificationArea, 0.0);
+            interchangeablePanelAreaWithNotificationArea.getChildren().add(notificationArea);
             projectTabPaneHolder.getChildren().add(tabDisplay);
         } catch (IOException ex)
         {
@@ -449,7 +466,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             URL menuStripURL = getClass().getResource(ApplicationConfiguration.fxmlPanelResourcePath
                     + "LayoutStatusMenuStrip.fxml");
-            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, Lookup.getLanguageBundle());
+            FXMLLoader menuStripLoader = new FXMLLoader(menuStripURL, BaseLookup.getLanguageBundle());
             VBox menuStripControls = (VBox) menuStripLoader.load();
             menuStripControls.prefWidthProperty().bind(projectTabPaneHolder.widthProperty());
             projectTabPaneHolder.getChildren().add(menuStripControls);
@@ -537,7 +554,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         steno.debug("load projects");
         loadProjectsAtStartup();
-
         loadModelsIntoNewProject(modelsToLoadAtStartup_projectName,
                 modelsToLoadAtStartup,
                 dontGroupStartupModels);
@@ -556,7 +572,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             {
                 steno.debug("About to load inset panel fxml: " + fxmlFileName);
                 FXMLLoader insetPanelLoader = new FXMLLoader(fxmlFileName,
-                        Lookup.getLanguageBundle());
+                        BaseLookup.getLanguageBundle());
                 insetPanelLoader.setController(mode.getControllerClass().newInstance());
                 Pane insetPanel = (Pane) insetPanelLoader.load();
                 Initializable insetPanelController = insetPanelLoader.getController();
@@ -572,30 +588,13 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         }
     }
 
-    private void addTopMenuStripController()
-    {
-        HBox topMenuStrip = new TopMenuStrip();
-        AnchorPane.setTopAnchor(topMenuStrip, 0.0);
-        AnchorPane.setLeftAnchor(topMenuStrip, 0.0);
-        AnchorPane.setRightAnchor(topMenuStrip, 0.0);
-        rhPanel.getChildren().add(topMenuStrip);
-    }
-
-    private void addNotificationArea()
-    {
-        NotificationArea notificationArea = new NotificationArea();
-        AnchorPane.setBottomAnchor(notificationArea, 90.0);
-        AnchorPane.setLeftAnchor(notificationArea, 0.0);
-        AnchorPane.setRightAnchor(notificationArea, 0.0);
-        rhPanel.getChildren().add(notificationArea);
-    }
-
     private ProjectTab createAndAddNewProjectTab()
     {
         ProjectTab projectTab = new ProjectTab(tabDisplay.widthProperty(),
                 tabDisplay.heightProperty());
         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
         tabDisplaySelectionModel.select(projectTab);
+        Lookup.setSelectedProject(null);
         return projectTab;
     }
 
@@ -694,15 +693,15 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         ProjectSelection projectSelection
                 = Lookup.getProjectGUIState(project).getProjectSelection();
-        for (ModelContainer modelContainer : project.getTopLevelModels())
+        for (ProjectifiableThing modelContainer : project.getTopLevelThings())
         {
-            projectSelection.addModelContainer(modelContainer);
+            projectSelection.addSelectedItem(modelContainer);
         }
     }
 
     private void deleteSelectedModels(Project project, UndoableProject undoableProject)
     {
-        Set<ModelContainer> selectedModels
+        Set<ProjectifiableThing> selectedModels
                 = Lookup.getProjectGUIState(project).getProjectSelection().
                 getSelectedModelsSnapshot();
         undoableProject.deleteModels(selectedModels);
@@ -802,16 +801,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     {
         boolean handled = false;
 
-        switch (commandSequence)
-        {
+        switch (commandSequence)        {
             case addDummyPrinterCommand:
                 RoboxCommsManager.getInstance().addDummyPrinter();
                 handled = true;
                 break;
             case dummyCommandPrefix:
-                if (RoboxCommsManager.getInstance().getDummyPrinters().size() > 0)
-                {
-                    RoboxCommsManager.getInstance().getDummyPrinters().get(0).sendRawGCode(
+                Printer currentPrinter = Lookup.getSelectedPrinterProperty().get();
+                PrinterIdentity pid = currentPrinter.getPrinterIdentity();
+                if (pid.printeryearOfManufactureProperty().get().equals(
+                        DummyPrinterCommandInterface.dummyYear)) {
+                    currentPrinter.sendRawGCode(
                             capturedParameter.replaceAll("/", " ").trim().toUpperCase(), true);
                     handled = true;
                 }
@@ -930,8 +930,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 db.getFiles().forEach(file ->
                 {
                     Project newProject = ProjectManager.loadProject(file.getAbsolutePath());
-                    //TODO Remove this once ARR-58 has been implemented (merge of statistics and gcode files)
-                    newProject.invalidate();
                     if (newProject != null)
                     {
                         ProjectTab newProjectTab = new ProjectTab(newProject,
@@ -940,7 +938,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
                         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
                         tabDisplaySelectionModel.select(newProjectTab);
-                        newProjectTab.fireProjectSelected();
 
                         if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
                         {
@@ -986,11 +983,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         Runnable loaderRunnable = () ->
         {
-            Project newProject = new Project();
+            Project newProject = new ModelContainerProject();
             newProject.setProjectName(projectName);
 
             ModelLoader loader = new ModelLoader();
-            loader.loadExternalModels(newProject, listOfFiles, false);
+            loader.loadExternalModels(newProject, listOfFiles, false, null, false);
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                     tabDisplay.heightProperty());
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
@@ -999,10 +996,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         if (Lookup.getUserPreferences().isFirstUse())
         {
-            File firstUsePrintFile = new File(ApplicationConfiguration.
+            File firstUsePrintFile = new File(BaseConfiguration.
                     getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
 
-            Project newProject = new Project();
+            Project newProject = new ModelContainerProject();
             newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));
 
             List<File> fileToLoad = new ArrayList<>();
@@ -1018,7 +1015,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                     {
                         if (wasRunning && !isRunning)
                         {
-                            Lookup.getTaskExecutor().runOnGUIThread(loaderRunnable);
+                            BaseLookup.getTaskExecutor().runOnGUIThread(loaderRunnable);
                             loader.modelLoadingProperty().removeListener(this);
                         }
                     }
@@ -1026,17 +1023,41 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
                 loader.modelLoadingProperty().addListener(firstUseModelLoadListener);
             }
-            loader.loadExternalModels(newProject, fileToLoad, false);
+            loader.loadExternalModels(newProject, fileToLoad, false, null, false);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
                     tabDisplay.heightProperty());
             tabDisplay.getTabs().add(1, projectTab);
 
             Lookup.getUserPreferences().setFirstUse(false);
-        } else if (listOfFiles.size()
-                > 0)
+        } else if (listOfFiles.size() > 0)
         {
-            Lookup.getTaskExecutor().runOnGUIThread(loaderRunnable);
+            BaseLookup.getTaskExecutor().runOnGUIThread(loaderRunnable);
         }
+    }
+
+    @Override
+    public void modelAddedToProject(Project project)
+    {
+        if (tabDisplay.getSelectionModel().getSelectedItem() instanceof ProjectTab)
+        {
+            ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).modelAddedToProject(project);
+        }
+
+        if (Lookup.getSelectedProjectProperty().get() == null
+                || Lookup.getSelectedProjectProperty().get() != project)
+        {
+            Lookup.setSelectedProject(project);
+        }
+    }
+
+    public void initialiseBlank3DProject()
+    {
+        ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).initialiseBlank3DProject();
+    }
+
+    public void initialiseBlank2DProject()
+    {
+        ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).initialiseBlank2DProject();
     }
 }

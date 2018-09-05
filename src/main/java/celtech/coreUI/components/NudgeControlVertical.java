@@ -1,6 +1,8 @@
 package celtech.coreUI.components;
 
+import celtech.coreUI.components.RestrictedNumberField;
 import java.io.IOException;
+import java.text.ParseException;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -33,14 +35,14 @@ public class NudgeControlVertical extends VBox
     @FXML
     private void upPressed(ActionEvent event)
     {
-        double limitedValue = getLimitedValue(numberDisplay.getAsDouble() + deltaValue.get());
+            double limitedValue = getLimitedValue(numberDisplay.getAsDouble() + deltaValue.get());
         numberDisplay.setValue(limitedValue);
     }
 
     @FXML
     private void downPressed(ActionEvent event)
     {
-        double limitedValue = getLimitedValue(numberDisplay.getAsDouble() - deltaValue.get());
+            double limitedValue = getLimitedValue(numberDisplay.getAsDouble() - deltaValue.get());
         numberDisplay.setValue(limitedValue);
     }
 
@@ -97,7 +99,7 @@ public class NudgeControlVertical extends VBox
     {
         double value = 0;
 
-        numberDisplay.getAsDouble();
+            numberDisplay.getAsDouble();
 
         return value;
     }

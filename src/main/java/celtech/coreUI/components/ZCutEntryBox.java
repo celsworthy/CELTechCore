@@ -1,19 +1,18 @@
 package celtech.coreUI.components;
 
 import celtech.Lookup;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.LayoutSubmode;
-import celtech.coreUI.components.RestrictedNumberField;
-import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.coreUI.visualisation.ScreenExtentsProvider;
 import celtech.coreUI.visualisation.ScreenExtentsProvider.ScreenExtentsListener;
+import celtech.coreUI.visualisation.ScreenExtentsProviderTwoD;
 import celtech.coreUI.visualisation.ThreeDViewManager;
 import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelGroup;
-import celtech.utils.Time.TimeUtils;
-import celtech.utils.threed.MeshSeparator;
+import celtech.modelcontrol.ProjectifiableThing;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.utils.TimeUtils;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -28,11 +27,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.shape.TriangleMesh;
 
 /**
  *
@@ -45,7 +41,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
     private final ObjectProperty<LayoutSubmode> layoutSubmodeProperty;
     private final ThreeDViewManager viewManager;
     private ModelContainer currentModel = null;
-    private final Project project;
+    private final ModelContainerProject project;
     private final UndoableProject undoableProject;
     private Thread cutThread = null;
     private TimeUtils timeUtils = new TimeUtils();
@@ -71,7 +67,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
                     List<ModelContainer> resultingModels = viewManager.cutModelAt(currentModel, cutHeight.getAsDouble());
                     timeUtils.timerStop(this, "Cut");
                     System.out.println("Cut " + timeUtils.timeTimeSoFar_ms(this, "Cut"));
-                    Set<ModelContainer> modelToRemove = new HashSet<>();
+                    Set<ProjectifiableThing> modelToRemove = new HashSet<>();
                     modelToRemove.add(currentModel);
                     currentModel.removeScreenExtentsChangeListener(instance);
                     viewManager.clearZCutModelPlane();
@@ -152,7 +148,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
     public ZCutEntryBox(Pane paneInWhichControlResides,
             ObjectProperty<LayoutSubmode> layoutSubmodeProperty,
             ThreeDViewManager viewManager,
-            Project project)
+            ModelContainerProject project)
     {
         this.paneInWhichControlResides = paneInWhichControlResides;
         this.layoutSubmodeProperty = layoutSubmodeProperty;
@@ -164,7 +160,7 @@ public class ZCutEntryBox extends HBox implements ScreenExtentsListener
 
     private void loadContent()
     {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/celtech/resources/fxml/components/ZCutEntryBox.fxml"), Lookup.getLanguageBundle());
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/celtech/resources/fxml/components/ZCutEntryBox.fxml"), BaseLookup.getLanguageBundle());
         fxmlLoader.setController(this);
         fxmlLoader.setRoot(this);
         fxmlLoader.setClassLoader(this.getClass().getClassLoader());

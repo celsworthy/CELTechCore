@@ -4,7 +4,7 @@
 package celtech.utils.threed.exporters;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.appManager.Project;
+import celtech.appManager.ModelContainerProject;
 import celtech.modelcontrol.ModelContainer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;

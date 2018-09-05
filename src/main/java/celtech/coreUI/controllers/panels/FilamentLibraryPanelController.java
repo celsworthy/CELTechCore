@@ -1,20 +1,24 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.configuration.EEPROMState;
-import celtech.configuration.Filament;
-import celtech.configuration.MaterialType;
-import celtech.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.MaterialType;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
-import static celtech.printerControl.comms.commands.ColourStringConverter.colourToString;
-import static celtech.printerControl.comms.commands.ColourStringConverter.stringToColor;
-import celtech.printerControl.comms.commands.exceptions.RoboxCommsException;
-import celtech.printerControl.model.Printer;
-import celtech.printerControl.model.PrinterException;
-import celtech.printerControl.model.Reel;
-import celtech.utils.PrinterListChangesAdapter;
-import celtech.utils.PrinterListChangesListener;
+import celtech.coreUI.components.material.FilamentMenuButton;
+import celtech.coreUI.components.material.FilamentSelectionListener;
+import celtech.coreUI.components.material.SpecialItemSelectionListener;
+import celtech.roboxbase.BaseLookup;
+import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
+import static celtech.roboxbase.utils.ColourStringConverter.stringToColor;
+import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,29 +32,21 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.SVGPath;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
-public class FilamentLibraryPanelController implements Initializable, MenuInnerPanel
+public class FilamentLibraryPanelController implements Initializable, MenuInnerPanel, FilamentSelectionListener, SpecialItemSelectionListener
 {
 
     private final Stenographer steno = StenographerFactory.getStenographer(
@@ -92,13 +88,9 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     private final BooleanProperty isNozzleTempValid = new SimpleBooleanProperty(true);
 
     private String currentFilamentID;
-    private final ObservableList<Filament> allFilaments = FXCollections.observableArrayList();
-    private ObservableList<Filament> comboItems;
     private final ObjectProperty<Printer> currentPrinter = new SimpleObjectProperty<>();
-    private final FilamentContainer filamentContainer = Lookup.getFilamentContainer();
+    private final FilamentContainer filamentContainer = FilamentContainer.getInstance();
     private PrinterListChangesListener listener;
-    private Filament reel0Filament;
-    private Filament reel1Filament;
 
     private Filament currentFilament;
     private Filament currentFilamentAsEdited;
@@ -108,8 +100,11 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
     private boolean suspendDirtyTriggers = false;
 
+    private final String reel1MenuItemTitle = "1:";
+    private final String reel2MenuItemTitle = "2:";
+
     @FXML
-    private ComboBox<Filament> cmbFilament;
+    private FilamentMenuButton filamentMenuButton;
 
     @FXML
     private RestrictedNumberField bedTemperature;
@@ -161,20 +156,37 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
     private final String REMAINING_ON_REEL_UNCHANGED = "-";
 
-    private ListChangeListener<EEPROMState> reelEEPROMChangeListener = new ListChangeListener<EEPROMState>()
+    private final ListChangeListener<EEPROMState> reelEEPROMChangeListener = (ListChangeListener.Change<? extends EEPROMState> change) ->
     {
-        @Override
-        public void onChanged(ListChangeListener.Change<? extends EEPROMState> change)
+        updateWriteToReelBindings();
+    };
+
+    private void updatePrinter(Printer lastPrinter, Printer newPrinter)
+    {
+        if (lastPrinter != null)
+        {
+            lastPrinter.getReelEEPROMStateProperty().removeListener(reelEEPROMChangeListener);
+        }
+
+        if (newPrinter != null)
+        {
+            newPrinter.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
+        }
+
+        if (newPrinter != null)
         {
             updateWriteToReelBindings();
+            showReelsAtTopOfCombo();
+        } else
+        {
+            clearWidgets();
         }
-    };
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-
-        currentPrinter.bind(Lookup.getSelectedPrinterProperty());
+        currentFilament = filamentMenuButton.initialiseButton(this, this, false);
 
         updateSaveBindings();
 
@@ -186,22 +198,14 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
         isValid.bind(isNameValid.and(isNozzleTempValid));
 
-        updateWriteToReelBindings();
+        currentPrinter.bind(Lookup.getSelectedPrinterProperty());
+        updatePrinter(null, currentPrinter.get());
+
         currentPrinter.addListener(
                 (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
-                {
-                    if (oldValue != null)
-                    {
-                        oldValue.getReelEEPROMStateProperty().removeListener(reelEEPROMChangeListener);
-                    }
-
-                    if (newValue != null)
-                    {
-                        newValue.getReelEEPROMStateProperty().addListener(reelEEPROMChangeListener);
-                    }
-                    updateWriteToReelBindings();
-                    showReelsAtTopOfCombo();
-                });
+        {
+            updatePrinter(oldValue, newValue);
+        });
 
         for (MaterialType materialType : MaterialType.values())
         {
@@ -212,22 +216,11 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
         setupWidgetChangeListeners();
 
-        setupFilamentCombo();
-
-        selectFirstFilament();
-
         setupPrinterChangesListener();
 
         FXMLUtilities.addColonsToLabels(filamentsGridPane);
 
-        Lookup.getUserPreferences().advancedModeProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                setupFilamentCombo();
-            }
-        });
+        updateWidgets(currentFilament);
     }
 
     private void setupPrinterChangesListener()
@@ -266,7 +259,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             }
 
         };
-        Lookup.getPrinterListChangesNotifier().addListener(listener);
+        BaseLookup.getPrinterListChangesNotifier().addListener(listener);
     }
 
     private void updateSaveBindings()
@@ -350,96 +343,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         }
     }
 
-    private void selectFirstFilament()
-    {
-        if (cmbFilament.getItems().size() > 0)
-        {
-            cmbFilament.setValue(cmbFilament.getItems().get(0));
-        }
-    }
-
-    private void setupFilamentCombo()
-    {
-        cmbFilament.setCellFactory((ListView<Filament> param) -> new FilamentCell());
-        cmbFilament.setButtonCell(cmbFilament.getCellFactory().call(null));
-
-        repopulateCmbFilament();
-
-        cmbFilament.valueProperty().addListener(
-                (ObservableValue<? extends Filament> observable, Filament oldValue, Filament newValue) ->
-                {
-                    if (newValue != null)
-                    {
-                        selectFilament(newValue);
-                    }
-                    updateWriteToReelBindings();
-                });
-
-        filamentContainer.getUserFilamentList().addListener(
-                (ListChangeListener.Change<? extends Filament> c) ->
-                {
-                    repopulateCmbFilament();
-                });
-    }
-
-    private void repopulateCmbFilament()
-    {
-        try
-        {
-            allFilaments.clear();
-            if (Lookup.getUserPreferences().isAdvancedMode())
-            {
-                allFilaments.addAll(filamentContainer.getCompleteFilamentList());
-            } else
-            {
-                allFilaments.addAll(filamentContainer.getAppFilamentList());
-            }
-            comboItems = FXCollections.observableArrayList(allFilaments);
-            cmbFilament.setItems(comboItems);
-        } catch (NoClassDefFoundError exception)
-        {
-            // this should only happen in SceneBuilder            
-        }
-        showReelsAtTopOfCombo();
-    }
-
-    /**
-     * Show each reel at the top of the combo, with a special icon at the end
-     * indicating it is on the reel. Remove the filament from the regular list.
-     * This method is called whenever a reel
-     *
-     */
-    private void showReelsAtTopOfCombo()
-    {
-        reel0Filament = null;
-        reel1Filament = null;
-        if (currentPrinter.get() != null && currentPrinter.get().reelsProperty().containsKey(1))
-        {
-            showReelAtTopOfCombo(1);
-        }
-        if (currentPrinter.get() != null && currentPrinter.get().reelsProperty().containsKey(0))
-        {
-            showReelAtTopOfCombo(0);
-        }
-    }
-
-    private void showReelAtTopOfCombo(int reelIndex)
-    {
-        String filamentId = currentPrinter.get().reelsProperty().get(reelIndex).filamentIDProperty().get();
-        Filament filament = filamentContainer.getFilamentByID(filamentId);
-        comboItems.remove(filament);
-        if (reelIndex == 0)
-        {
-            reel0Filament = filament;
-        } else
-        {
-            reel1Filament = filament;
-        }
-        comboItems.add(0, filament);
-        cmbFilament.valueProperty().set(filament);
-
-    }
-
     private void clearWidgets()
     {
         name.setText("");
@@ -465,24 +368,31 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
         name.textProperty().addListener(
                 (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-                {
-                    if (!validateMaterialName(newValue))
-                    {
-                        isNameValid.set(false);
-                        name.pseudoClassStateChanged(ERROR, true);
-                    } else
-                    {
-                        isNameValid.set(true);
-                        name.pseudoClassStateChanged(ERROR, false);
-                    }
-                });
+        {
+            if (!validateMaterialName(newValue))
+            {
+                isNameValid.set(false);
+                name.pseudoClassStateChanged(ERROR, true);
+            } else
+            {
+                isNameValid.set(true);
+                name.pseudoClassStateChanged(ERROR, false);
+            }
+        });
 
         name.textProperty().addListener(dirtyStringListener);
         colour.valueProperty().addListener(
                 (ObservableValue<? extends Color> observable, Color oldValue, Color newValue) ->
-                {
-                    isDirty.set(true);
-                });
+        {
+            if (!suspendDirtyTriggers)
+            {
+                isDirty.set(true);
+                currentFilamentAsEdited = currentFilament.clone();
+                updateFilamentFromWidgets(currentFilamentAsEdited);
+                updateWriteToReelBindings();
+                updateSaveBindings();
+            }
+        });
         material.valueProperty().addListener(dirtyMaterialTypeListener);
         filamentDiameter.valueChangedProperty().addListener(dirtyBooleanListener);
         filamentMultiplier.valueChangedProperty().addListener(dirtyBooleanListener);
@@ -516,57 +426,62 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
 
     private final ChangeListener<String> dirtyStringListener
             = (ObservableValue<? extends String> ov, String t, String t1) ->
-            {
-                if (!suspendDirtyTriggers)
-                {
-                    isDirty.set(true);
-                    currentFilamentAsEdited = currentFilament.clone();
-                    updateFilamentFromWidgets(currentFilamentAsEdited);
-                    updateWriteToReelBindings();
-                    updateSaveBindings();
-                }
-            };
+    {
+        if (!suspendDirtyTriggers)
+        {
+            isDirty.set(true);
+            currentFilamentAsEdited = currentFilament.clone();
+            updateFilamentFromWidgets(currentFilamentAsEdited);
+            updateWriteToReelBindings();
+            updateSaveBindings();
+        }
+    };
 
     private final ChangeListener<Boolean> dirtyBooleanListener
             = (ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) ->
-            {
-                if (!suspendDirtyTriggers)
-                {
-                    isDirty.set(true);
-                    currentFilamentAsEdited = currentFilament.clone();
-                    updateFilamentFromWidgets(currentFilamentAsEdited);
-                    updateWriteToReelBindings();
-                    updateSaveBindings();
-                }
-            };
+    {
+        if (!suspendDirtyTriggers)
+        {
+            isDirty.set(true);
+            currentFilamentAsEdited = currentFilament.clone();
+            updateFilamentFromWidgets(currentFilamentAsEdited);
+            updateWriteToReelBindings();
+            updateSaveBindings();
+        }
+    };
 
     private final ChangeListener<MaterialType> dirtyMaterialTypeListener
             = (ObservableValue<? extends MaterialType> ov, MaterialType t, MaterialType t1) ->
-            {
-                if (!suspendDirtyTriggers)
-                {
-                    isDirty.set(true);
-                    currentFilamentAsEdited = currentFilament.clone();
-                    updateFilamentFromWidgets(currentFilamentAsEdited);
-                    updateWriteToReelBindings();
-                    updateSaveBindings();
-                }
-            };
+    {
+        if (!suspendDirtyTriggers)
+        {
+            isDirty.set(true);
+            currentFilamentAsEdited = currentFilament.clone();
+            updateFilamentFromWidgets(currentFilamentAsEdited);
+            updateIDBasedOnMaterial(currentFilamentAsEdited);
+            updateWriteToReelBindings();
+            updateSaveBindings();
+        }
+    };
 
     private void selectFilament(Filament filament)
     {
-        currentFilamentID = filament.getFilamentID();
-        currentFilament = filament;
-        updateWidgets(filament);
-        if (currentFilamentID.startsWith("U"))
+        if (filament != null)
         {
-            state.set(State.CUSTOM);
-        } else
-        {
-            state.set(State.ROBOX);
-        }
+            currentFilamentID = filament.getFilamentID();
+            currentFilament = filament;
+            if (currentFilamentID.startsWith("U"))
+            {
+                state.set(State.CUSTOM);
+            } else
+            {
+                state.set(State.ROBOX);
+            }
 
-        updateSaveBindings();
+            updateWriteToReelBindings();
+            updateSaveBindings();
+            updateWidgets(filament);
+        }
     }
 
     public void updateWidgets(Filament filament)
@@ -596,6 +511,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
      */
     public void updateFilamentFromWidgets(Filament filament)
     {
+        filament.setFilamentID(filamentID.getText());
         filament.setFriendlyFilamentName(name.getText());
         filament.setMaterial(material.getSelectionModel().getSelectedItem());
         filament.setFilamentDiameter(filamentDiameter.getAsFloat());
@@ -609,6 +525,32 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         Color webDomainColor = stringToColor(colourToString(colour.getValue()));
         filament.setDisplayColour(webDomainColor);
         filament.setCostGBPPerKG(costGBPPerKG.getAsFloat());
+    }
+    
+    /**
+     * Make a check to see if the selected material is different from the current
+     * on file. If it is we need a new id for the new file. We only need 
+     * to generate a new id if it hasn't already changed.
+     * 
+     * @param currentFilamentAsEdited the current state of the filament in the editor
+     */
+    protected void updateIDBasedOnMaterial(Filament currentFilamentAsEdited)
+    {
+        if (material.getSelectionModel().getSelectedItem() != currentFilament.getMaterial()) 
+        {
+            if(filamentID.getText().equals(currentFilamentID)) 
+            {
+                currentFilamentAsEdited.setFilamentID(Filament.generateUserFilamentID());
+            } else 
+            {
+                currentFilamentAsEdited.setFilamentID(filamentID.getText());
+            }
+        } else
+        {
+            currentFilamentAsEdited.setFilamentID(currentFilamentID);
+        }
+        
+        filamentID.setText(currentFilamentAsEdited.getFilamentID());
     }
 
     private boolean validateMaterialName(String name)
@@ -643,11 +585,17 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     void whenSavePressed()
     {
         assert (state.get() != State.ROBOX);
+        if (!currentFilament.getFilamentID().equals(filamentID.getText())) {
+            // We do this in case the id has changed, in which case we are
+            // saving a new filament.
+            currentFilament = currentFilament.clone();
+        }
         updateFilamentFromWidgets(currentFilament);
-        String saveCurrentFilamentID = currentFilament.getFilamentID();
         filamentContainer.saveFilament(currentFilament);
-        repopulateCmbFilament();
-        cmbFilament.setValue(filamentContainer.getFilamentByID(saveCurrentFilamentID));
+        Filament filamentToSelect = currentFilament;
+        showReelsAtTopOfCombo();
+        selectFilament(filamentToSelect);
+        filamentMenuButton.displayFilamentOnButton(filamentToSelect);
     }
 
     void whenNewPressed()
@@ -665,12 +613,15 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         state.set(State.NEW);
         currentFilamentID = null;
         currentFilament = currentFilament.clone();
+        currentFilament.setBrand(FilamentContainer.CUSTOM_BRAND);
+        currentFilament.setCategory(FilamentContainer.CUSTOM_CATEGORY);
         currentFilament.setFilamentID(Filament.generateUserFilamentID());
         updateWidgets(currentFilament);
         name.requestFocus();
         name.selectAll();
         // visually marks name as needing to be changed
         name.pseudoClassStateChanged(ERROR, true);
+        updateSaveBindings();
     }
 
     void whenDeletePressed()
@@ -679,74 +630,51 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         {
             filamentContainer.deleteFilament(currentFilament);
         }
-        repopulateCmbFilament();
         clearWidgets();
-        selectFirstFilament();
+        selectFilament(filamentMenuButton.displayFirstFilament());
+    }
+    
+    void whenWriteToReelPressed(int reelIndex)
+    {
+        try
+        {
+            String remainingOnReelText = remainingOnReelM.getText();
+            if (isEditable.get() && isDirty.get())
+            {
+                whenSavePressed();
+            }
+
+            Filament filament = filamentMenuButton.getCurrentlyDisplayedFilament();
+
+            if (currentPrinter.get().getReelEEPROMStateProperty().get(reelIndex) == EEPROMState.NOT_PROGRAMMED)
+            {
+                currentPrinter.get().formatReelEEPROM(reelIndex);
+            } else
+            {
+                float remainingFilament = getRemainingFilament(reelIndex);
+                if (state.get() == State.CUSTOM && !remainingOnReelText.equals(REMAINING_ON_REEL_UNCHANGED))
+                {
+                    remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
+                }
+
+                filament.setRemainingFilament(remainingFilament);
+            }
+
+            currentPrinter.get().transmitWriteReelEEPROM(reelIndex, filament);
+        } catch (RoboxCommsException | PrinterException ex)
+        {
+            steno.error("Unable to write to Reel " + reelIndex + " " + ex);
+        }
     }
 
     void whenWriteToReel1Pressed()
     {
-        try
-        {
-            Filament filament = cmbFilament.getValue();
-
-            if (currentPrinter.get().getReelEEPROMStateProperty().get(0) == EEPROMState.NOT_PROGRAMMED)
-            {
-                currentPrinter.get().formatReelEEPROM(0);
-            } else
-            {
-
-                float remainingFilament = getRemainingFilament(0);
-                if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
-                {
-                    remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
-                }
-
-                if (isEditable.get())
-                {
-                    whenSavePressed();
-                }
-
-                filament.setRemainingFilament(remainingFilament);
-            }
-
-            currentPrinter.get().transmitWriteReelEEPROM(0, filament);
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Unable to write to Reel 0 " + ex);
-        }
+        whenWriteToReelPressed(0);
     }
 
     void whenWriteToReel2Pressed()
     {
-        try
-        {
-            Filament filament = cmbFilament.getValue();
-
-            if (currentPrinter.get().getReelEEPROMStateProperty().get(1) == EEPROMState.NOT_PROGRAMMED)
-            {
-                currentPrinter.get().formatReelEEPROM(1);
-            } else
-            {
-
-                if (isEditable.get())
-                {
-                    whenSavePressed();
-                }
-                float remainingFilament = getRemainingFilament(1);
-                if (state.get() == State.CUSTOM && !remainingOnReelM.getText().equals(REMAINING_ON_REEL_UNCHANGED))
-                {
-                    remainingFilament = remainingOnReelM.getAsFloat() * 1000f;
-                }
-
-                filament.setRemainingFilament(remainingFilament);
-            }
-
-            currentPrinter.get().transmitWriteReelEEPROM(1, filament);
-        } catch (RoboxCommsException | PrinterException ex)
-        {
-            steno.error("Unable to write to Reel 1 " + ex);
-        }
+        whenWriteToReelPressed(1);
     }
 
     public ReadOnlyBooleanProperty getCanSave()
@@ -757,68 +685,6 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
     ReadOnlyBooleanProperty getCanDelete()
     {
         return canDelete;
-    }
-
-    public class FilamentCell extends ListCell<Filament>
-    {
-
-        private int SWATCH_SQUARE_SIZE = 16;
-
-        HBox cellContainer;
-        Rectangle rectangle = new Rectangle();
-        Label label;
-        SVGPath reelIcon = new SVGPath();
-        Label reelIndexLabel;
-
-        public FilamentCell()
-        {
-            reelIcon.setContent(
-                    "m 17.0867,23 c 0,-1.6092 1.3044,-2.9136 2.9133,-2.9136 1.6083,0 2.9127,1.3044 2.9133,2.9136 H 26 v -0.8517 c 0,-0.0678 -0.021,-0.129 -0.0627,-0.1836 -0.0417,-0.0546 -0.0966,-0.087 -0.1641,-0.0975 l -1.4298,-0.2187 c -0.078,-0.2499 -0.1851,-0.5052 -0.3204,-0.7656 0.0939,-0.1302 0.2343,-0.3138 0.4218,-0.5508 0.1875,-0.237 0.3204,-0.4098 0.3984,-0.5193 0.0417,-0.0573 0.0627,-0.1173 0.0627,-0.1797 0,-0.0729 -0.0183,-0.1305 -0.0546,-0.1719 -0.1875,-0.2658 -0.6177,-0.7083 -1.2891,-1.3281 -0.0627,-0.0522 -0.1278,-0.0783 -0.1956,-0.0783 -0.078,0 -0.1407,0.0234 -0.1875,0.0702 L 22.07,18.9608 C 21.8561,18.8516 21.6218,18.755 21.3668,18.6716 l -0.219,-1.4373 C 21.1424,17.1665 21.1133,17.1107 21.0581,17.0663 21.0038,17.0222 20.9399,17 20.8667,17 H 19.133 c -0.1512,0 -0.2448,0.0729 -0.2814,0.2187 -0.0681,0.2607 -0.1437,0.7449 -0.2268,1.4532 -0.2448,0.0786 -0.4815,0.1773 -0.7107,0.297 L 16.8353,18.1331 C 16.7681,18.0809 16.7,18.0548 16.6325,18.0548 c -0.1149,0 -0.3609,0.1863 -0.7383,0.5586 -0.378,0.3723 -0.6339,0.6522 -0.7692,0.8397 -0.0468,0.0678 -0.0708,0.1278 -0.0708,0.18 0,0.0624 0.0264,0.1248 0.0786,0.1875 0.3486,0.4215 0.6276,0.7812 0.8361,1.0779 -0.1308,0.2397 -0.2319,0.4794 -0.3048,0.7188 l -1.4538,0.2187 c -0.0567,0.0105 -0.1065,0.0444 -0.1482,0.1017 C 14.0204,21.9947 14,22.0547 14,22.1171 V 23 h 3.0867 z");
-            cellContainer = new HBox();
-            cellContainer.setAlignment(Pos.CENTER_LEFT);
-            rectangle = new Rectangle(SWATCH_SQUARE_SIZE, SWATCH_SQUARE_SIZE);
-            label = new Label();
-            label.setId("cmbFilamentTextField");
-            reelIndexLabel = new Label();
-            reelIndexLabel.setId("cmbFilamentReelIndexLabel");
-            cellContainer.getChildren().addAll(rectangle, label, reelIcon, reelIndexLabel);
-        }
-
-        @Override
-        protected void updateItem(Filament item, boolean empty)
-        {
-            super.updateItem(item, empty);
-            if (item != null && !empty)
-            {
-                Filament filament = (Filament) item;
-                setGraphic(cellContainer);
-                rectangle.setFill(filament.getDisplayColour());
-
-                label.setText(filament.getLongFriendlyName() + " "
-                        + filament.getMaterial().getFriendlyName());
-                label.getStyleClass().add("filamentSwatchPadding");
-
-                if (item == reel0Filament || item == reel1Filament)
-                {
-                    if (item == reel0Filament)
-                    {
-                        reelIndexLabel.setText("(1)");
-                    } else
-                    {
-                        reelIndexLabel.setText("(2)");
-                    }
-                    reelIcon.setVisible(true);
-                    reelIndexLabel.setVisible(true);
-                } else
-                {
-                    reelIcon.setVisible(false);
-                    reelIndexLabel.setVisible(false);
-                }
-            } else
-            {
-                setGraphic(null);
-            }
-        }
     }
 
     @Override
@@ -1006,4 +872,50 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
         return operationButtons;
     }
 
+    private void showReelsAtTopOfCombo()
+    {
+        filamentMenuButton.deleteSpecialMenuItem(reel1MenuItemTitle);
+        filamentMenuButton.deleteSpecialMenuItem(reel2MenuItemTitle);
+
+        if (currentPrinter != null
+                && currentPrinter.get() != null)
+        {
+            if (currentPrinter.get().reelsProperty().containsKey(1))
+            {
+                String filamentId1 = currentPrinter.get().reelsProperty().get(1).filamentIDProperty().get();
+                Filament filament1 = filamentContainer.getFilamentByID(filamentId1);
+                filamentMenuButton.addSpecialMenuItem(reel2MenuItemTitle, filament1);
+            }
+            if (currentPrinter.get().reelsProperty().containsKey(0))
+            {
+                String filamentId0 = currentPrinter.get().reelsProperty().get(0).filamentIDProperty().get();
+                Filament filament0 = filamentContainer.getFilamentByID(filamentId0);
+                filamentMenuButton.addSpecialMenuItem(reel1MenuItemTitle, filament0);
+            }
+
+            selectFilament(filamentMenuButton.displayFirstFilament());
+        }
+    }
+
+    @Override
+    public void filamentSelected(Filament filament)
+    {
+        selectFilament(filament);
+    }
+
+    @Override
+    public void specialItemSelected(String title)
+    {
+        if (title.equals(reel1MenuItemTitle))
+        {
+            String filamentId = currentPrinter.get().reelsProperty().get(0).filamentIDProperty().get();
+            Filament filament = filamentContainer.getFilamentByID(filamentId);
+            selectFilament(filament);
+        } else if (title.equals(reel2MenuItemTitle))
+        {
+            String filamentId = currentPrinter.get().reelsProperty().get(1).filamentIDProperty().get();
+            Filament filament = filamentContainer.getFilamentByID(filamentId);
+            selectFilament(filament);
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
-import celtech.configuration.SlicerType;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import javafx.beans.value.ObservableValue;

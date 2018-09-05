@@ -4,8 +4,8 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
-import celtech.printerControl.model.NozzleHeater;
+import celtech.roboxbase.printerControl.model.HeaterMode;
+import celtech.roboxbase.printerControl.model.NozzleHeater;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;

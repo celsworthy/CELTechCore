@@ -3,13 +3,12 @@
  */
 package celtech.coreUI.components.Notifications;
 
-import celtech.coreUI.components.Notifications.AppearingProgressBar;
 import celtech.Lookup;
-import celtech.configuration.HeaterMode;
-import celtech.printerControl.model.PrinterAncillarySystems;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.printerControl.model.HeaterMode;
+import celtech.roboxbase.printerControl.model.PrinterAncillarySystems;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.value.ChangeListener;

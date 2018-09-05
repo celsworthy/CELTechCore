@@ -5,8 +5,8 @@
  */
 package celtech.coreUI.controllers.panels;
 
-import celtech.appManager.Project;
-import celtech.printerControl.PrintJob;
+import celtech.appManager.ModelContainerProject;
+import celtech.roboxbase.printerControl.PrintJob;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.collections.ListChangeListener;
@@ -22,7 +22,7 @@ import javafx.scene.control.ListView;
 public class LayoutSlideOutPanelController implements Initializable
 {
 
-    private Project currentProject = null;
+    private ModelContainerProject currentProject = null;
 
     @FXML
     private Label lastModifiedDate;
@@ -47,7 +47,7 @@ public class LayoutSlideOutPanelController implements Initializable
      *
      * @param currentProject
      */
-    public void bindLoadedModels(final Project currentProject)
+    public void bindLoadedModels(final ModelContainerProject currentProject)
     {
         this.currentProject = currentProject;
         lastModifiedDate.textProperty().unbind();

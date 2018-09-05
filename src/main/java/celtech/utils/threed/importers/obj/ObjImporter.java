@@ -35,9 +35,9 @@ import celtech.coreUI.visualisation.ApplicationMaterials;
 import celtech.coreUI.visualisation.metaparts.IntegerArrayList;
 import celtech.coreUI.visualisation.metaparts.FloatArrayList;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
+import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
 import celtech.modelcontrol.ModelContainer;
 import celtech.services.modelLoader.ModelLoaderTask;
-import celtech.utils.SystemUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -51,12 +51,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.beans.property.DoubleProperty;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import javafx.beans.property.DoubleProperty;
+import celtech.roboxbase.utils.SystemUtils;
 
 /**
  * Obj file reader
@@ -134,6 +135,8 @@ public class ObjImporter
 
             Set<ModelContainer> modelContainers = new HashSet<>();
 
+            ModelLoadResultType resultType = null;
+            
             for (int i = 0; i < meshes_.size(); i++)
             {
                 MeshView meshView = meshes_.get(i);
@@ -143,9 +146,11 @@ public class ObjImporter
                 modelContainers.add(childModelContainer);
             }
 
-            modelLoadResult = new ModelLoadResult(modelFileToLoad,
+            modelLoadResult = new ModelLoadResult(
+                    ModelLoadResultType.Mesh,
+                    modelFileToLoad,
                     modelFile.getName(),
-                    modelContainers);
+                    (Set)modelContainers);
 
         } catch (Exception ex)
         {
@@ -316,7 +321,8 @@ public class ObjImporter
                     if (foundMaterial != null)
                     {
                         materialNumber = foundMaterial;
-                    } else
+                    }
+                    else
                     {
                         materialNumber = 0;
                     }

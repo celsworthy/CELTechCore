@@ -1,7 +1,8 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
-import celtech.appManager.SystemNotificationManager.NotificationType;
+import celtech.roboxbase.appManager.NotificationType;
+import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -21,7 +22,16 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
         public void changed(
                 ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
         {
-            calculateVisibility();
+            if (Platform.isFxApplicationThread())
+            {
+                calculateVisibility();
+            } else
+            {
+                Platform.runLater(() ->
+                {
+                    calculateVisibility();
+                });
+            }
         }
     };
 
@@ -97,5 +107,12 @@ public class ConditionalNotificationBar extends AppearingNotificationBar
         }
 
         return theSame;
+    }
+
+    @Override
+    public void destroyBar()
+    {
+        clearAppearanceCondition();
+        finishedSlidingOutOfView();
     }
 }
