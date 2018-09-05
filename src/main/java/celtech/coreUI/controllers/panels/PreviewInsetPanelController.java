@@ -20,7 +20,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
@@ -315,7 +315,7 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
     {
         if (currentProject != null && currentProject instanceof ModelContainerProject)
         {
-            SlicerParametersFile slicerParameters = null; // This is sometimes returned as null. Not sure why.
+            RoboxProfile slicerParameters = null; // This is sometimes returned as null. Not sure why.
             if (currentProject.getNumberOfProjectifiableElements() > 0)
             {
                 String headType = HeadContainer.defaultHeadID;
@@ -323,17 +323,23 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
                 {
                     headType = currentPrinter.headProperty().get().typeCodeProperty().get();
                 }
-                slicerParameters = currentProject.getPrinterSettings().getSettings(headType);
+                slicerParameters = currentProject.getPrinterSettings().getSettings(headType, Lookup.getUserPreferences().getSlicerType());
             }
             if (slicerParameters != null)
             {
                 //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-                double raftOffset = slicerParameters.getRaftBaseThickness_mm()
-                        //Raft interface thickness
-                        + 0.28
-                        //Raft surface layer thickness * surface layers
-                        + (slicerParameters.getInterfaceLayers() * 0.27)
-                        + slicerParameters.getRaftAirGapLayer0_mm();
+                
+                // Needed as heads differ in size and will need to adjust print volume for this
+                final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+            
+                //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+                double raftOffset = slicerParameters.getSpecificFloatSetting("raftBaseThickness_mm")
+                    //Raft interface thickness
+                    + 0.28
+                    //Raft surface layer thickness * surface layers
+                    + 0.27 * slicerParameters.getSpecificIntSetting("interfaceLayers")
+                    + slicerParameters.getSpecificFloatSetting("raftAirGapLayer0_mm")
+                    + zReduction;
 
                 for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
                 {

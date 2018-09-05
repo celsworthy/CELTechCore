@@ -13,39 +13,31 @@
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
                 <ComboBox fx:id="cmbHeadType" prefWidth="150.0" styleClass="cmbCleanCombo" />
-            <ComboBox fx:id="cmbPrintProfile" prefWidth="150.0">
-               <styleClass>
-                  <String fx:value="cmbPrintProfile" />
-                  <String fx:value="cmbCleanCombo" />
-               </styleClass>
-            </ComboBox>
+                <ComboBox fx:id="cmbPrintProfile" prefWidth="150.0">
+                   <styleClass>
+                      <String fx:value="cmbPrintProfile" />
+                      <String fx:value="cmbCleanCombo" />
+                   </styleClass>
+                </ComboBox>
             </children>
             <padding>
                 <Insets bottom="10.0" top="10.0" />
             </padding>
         </HBox>
-      <HBox prefHeight="30.0" prefWidth="600.0" spacing="20.0">
-         <children>
-            <HBox alignment="CENTER_LEFT" spacing="5.0">
-               <children>
-                      <Label styleClass="colon" text="%sidePanel_settings.Profilename" />
-                      <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefColumnCount="18" prefHeight="30.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+">
-                     <tooltip>
-                        <HideableTooltip text="%profileLibraryHelp.name" />
-                     </tooltip></RestrictedTextField>
-               </children>
-            </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="5.0">
-               <children>
-                      <Label styleClass="colon" text="%sidePanel_settings.slicerType" />
-                      <ComboBox fx:id="slicerChooser" prefWidth="111.0" styleClass="cmbCleanCombo">
-                     <tooltip>
-                        <HideableTooltip text="%profileLibraryHelp.slicerChooser" />
-                     </tooltip></ComboBox>
-               </children>
-            </HBox>
-         </children>
-      </HBox>
+        <HBox prefHeight="30.0" prefWidth="600.0" spacing="20.0">
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="5.0">
+                    <children>
+                        <Label styleClass="colon" text="%sidePanel_settings.Profilename" />
+                        <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefColumnCount="18" prefHeight="30.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+">
+                            <tooltip>
+                               <HideableTooltip text="%profileLibraryHelp.name" />
+                            </tooltip>
+                        </RestrictedTextField>
+                    </children>
+                </HBox>
+            </children>
+        </HBox>
         <VBox>
             <children>
                 <HBox alignment="TOP_CENTER" spacing="5.0">
@@ -56,17 +48,7 @@
                 <HBox alignment="CENTER" />
             </children>
         </VBox>
-      <HBox prefHeight="36.0" prefWidth="600.0">
-         <children>
-            <ToggleButton fx:id="nozzle1SettingsToggle" mnemonicParsing="false" onAction="#nozzleOneSelected" selected="true" styleClass="model-material2-button" text="Left Nozzle">
-               <toggleGroup>
-                  <ToggleGroup fx:id="nozzleSelect" />
-               </toggleGroup>
-            </ToggleButton>
-            <ToggleButton fx:id="nozzle2SettingsToggle" mnemonicParsing="false" onAction="#nozzleTwoSelected" styleClass="model-material1-button" text="Right Nozzle" toggleGroup="$nozzleSelect" />
-         </children>
-      </HBox>
-        <TabPane id="printProfileTabPane" fx:id="customTabPane" minHeight="-Infinity" opacity="1.0" prefHeight="355.0" tabClosingPolicy="UNAVAILABLE">
+        <TabPane id="printProfileTabPane" fx:id="customTabPane" minHeight="-Infinity" opacity="1.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
                 <Tab>
                     <content>
@@ -77,70 +59,7 @@
                                         <Label text="%sidePanel_settings.ExtrusionTabTitle" />
                                     </children>
                                 </HBox>
-                                <GridPane fx:id="extrusionGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
-                                        <ColumnConstraints percentWidth="50.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                    </rowConstraints>
-                                    <children>
-                                        <Label styleClass="colon" text="%extrusion.layerHeight" />
-                                        <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1">
-                                            <children>
-                                                <RestrictedNumberField fx:id="layerHeight" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.layerHeight" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%extrusion.fillDensity" GridPane.rowIndex="1" />
-                                        <RestrictedNumberField fx:id="fillDensity" allowedDecimalPlaces="2" maxLength="5" maxWidth="-Infinity" prefColumnCount="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.fillDensity" />
-                                 </tooltip></RestrictedNumberField>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%extrusion.fillPattern" GridPane.rowIndex="2" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%extrusion.infillEveryN" GridPane.rowIndex="3" />
-                                        <HBox alignment="CENTER_LEFT" prefHeight="-1.0" prefWidth="-1.0" spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                            <children>
-                                                <RestrictedNumberField fx:id="infillEveryN" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.infillEveryN" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label minWidth="-1.0" text="%misc.layers" />
-                                            </children>
-                                        </HBox>
-                                        <RestrictedNumberField fx:id="solidLayersTop" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.solidLayersTop" />
-                                 </tooltip></RestrictedNumberField>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%extrusion.solidLayersTop" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="4" />
-                                        <RestrictedNumberField fx:id="solidLayersBottom" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.solidLayersBottom" />
-                                 </tooltip></RestrictedNumberField>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%extrusion.solidLayersBottom" textAlignment="RIGHT" wrapText="true" GridPane.rowIndex="5" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%sidePanel_settings.numberOfPerimeters" GridPane.rowIndex="6" />
-                                        <RestrictedNumberField fx:id="numberOfPerimeters" allowedDecimalPlaces="0" maxLength="5" maxWidth="-Infinity" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.numberOfPerimeters" />
-                                 </tooltip></RestrictedNumberField>
-                                        <ComboBox fx:id="fillPatternChoice" prefWidth="127.0" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.fillPattern" />
-                                 </tooltip></ComboBox>
-                                    </children>
-                                </GridPane>
+                                <GridPane fx:id="extrusion" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
                             </children>
                         </VBox>
                     </content>
@@ -157,107 +76,7 @@
                                         <Label text="%sidePanel_settings.NozzleTab" />
                                     </children>
                                 </HBox>
-                                <GridPane id="Content" fx:id="extrusionControls" alignment="TOP_CENTER" maxHeight="-1.0" styleClass="printProfileGrid" vgap="8.0" VBox.vgrow="ALWAYS">
-                                    <children>
-                                        <Label fx:id="extrusionWidthLabel" style="-fx-text-alignment: CENTER;" text="%extrusion.extrusionWidth" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                                        <Label fx:id="nozzleLabel" style="-fx-text-alignment: CENTER;" text="%extrusion.nozzle" GridPane.columnIndex="1" />
-                                
-                                        <Label fx:id="firstLayerExtrusionWidthLabel" styleClass="colon" text="%extrusion.firstLayer" GridPane.rowIndex="1" />
-                                        <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                            <children>
-                                                <Slider fx:id="firstLayerExtrusionWidthSlider" orientation="HORIZONTAL" prefWidth="90.0" />
-                                                <RestrictedNumberField fx:id="firstLayerExtrusionWidth" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.firstLayerExtrusionWidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <ComboBox fx:id="firstLayerNozzleChoice" maxWidth="1.7976931348623157E308" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                                                
-                                        <Label fx:id="perimeterNozzleChoiceLabel" styleClass="colon" text="%extrusion.perimeter" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                        <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                            <children>
-                                                <Slider fx:id="perimeterExtrusionWidthSlider" orientation="HORIZONTAL" prefWidth="90.0" />
-                                                <RestrictedNumberField fx:id="perimeterExtrusionWidth" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.perimeterExtrusionWidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <ComboBox fx:id="perimeterNozzleChoice" maxWidth="1.7976931348623157E308" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                
-                                        <Label fx:id="infillLabel" styleClass="colon" text="%extrusion.infill" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                                        <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3" GridPane.valignment="CENTER">
-                                            <children>
-                                                <Slider fx:id="infillExtrusionWidthSlider" orientation="HORIZONTAL" prefWidth="90.0" />
-                                                <RestrictedNumberField fx:id="infillExtrusionWidth" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.infillExtrusionWidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                
-                                        <Label fx:id="solidInfillLabel" styleClass="colon" text="%extrusion.solidInfill" GridPane.rowIndex="4" />
-                                        <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="4" GridPane.valignment="CENTER">
-                                            <children>
-                                                <Slider fx:id="solidInfillExtrusionWidthSlider" orientation="HORIZONTAL" prefWidth="90.0" />
-                                                <RestrictedNumberField fx:id="solidInfillExtrusionWidth" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.solidInfillExtrusionWidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <ComboBox fx:id="fillNozzleChoice" maxWidth="1.7976931348623157E308" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                
-                                        <Label fx:id="topSolidInfillLabel" styleClass="colon" text="%extrusion.topSolidInfill" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                                        <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="5" GridPane.valignment="CENTER">
-                                            <children>
-                                                <Slider fx:id="topSolidInfillExtrusionWidthSlider" orientation="HORIZONTAL" prefWidth="90.0" />
-                                                <RestrictedNumberField fx:id="topSolidInfillExtrusionWidth" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.topSolidInfillExtrusionWidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                
-                                        <Label fx:id="supportLabel" styleClass="colon" text="%extrusion.support" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                                        <HBox alignment="CENTER" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="6" GridPane.valignment="CENTER">
-                                            <children>
-                                                <Slider fx:id="supportExtrusionWidthSlider" orientation="HORIZONTAL" prefWidth="90.0" />
-                                                <RestrictedNumberField fx:id="supportExtrusionWidth" allowedDecimalPlaces="2" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportExtrusionWidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <ComboBox fx:id="supportNozzleChoice" maxWidth="1.7976931348623157E308" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                
-                                        <Label fx:id="supportInterfaceLabel" styleClass="colon" text="%extrusion.supportInterface" GridPane.rowIndex="7" />
-                                        <ComboBox fx:id="supportInterfaceNozzleChoice" maxWidth="1.7976931348623157E308" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="LEFT" prefWidth="160.0" />
-                                        <ColumnConstraints halignment="CENTER" minWidth="10.0" prefWidth="130.0" />
-                                        <ColumnConstraints halignment="CENTER" prefWidth="220.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                                        <RowConstraints valignment="CENTER" />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                    </rowConstraints>
-                                </GridPane>
-
+                                <GridPane fx:id="extrusionControl" alignment="TOP_CENTER" maxHeight="-1.0" styleClass="printProfileGrid" vgap="8.0" VBox.vgrow="ALWAYS"></GridPane>
                             </children>
                         </VBox>
                     </content>
@@ -349,54 +168,7 @@
                                         <Label text="%sidePanel_settings.ValveTab" />
                                     </children>
                                 </HBox>
-                                <GridPane id="Content" fx:id="nozzleControls" alignment="TOP_CENTER" hgap="5.0" maxHeight="-1.0" vgap="8.0">
-                                    <children>
-                                        <Label fx:id="nozzleEjectionVolumeLabel1" minWidth="95.0" styleClass="colon" text="%nozzle.ejectionVolume" GridPane.rowIndex="2" />
-                                        <HBox fx:id="nozzleEjectionVolumeHBox1" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                                            <children>
-                                                <RestrictedNumberField fx:id="nozzleEjectionVolume1" allowedDecimalPlaces="2" maxLength="5" prefWidth="80.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.nozzleEjectionVolume" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm3" />
-                                            </children>
-                                        </HBox>
-                                        <Label fx:id="nozzlePartialOpenLabel1" minWidth="95.0" styleClass="colon" text="%nozzle.partialOpenValue" GridPane.rowIndex="3" />
-                                        <HBox fx:id="nozzlePartialOpenHBox1" spacing="5.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                                            <children>
-                                                <RestrictedNumberField fx:id="nozzlePartialOpen1" allowedDecimalPlaces="1" maxLength="5" prefWidth="80.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.nozzlePartialOpen" />
-                                       </tooltip></RestrictedNumberField>
-                                            </children>
-                                        </HBox>
-                                        <RestrictedNumberField fx:id="nozzleEjectionVolume0" allowedDecimalPlaces="2" maxLength="5" prefWidth="80.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-										 <tooltip>
-											<HideableTooltip text="%profileLibraryHelp.nozzleEjectionVolume" />
-										 </tooltip></RestrictedNumberField>
-                                        <RestrictedNumberField fx:id="nozzlePartialOpen0" allowedDecimalPlaces="1" maxLength="5" prefWidth="80.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-										 <tooltip>
-											<HideableTooltip text="%profileLibraryHelp.nozzlePartialOpen" />
-										 </tooltip></RestrictedNumberField>
-                                        <Label fx:id="leftNozzleTitle" styleClass="printProfileDivider" text="Left Nozzle" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                        <Label fx:id="rightNozzleTitle" styleClass="printProfileDivider" text="Right Nozzle" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                            <GridPane.margin>
-                                                <Insets left="10.0" />
-                                            </GridPane.margin>
-                                        </Label>
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
-                                        <ColumnConstraints fillWidth="false" halignment="CENTER" minWidth="10.0" percentWidth="30.0" prefWidth="100.0" />
-                                        <ColumnConstraints halignment="LEFT" percentWidth="70.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                    </rowConstraints>
-                                </GridPane>
+                                <GridPane fx:id="nozzles" alignment="TOP_CENTER" hgap="5.0" maxHeight="-1.0" vgap="8.0"></GridPane>
                             </children>
                         </VBox>
                     </content>
@@ -476,114 +248,13 @@
                 <Tab>
                     <content>
                         <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
+                           <children>
                                 <HBox alignment="CENTER" styleClass="blackTabUnderline">
                                     <children>
                                         <Label text="%sidePanel_settings.supportTab" />
                                     </children>
                                 </HBox>
-                                <GridPane id="Content" fx:id="supportGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
-                                    <children>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.overhangThreshold" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1">
-                                            <children>
-                                                <RestrictedNumberField id="retractLength" fx:id="supportOverhangThreshold" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportOverhangThreshold" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.degrees" GridPane.rowIndex="2" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%support.supportPattern" GridPane.rowIndex="1" />
-                                        <ComboBox id="fillPatternComboBox" fx:id="supportPattern" styleClass="cmbCleanCombo" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.supportPattern" />
-                                 </tooltip></ComboBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.patternSpacing" GridPane.rowIndex="2" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                            <children>
-                                                <RestrictedNumberField id="retractLength" fx:id="supportPatternSpacing" allowedDecimalPlaces="1" maxLength="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportPatternSpacing" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.patternAngle" GridPane.rowIndex="3" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                            <children>
-                                                <RestrictedNumberField id="retractLength" fx:id="supportPatternAngle" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportPatternAngle" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.degrees" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.raftBaseLinewidth" GridPane.rowIndex="6" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-                                            <children>
-                                                <RestrictedNumberField id="raftBaseLinewidth" fx:id="raftBaseLinewidth" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="1.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.raftBaseLinewidth" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.raftAirGapLayer0" GridPane.rowIndex="7" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                                            <children>
-                                                <RestrictedNumberField id="raftAirGapLayer0" fx:id="raftAirGapLayer0" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="0.285">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.raftAirGapLayer0" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mm" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="95.0" styleClass="colon" text="%support.interfaceLayers" GridPane.rowIndex="8" />
-                              <RestrictedNumberField id="interfaceLayers" fx:id="interfaceLayers" maxLength="2" maxWidth="50.0" prefWidth="50.0" text="1" GridPane.columnIndex="1" GridPane.rowIndex="8">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.interfaceLayers" />
-                                 </tooltip></RestrictedNumberField>
-                              <Label minWidth="95.0" styleClass="colon" text="%support.supportZDistance" GridPane.rowIndex="5" />
-                              <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5" GridPane.valignment="CENTER">
-                                 <children>
-                                    <RestrictedNumberField id="raftAirGapLayer0" fx:id="supportZDistance" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="0.285">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportZDistance" />
-                                       </tooltip>
-                                    </RestrictedNumberField>
-                                    <Label text="%misc.mm" />
-                                 </children>
-                              </HBox>
-                              <Label minWidth="95.0" styleClass="colon" text="%support.supportXYDistance" GridPane.rowIndex="4" />
-                              <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                 <children>
-                                    <RestrictedNumberField id="raftAirGapLayer0" fx:id="supportXYDistance" allowedDecimalPlaces="3" maxLength="5" prefWidth="50.0" text="0.285">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportXYDistance" />
-                                       </tooltip>
-                                    </RestrictedNumberField>
-                                    <Label text="%misc.mm" />
-                                 </children>
-                              </HBox>
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
-                                        <ColumnConstraints percentWidth="50.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                              <RowConstraints />
-                              <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                              <RowConstraints />
-                                    </rowConstraints>
-                                </GridPane>
+                                <GridPane fx:id="support" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
                             </children>
                         </VBox>
                     </content>
@@ -692,157 +363,12 @@
                     <content>
                         <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
                             <children>
-                                <HBox alignment="CENTER" spacing="260.0" styleClass="blackTabUnderline">
+                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
                                     <children>
                                         <Label text="%sidePanel_settings.speedTab" />
-                              <Label layoutX="291.0" layoutY="14.0" text="%sidePanel_settings.speedTab" />
                                     </children>
-                           <padding>
-                              <Insets left="40.0" />
-                           </padding>
                                 </HBox>
-                                <GridPane id="Content" fx:id="speedGrid" alignment="TOP_CENTER" minHeight="0.0" minWidth="0.0" vgap="8.0">
-                                    <children>
-                                        <Label alignment="TOP_LEFT" minWidth="115.0" styleClass="colon" text="%speed.firstLayer" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                            <children>
-                                                <RestrictedNumberField fx:id="firstLayerSpeed" allowedDecimalPlaces="0" layoutX="141.0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.firstLayerSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label alignment="TOP_RIGHT" styleClass="colon" text="%speed.perimeters" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                            <children>
-                                                <RestrictedNumberField fx:id="perimeterSpeed" allowedDecimalPlaces="0" layoutX="141.0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.perimeterSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label alignment="TOP_RIGHT" styleClass="colon" text="%speed.smallPerimeters" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                            <children>
-                                                <RestrictedNumberField fx:id="smallPerimeterSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.smallPerimeterSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label minWidth="115.0" styleClass="colon" text="%speed.externalPerimeters" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                            <children>
-                                                <RestrictedNumberField id="retractLength" fx:id="externalPerimeterSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.externalPerimeterSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label styleClass="colon" text="%speed.infill" GridPane.columnIndex="2" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="3">
-                                            <children>
-                                                <RestrictedNumberField fx:id="infillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.infillSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label styleClass="colon" text="%speed.solidInfill" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
-                                            <children>
-                                                <RestrictedNumberField fx:id="solidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.solidInfillSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label styleClass="colon" text="%speed.topSolidInfill" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-                                            <children>
-                                                <RestrictedNumberField fx:id="topSolidInfillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.TopSolidInfillSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label styleClass="colon" text="%speed.supportMaterial" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                            <children>
-                                                <RestrictedNumberField fx:id="supportMaterialSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.supportMaterialSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label styleClass="colon" text="%speed.bridges" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                                            <children>
-                                                <RestrictedNumberField fx:id="bridgesSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.bridgesSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                      
-                                        <Label styleClass="colon" text="%speed.gapFill" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="6">
-                                            <children>
-                                                <RestrictedNumberField fx:id="gapFillSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.gapFillSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                        <Label styleClass="colon" text="%speed.interface" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
-                                            <children>
-                                                <RestrictedNumberField fx:id="interfaceSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.interfaceSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints halignment="LEFT" percentWidth="50.0" />
-                                        <ColumnConstraints percentWidth="50.0" />
-                              <ColumnConstraints minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-                              <ColumnConstraints minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                              <RowConstraints />
-                                    </rowConstraints>
-                                </GridPane>
+                                <GridPane fx:id="speed" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
                             </children>
                         </VBox>
                     </content>
@@ -865,127 +391,7 @@
                                         <Label text="%sidePanel_settings.coolingTabTitle" />
                                     </children>
                                 </HBox>
-                                <GridPane id="Content" fx:id="coolingGrid" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0">
-                                    <children>
-                                        <CheckBox id="autoUnretract" fx:id="enableAutoCooling" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" text="%cooling.enableAutoCooling" GridPane.columnIndex="2">
-                                 <tooltip>
-                                    <HideableTooltip text="%profileLibraryHelp.enableAutoCooling" />
-                                 </tooltip></CheckBox>
-                                        <Label styleClass="printProfileDivider" text="%cooling.fanSettingsTitle" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableAutoCooling" GridPane.columnIndex="1" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.MinimumSpeed" GridPane.rowIndex="2" />
-                                        <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                            <tooltip>
-                                               <HideableTooltip text="%profileLibraryHelp.minFanSpeed" />
-                                            </tooltip>
-                                        </RestrictedNumberField>
-                                        <RestrictedNumberField id="unretractLength" fx:id="minFanSpeed_n2" allowedDecimalPlaces="0" maxLength="5" prefColumnCount="4" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="nozzle-hidden-setting">
-                                            <tooltip>
-                                               <HideableTooltip text="%profileLibraryHelp.minFanSpeed" />
-                                            </tooltip>
-                                        </RestrictedNumberField>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.MaximumSpeed" GridPane.rowIndex="3" />
-                                        <RestrictedNumberField id="unretractLength" fx:id="maxFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                            <tooltip>
-                                               <HideableTooltip text="%profileLibraryHelp.maxFanSpeed" />
-                                            </tooltip>
-                                        </RestrictedNumberField>
-                                        <RestrictedNumberField id="unretractLength" fx:id="maxFanSpeed_n2" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3" styleClass="nozzle-hidden-setting">
-                                            <tooltip>
-                                               <HideableTooltip text="%profileLibraryHelp.maxFanSpeed" />
-                                            </tooltip>
-                                        </RestrictedNumberField>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.bridgesFanSpeedLabel" GridPane.rowIndex="4" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="bridgesFanSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.bridgesFanSpeed" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label minWidth="-1.0" text="\%" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.disableFanForFirst" GridPane.rowIndex="5" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="disableFanForFirstNLayers" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.disableFanFirstNLayers" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label minWidth="-1.0" text="%misc.layers" />
-                                            </children>
-                                        </HBox>
-                                        <Label styleClass="printProfileDivider" text="%cooling.thresholdsTitle" GridPane.columnIndex="2" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1" />
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.enableFanIfPrintTimeBelow" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="enableFanIfLayerTimeBelow" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                       <tooltip>
-                                          <HideableTooltip text="%profileLibraryHelp.enableFanLayerTimeBelow" />
-                                       </tooltip></RestrictedNumberField>
-                                                <Label minWidth="-1.0" text="%misc.secs" />
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.slowFanIfBelow" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="slowFanIfLayerTimeBelow" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                                    <tooltip>
-                                                       <HideableTooltip text="%profileLibraryHelp.slowFanLayerTimeBelow" />
-                                                    </tooltip>
-                                                </RestrictedNumberField>
-                                                <Label minWidth="-1.0" text="%misc.secs" />
-                                            </children>
-                                        </HBox>
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="slowFanIfLayerTimeBelow_n2" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" styleClass="nozzle-hidden-setting">
-                                                    <tooltip>
-                                                       <HideableTooltip text="%profileLibraryHelp.slowFanLayerTimeBelow" />
-                                                    </tooltip>
-                                                </RestrictedNumberField>
-                                            </children>
-                                        </HBox>
-                                        <Label minWidth="-1.0" styleClass="colon" text="%cooling.minPrintSpeed" GridPane.columnIndex="2" GridPane.rowIndex="4" />
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="minPrintSpeed" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0">
-                                                    <tooltip>
-                                                       <HideableTooltip text="%profileLibraryHelp.minPrintSpeed" />
-                                                    </tooltip>
-                                                </RestrictedNumberField>
-                                                <Label minWidth="-1.0" text="%misc.mmpersec" />
-                                            </children>
-                                        </HBox>
-                                        <HBox spacing="5.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
-                                            <children>
-                                                <RestrictedNumberField id="unretractLength" fx:id="minPrintSpeed_n2" allowedDecimalPlaces="0" maxLength="5" prefWidth="50.0" styleClass="nozzle-hidden-setting">
-                                                    <tooltip>
-                                                       <HideableTooltip text="%profileLibraryHelp.minPrintSpeed" />
-                                                    </tooltip>
-                                                </RestrictedNumberField>
-                                            </children>
-                                        </HBox>
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints fillWidth="false" halignment="LEFT" percentWidth="50.0" />
-                                        <ColumnConstraints fillWidth="false" percentWidth="50.0" />
-                              <ColumnConstraints fillWidth="false" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-                              <ColumnConstraints fillWidth="false" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                        <RowConstraints />
-                                    </rowConstraints>
-                                </GridPane>
+                                <GridPane fx:id="cooling" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
                             </children>
                         </VBox>
                     </content>

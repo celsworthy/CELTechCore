@@ -3005,18 +3005,3 @@ color-picker-label .text-field {
 {
     -fx-cell-size: 40px;
 }
-
-.nozzle-orange-setting
-{
-    -fx-background-color: robox_orange_faint;
-}
-
-.nozzle-blue-setting
-{
-    -fx-background-color: robox_blue_faint;
-}
-
-.nozzle-hidden-setting
-{
-    visibility: hidden;
-}
