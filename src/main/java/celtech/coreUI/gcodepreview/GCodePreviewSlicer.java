@@ -11,8 +11,8 @@ import celtech.roboxbase.configuration.SlicerType;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.roboxbase.configuration.slicer.Cura3ConfigConvertor;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriter;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriterFactory;
@@ -111,11 +111,13 @@ public class GCodePreviewSlicer
 
         Printer printer = Lookup.getSelectedPrinterProperty().get();
         String currentHeadType = HeadContainer.defaultHeadID;
+        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
+        
         if (printer != null && printer.headProperty().get() != null)
         {
             currentHeadType = printer.headProperty().get().typeCodeProperty().get();
         }
-        SlicerParametersFile settings = project.getPrinterSettings().getSettings(currentHeadType);
+        RoboxProfile settings = project.getPrinterSettings().getSettings(currentHeadType, slicerType);
         
         //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
         CentreCalculations centreCalc = new CentreCalculations();
@@ -138,7 +140,7 @@ public class GCodePreviewSlicer
                 settings,
                 project.getPrinterSettings(),
                 project.getPrintQuality(),
-                Lookup.getUserPreferences().getSlicerType(),
+                slicerType,
                 centreOfPrintedObject,
                 Lookup.getUserPreferences().isSafetyFeaturesOn(),
                 false,
@@ -153,11 +155,12 @@ public class GCodePreviewSlicer
         steno.debug("start post processing");
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
-                settings.getProfileName(),
+                settings.getName(),
                 printableMeshes,
                 temporaryDirectory,
                 printer,
-                null);
+                null,
+                slicerType);
 
         if (isCancelled())
         {
@@ -170,9 +173,9 @@ public class GCodePreviewSlicer
     /**
      * Set up a print job directory etc run the slicer.
      */
-    private boolean doSlicing(PrintableMeshes printableMeshes, SlicerParametersFile settings)
+    private boolean doSlicing(PrintableMeshes printableMeshes, RoboxProfile settings)
     {
-        settings = project.getPrinterSettings().applyOverrides(settings);
+        settings = project.getPrinterSettings().applyOverrides(Optional.ofNullable(settings));
 
         //Create the print job directory
         printJobDirectory = new File(temporaryDirectory);
@@ -180,13 +183,8 @@ public class GCodePreviewSlicer
 
         //Write out the slicer config
         SlicerType slicerTypeToUse = null;
-        if (settings.getSlicerOverride() != null)
-        {
-            slicerTypeToUse = settings.getSlicerOverride();
-        } else
-        {
-            slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
-        }
+        
+        slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
         
         Printer printerToUse = null;
 
@@ -202,7 +200,7 @@ public class GCodePreviewSlicer
                 (float) (printableMeshes.getCentreOfPrintedObject().getZ()));
         
         String configFileDest = temporaryDirectory
-                + settings.getProfileName()
+                + settings.getName()
                 + BaseConfiguration.printProfileFileExtension;
         
         configWriter.generateConfigForSlicer(settings, configFileDest);
@@ -213,7 +211,7 @@ public class GCodePreviewSlicer
         }
         
         SliceResult sliceResult = SlicerTask.doSlicing(
-                settings.getProfileName(),
+                settings.getName(),
                 printableMeshes,
                 temporaryDirectory,
                 printerToUse,

@@ -5,7 +5,6 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
-import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.SlicerType;
@@ -14,7 +13,7 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.slicer.Cura3ConfigConvertor;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriter;
 import celtech.roboxbase.configuration.slicer.SlicerConfigWriterFactory;
@@ -25,15 +24,14 @@ import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
 import celtech.roboxbase.services.postProcessor.PostProcessorTask;
 import celtech.roboxbase.services.slicer.SliceResult;
 import celtech.roboxbase.services.slicer.SlicerTask;
-import celtech.roboxbase.utils.cura.CuraDefaultSettingsEditor;
 import celtech.roboxbase.utils.models.MeshForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
@@ -59,14 +57,14 @@ public class GetTimeWeightCost
     private final Label lblTime;
     private final Label lblWeight;
     private final Label lblCost;
-    private final SlicerParametersFile settings;
+    private final RoboxProfile settings;
     private final String temporaryDirectory;
 
     private File printJobDirectory;
     private final Cancellable cancellable;
     private Random random = new Random();
 
-    public GetTimeWeightCost(ModelContainerProject project, SlicerParametersFile settings,
+    public GetTimeWeightCost(ModelContainerProject project, RoboxProfile settings,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         this.project = project;
@@ -176,11 +174,12 @@ public class GetTimeWeightCost
         steno.debug("start post processing");
 
         GCodePostProcessingResult result = PostProcessorTask.doPostProcessing(
-                settings.getProfileName(),
+                settings.getName(),
                 printableMeshes,
                 temporaryDirectory,
                 printer,
-                null);
+                null,
+                Lookup.getUserPreferences().getSlicerType());
 
         PrintJobStatistics printJobStatistics = result.getRoboxiserResult().
                 getPrintJobStatistics();
@@ -256,23 +255,16 @@ public class GetTimeWeightCost
     /**
      * Set up a print job directory etc run the slicer.
      */
-    private boolean doSlicing(PrintableMeshes printableMeshes, SlicerParametersFile settings)
+    private boolean doSlicing(PrintableMeshes printableMeshes, RoboxProfile settings)
     {
-        settings = project.getPrinterSettings().applyOverrides(settings);
+        settings = project.getPrinterSettings().applyOverrides(Optional.of(settings));
 
         //Create the print job directory
         printJobDirectory = new File(temporaryDirectory);
         printJobDirectory.mkdirs();
 
         //Write out the slicer config
-        SlicerType slicerTypeToUse = null;
-        if (settings.getSlicerOverride() != null)
-        {
-            slicerTypeToUse = settings.getSlicerOverride();
-        } else
-        {
-            slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
-        }
+        SlicerType slicerTypeToUse = Lookup.getUserPreferences().getSlicerType();
         
         Printer printerToUse = null;
 
@@ -288,7 +280,7 @@ public class GetTimeWeightCost
                 (float) (printableMeshes.getCentreOfPrintedObject().getZ()));
         
         String configFileDest = temporaryDirectory
-                + settings.getProfileName()
+                + settings.getName()
                 + BaseConfiguration.printProfileFileExtension;
         
         configWriter.generateConfigForSlicer(settings, configFileDest);
@@ -299,7 +291,7 @@ public class GetTimeWeightCost
         }
         
         SliceResult sliceResult = SlicerTask.doSlicing(
-                settings.getProfileName(),
+                settings.getName(),
                 printableMeshes,
                 temporaryDirectory,
                 printerToUse,
