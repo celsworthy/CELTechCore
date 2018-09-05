@@ -10,13 +10,12 @@ import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.roboxbase.configuration.Filament;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.modelcontrol.Groupable;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.TranslateableTwoD;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SupportType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +49,7 @@ public class ProjectTest extends JavaFXConfiguredTest
         String PROJECT_NAME = "TestA";
         int BRIM = 2;
         float FILL_DENSITY = 0.45f;
-        SlicerParametersFile.SupportType PRINT_SUPPORT = SlicerParametersFile.SupportType.MATERIAL_2;
+        SupportType PRINT_SUPPORT = SupportType.MATERIAL_2;
         String PRINT_JOB_ID = "PJ1";
 
         Filament FILAMENT_0 = FilamentContainer.getInstance().getFilamentByID("RBX-ABS-GR499");

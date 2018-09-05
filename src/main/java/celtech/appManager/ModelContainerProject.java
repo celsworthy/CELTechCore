@@ -17,7 +17,7 @@ import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SupportType;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.packing.core.Bin;
@@ -356,13 +356,13 @@ public class ModelContainerProject extends Project
                 || printerSettings.getRaftOverride()
                 || printerSettings.getBrimOverride() > 0)
         {
-            if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
+            if (printerSettings.getPrintSupportTypeOverride() == SupportType.MATERIAL_1)
             {
                 if (!localUsedExtruders.get(0))
                 {
                     localUsedExtruders.set(0, true);
                 }
-            } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
+            } else if (printerSettings.getPrintSupportTypeOverride() == SupportType.MATERIAL_2
                     && printer != null
                     && printer.extrudersProperty().get(1).isFittedProperty().get())
             {
@@ -1044,8 +1044,8 @@ public class ModelContainerProject extends Project
         {
             printerSettings.getPrintSupportTypeOverrideProperty().set(
                     (useExtruder0 == true)
-                            ? SlicerParametersFile.SupportType.MATERIAL_1
-                            : SlicerParametersFile.SupportType.MATERIAL_2);
+                            ? SupportType.MATERIAL_1
+                            : SupportType.MATERIAL_2);
             fireWhenPrinterSettingsChanged(printerSettings);
         }
 

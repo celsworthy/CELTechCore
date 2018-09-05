@@ -58,7 +58,7 @@ public class FXMLUtilities
 
     private static void addColonToLabel(Label label)
     {
-        if (label.getStyleClass().contains("colon"))
+        if (label.getStyleClass().contains("colon") && !label.getText().endsWith(":"))
         {
             label.setText(label.getText() + ":");
         }

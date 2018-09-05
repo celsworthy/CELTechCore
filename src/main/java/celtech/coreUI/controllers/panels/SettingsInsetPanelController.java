@@ -6,12 +6,8 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile.SupportType;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.ProfileChoiceListCell;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
@@ -21,20 +17,23 @@ import celtech.roboxbase.MaterialType;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.RoboxProfile;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
+import celtech.roboxbase.configuration.fileRepresentation.SupportType;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
-import celtech.roboxbase.printerControl.model.Reel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -50,11 +49,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
-import javafx.util.Callback;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -69,6 +65,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private final Stenographer steno = StenographerFactory.getStenographer(
             SettingsInsetPanelController.class.getName());
 
+    private static final RoboxProfileSettingsContainer ROBOX_PROFILE_SETTINGS_CONTAINER = RoboxProfileSettingsContainer.getInstance();
+    
     @FXML
     private HBox settingsInsetRoot;
 
@@ -76,7 +74,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private Slider brimSlider;
 
     @FXML
-    private ComboBox<SlicerParametersFile> customProfileChooser;
+    private ComboBox<RoboxProfile> customProfileChooser;
 
     @FXML
     private ComboBox<SupportType> supportComboBox;
@@ -138,14 +136,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private final BooleanProperty inPLACompatibilityMode = new SimpleBooleanProperty(false);
     private ConditionalNotificationBar PLACompatibilityModeNotificationBar;
-
-    private final ChangeListener<Printer> selectedPrinterChangeListener = new ChangeListener<Printer>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
-        {
-            whenPrinterChanged(newValue);
-        }
+    
+    private final ChangeListener<Printer> selectedPrinterChangeListener = 
+            (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) -> {
+        whenPrinterChanged(newValue);
     };
 
     private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
@@ -170,16 +164,20 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
     };
 
-    private final ListChangeListener<SlicerParametersFile> slicerParamChangeListener = new ListChangeListener<SlicerParametersFile>()
-    {
-
-        @Override
-        public void onChanged(ListChangeListener.Change<? extends SlicerParametersFile> c)
-        {
-            populateCustomProfileChooser();
-            showPleaseCreateProfile(
-                    SlicerParametersContainer.getUserProfileList().isEmpty());
-        }
+    private final ListChangeListener<RoboxProfile> roboxProfileChangeListener = 
+            (ListChangeListener.Change<? extends RoboxProfile> change) -> {
+        populateCustomProfileChooser();
+        showPleaseCreateProfile(
+                ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(getSlicerType()).isEmpty());
+        clearSettingsIfNoCustomProfileAvailable();
+    };
+        
+    private final ChangeListener<SlicerType> slicerTypeChangeListener = 
+            (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
+        populateCustomProfileChooser();
+        showPleaseCreateProfile(
+                ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(newValue).isEmpty());
+        clearSettingsIfNoCustomProfileAvailable();
     };
 
     private final PrinterListChangesListener printerListChangesListener = new PrinterListChangesAdapter()
@@ -223,8 +221,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         PLACompatibilityModeNotificationBar = new ConditionalNotificationBar("notification.printSettingsAutomaticallyAdjustedForPLA", NotificationType.NOTE);
         PLACompatibilityModeNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(inPLACompatibilityMode));
 
-        try
-        {
+        try {
             supportComboBox.getItems().clear();
             supportComboBox.getItems().addAll(SupportType.values());
 
@@ -236,86 +233,57 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
 
-            SlicerParametersContainer.getUserProfileList().addListener(slicerParamChangeListener);
+            ROBOX_PROFILE_SETTINGS_CONTAINER.addProfileChangeListener(roboxProfileChangeListener);
+            Lookup.getUserPreferences().getSlicerTypeProperty().addListener(slicerTypeChangeListener);
 
-            showPleaseCreateProfile(
-                    SlicerParametersContainer.getUserProfileList().isEmpty());
+            showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
 
             whenPrinterChanged(Lookup.getSelectedPrinterProperty().get());
 
             BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
-
-        } catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        fillDensitySlider.valueProperty().addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                fillDensityPercentEntry.setValue(t1.doubleValue());
-            }
+        fillDensitySlider.valueProperty().addListener((ObservableValue<? extends Number> ov, Number t, Number t1) -> {
+            fillDensityPercentEntry.setValue(t1.doubleValue());
         });
-        fillDensityPercentEntry.valueChangedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
-            {
-                fillDensitySlider.setValue(fillDensityPercentEntry.getAsDouble());
-            }
+        
+        fillDensityPercentEntry.valueChangedProperty().addListener((ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) -> {
+            fillDensitySlider.setValue(fillDensityPercentEntry.getAsDouble());
         });
 
-        spiralPrintCheckbox.selectedProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1)
+        spiralPrintCheckbox.selectedProperty().addListener((ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) -> {
+            if (t1.booleanValue())
             {
-                if (t1.booleanValue())
-                {
-                    raftButton.setSelected(false);
-                    supportButton.setSelected(false);
-                    supportGapButton.setSelected(false);
-                    brimSlider.setValue(0);
-                }
-
-                raftHBox.setDisable(t1);
-                supportHBox.setDisable(t1);
-                supportGapHBox.setDisable(t1);
-                supportComboBox.setDisable(t1);
-                brimHBox.setDisable(t1);
-                fillDensityHBox.setDisable(t1);
-                fillDensityPercentEntry.setDisable(t1);
-                fillDensitySlider.setDisable(t1);
+                raftButton.setSelected(false);
+                supportButton.setSelected(false);
+                supportGapButton.setSelected(false);
+                brimSlider.setValue(0);
             }
+            
+            raftHBox.setDisable(t1);
+            supportHBox.setDisable(t1);
+            supportGapHBox.setDisable(t1);
+            supportComboBox.setDisable(t1);
+            brimHBox.setDisable(t1);
+            fillDensityHBox.setDisable(t1);
+            fillDensityPercentEntry.setDisable(t1);
+            fillDensitySlider.setDisable(t1);
         });
 
-//        ApplicationStatus.getInstance().modeProperty().addListener(new ChangeListener<ApplicationMode>()
-//        {
-//            @Override
-//            public void changed(ObservableValue<? extends ApplicationMode> ov, ApplicationMode t, ApplicationMode t1)
-//            {
-//                if (t1 == ApplicationMode.SETTINGS)
-//                {
-//                    if (currentProject != null
-//                            && currentPrinter != null)
-//                    {
-//                        dealWithPrintOptimisation();
-//                    }
-//                }
-//            }
-//        });
         raftSupportBrimChooserBox.disableProperty().bind(spiralPrintCheckbox.selectedProperty()
                 .or(supportButton.selectedProperty().not()
                         .and(brimSlider.valueProperty().lessThanOrEqualTo(0))
                         .and(raftButton.selectedProperty().not())));
+        
+        raftHBox.disableProperty().bind(brimSlider.valueProperty().greaterThan(0));
+        
+        brimHBox.disableProperty().bind(raftButton.selectedProperty());
     }
 
-    PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) ->
-    {
-        if (evt.getPropertyName().equals("fillDensity_normalised"))
-        {
+    PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) -> {
+        if (evt.getPropertyName().equals("fillDensity_normalised")) {
             fillDensitySlider.valueProperty().set(((Number) evt.getNewValue()).doubleValue()
                     * 100);
         }
@@ -323,69 +291,46 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void setupCustomProfileChooser()
     {
-        Callback<ListView<SlicerParametersFile>, ListCell<SlicerParametersFile>> profileChooserCellFactory
-                = (ListView<SlicerParametersFile> list) -> new ProfileChoiceListCell();
-
-        customProfileChooser.setCellFactory(profileChooserCellFactory);
-        customProfileChooser.setButtonCell(profileChooserCellFactory.call(null));
         populateCustomProfileChooser();
-
         clearSettingsIfNoCustomProfileAvailable();
 
         customProfileChooser.getSelectionModel().selectedItemProperty().addListener(
-                (ObservableValue<? extends SlicerParametersFile> observable, SlicerParametersFile oldValue, SlicerParametersFile newValue) ->
-        {
+                (ObservableValue<? extends RoboxProfile> observable, RoboxProfile oldValue, RoboxProfile newValue) -> {
 
-            if (populatingForProject)
-            {
+            if (populatingForProject) {
                 return;
             }
 
-            if (newValue != null)
-            {
-                if (printerSettings != null && printerSettings.getPrintQuality()
-                        == PrintQualityEnumeration.CUSTOM)
-                {
+            if (newValue != null) {
+                if (printerSettings != null && printerSettings.getPrintQuality() == PrintQualityEnumeration.CUSTOM) {
                     whenCustomProfileChanges(newValue);
-                } else if (printerSettings != null)
-                {
+                } else if (printerSettings != null) {
                     steno.error("custom profile chosen but quality not CUSTOM");
                 }
 
             }
         });
-
-        SlicerParametersContainer.getUserProfileList().addListener(
-                (ListChangeListener.Change<? extends SlicerParametersFile> c) ->
-        {
-            clearSettingsIfNoCustomProfileAvailable();
-        });
     }
 
-    private void populateCustomProfileChooser()
-    {
-        List filesForHeadType = SlicerParametersContainer.getUserProfileList().stream().
-                filter(profile -> profile.getHeadType() != null
-                && profile.getHeadType().equals(currentHeadType)).collect(Collectors.toList());
+    private void populateCustomProfileChooser() {
+        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
+        List<RoboxProfile> filesForHeadType = ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(slicerType).get(currentHeadType);
         customProfileChooser.setItems(FXCollections.observableArrayList(filesForHeadType));
         if (currentProject != null
-                && currentProject.getPrinterSettings().getPrintQuality() == PrintQualityEnumeration.CUSTOM)
-        {
+                && currentProject.getPrinterSettings().getPrintQuality() == PrintQualityEnumeration.CUSTOM) {
             selectCurrentCustomSettings();
         }
 
     }
 
-    private void whenCustomProfileChanges(SlicerParametersFile newValue)
+    private void whenCustomProfileChanges(RoboxProfile newValue)
     {
-        if (getCustomSettings() != null)
-        {
-            getCustomSettings().removePropertyChangeListener(customSettingsListener);
+        if (getCustomSettings().isPresent()) {
+        //    getCustomSettings().removePropertyChangeListener(customSettingsListener);
         }
-        printerSettings.setSettingsName(newValue.getProfileName());
-        if (getCustomSettings() != null)
-        {
-            getCustomSettings().addPropertyChangeListener(customSettingsListener);
+        printerSettings.setSettingsName(newValue.getName());
+        if (getCustomSettings().isPresent()) {
+        //    getCustomSettings().addPropertyChangeListener(customSettingsListener);
         }
         printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
     }
@@ -393,7 +338,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void setupOverrides()
     {
         supportComboBox.valueProperty().addListener(
-                (ObservableValue<? extends SlicerParametersFile.SupportType> ov, SlicerParametersFile.SupportType lastSupportValue, SlicerParametersFile.SupportType newSupportValue) ->
+                (ObservableValue<? extends SupportType> ov, SupportType lastSupportValue, SupportType newSupportValue) ->
         {
             if (populatingForProject)
             {
@@ -435,20 +380,18 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         });
 
         raftButton.selectedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) ->
-        {
-            if (populatingForProject)
-            {
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean selected) -> {
+            if (populatingForProject) {
                 return;
             }
 
             printerSettings.setRaftOverride(selected);
+            if(selected) {
+                brimSlider.setValue(0);
+            }
         });
 
-        fillDensitySlider.valueProperty()
-                .addListener(
-                        (ObservableValue<? extends Number> observable, Number was, Number now) ->
-                {
+        fillDensitySlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number was, Number now) -> {
                     if (!fillDensitySlider.isValueChanging()
                             || now.doubleValue() >= fillDensitySlider.getMax()
                             || now.doubleValue() <= fillDensitySlider.getMin())
@@ -457,13 +400,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     }
                 });
 
-        brimSlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
-        {
+        brimSlider.valueProperty().addListener((ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
             if (!brimSlider.isValueChanging()
                     || newValue.doubleValue() >= brimSlider.getMax()
-                    || newValue.doubleValue() <= brimSlider.getMin())
-            {
+                    || newValue.doubleValue() <= brimSlider.getMin()) {
                 printerSettings.setBrimOverride(newValue.intValue());
+                if(newValue.intValue() > 0) {
+                    raftButton.setSelected(false);
+                }
             }
         });
 
@@ -488,12 +432,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     /**
      * If no profiles are left available then clear the settingsName.
      */
-    private void clearSettingsIfNoCustomProfileAvailable()
-    {
-        if (SlicerParametersContainer.getUserProfileList().size() == 0)
-        {
-            if (printerSettings != null)
-            {
+    private void clearSettingsIfNoCustomProfileAvailable() {
+        if (customProfileChooser.getItems().isEmpty()) {
+            if (printerSettings != null) {
                 printerSettings.setSettingsName("");
             }
         }
@@ -604,15 +545,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
 
         printQuality.addListener(
-                (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) ->
-        {
+                (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
             printQualityWidgetsUpdate(newValue);
         });
+        
         printQualityWidgetsUpdate(printQuality.get());
 
         // just in case custom settings are changing through some other mechanism
-        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) ->
-        {
+        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
             selectCurrentCustomSettings();
         });
 
@@ -623,16 +563,12 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         supportComboBox.setValue(saveSupports);
 
-        printerSettings.getPrintSupportTypeOverrideProperty().addListener(new ChangeListener<SupportType>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue)
-            {
-                populatingForProject = true;
-                supportComboBox.getSelectionModel().select(newValue);
-                updateSupportCombo(currentPrinter);
-                populatingForProject = false;
-            }
+        printerSettings.getPrintSupportTypeOverrideProperty()
+                .addListener((ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue) -> {
+            populatingForProject = true;
+            supportComboBox.getSelectionModel().select(newValue);
+            updateSupportCombo(currentPrinter);
+            populatingForProject = false;
         });
 
         supportButton.setSelected(autoSupport);
@@ -641,9 +577,16 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             if (savePrinterSettingsName.length() > 0)
             {
-                SlicerParametersFile chosenProfile = SlicerParametersContainer.getSettings(
-                        savePrinterSettingsName, currentHeadType);
-                customProfileChooser.getSelectionModel().select(chosenProfile);
+                
+                List<RoboxProfile> profiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType()).get(currentHeadType);
+                Optional<RoboxProfile> chosenProfile = profiles.stream()
+                        .filter(profile -> profile.getName().equals(savePrinterSettingsName))
+                        .findFirst();
+                if(chosenProfile.isPresent()) {
+                    customProfileChooser.getSelectionModel().select(chosenProfile.get());
+                } else {
+                    customProfileChooser.getSelectionModel().selectFirst();
+                }
             }
         }
 
@@ -716,18 +659,15 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
     }
 
-    private void selectCurrentCustomSettings()
-    {
-        if (currentPrinter != null)
-        {
+    private void selectCurrentCustomSettings() {
+        if (currentPrinter != null) {
             Head currentHead = currentPrinter.headProperty().get();
             String headType = HeadContainer.defaultHeadID;
-            if (currentHead != null)
-            {
+            if (currentHead != null) {
                 headType = currentHead.typeCodeProperty().get();
             }
             customProfileChooser.getSelectionModel().select(
-                    printerSettings.getSettings(headType));
+                    printerSettings.getSettings(headType, getSlicerType()));
         }
     }
 
@@ -736,31 +676,29 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         customProfileBox.setDisable(!enable);
     }
 
-    private void showPleaseCreateProfile(boolean show)
-    {
+    private void showPleaseCreateProfile(boolean show) {
         customProfileChooser.setVisible(!show);
         createProfileLabel.setVisible(show);
     }
 
     private void printQualityWidgetsUpdate(PrintQualityEnumeration quality)
     {
-        SlicerParametersFile settings = null;
-
-        switch (quality)
-        {
+        Optional<RoboxProfile> settings = Optional.empty();
+        
+        switch (quality) {
             case DRAFT:
-                settings = SlicerParametersContainer.getSettings(
-                        BaseConfiguration.draftSettingsProfileName, currentHeadType);
+                settings = ROBOX_PROFILE_SETTINGS_CONTAINER
+                        .getRoboxProfileWithName(BaseConfiguration.draftSettingsProfileName, getSlicerType(), currentHeadType);
                 enableCustomChooser(false);
                 break;
             case NORMAL:
-                settings = SlicerParametersContainer.getSettings(
-                        BaseConfiguration.normalSettingsProfileName, currentHeadType);
+                settings = ROBOX_PROFILE_SETTINGS_CONTAINER
+                        .getRoboxProfileWithName(BaseConfiguration.normalSettingsProfileName, getSlicerType(), currentHeadType);
                 enableCustomChooser(false);
                 break;
             case FINE:
-                settings = SlicerParametersContainer.getSettings(
-                        BaseConfiguration.fineSettingsProfileName, currentHeadType);
+               settings = ROBOX_PROFILE_SETTINGS_CONTAINER
+                        .getRoboxProfileWithName(BaseConfiguration.fineSettingsProfileName, getSlicerType(), currentHeadType);
                 enableCustomChooser(false);
                 break;
             case CUSTOM:
@@ -771,36 +709,32 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 break;
         }
 
-        if (currentProject != null)
-        {
-            if (settings != null)
-            {
-                printerSettings.setFillDensityOverride(settings.getFillDensity_normalised());
-                fillDensitySlider.setValue(settings.getFillDensity_normalised() * 100.0);
+        if (currentProject != null) {
+            if (settings.isPresent()) {
+                float fillDensity = settings.get().getSpecificFloatSetting("fillDensity_normalised");
+                printerSettings.setFillDensityOverride(fillDensity);
+                fillDensitySlider.setValue(fillDensity * 100.0);
             }
 
-            if (printQuality.get() == PrintQualityEnumeration.CUSTOM)
-            {
-                if (settings == null)
-                {
+            if (printQuality.get() == PrintQualityEnumeration.CUSTOM) {
+                if (!settings.isPresent()) {
                     customProfileChooser.setValue(null);
-                } else
-                {
-                    customProfileChooser.getSelectionModel().select(settings);
+                } else  {
+                    customProfileChooser.getSelectionModel().select(settings.get());
                 }
             }
         }
     }
 
-    private SlicerParametersFile getCustomSettings()
+    private Optional<RoboxProfile> getCustomSettings()
     {
         String customSettingsName = printerSettings.getSettingsName();
-        if (customSettingsName.equals(""))
+        if (customSettingsName.equals("")) 
         {
-            return null;
-        } else
+            return Optional.empty();
+        } else 
         {
-            return SlicerParametersContainer.getSettings(customSettingsName, currentHeadType);
+            return ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(customSettingsName, getSlicerType(), currentHeadType);
         }
     }
 
@@ -855,10 +789,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         ApplicationStatus.getInstance().modeProperty().removeListener(applicationModeChangeListener);
 
-        SlicerParametersContainer.getUserProfileList().removeListener(slicerParamChangeListener);
+        ROBOX_PROFILE_SETTINGS_CONTAINER.removeProfileChangeListener(roboxProfileChangeListener);
 
         BaseLookup.getPrinterListChangesNotifier().removeListener(printerListChangesListener);
 
         PLACompatibilityModeNotificationBar.destroyBar();
+    }
+    
+    private SlicerType getSlicerType() {
+        return Lookup.getUserPreferences().getSlicerType();
     }
 }
