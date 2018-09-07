@@ -2,6 +2,7 @@ package celtech.coreUI.gcodepreview.model;
 
 import celtech.coreUI.gcodepreview.entities.Entity;
 import celtech.coreUI.gcodepreview.entities.LineEntity;
+import celtech.coreUI.gcodepreview.entities.SequenceEntity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class Layer {
     
     private final List<Entity> entities = new ArrayList<>();
     private final List<LineEntity> lineEntities = new ArrayList<>();
+    private final List<SequenceEntity> sequenceEntities = new ArrayList<>();
    
     private final int layerNo;
     
@@ -36,8 +38,16 @@ public class Layer {
         lineEntities.add(lineEntity);
     }
     
-    public List<LineEntity> getLineEntitys() {
+    public List<LineEntity> getLineEntities() {
         return lineEntities;
+    }
+    
+    public void addSequenceEntity(SequenceEntity entity) {
+        sequenceEntities.add(entity);
+    }
+    
+    public List<SequenceEntity> getSequenceEntities() {
+        return sequenceEntities;
     }
     
     public int getLayerNo() {

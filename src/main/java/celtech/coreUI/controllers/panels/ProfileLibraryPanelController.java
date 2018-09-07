@@ -265,8 +265,10 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     }
     
     public void setAndSelectPrintProfile(RoboxProfile printProfile) {
-        cmbHeadType.setValue(printProfile.getHeadType());
-        cmbPrintProfile.setValue(printProfile);
+        if (printProfile != null) {
+            cmbHeadType.setValue(printProfile.getHeadType());
+            cmbPrintProfile.setValue(printProfile);
+        }
     }
 
     private void selectPrintProfile() {
