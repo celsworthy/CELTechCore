@@ -6,7 +6,6 @@ package celtech.coreUI.gcodepreview;
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.panels.GetTimeWeightCost;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;

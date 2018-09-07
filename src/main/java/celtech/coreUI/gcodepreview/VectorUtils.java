@@ -8,7 +8,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  * @author George Salter
  */
 public class VectorUtils {
-    static final double EPSILON = 5.0E-5;
+    public static final double EPSILON = 5.0E-5;
     
     public static Vector3D subtractVectors(Vector3D v2, Vector3D v1) {
         return new Vector3D(v2.getX() - v1.getX(),
@@ -52,5 +52,36 @@ public class VectorUtils {
             angle = -angle;
         }
         return angle;
+    }
+
+    public static Vector3D getNormalTo(Vector3D u) {
+        // Construct a vector normal to u = (ux, uy, uz)
+        // Any of these will work: (ux, -uy, 0), (ux, 0, -uz), (0, uy, -uz).
+        // Choose the smallest component to set to zero.
+        Vector3D n;
+        double ax = abs(u.getX());
+        double ay = abs(u.getY());
+        double az = abs(u.getZ());
+        if (ax < ay) {
+            if (ax < az) {
+                // ux is smallest
+                n = new Vector3D(0.0, u.getZ(), -u.getY());
+            }
+            else {
+                // uz is smallest
+                n = new Vector3D(-u.getY(), u.getX(), 0.0);
+            }
+        }
+        else {
+            if (ay < az) {
+                // uy is smallest
+                n = new Vector3D(-u.getZ(), 0.0, u.getX());
+            }
+            else {
+                // uz is smallest
+                n = new Vector3D(-u.getY(), u.getX(), 0.0);
+            }
+        }
+        return n;
     }
 }

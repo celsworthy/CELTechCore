@@ -327,10 +327,13 @@ public class PreviewInsetPanelController implements Initializable, ProjectAwareC
             }
             if (slicerParameters != null)
             {
-                //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-                
+                // NOTE - this needs to change if raft settings in slicermapping.dat is changed                
                 // Needed as heads differ in size and will need to adjust print volume for this
-                final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+                double zReduction = 0.0;
+                if (currentPrinter != null && currentPrinter.headProperty().get() != null)
+                {
+                    zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+                }
             
                 //NOTE - this needs to change if raft settings in slicermapping.dat is changed
                 double raftOffset = slicerParameters.getSpecificFloatSetting("raftBaseThickness_mm")
