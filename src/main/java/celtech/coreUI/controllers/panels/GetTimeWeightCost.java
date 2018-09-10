@@ -284,7 +284,7 @@ public class GetTimeWeightCost
 
          if(slicerTypeToUse == SlicerType.Cura3) {
              Cura3ConfigConvertor cura3ConfigConvertor = new Cura3ConfigConvertor(printerToUse, printableMeshes);
-             cura3ConfigConvertor.injectConfigIntoCura3SettingsFile(configFileDest);
+             cura3ConfigConvertor.injectConfigIntoCura3SettingsFile(configFileDest, temporaryDirectory);
         }
         
         SliceResult sliceResult = SlicerTask.doSlicing(
