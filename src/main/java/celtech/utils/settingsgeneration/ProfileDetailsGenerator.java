@@ -4,7 +4,7 @@ import celtech.Lookup;
 import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.roboxbase.configuration.PrintProfileSetting;
-import celtech.roboxbase.configuration.PrintProfileSettings;
+import celtech.roboxbase.configuration.PrintProfileSettingsWrapper;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
@@ -63,18 +63,18 @@ public class ProfileDetailsGenerator {
     private static final double POINT_3_MIN_WIDTH = 0.2;
     private static final double POINT_3_MAX_WIDTH = 0.6;
     
-    private PrintProfileSettings printProfileSettings;
+    private PrintProfileSettingsWrapper printProfileSettings;
     
     private String headType;
     
     private ObservableList<String> nozzleOptions;
     
-    public ProfileDetailsGenerator(PrintProfileSettings printProfileSettings, BooleanProperty isDirty) {
+    public ProfileDetailsGenerator(PrintProfileSettingsWrapper printProfileSettings, BooleanProperty isDirty) {
         this.printProfileSettings = printProfileSettings;
         this.isDirty = isDirty;
     }
     
-    public void setPrintProfilesettings(PrintProfileSettings printProfileSettings) {
+    public void setPrintProfilesettings(PrintProfileSettingsWrapper printProfileSettings) {
         this.printProfileSettings = printProfileSettings;
     }
     
