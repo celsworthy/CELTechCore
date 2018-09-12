@@ -469,6 +469,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             currentHeadType = headTypeCode;
 
             populateCustomProfileChooser();
+            showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
             updateSupportCombo(currentPrinter);
 
             currentPrinter.effectiveFilamentsProperty().addListener(filamentListener);
