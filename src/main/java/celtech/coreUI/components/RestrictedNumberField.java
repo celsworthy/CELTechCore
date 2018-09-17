@@ -221,6 +221,15 @@ public class RestrictedNumberField extends TextField
         }
         configureRestriction();
     }
+    
+    /**
+     * Setter to allow more flexibility for restrictions. Restriction pattern will
+     * be overridden by {@link #configureRestriction()} so be careful.
+     * @param restrictionPattern 
+     */
+    public void setRestrictionPattern(Pattern restrictionPattern) {
+        this.restrictionPattern = restrictionPattern;
+    }
 
     private void configureRestriction()
     {

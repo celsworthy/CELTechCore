@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
@@ -53,6 +54,7 @@ public class ProfileDetailsGenerator {
     private static final String OPTION = "option";
     private static final String NOZZLE = "nozzle";
     private static final String EXTRUSION = "extrusion";
+    private static final String NUMBER_LIST = "numbers";
     
     private static final double POINT_8_MIN_WIDTH = 0.5;
     private static final double POINT_8_MAX_WIDTH = 1.2;
@@ -62,6 +64,8 @@ public class ProfileDetailsGenerator {
     private static final double POINT_4_MAX_WIDTH = 0.6;
     private static final double POINT_3_MIN_WIDTH = 0.2;
     private static final double POINT_3_MAX_WIDTH = 0.6;
+    
+    private static final Pattern NUMBER_LIST_PATTERN = Pattern.compile("^[0-9]*(,[0-9]+)*,?");
     
     private PrintProfileSettingsWrapper printProfileSettings;
     
@@ -139,6 +143,10 @@ public class ProfileDetailsGenerator {
                     break;
                 case NOZZLE:
                     addSelectionAndValueRow(gridPane, printProfileSetting, rowNumber);
+                    rowNumber++;
+                    break;
+                case NUMBER_LIST:
+                    addListFieldRow(gridPane, printProfileSetting, rowNumber, NUMBER_LIST_PATTERN);
                     rowNumber++;
                     break;
                 default:
@@ -270,6 +278,12 @@ public class ProfileDetailsGenerator {
         return gridPane;
     }
     
+    protected GridPane addListFieldRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row, Pattern numberListPattern) {
+        gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
+        gridPane.add(createRestrictedNumberFieldWithPattern(printProfileSetting, numberListPattern), 2, row);
+        return gridPane;
+    }
+    
     /**
      * Create a fxml {@link Label}.
      * 
@@ -328,7 +342,7 @@ public class ProfileDetailsGenerator {
         RestrictedNumberField restrictedNumberField = new RestrictedNumberField();
         restrictedNumberField.setTooltip(hideableTooltip);
         restrictedNumberField.setText(value);
-        restrictedNumberField.setPrefWidth(50);
+        restrictedNumberField.setPrefWidth(60);
         if(printProfileSetting.getValueType().equals(FLOAT) || 
                 printProfileSetting.getValueType().equals(EXTRUSION)) {
             restrictedNumberField.setAllowedDecimalPlaces(2);
@@ -372,18 +386,19 @@ public class ProfileDetailsGenerator {
     private ComboBox createComboBox(PrintProfileSetting printProfileSetting) {
         ComboBox comboBox = new ComboBox();
         if(printProfileSetting.getOptions().isPresent()) {
-            comboBox = setupStandardComboBox(printProfileSetting);
+            comboBox = setupStandardComboBox(printProfileSetting, comboBox);
         } else if(printProfileSetting.getValueType().equals(NOZZLE)) {
-            comboBox = setupComboBoxForNozzleSelection(printProfileSetting, printProfileSetting.getChildren().isPresent());
+            comboBox = setupComboBoxForNozzleSelection(printProfileSetting, comboBox);
         }
+        
+        comboBox.setPrefWidth(150);
         comboBox.setTooltip(createTooltipElement(printProfileSetting.getTooltip()));
         comboBox.getStyleClass().add("cmbCleanCombo");
         
         return comboBox;
     }
     
-    private ComboBox setupStandardComboBox(PrintProfileSetting printProfileSetting) {
-        ComboBox comboBox = new ComboBox();
+    private ComboBox setupStandardComboBox(PrintProfileSetting printProfileSetting, ComboBox comboBox) {
         Map<String, String> optionMap = printProfileSetting.getOptions().get();
             
         ObservableList<Option> options = optionMap.entrySet().stream()
@@ -409,16 +424,20 @@ public class ProfileDetailsGenerator {
         return comboBox;
     }
     
-    private ComboBox setupComboBoxForNozzleSelection(PrintProfileSetting printProfileSetting, boolean hasExtrusionWidth) {
-        ComboBox comboBox = new ComboBox(); 
+    private ComboBox setupComboBoxForNozzleSelection(PrintProfileSetting printProfileSetting, ComboBox comboBox) {
         List<String> nozzles = new ArrayList<>();
         nozzles.addAll(nozzleOptions);
         
         HeadFile currentHead = HeadContainer.getHeadByID(headType);
         if(currentHead.getNozzleHeaters().size() == 2 && 
                 Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura3) {
-            nozzles.set(0, nozzleOptions.get(0) + " (left)");
-            nozzles.set(1, nozzleOptions.get(1) + " (right)");
+            nozzles.set(0, nozzleOptions.get(0) + " (Material 2)");
+            nozzles.set(1, nozzleOptions.get(1) + " (Material 1)");
+            
+            if(printProfileSetting.getNonOverrideAllowed().isPresent() &&
+                printProfileSetting.getNonOverrideAllowed().get()) {
+                nozzles.add("Not Overridden");
+            }
         } else if (currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
             comboBox.setDisable(true);
         }
@@ -453,6 +472,14 @@ public class ProfileDetailsGenerator {
         return hbox;
     }
     
+    private HBox createRestrictedNumberFieldWithPattern(PrintProfileSetting printProfileSetting, Pattern restrictionPattern) {
+        RestrictedNumberField field = createRestrictedNumberField(printProfileSetting, printProfileSetting.getValue(), Nozzle.SINGLE);
+        field.setRestrictionPattern(restrictionPattern);
+        field.setPrefWidth(150);
+        HBox hbox = new HBox(field);
+        return hbox;
+    }
+    
     /**
      * Create a {@link HBox} that contains a {@link RestrictedNumberField} with an
      * Optional {@link Label} for the unit. Also pass in the {@link ComboBox} that links
@@ -480,7 +507,9 @@ public class ProfileDetailsGenerator {
     
     private void setExtrusionWidthLimits(Number newValue, RestrictedNumberField extrusionSetting) {
         int index = newValue.intValue();
-        index = index < 0 ? 0 : index;
+        if(index < 0 || index > 1) {
+            index = 0;
+        }
         String widthOption = nozzleOptions.get(index);
         Optional<NozzleData> optionalNozzleData = HeadContainer.getHeadByID(headType).getNozzles()
                 .stream()
