@@ -16,7 +16,10 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
+import celtech.roboxbase.printerControl.model.HardwarePrinter;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -204,7 +207,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     .modeProperty().addListener(applicationModeChangeListener);
 
             setupQualityRadioButtons();
-
         } catch (Exception ex)
         {
             ex.printStackTrace();
@@ -394,7 +396,10 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         else
         {
             // Needed as heads differ in size and will need to adjust print volume for this
-            final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+            float zReduction = 0;
+            if(currentPrinter != null) {
+                zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+            }
             
             //NOTE - this needs to change if raft settings in slicermapping.dat is changed
             double raftOffset = profileSettings.getSpecificFloatSetting("raftBaseThickness_mm")
