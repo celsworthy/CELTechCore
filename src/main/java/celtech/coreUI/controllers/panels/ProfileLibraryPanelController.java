@@ -36,6 +36,7 @@ import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
@@ -89,6 +90,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private String currentProfileName;
     
     @FXML
+    private Label slicerInUseLabel;
+    
+    @FXML
     private VBox container;
 
     @FXML
@@ -136,6 +140,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         regenerateSettings(newValue);
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();
+        setupSlicerInUseLabel();
     };
 
     public ProfileLibraryPanelController() {}
@@ -168,6 +173,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 .getPrintProfileSettingsForSlicer(getSlicerType());
         profileDetailsFxmlGenerator = new ProfileDetailsGenerator(printProfileSettings, isDirty);
         
+        setupSlicerInUseLabel();
         setupProfileNameChangeListeners();
         setupHeadType();
         setupPrintProfileCombo();
@@ -300,6 +306,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         nozzles.disableProperty().bind(isEditable.not());
         support.disableProperty().bind(isEditable.not());
         speed.disableProperty().bind(isEditable.not());
+    }
+    
+    private void setupSlicerInUseLabel() {
+        String selectedSlicerStr = Lookup.i18n("profileLibrary.slicerInUse");
+        selectedSlicerStr = selectedSlicerStr + " " + getSlicerType().name();
+        slicerInUseLabel.setText(selectedSlicerStr);
     }
 
     private void setupProfileNameChangeListeners() {
