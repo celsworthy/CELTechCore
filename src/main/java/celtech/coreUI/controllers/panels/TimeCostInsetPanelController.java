@@ -98,64 +98,17 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private ToggleGroup qualityToggleGroup;
 
     private Project currentProject;
-    private PrinterSettingsOverrides printerSettings;
     private Printer currentPrinter;
     private String currentHeadType;
 
+    private boolean settingPrintQuality = false;
+    
     private final TimeCostThreadManager timeCostThreadManager = TimeCostThreadManager.getInstance();
 
-    private MapChangeListener<Integer, Filament> effectiveFilamentListener = new MapChangeListener<Integer, Filament>()
-    {
-
-        @Override
-        public void onChanged(MapChangeListener.Change<? extends Integer, ? extends Filament> change)
-        {
-            updateFields(currentProject);
-        }
-    };
-
-    private final PrinterListChangesListener printerListChangesListener = new PrinterListChangesAdapter()
-    {
-        @Override
-        public void whenHeadAdded(Printer printer)
-        {
-            if (printer == currentPrinter)
-            {
-                updateHeadType(currentPrinter);
-            }
-        }
-
-        @Override
-        public void whenHeadRemoved(Printer printer, Head head)
-        {
-            if (printer == currentPrinter)
-            {
-                updateHeadType(currentPrinter);
-            }
-        }
-    };
-
-    private final ChangeListener<Printer> selectedPrinterChangeListener = new ChangeListener<Printer>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue)
-        {
-            if (currentPrinter != null)
-            {
-                currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
-            }
-            if (newValue != null)
-            {
-                newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
-            }
-            updateHeadType(newValue);
-
-            if (currentPrinter != newValue)
-            {
-                updateFields(currentProject);
-            }
-            currentPrinter = newValue;
-        }
+    private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+        currentPrinter = Lookup.getSelectedPrinterProperty().get();
+        updateHeadType(currentPrinter);        
+        updateFields(currentProject);
     };
 
     private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
@@ -188,16 +141,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     {
         try
         {
-            BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
-
-            Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
-
-            if (Lookup.getSelectedPrinterProperty().get() != null)
-            {
-                currentPrinter = Lookup.getSelectedPrinterProperty().get();
-                currentPrinter.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
-            }
-
+            currentPrinter = Lookup.getSelectedPrinterProperty().get();
             updateHeadType(Lookup.getSelectedPrinterProperty().get());
 
             ApplicationStatus.getInstance()
@@ -223,8 +167,10 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
         if (headTypeBefore != currentHeadType)
         {
-            headType.setText("Estimates for head type: " + currentHeadType.toString());
-            updateFields(currentProject);
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+            {
+                headType.setText("Estimates for head type: " + currentHeadType.toString());
+            });
         }
     }
 
@@ -243,108 +189,26 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         qualityToggleGroup.selectedToggleProperty().addListener(
                 (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
                 {
-                    printerSettings.setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
+                    settingPrintQuality = true;
+                    if (currentProject != null && currentProject instanceof ModelContainerProject)
+                        ((ModelContainerProject)currentProject).getGCodeGenManager().setSuppressReaction(true);
+                    currentProject.getPrinterSettings().setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
+                    if (currentProject != null && currentProject instanceof ModelContainerProject)
+                        ((ModelContainerProject)currentProject).getGCodeGenManager().setSuppressReaction(false);
+                    settingPrintQuality = false;
                 });
-    }
-
-    private void unbindProject(Project project)
-    {
-        project.removeProjectChangesListener(projectChangesListener);
-    }
-
-    Project.ProjectChangesListener projectChangesListener;
-
-    private void bindProject(Project project)
-    {
-        printerSettings = project.getPrinterSettings();
-
-        projectChangesListener = new Project.ProjectChangesListener()
-        {
-
-            @Override
-            public void whenModelAdded(ProjectifiableThing modelContainer)
-            {
-                updateFields(project);
-            }
-
-            @Override
-            public void whenModelsRemoved(Set<ProjectifiableThing> modelContainers)
-            {
-                updateFields(project);
-            }
-
-            @Override
-            public void whenAutoLaidOut()
-            {
-            }
-
-            @Override
-            public void whenModelsTransformed(Set<ProjectifiableThing> modelContainers)
-            {
-                updateFields(project);
-            }
-
-            @Override
-            public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName)
-            {
-                updateFields(project);
-            }
-
-            @Override
-            public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
-            {
-                updateFields(project);
-            }
-        };
-        updateFields(project);
-        updatePrintQuality(printerSettings);
-        project.addProjectChangesListener(projectChangesListener);
-
     }
 
     @Override
     public void setProject(Project project)
     {
-        currentProject = project;
-        whenProjectChanged(project);
-    }
+        if (currentProject != null && currentProject instanceof ModelContainerProject)
+            ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().removeListener(this.gCodePrepChangeListener);
 
-    private void whenProjectChanged(Project project)
-    {
+        
         currentProject = project;
-        if (project != null)
-        {
-            if (currentProject != null)
-            {
-                unbindProject(currentProject);
-            }
-            bindProject(project);
-            currentProject = project;
-        }
-    }
-
-    public void clearPrintJobDirectories()
-    {
-        try
-        {
-            String filePath = BaseConfiguration.getApplicationStorageDirectory()
-                    + ApplicationConfiguration.timeAndCostFileSubpath;
-            File folder = new File(filePath);
-            for (final File fileEntry : folder.listFiles())
-            {
-                if (fileEntry.isDirectory())
-                {
-                    try
-                    {
-                        FileUtils.deleteDirectory(fileEntry);
-                    } catch (IOException ex)
-                    {
-                    }
-                }
-            }
-        } catch (Exception ex)
-        {
-        }
+        if (currentProject != null && currentProject instanceof ModelContainerProject)
+            ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
     }
 
     /**
@@ -355,23 +219,26 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private void updateFields(Project project)
     {
 
-        if (ApplicationStatus.getInstance().modeProperty().get() != ApplicationMode.SETTINGS)
+        if (settingPrintQuality || ApplicationStatus.getInstance().modeProperty().get() != ApplicationMode.SETTINGS)
         {
             return;
         }
 
-        lblDraftTime.setText("...");
-        lblNormalTime.setText("...");
-        lblFineTime.setText("...");
-        lblCustomTime.setText("...");
-        lblDraftWeight.setText("...");
-        lblNormalWeight.setText("...");
-        lblFineWeight.setText("...");
-        lblCustomWeight.setText("...");
-        lblDraftCost.setText("...");
-        lblNormalCost.setText("...");
-        lblFineCost.setText("...");
-        lblCustomCost.setText("...");
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            lblDraftTime.setText("...");
+            lblNormalTime.setText("...");
+            lblFineTime.setText("...");
+            lblCustomTime.setText("...");
+            lblDraftWeight.setText("...");
+            lblNormalWeight.setText("...");
+            lblFineWeight.setText("...");
+            lblCustomWeight.setText("...");
+            lblDraftCost.setText("...");
+            lblNormalCost.setText("...");
+            lblFineCost.setText("...");
+            lblCustomCost.setText("...");
+        });
 
         Cancellable cancellable = new SimpleCancellable();
         
@@ -393,10 +260,14 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
         else
         {
+            // NOTE - this needs to change if raft settings in slicermapping.dat is changed
             // Needed as heads differ in size and will need to adjust print volume for this
-            final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
-            
-            //NOTE - this needs to change if raft settings in slicermapping.dat is changed
+            double zReduction = 0.0;
+            if (currentPrinter != null
+                && currentPrinter.headProperty().get() != null)
+            {
+                zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+            }
             double raftOffset = profileSettings.getSpecificFloatSetting("raftBaseThickness_mm")
                     //Raft interface thickness
                     + 0.28
@@ -430,109 +301,63 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
                 Runnable runUpdateFields = () ->
                 {
-                    try
-                    {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ex)
-                    {
-                        return;
-                    }
+                    updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
+                                lblDraftWeight,
+                                lblDraftCost, cancellable);
                     if (cancellable.cancelled().get())
                     {
                         return;
                     }
-
-                    if (currentProject.getPrintQuality() == PrintQualityEnumeration.CUSTOM
-                            && !currentProject.getPrinterSettings().getSettingsName().equals(""))
-                    {
-                        Optional<RoboxProfile> customSettings = Optional.ofNullable(
-                                currentProject.getPrinterSettings().getSettings( currentHeadType, getSlicerType()));
-                        updateFieldsForProfile(project, customSettings, lblCustomTime,
-                                lblCustomWeight,
-                                lblCustomCost, cancellable);
-                        if (cancellable.cancelled().get())
-                        {
-                            return;
-                        }
-                    }
-                    Optional<RoboxProfile> settings = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(
-                            BaseConfiguration.draftSettingsProfileName, getSlicerType(), currentHeadType);
-                    updateFieldsForProfile(project, settings, lblDraftTime,
-                            lblDraftWeight,
-                            lblDraftCost, cancellable);
-                    if (cancellable.cancelled().get())
-                    {
-                        return;
-                    }
-                    settings = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(
-                            BaseConfiguration.normalSettingsProfileName, getSlicerType(), currentHeadType);
-                    updateFieldsForProfile(project, settings, lblNormalTime,
+                    updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
                             lblNormalWeight,
                             lblNormalCost, cancellable);
                     if (cancellable.cancelled().get())
                     {
                         return;
                     }
-                    settings = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfileWithName(
-                            BaseConfiguration.fineSettingsProfileName, getSlicerType(), currentHeadType);
-                    updateFieldsForProfile(project, settings, lblFineTime,
+                    updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
                             lblFineWeight,
                             lblFineCost, cancellable);
-                };
+                    if (cancellable.cancelled().get())
+                    {
+                        return;
+                    }
 
-                clearPrintJobDirectories();
+                    if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
+                    {
+                        updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
+                                lblCustomWeight,
+                                lblCustomCost, cancellable);
+                    }
+                };
 
                 timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
             }
         }
     }
 
-    /**
-     * Update the time, cost and weight fields for the given profile and fields.
+/**
+     * Update the time, cost and weight fields for the given print quality and fields.
      * Long running calculations must be performed in a background thread.
      */
-    private void updateFieldsForProfile(Project project, Optional<RoboxProfile> settings,
+    private void updateFieldsForQuality(Project project, PrintQualityEnumeration printQuality,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
-        boolean slicedAndPostProcessed = false;
-
         if (project instanceof ModelContainerProject)
         {
-            if (settings.isPresent())
+            String working = Lookup.i18n("timeCost.working");
+            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                String working = Lookup.i18n("timeCost.working");
-                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                {
-                    lblTime.setText(working);
-                    lblWeight.setText(working);
-                    lblCost.setText(working);
-                });
+                lblTime.setText(working);
+                lblWeight.setText(working);
+                lblCost.setText(working);
+            });
 
-                GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, settings.get(),
+            GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, null,
                         lblTime, lblWeight,
                         lblCost, cancellable);
 
-                try
-                {
-                    slicedAndPostProcessed = updateDetails.runSlicerAndPostProcessor();
-                } catch (IOException ex)
-                {
-                    ex.printStackTrace();
-                }
-            }
-
-            if (!slicedAndPostProcessed
-                    && !cancellable.cancelled().get())
-            {
-                steno.error("Error running slicer/postprocessor");
-                String failed = Lookup.i18n("timeCost.failed");
-                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                {
-                    lblTime.setText(failed);
-                    lblWeight.setText(failed);
-                    lblCost.setText(failed);
-                });
-            }
+            updateDetails.updateFromProject(printQuality);
         }
     }
 
@@ -559,20 +384,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     public void shutdownController()
     {
 
-        if (currentPrinter != null)
-        {
-            currentPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
-        }
-
-        if (currentProject != null)
-        {
-            unbindProject(currentProject);
-        }
+        if (currentProject != null && currentProject instanceof ModelContainerProject)
+            ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().removeListener(this.gCodePrepChangeListener);
         currentProject = null;
-
-        BaseLookup.getPrinterListChangesNotifier().removeListener(printerListChangesListener);
-
-        Lookup.getSelectedPrinterProperty().removeListener(selectedPrinterChangeListener);
 
         ApplicationStatus.getInstance()
                 .modeProperty().removeListener(applicationModeChangeListener);

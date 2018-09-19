@@ -67,6 +67,8 @@ public class ApplicationConfiguration
 
     private static String projectFileStorageDirectory = null;
     public static String projectFileDirectoryPath = "Projects";
+    public static String projectGCodeDirectory = "GCode";
+
 
     public static final String projectFileExtension = ".robox";
     public static final String projectModelsFileExtension = ".models";
