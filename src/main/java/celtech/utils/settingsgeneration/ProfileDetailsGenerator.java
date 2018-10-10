@@ -65,7 +65,7 @@ public class ProfileDetailsGenerator {
     private static final double POINT_3_MIN_WIDTH = 0.2;
     private static final double POINT_3_MAX_WIDTH = 0.6;
     
-    private static final Pattern NUMBER_LIST_PATTERN = Pattern.compile("^[0-9]*(,[0-9]+)*,?");
+    private static final Pattern NUMBER_LIST_PATTERN = Pattern.compile("^-?[0-9]*(,-?[0-9]*)*,?");
     
     private PrintProfileSettingsWrapper printProfileSettings;
     
