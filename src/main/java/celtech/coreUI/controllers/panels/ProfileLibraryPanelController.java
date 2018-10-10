@@ -334,15 +334,19 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         
         PrintProfileSettingsWrapper printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
                 .getPrintProfileSettingsForSlicer(getSlicerType());
-        overwriteSettingsFromProfle(printProfileSettings, roboxProfile);
+        PrintProfileSettingsWrapper defaultPrintProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
+                .getDefaultPrintProfileSettingsForSlicer(getSlicerType());
+        printProfileSettings.setPrintProfileSettings(defaultPrintProfileSettings.copy().getPrintProfileSettings());
         
+        overwriteSettingsFromProfle(printProfileSettings, roboxProfile);
         regenerateSettings(getSlicerType());
     }
     
     private void overwriteSettingsFromProfle(PrintProfileSettingsWrapper settingsToOverwrite, RoboxProfile roboxProfile) {
         Map<String, PrintProfileSetting> printProfileSettingsMap = new HashMap<>();
+        
         settingsToOverwrite.getAllSettings().forEach(setting -> printProfileSettingsMap.put(setting.getId(), setting));
-       
+        
         Map<String, String> roboxProfileSettings = roboxProfile.getSettings();
         roboxProfileSettings.entrySet().forEach((roboxSetting) -> {
             if(printProfileSettingsMap.containsKey(roboxSetting.getKey())) {
