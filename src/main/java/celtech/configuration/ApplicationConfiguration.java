@@ -48,6 +48,10 @@ public class ApplicationConfiguration
     public static final String fxmlUtilityPanelResourcePath = resourcePath + "fxml/utilityPanels/";
 
     public static final String fxmlPopupResourcePath = resourcePath + "fxml/popups/";
+    
+    public static final String fxmlBillingResourcePath = resourcePath + "fxml/billing/";
+    
+    public static final String fxmlLicensingResourcePath = resourcePath + "fxml/licensing/";
 
     public static final String fontResourcePath = resourcePath + "fonts/";
 

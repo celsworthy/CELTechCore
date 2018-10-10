@@ -3,6 +3,7 @@ package celtech.appManager;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
+import celtech.roboxbase.comms.LicenseCheckResult;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.comms.rx.FirmwareError;
@@ -31,7 +32,19 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     {
         return RoboxResetIDResult.RESET_NOT_DONE;
     }
+    
+    @Override
+    public Boolean showSignInDialogue() 
+    {    
+        return false;
+    }
 
+    @Override
+    public LicenseCheckResult showRegisterPrinterDialogue() 
+    {    
+        return LicenseCheckResult.STILL_CHECKING;
+    }
+    
     @Override
     public void processErrorPacketFromPrinter(FirmwareError response, Printer printer)
     {

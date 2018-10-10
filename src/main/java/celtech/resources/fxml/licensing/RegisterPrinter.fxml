@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<VBox fx:id="mainVBox" alignment="TOP_CENTER" prefWidth="500" spacing="10" style="-fx-padding:10" styleClass="inset-panel-redux" 
+      stylesheets="@../../css/JMetroDarkTheme.css" 
+      xmlns="http://javafx.com/javafx/8" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="celtech.coreUI.controllers.licensing.RegisterPrinterController">
+   <children>
+       <HBox spacing="10" prefWidth="450" alignment="TOP_CENTER" style="-fx-padding:10">
+           <Label fx:id="fileLabel" text="Choose a file..." />
+           <Button fx:id="browseButton" onAction="#browse" mnemonicParsing="false" text="Browse" />
+       </HBox>
+      <Button fx:id="acceptButton" onAction="#accept" mnemonicParsing="false" text="Accept" />
+   </children>
+</VBox>

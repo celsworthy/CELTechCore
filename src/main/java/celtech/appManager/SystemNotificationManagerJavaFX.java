@@ -12,9 +12,12 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
+import celtech.coreUI.controllers.billing.SignInController;
+import celtech.coreUI.controllers.licensing.RegisterPrinterController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.comms.LicenseCheckResult;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
@@ -495,10 +498,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         }
     }
 
-    ////////////////////////////////////
     /**
-     * Returns 0 for failure, 1 for reset, 2 for temporary set.
+     * @param printerToUse
+     * @param printerID
+     * @return 0 for failure, 1 for reset, 2 for temporary set.
      */
+    @Override
     public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
     {
         Callable<RoboxResetIDResult> resetPrinterIDCallable = new Callable()
@@ -543,8 +548,62 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return RoboxResetIDResult.RESET_FAILED;
         }
     }
-
-    //////////////////////////////////////////////////////
+    
+    @Override
+    public Boolean showSignInDialogue() {
+        Callable<Boolean> askUserForSignInDialogue = () -> {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlBillingResourcePath + "signIn.fxml");
+            FXMLLoader resetDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+            VBox resetVBox = (VBox) resetDialogLoader.load();
+            SignInController controller = (SignInController) resetVBox.getUserData();
+            Stage signInDialogueStage = new Stage(StageStyle.UNDECORATED);
+            signInDialogueStage.initModality(Modality.APPLICATION_MODAL);
+            signInDialogueStage.setScene(new Scene(resetVBox));
+            signInDialogueStage.initOwner(DisplayManager.getMainStage());
+            signInDialogueStage.showAndWait();
+            return null;
+        };
+        
+        FutureTask<Boolean> signInTask = new FutureTask<>(askUserForSignInDialogue);
+        BaseLookup.getTaskExecutor().runOnGUIThread(signInTask);
+        
+        try {
+            return signInTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) {
+            steno.error("Error during sign in request");
+            steno.error(ex.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public LicenseCheckResult showRegisterPrinterDialogue() {
+        Callable<LicenseCheckResult> registerDialogue = () -> {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "RegisterPrinter.fxml");
+            FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+            VBox resetVBox = (VBox) registerDialogLoader.load();
+            RegisterPrinterController controller = (RegisterPrinterController) registerDialogLoader.getController();
+            Stage registerDialogueStage = new Stage(StageStyle.UNDECORATED);
+            registerDialogueStage.initModality(Modality.APPLICATION_MODAL);
+            registerDialogueStage.setScene(new Scene(resetVBox));
+            registerDialogueStage.initOwner(DisplayManager.getMainStage());
+            registerDialogueStage.showAndWait();
+            return controller.getLicenseCheckResult();
+        };
+        
+        FutureTask<LicenseCheckResult> registerTask = new FutureTask<>(registerDialogue);
+        BaseLookup.getTaskExecutor().runOnGUIThread(registerTask);
+        
+        try {
+            return registerTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) {
+            steno.error("Error during printer registration");
+            steno.error(ex.getMessage());
+            return LicenseCheckResult.LICENSE_NOT_VALID;
+        }
+    }
 
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)
