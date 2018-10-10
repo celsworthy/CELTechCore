@@ -4,8 +4,6 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
-import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import java.net.URL;
@@ -101,8 +99,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             progressBar.setProgress(printer.getPrintEngine().postProcessorService.getProgress());
             cancelAllowed.set(true);
             showBar = true;
-        } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get()
-                && printer.printerStatusProperty().get() == PrinterStatus.PRINTING_PROJECT)
+        } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
         {
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
             progressBar.setProgress(printer.getPrintEngine().transferGCodeToPrinterService.getProgress());

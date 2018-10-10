@@ -230,7 +230,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         {
             URL obj = new URL(myMiniFactoryURLString);
             HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-            con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.44 (KHTML, like Gecko) JavaFX/8.0 Safari/537.44");
+            //con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.44 (KHTML, like Gecko) JavaFX/8.0 Safari/537.44");
 
             // optional default is GET
             con.setRequestMethod("GET");
@@ -249,6 +249,7 @@ public class MyMiniFactoryLoaderController implements Initializable
         } catch (IOException ex)
         {
             steno.error("Exception whilst attempting to contact My Mini Factory site");
+            steno.debug("Exception - " + ex.toString());
         }
 
         return available;
