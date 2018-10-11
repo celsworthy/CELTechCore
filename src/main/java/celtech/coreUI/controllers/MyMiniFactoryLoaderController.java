@@ -135,7 +135,9 @@ public class MyMiniFactoryLoaderController implements Initializable
         webEngine.setUserDataDirectory(new File(BaseConfiguration.getUserTempDirectory()));
 
         webContentContainer.getChildren().addAll(webView);
-
+        
+        // Work around for WebEngine bug that causes text on page to be illegible.
+        webEngine.setUserStyleSheetLocation(getClass().getResource("/celtech/resources/css/mmf-override.css").toString());
         webEngine.load(myMiniFactoryURLString);
 
         webEngine.getLoadWorker().stateProperty().addListener(
