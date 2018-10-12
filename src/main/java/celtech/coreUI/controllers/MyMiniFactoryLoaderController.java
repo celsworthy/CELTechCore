@@ -9,6 +9,7 @@ import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import celtech.utils.MyMiniFactoryLoadResult;
 import celtech.utils.MyMiniFactoryLoader;
 import celtech.web.AllCookiePolicy;
@@ -136,10 +137,14 @@ public class MyMiniFactoryLoaderController implements Initializable
 
         webContentContainer.getChildren().addAll(webView);
         
-        // Work around for WebEngine bug that causes text on page to be illegible.
-        String mmfOverrideCSS = getClass().getResource("/celtech/resources/css/mmf-override.css").toString();
-        webEngine.setUserStyleSheetLocation(mmfOverrideCSS);
+        if (BaseConfiguration.getMachineType() == MachineType.MAC)
+        {
+            // Work around for WebEngine bug that causes text on page to be illegible on a Mac.
+            String mmfOverrideCSS = getClass().getResource("/celtech/resources/css/mmf-override.css").toString();
+            webEngine.setUserStyleSheetLocation(mmfOverrideCSS);
+        }
         webEngine.load(myMiniFactoryURLString);
+        webEngine.getDocument();
 
         webEngine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> ov, Worker.State oldState, Worker.State newState) ->

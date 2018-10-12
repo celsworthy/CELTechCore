@@ -1,5 +1,5 @@
 @CHARSET "ISO-8859-1";
 /* Work-around for garbage display of text on Macs.*/
 * {
-	font-family: serif;
+	font-family: sans-serif !important;
 }
