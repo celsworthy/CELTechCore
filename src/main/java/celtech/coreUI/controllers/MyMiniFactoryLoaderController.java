@@ -137,7 +137,8 @@ public class MyMiniFactoryLoaderController implements Initializable
         webContentContainer.getChildren().addAll(webView);
         
         // Work around for WebEngine bug that causes text on page to be illegible.
-        webEngine.setUserStyleSheetLocation(getClass().getResource("/celtech/resources/css/mmf-override.css").toString());
+        String mmfOverrideCSS = getClass().getResource("/celtech/resources/css/mmf-override.css").toString();
+        webEngine.setUserStyleSheetLocation(mmfOverrideCSS);
         webEngine.load(myMiniFactoryURLString);
 
         webEngine.getLoadWorker().stateProperty().addListener(

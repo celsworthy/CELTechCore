@@ -1,30 +1,5 @@
 @CHARSET "ISO-8859-1";
 /* Work-around for garbage display of text on Macs.*/
-body {
-	font-family: sans-serif;
-}
-
-h1 {
-	font-family: sans-serif;
-}
-
-.user-menu {
-	font-family: sans-serif;
-}
-
-.user-menu a {
-	font-family: sans-serif;
-}
-
-.already-registered {
-	font-family: sans-serif;
-}
-
-.leftinfo span, .leftinfo p {
-font-family: sans-serif;
-}
-
-/* Links */
-.menucss li a {
-	font-family: sans-serif;
+* {
+	font-family: serif;
 }
