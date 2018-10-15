@@ -19,9 +19,9 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author George Salter
  */
-public class RegisterPrinterController implements Initializable {
+public class SelectLicenseController implements Initializable {
     
-    private static final Stenographer STENO = StenographerFactory.getStenographer(RegisterPrinterController.class.getName());
+    private static final Stenographer STENO = StenographerFactory.getStenographer(SelectLicenseController.class.getName());
     
     @FXML
     private VBox mainVBox;

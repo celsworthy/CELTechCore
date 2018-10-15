@@ -13,7 +13,7 @@ import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedExceptio
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.controllers.billing.SignInController;
-import celtech.coreUI.controllers.licensing.RegisterPrinterController;
+import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
@@ -580,10 +580,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     @Override
     public LicenseCheckResult showRegisterPrinterDialogue() {
         Callable<LicenseCheckResult> registerDialogue = () -> {
-            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "RegisterPrinter.fxml");
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
             FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
             VBox resetVBox = (VBox) registerDialogLoader.load();
-            RegisterPrinterController controller = (RegisterPrinterController) registerDialogLoader.getController();
+            SelectLicenseController controller = (SelectLicenseController) registerDialogLoader.getController();
             Stage registerDialogueStage = new Stage(StageStyle.UNDECORATED);
             registerDialogueStage.initModality(Modality.APPLICATION_MODAL);
             registerDialogueStage.setScene(new Scene(resetVBox));
