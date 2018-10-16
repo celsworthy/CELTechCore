@@ -4,11 +4,15 @@ import celtech.Lookup;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
+import celtech.roboxbase.ApplicationFeature;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.BaseConfiguration.ApplicationFeatureListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.ListView;
 
 /**
  *
@@ -19,6 +23,24 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
 
     private final ComboBox<SlicerType> control;
     private final UserPreferences userPreferences;
+    private final ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
+    
+    private final ApplicationFeatureListener latestCuraApplicationFeatureListener = new ApplicationFeatureListener() {
+        
+        @Override
+        public void onFeatureEnabled(ApplicationFeature applicationFeature) {
+            if(applicationFeature.equals(ApplicationFeature.LATEST_CURA_VERSION)) {
+                control.setItems(slicerTypes);
+            }
+        }
+
+        @Override
+        public void onFeatureDisabled(ApplicationFeature applicationFeature) {
+            if(applicationFeature.equals(ApplicationFeature.LATEST_CURA_VERSION)) {
+                control.setItems(slicerTypes);
+            }
+        }
+    };
 
     public SlicerTypePreference(UserPreferences userPreferences)
     {
@@ -26,17 +48,18 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
 
         control = new ComboBox<>();
         control.getStyleClass().add("cmbCleanCombo");
-        ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
+        
         slicerTypes.add(SlicerType.Cura);
         slicerTypes.add(SlicerType.Cura3);
         control.setItems(slicerTypes);
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
-        control.valueProperty().addListener(
-                (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-                {
+        control.setCellFactory((ListView<SlicerType> param) -> new SlicerTypeCell());
+        control.valueProperty()
+                .addListener((ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
                     updateValueFromControl();
                 });
+        BaseConfiguration.addApplicationFeatureListener(latestCuraApplicationFeatureListener);
     }
 
     @Override

@@ -578,7 +578,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
     
     @Override
-    public LicenseCheckResult showRegisterPrinterDialogue() {
+    public LicenseCheckResult showSelectLicenseDialogue() {
         Callable<LicenseCheckResult> registerDialogue = () -> {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
             FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());

@@ -40,7 +40,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public LicenseCheckResult showRegisterPrinterDialogue() 
+    public LicenseCheckResult showSelectLicenseDialogue() 
     {    
         return LicenseCheckResult.STILL_CHECKING;
     }
