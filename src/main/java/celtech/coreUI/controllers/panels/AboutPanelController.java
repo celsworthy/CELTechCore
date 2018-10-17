@@ -4,11 +4,15 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.licensing.License;
+import celtech.roboxbase.licensing.LicenseManager;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -36,6 +40,9 @@ public class AboutPanelController implements Initializable
 
     @FXML
     private Label headSerialNumber;
+    
+    @FXML
+    private Label autoMakerLicense;
 
     @FXML
     private Label version;
@@ -79,6 +86,12 @@ public class AboutPanelController implements Initializable
     private void viewREADME(ActionEvent event)
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.WELCOME);
+    }
+    
+    @FXML
+    private void selectLicense(ActionEvent event) 
+    {
+        boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialogue();
     }
 
     @FXML
@@ -157,6 +170,8 @@ public class AboutPanelController implements Initializable
             bindToPrinter(newValue);
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
+        updateLicenseData();
+        LicenseManager.getInstance().addLicenseChangeListener(license -> autoMakerLicense.setText(license.toString()));
     }
 
     private void updateHeadData(Head head)
@@ -191,6 +206,15 @@ public class AboutPanelController implements Initializable
         } else
         {
             roboxSerialNumber.setText("");
+        }
+    }
+    
+    private void updateLicenseData() {
+        Optional<License> potentiaLicense = LicenseManager.getInstance().readCachedLicenseFile();
+        if(potentiaLicense.isPresent()) {
+            autoMakerLicense.setText(potentiaLicense.get().toString());
+        } else {
+            autoMakerLicense.setText("");
         }
     }
 

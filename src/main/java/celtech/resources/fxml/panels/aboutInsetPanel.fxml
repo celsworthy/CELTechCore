@@ -129,6 +129,7 @@
                                     <rowConstraints>
                                         <RowConstraints minHeight="35.0" vgrow="NEVER" />
                                         <RowConstraints vgrow="NEVER" />
+                                        <RowConstraints vgrow="NEVER" />
                                     </rowConstraints>
                                     <children>
                                         <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1">
@@ -151,9 +152,20 @@
                                                 </HBox>
                                             </children>
                                         </VBox>
+                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                            <children>
+                                                <HBox alignment="CENTER_LEFT" spacing="3.0">
+                                                    <children>
+                                                        <Label fx:id="autoMakerLicense" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="?" />
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
                                         <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.roboxSerialNumber" wrapText="true">
                                         </Label>
                                         <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.headSerialNumber" wrapText="true" GridPane.rowIndex="1">
+                                        </Label>
+                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.autoMakerLicense" wrapText="true" GridPane.rowIndex="2">
                                         </Label>
                                     </children>
                                     <VBox.margin>
@@ -170,7 +182,12 @@
                         </HBox>
                         <HBox alignment="CENTER">
                             <children>
-                                <Button mnemonicParsing="false" onAction="#viewREADME" text="%buttonText.viewREADME" textAlignment="CENTER" />
+                                <Button mnemonicParsing="false" prefWidth="180" onAction="#viewREADME" text="%buttonText.viewREADME" textAlignment="CENTER" />
+                            </children>
+                        </HBox>   
+                        <HBox alignment="CENTER">
+                            <children>
+                                <Button mnemonicParsing="false" prefWidth="180" onAction="#selectLicense" text="%buttonText.selectLicense" textAlignment="CENTER" />
                             </children>
                         </HBox>   
                     </children>

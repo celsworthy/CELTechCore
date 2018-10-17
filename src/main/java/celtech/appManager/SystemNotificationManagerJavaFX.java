@@ -17,7 +17,6 @@ import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
-import celtech.roboxbase.comms.LicenseCheckResult;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
@@ -27,6 +26,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -35,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
@@ -578,8 +580,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
     
     @Override
-    public LicenseCheckResult showSelectLicenseDialogue() {
-        Callable<LicenseCheckResult> registerDialogue = () -> {
+    public boolean showSelectLicenseDialogue() {
+        Callable<Boolean> registerDialogue = () -> {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
             FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
             VBox resetVBox = (VBox) registerDialogLoader.load();
@@ -589,19 +591,18 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             registerDialogueStage.setScene(new Scene(resetVBox));
             registerDialogueStage.initOwner(DisplayManager.getMainStage());
             registerDialogueStage.showAndWait();
-            return controller.getLicenseCheckResult();
+            return controller.isLicenseValid();
         };
         
-        FutureTask<LicenseCheckResult> registerTask = new FutureTask<>(registerDialogue);
+        FutureTask<Boolean> registerTask = new FutureTask<>(registerDialogue);
         BaseLookup.getTaskExecutor().runOnGUIThread(registerTask);
         
         try {
             return registerTask.get();
         }
         catch (InterruptedException | ExecutionException ex) {
-            steno.error("Error during printer registration");
-            steno.error(ex.getMessage());
-            return LicenseCheckResult.LICENSE_NOT_VALID;
+            steno.exception("Error during license valication", ex);
+            return false;
         }
     }
 

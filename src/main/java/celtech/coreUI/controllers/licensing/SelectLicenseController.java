@@ -1,6 +1,5 @@
 package celtech.coreUI.controllers.licensing;
 
-import celtech.roboxbase.comms.LicenseCheckResult;
 import celtech.roboxbase.licensing.LicenseManager;
 import java.io.File;
 import java.net.URL;
@@ -35,20 +34,16 @@ public class SelectLicenseController implements Initializable {
     @FXML
     private Button acceptButton;
     
-    private LicenseManager licenseManager;
-    
-    private LicenseCheckResult licenseCheckResult;
+    private boolean licenseValid;
     
     private File licenseFile = null;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        licenseManager = new LicenseManager();
-        licenseCheckResult = LicenseCheckResult.STILL_CHECKING;
     }
     
-    public LicenseCheckResult getLicenseCheckResult() {
-        return licenseCheckResult;
+    public boolean isLicenseValid() {
+        return licenseValid;
     }
     
     @FXML
@@ -66,9 +61,9 @@ public class SelectLicenseController implements Initializable {
     
     @FXML
     private void accept() {
-        licenseCheckResult = licenseManager.checkEncryptedLicenseFileValid(licenseFile, true);
+        licenseValid = LicenseManager.getInstance().checkEncryptedLicenseFileValid(licenseFile);
 
-        if(licenseCheckResult == LicenseCheckResult.LICENSE_VALID) {
+        if(licenseValid) {
             closeDialog();
         }
     }

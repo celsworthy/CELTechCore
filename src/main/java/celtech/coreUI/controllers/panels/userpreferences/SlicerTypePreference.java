@@ -4,9 +4,10 @@ import celtech.Lookup;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
-import celtech.roboxbase.ApplicationFeature;
-import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.BaseConfiguration.ApplicationFeatureListener;
+import celtech.roboxbase.licensing.License;
+import celtech.roboxbase.licensing.LicenseManager;
+import celtech.roboxbase.licensing.LicenseManager.LicenseChangeListener;
+import celtech.roboxbase.licensing.LicenseType;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,29 +19,12 @@ import javafx.scene.control.ListView;
  *
  * @author Ian
  */
-public class SlicerTypePreference implements PreferencesInnerPanelController.Preference
+public class SlicerTypePreference implements PreferencesInnerPanelController.Preference, LicenseChangeListener
 {
 
     private final ComboBox<SlicerType> control;
     private final UserPreferences userPreferences;
     private final ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
-    
-    private final ApplicationFeatureListener latestCuraApplicationFeatureListener = new ApplicationFeatureListener() {
-        
-        @Override
-        public void onFeatureEnabled(ApplicationFeature applicationFeature) {
-            if(applicationFeature.equals(ApplicationFeature.LATEST_CURA_VERSION)) {
-                control.setItems(slicerTypes);
-            }
-        }
-
-        @Override
-        public void onFeatureDisabled(ApplicationFeature applicationFeature) {
-            if(applicationFeature.equals(ApplicationFeature.LATEST_CURA_VERSION)) {
-                control.setItems(slicerTypes);
-            }
-        }
-    };
 
     public SlicerTypePreference(UserPreferences userPreferences)
     {
@@ -59,7 +43,8 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
                 .addListener((ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
                     updateValueFromControl();
                 });
-        BaseConfiguration.addApplicationFeatureListener(latestCuraApplicationFeatureListener);
+        
+        LicenseManager.getInstance().addLicenseChangeListener(this);
     }
 
     @Override
@@ -97,5 +82,17 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     {
         control.disableProperty().unbind();
         control.disableProperty().bind(disableProperty);
+    }
+
+    @Override
+    public void onLicenseChange(License license) {
+        SlicerType currentSelection = control.getSelectionModel().getSelectedItem();
+        // Reset list in order to invoke SlicerTypeCell updateItem method
+        control.setItems(FXCollections.observableArrayList(SlicerType.Cura));
+        control.setItems(slicerTypes);
+        if(license.getLicenseType() == LicenseType.AUTOMAKER_FREE) {
+            currentSelection = SlicerType.Cura;
+        }
+        control.getSelectionModel().select(currentSelection);
     }
 }

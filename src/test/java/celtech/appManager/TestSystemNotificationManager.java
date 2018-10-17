@@ -3,7 +3,6 @@ package celtech.appManager;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.appManager.SystemNotificationManager;
-import celtech.roboxbase.comms.LicenseCheckResult;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.comms.rx.FirmwareError;
@@ -40,9 +39,9 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public LicenseCheckResult showSelectLicenseDialogue() 
+    public boolean showSelectLicenseDialogue() 
     {    
-        return LicenseCheckResult.STILL_CHECKING;
+        return false;
     }
     
     @Override
