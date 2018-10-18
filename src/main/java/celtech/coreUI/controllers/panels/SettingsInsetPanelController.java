@@ -223,11 +223,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         try {
             supportComboBox.getItems().clear();
-            supportComboBox.getItems().addAll(SupportType.values());
-            
+
             if(getSlicerType() == SlicerType.Cura3) {
-                raftSupportBrimChooserBox.getChildren().forEach(child -> child.setVisible(false));
-                
+                supportComboBox.getItems().addAll(SupportType.values());
+            } else {
+                supportComboBox.getItems().addAll(SupportType.MATERIAL_1, SupportType.MATERIAL_2);
             }
 
             setupCustomProfileChooser();

@@ -436,7 +436,7 @@ public class ProfileDetailsGenerator {
             
             if(printProfileSetting.getNonOverrideAllowed().isPresent() &&
                 printProfileSetting.getNonOverrideAllowed().get()) {
-                nozzles.add("Not Overridden");
+                nozzles.add("Model Material");
             }
         } else if (currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
             comboBox.setDisable(true);
