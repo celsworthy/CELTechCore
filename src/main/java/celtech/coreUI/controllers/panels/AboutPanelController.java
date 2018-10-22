@@ -171,7 +171,7 @@ public class AboutPanelController implements Initializable
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
         updateLicenseData();
-        LicenseManager.getInstance().addLicenseChangeListener(license -> autoMakerLicense.setText(license.toString()));
+        LicenseManager.getInstance().addLicenseChangeListener(license -> autoMakerLicense.setText(license.toShortString()));
     }
 
     private void updateHeadData(Head head)
@@ -212,7 +212,7 @@ public class AboutPanelController implements Initializable
     private void updateLicenseData() {
         Optional<License> potentiaLicense = LicenseManager.getInstance().readCachedLicenseFile();
         if(potentiaLicense.isPresent()) {
-            autoMakerLicense.setText(potentiaLicense.get().toString());
+            autoMakerLicense.setText(potentiaLicense.get().toShortString());
         } else {
             autoMakerLicense.setText("");
         }

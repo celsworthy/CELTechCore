@@ -3005,3 +3005,13 @@ color-picker-label .text-field {
 {
     -fx-cell-size: 40px;
 }
+
+/*
+* SelectLicense dialog
+*/
+
+#licenseSelection TextArea
+{
+    -fx-control-inner-background: dark_grey;
+    -fx-text-fill: white;
+}

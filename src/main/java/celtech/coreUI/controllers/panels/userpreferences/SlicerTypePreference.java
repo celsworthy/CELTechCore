@@ -14,6 +14,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.ListView;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -21,6 +23,7 @@ import javafx.scene.control.ListView;
  */
 public class SlicerTypePreference implements PreferencesInnerPanelController.Preference, LicenseChangeListener
 {
+    private static final Stenographer STENO = StenographerFactory.getStenographer(SlicerTypePreference.class.getName());
 
     private final ComboBox<SlicerType> control;
     private final UserPreferences userPreferences;
@@ -51,6 +54,10 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     public void updateValueFromControl()
     {
         SlicerType slicerType = control.getValue();
+        if(slicerType == null) {
+            STENO.warning("SlicerType from Slicer setting is null. Setting to default Cura");
+            slicerType = SlicerType.Cura;
+        }
         userPreferences.setSlicerType(slicerType);
     }
 
