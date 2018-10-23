@@ -328,7 +328,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 printerStack.setVisible(false);
             } catch (Exception ex)
             {
-                steno.exception("Couldn't load printer stack for printer type " + printerTypeCode, ex);
+                steno.info("Couldn't load printer stack for printer type \"" + printerTypeCode + "\" - defaulting to RBX01");
                 if (printerStackURL != null)
                     steno.debug("printerStackURL = " + printerStackURL.toString());
                 else
