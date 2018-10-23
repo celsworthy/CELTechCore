@@ -14,7 +14,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -132,10 +131,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         } else
         {
             server.connect();
-            Platform.runLater(() ->
-            {
-                currentServers.add(server);
-            });
+            currentServers.add(server);
         }
     }
 
@@ -251,20 +247,18 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             }
         });
         
+        List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
+        serversToCheck.forEach((server) ->
+        {
+            checkAndAddServer(server);
+        });
+                
         Task<Void> scannerTask = new Task<Void>()
         {
-            private List<DetectedServer> currentServerList = new ArrayList<>();
-            
+           
             @Override
             protected Void call() throws Exception
             {
-                List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
-                serversToCheck.forEach((server) ->
-                {
-                    checkAndAddServer(server);
-                    currentServerList.add(server);
-                });
-                
                 while (!isCancelled())
                 {
                     List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
@@ -276,13 +270,13 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         
                         for (DetectedServer server : foundServers)
                         {
-                            if (!currentServerList.contains(server)) // Compares addresses.
+                            if (!currentServers.contains(server)) // Compares addresses.
                             {
                                 serversToAdd.add(server);
                             } else
                             {
                                 //Need to update an existing server
-                                DetectedServer serverInList = currentServerList.get(currentServerList.indexOf(server));
+                                DetectedServer serverInList = currentServers.get(currentServers.indexOf(server));
                                 if (!serverInList.getName().equals(server.getName()))
                                 {
                                     serverInList.setName(server.getName());
@@ -290,7 +284,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                             }
                         }
                         
-                        for (DetectedServer server : currentServerList)
+                        for (DetectedServer server : currentServers)
                         {
                             if (!foundServers.contains(server)
                                     && server.getWasAutomaticallyAdded())
@@ -302,7 +296,6 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         for (DetectedServer server : serversToAdd)
                         {
                             steno.debug("RootScannerPanelController adding server " + server.getName());
-                            currentServerList.add(server);
                             currentServers.add(server);
                         }
                         
@@ -311,7 +304,6 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                             if (server.incrementPollCount())
                             {
                                 steno.debug("RootScannerPanelController removing server " + server.getName());
-                                currentServerList.remove(server);
                                 currentServers.remove(server);
                                 server.disconnect();
                             }
