@@ -282,14 +282,6 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                             if (!currentServers.contains(server)) // Compares addresses.
                             {
                                 serversToAdd.add(server);
-                            } else
-                            {
-                                //Need to update an existing server
-                                DetectedServer serverInList = currentServers.get(currentServers.indexOf(server));
-                                if (!serverInList.getName().equals(server.getName()))
-                                {
-                                    serverInList.setName(server.getName());
-                                }
                             }
                         }
                         
