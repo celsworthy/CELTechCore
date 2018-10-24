@@ -5,6 +5,9 @@ import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.configuration.units.CurrencySymbol;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -49,7 +52,10 @@ public class UserPreferences
     private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseDelayBeforeCapture = new SimpleIntegerProperty(0);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
-
+    private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
+    private PrinterType customPrinterType = PrinterType.ROBOX;
+    private String customPrinterHead = HeadContainer.defaultHeadID;
+    
     private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
         saveSettings();
@@ -95,6 +101,9 @@ public class UserPreferences
         this.timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
         this.timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
         this.loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
+        customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
+        customPrinterType = userPreferenceFile.getCustomPrinterType();
+        customPrinterHead = userPreferenceFile.getCustromPrinterHead();
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
@@ -113,6 +122,7 @@ public class UserPreferences
         timelapseDelay.addListener(numberChangeListener);
         timelapseDelayBeforeCapture.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
+        customPrinterEnabled.addListener(booleanChangeListener);
     }
 
     public String getLanguageTag()
@@ -459,5 +469,33 @@ public class UserPreferences
     public BooleanProperty loosePartSplitOnLoadProperty()
     {
         return loosePartSplitOnLoad;
+    }
+    
+    public boolean isCustomPrinterEnabled() {
+        return customPrinterEnabled.get();
+    }
+    
+    public void setCustomPrinterEnabled(boolean value) {
+        customPrinterEnabled.set(value);
+    }
+    
+    public BooleanProperty customPrinterEnabledProperty() {
+        return customPrinterEnabled;
+    }
+    
+    public PrinterType getCustomPrinterType() {
+        return customPrinterType;
+    }
+    
+    public void setCustomPrinterType(PrinterType customPrinterType) {
+        this.customPrinterType = customPrinterType;
+    }
+    
+    public String getCustomPrinterHead() {
+        return customPrinterHead;
+    }
+    
+    public void setCustomPrinterHead(String customPrinterHead) {
+        this.customPrinterHead = customPrinterHead;
     }
 }

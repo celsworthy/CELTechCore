@@ -55,5 +55,10 @@ public class ExtrasMenuPanelController extends MenuPanelController
                 new PreferencesInnerPanelController("preferences.advanced",
                         Preferences.createAdvancedPreferences(
                                 userPreferences)));
+        loadInnerPanel(
+                ApplicationConfiguration.fxmlPanelResourcePath + "preferencesPanel.fxml",
+                new PreferencesInnerPanelController("preferences.customPrinter",
+                        Preferences.createCustomPrinterPreferences(
+                                userPreferences)));
     }
 }
