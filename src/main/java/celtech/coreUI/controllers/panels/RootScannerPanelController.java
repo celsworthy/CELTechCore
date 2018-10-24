@@ -279,7 +279,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         
                         for (DetectedServer server : foundServers)
                         {
-                            if (!currentServers.contains(server)) // Compares addresses.
+                            if (!currentServers.contains(server))
                             {
                                 serversToAdd.add(server);
                             }
@@ -296,7 +296,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         
                         for (DetectedServer server : serversToAdd)
                         {
-                            steno.debug("RootScannerPanelController adding server " + server.getName());
+                            steno.info("RootScanner adding server \"" + server.getDisplayName() + "\"");
                             currentServers.add(server);
                         }
                         
@@ -304,13 +304,13 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
                         {
                             if (server.incrementPollCount())
                             {
-                                steno.debug("RootScannerPanelController removing server " + server.getName());
+                                steno.info("RootScanner removing server \"" + server.getDisplayName() + "\"");
                                 currentServers.remove(server);
                                 server.disconnect();
                             }
                             else
                             {
-                                steno.debug("RootScannerPanelController not removing server " + server.getName() + " as it has not exceeded it's maximum allowed poll count." );
+                                steno.debug("RootScannerPanelController not removing server \"" + server.getDisplayName() + "\" as it has not exceeded it's maximum allowed poll count." );
                             }
                        }
                     });
