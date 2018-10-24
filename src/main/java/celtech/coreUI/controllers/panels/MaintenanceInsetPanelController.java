@@ -44,12 +44,9 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     private static final Stenographer steno = StenographerFactory.getStenographer(MaintenanceInsetPanelController.class.getName());
     private Printer connectedPrinter;
 
-    private ProgressDialog firmwareUpdateProgress;
     private final FileChooser firmwareFileChooser = new FileChooser();
 
-    private ProgressDialog gcodeUpdateProgress;
     private final FileChooser gcodeFileChooser = new FileChooser();
-    private final TransferGCodeToPrinterService gcodePrintService = new TransferGCodeToPrinterService();
 
     private final BooleanProperty printingDisabled = new SimpleBooleanProperty(false);
     private final BooleanProperty noHead = new SimpleBooleanProperty(false);
@@ -271,15 +268,6 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         try
         {
-            Platform.runLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    gcodeUpdateProgress = new ProgressDialog(gcodePrintService);
-                }
-            });
-
             YTestButton.disableProperty().bind(printingDisabled);
             PurgeMaterialButton.disableProperty().bind(
                     noFilamentEOrD.or(noHead).or(printingDisabled));
@@ -316,41 +304,6 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
                             new FileChooser.ExtensionFilter(Lookup.i18n(
                                             "maintenancePanel.gcodeFileDescription"),
                                     "*.gcode"));
-
-            gcodePrintService.setOnSucceeded(new EventHandler<WorkerStateEvent>()
-            {
-                @Override
-                public void handle(WorkerStateEvent t)
-                {
-                    GCodePrintResult result = (GCodePrintResult) (t.getSource().getValue());
-                    if (result.isSuccess())
-                    {
-                        BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n(
-                                "maintenancePanel.gcodePrintSuccessTitle"),
-                                Lookup.i18n(
-                                        "maintenancePanel.gcodePrintSuccessMessage"));
-                    } else
-                    {
-                        BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n(
-                                "maintenancePanel.gcodePrintFailedTitle"),
-                                Lookup.i18n(
-                                        "maintenancePanel.gcodePrintFailedMessage"));
-
-                        steno.warning("In gcode print succeeded but with failure flag");
-                    }
-                }
-            });
-
-            gcodePrintService.setOnFailed(new EventHandler<WorkerStateEvent>()
-            {
-                @Override
-                public void handle(WorkerStateEvent t)
-                {
-                    BaseLookup.getSystemNotificationHandler().
-                            showErrorNotification(Lookup.i18n("maintenancePanel.gcodePrintFailedTitle"),
-                                    Lookup.i18n("maintenancePanel.gcodePrintFailedMessage"));
-                }
-            });
 
             firmwareFileChooser.setTitle(Lookup.i18n("maintenancePanel.firmwareFileChooserTitle"));
             firmwareFileChooser.getExtensionFilters()

@@ -127,11 +127,18 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             if (server.maxPollCountExceeded())
             {
                 CoreMemory.getInstance().deactivateRoboxRoot(server);
+                Platform.runLater(() ->
+                {
+                    currentServers.remove(server);
+                });
             }
         } else
         {
             server.connect();
-            currentServers.add(server);
+            Platform.runLater(() ->
+            {
+                currentServers.add(server);
+            });
         }
     }
 
@@ -247,11 +254,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             }
         });
         
-        List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
-        serversToCheck.forEach((server) ->
-        {
-            checkAndAddServer(server);
-        });
+
                 
         Task<Void> scannerTask = new Task<Void>()
         {
@@ -259,6 +262,12 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
             @Override
             protected Void call() throws Exception
             {
+                List<DetectedServer> serversToCheck = new ArrayList<>(CoreMemory.getInstance().getActiveRoboxRoots());
+                serversToCheck.forEach((server) ->
+                {
+                    checkAndAddServer(server);
+                });
+                        
                 while (!isCancelled())
                 {
                     List<DetectedServer> foundServers = remoteServerDetector.searchForServers();
