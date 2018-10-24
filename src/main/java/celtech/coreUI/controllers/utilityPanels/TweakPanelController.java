@@ -404,7 +404,7 @@ public class TweakPanelController implements Initializable, StatusInsetControlle
             currentPrintJobStatistics = currentPrintJob.getStatistics();
         } catch (Exception ex)
         {
-            steno.error("Failed to get print job statistics for tweaks page");
+            steno.debug("Failed to get print job statistics for tweaks page");
         }
 
         container.setVisible(true);

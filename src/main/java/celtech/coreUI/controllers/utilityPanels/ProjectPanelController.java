@@ -71,7 +71,7 @@ public class ProjectPanelController implements Initializable, StatusInsetControl
                 projectName.setText("");
                 profileName.setText("");
                 layerHeight.setText("");
-                steno.warning("Unable to retrieve project name");
+                steno.debug("Unable to retrieve project name");
             }
         } else
         {
