@@ -34,6 +34,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
@@ -86,6 +88,15 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         if (associatedServer != null)
         {
             associatedServer.disconnect();
+        }
+    }
+    
+    @FXML
+    void onPinKeyPressed(KeyEvent event)
+    {
+        if(event.getCode().equals(KeyCode.ENTER))
+        {
+           connectToServer(null);
         }
     }
 
@@ -366,7 +377,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
             case NOT_CONNECTED:
             case WRONG_PIN:
                 disconnectedBox.setVisible(true);
-				pinEntryField.clear();
+                pinEntryField.clear();
                 connectedBox.setVisible(false);
                 updateButton.setVisible(false);
                 break;
