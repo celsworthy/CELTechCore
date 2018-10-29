@@ -38,6 +38,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -803,7 +804,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         switch (commandSequence)        {
             case addDummyPrinterCommand:
-                RoboxCommsManager.getInstance().addDummyPrinter();
+                RoboxCommsManager.getInstance().addDummyPrinter(false);
                 handled = true;
                 break;
             case dummyCommandPrefix:

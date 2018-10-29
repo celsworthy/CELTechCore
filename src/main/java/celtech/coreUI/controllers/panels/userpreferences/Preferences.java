@@ -144,6 +144,22 @@ public class Preferences
         return preferences;
     }
     
+    public static List<PreferencesInnerPanelController.Preference> createCustomPrinterPreferences(
+        UserPreferences userPreferences) {
+        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
+        
+        Preference enableCustomPrinterPref = new TickBoxPreference(userPreferences.customPrinterEnabledProperty(),
+                "preferences.customPrinterEnabled");
+        Preference customPrinterTypePref = new CustomPrinterTypePreference(userPreferences);
+        Preference customPrinterHeadPref = new CustomPrinterHeadPreference(userPreferences);
+        
+        preferences.add(enableCustomPrinterPref);
+        preferences.add(customPrinterTypePref);
+        preferences.add(customPrinterHeadPref);
+        
+        return preferences;
+    }
+    
         public static List<PreferencesInnerPanelController.Preference> createRootPreferences(
             UserPreferences userPreferences)
     {

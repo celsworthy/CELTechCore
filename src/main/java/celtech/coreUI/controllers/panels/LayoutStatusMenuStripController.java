@@ -39,6 +39,7 @@ import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.utils.models.PrintableMeshes;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
@@ -161,6 +162,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     @FXML
     private GraphicButtonWithLabel printButton;
+    
+    @FXML
+    private GraphicButtonWithLabel saveButton;
 
     @FXML
     private FlowPane layoutButtonHBox;
@@ -235,6 +239,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ConditionalNotificationBar notEnoughFilament2ForPrintNotificationBar;
     private final BooleanProperty notEnoughFilament2ForPrint = new SimpleBooleanProperty(false);
 
+    private final BooleanProperty printerConnectionOffline = new SimpleBooleanProperty(false);
+    
     private ConditionalNotificationBar tooManyRoboxAttachedNotificationBar;
 
     private TimeCostThreadManager timeCostThreadManager;
@@ -420,6 +426,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 steno.error("Error during print project " + ex.getMessage());
             }
         }
+    }
+    
+    @FXML
+    void savePressed(ActionEvent event)
+    {
+        
     }
 
     @FXML
@@ -930,11 +942,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         modelOffBedWithSpiralNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(modelOffBedWithSpiral).and(modelsOffBed.not()).and(modelsOffBedWithHead.not()).and(modelsOffBedWithRaft.not()));
 
         notEnoughFilamentForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilamentToCompletePrint", NotificationType.CAUTION);
-        notEnoughFilamentForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilamentForPrint));
+        notEnoughFilamentForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS)
+                .and(notEnoughFilamentForPrint)
+                .and(printerConnectionOffline.not()));
         notEnoughFilament1ForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilament2ToCompletePrint", NotificationType.CAUTION);
-        notEnoughFilament1ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilament1ForPrint));
+        notEnoughFilament1ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS)
+                .and(notEnoughFilament1ForPrint)
+                .and(printerConnectionOffline.not()));
         notEnoughFilament2ForPrintNotificationBar = new ConditionalNotificationBar("dialogs.notEnoughFilament2ToCompletePrint", NotificationType.CAUTION);
-        notEnoughFilament2ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS).and(notEnoughFilament2ForPrint));
+        notEnoughFilament2ForPrintNotificationBar.setAppearanceCondition(ApplicationStatus.getInstance().modeProperty().isEqualTo(ApplicationMode.SETTINGS)
+                .and(notEnoughFilament2ForPrint)
+                .and(printerConnectionOffline.not()));
 
         tooManyRoboxAttachedNotificationBar = new ConditionalNotificationBar("dialogs.toomanyrobox.message", NotificationType.CAUTION);
         tooManyRoboxAttachedNotificationBar.setAppearanceCondition(RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty());
@@ -983,9 +1001,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         backwardFromSettingsButton.visibleProperty().bind(applicationStatus.modeProperty().
                 isEqualTo(ApplicationMode.SETTINGS));
 
-        printButton.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
-                ApplicationMode.SETTINGS));
+        printButton.visibleProperty().bind(applicationStatus.modeProperty()
+                .isEqualTo(ApplicationMode.SETTINGS));
 
+        saveButton.visibleProperty().bind(applicationStatus.modeProperty()
+                .isEqualTo(ApplicationMode.SETTINGS));
+        
         closeNozzleButton.setVisible(false);
         fillNozzleButton.setVisible(false);
 
@@ -1100,29 +1121,43 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             ObservableList<Boolean> usedExtruders = ((ModelContainerProject) project).getUsedExtruders(printer);
 
-            oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
-                    noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            oneExtruderNoFilamentSelectedNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0))
+                    .and(noFilament0Selected)
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+                    .and(printerConnectionOffline.not()));
 
-            oneExtruderNoFilamentNotificationBar.setAppearanceCondition(oneExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
-                    printer.extrudersProperty().get(0).
-                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            oneExtruderNoFilamentNotificationBar.setAppearanceCondition(oneExtruderPrinter
+                    .and(Bindings.booleanValueAt(usedExtruders, 0))
+                    .and(printer.extrudersProperty().get(0).filamentLoadedProperty().not())
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+                    .and(printerConnectionOffline.not()));
 
-            twoExtrudersNoFilament0SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
-                    noFilament0Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            twoExtrudersNoFilament0SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
+                    .and(Bindings.booleanValueAt(usedExtruders, 0))
+                    .and(noFilament0Selected)
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+                    .and(printerConnectionOffline.not()));
 
-            twoExtrudersNoFilament0NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 0)).and(
-                    printer.extrudersProperty().get(0).
-                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            twoExtrudersNoFilament0NotificationBar.setAppearanceCondition(twoExtruderPrinter
+                    .and(Bindings.booleanValueAt(usedExtruders, 0))
+                    .and(printer.extrudersProperty().get(0).filamentLoadedProperty().not())
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+                    .and(printerConnectionOffline.not()));
 
-            twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 1)).and(
-                    noFilament1Selected).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            twoExtrudersNoFilament1SelectedNotificationBar.setAppearanceCondition(twoExtruderPrinter
+                    .and(Bindings.booleanValueAt(usedExtruders, 1))
+                    .and(noFilament1Selected)
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+                    .and(printerConnectionOffline.not()));
 
-            twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter.and(Bindings.booleanValueAt(usedExtruders, 1)).and(
-                    printer.extrudersProperty().get(1).
-                            filamentLoadedProperty().not()).and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            twoExtrudersNoFilament1NotificationBar.setAppearanceCondition(twoExtruderPrinter
+                    .and(Bindings.booleanValueAt(usedExtruders, 1))
+                    .and(printer.extrudersProperty().get(1).filamentLoadedProperty().not())
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS))
+                    .and(printerConnectionOffline.not()));
 
-            invalidMeshInProjectNotificationBar.setAppearanceCondition(mcProject.hasInvalidMeshes().
-                    and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+            invalidMeshInProjectNotificationBar.setAppearanceCondition(mcProject.hasInvalidMeshes()
+                    .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
 
             noModelsNotificationBar.setAppearanceCondition(Bindings.isEmpty(project.getTopLevelThings())
                     .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
@@ -1177,40 +1212,56 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     removeHeadButton.disableProperty().unbind();
                     purgeButton.disableProperty().unbind();
                     reprintButton.disableProperty().unbind();
+                    headFanButton.disableProperty().unbind();
 
                     clearConditionalNotificationBarConditions();
                 }
 
-                unlockDoorButton.disableProperty().bind(newValue.canOpenDoorProperty().not());
-                ejectFilamentButton.disableProperty().bind(newValue.extrudersProperty().get(0).
-                        canEjectProperty().not().and(newValue.extrudersProperty().get(1).
-                                canEjectProperty().not()));
+                unlockDoorButton.disableProperty()
+                        .bind(newValue.canOpenDoorProperty().not()
+                                .or(printerConnectionOffline));
+                ejectFilamentButton.disableProperty()
+                        .bind((newValue.extrudersProperty().get(0).canEjectProperty().not()
+                                .and(newValue.extrudersProperty().get(1).canEjectProperty().not()))
+                                .or(printerConnectionOffline));
 
                 // These buttons should only be available in advanced mode
-                fineNozzleButton.disableProperty().bind(
-                        newValue.canOpenCloseNozzleProperty().not()
-                                .or(Lookup.getUserPreferences().advancedModeProperty().not()));
-                fillNozzleButton.disableProperty().bind(
-                        newValue.canOpenCloseNozzleProperty().
-                                not().or(Lookup.getUserPreferences().advancedModeProperty().not()));
-                openNozzleButton.disableProperty().bind(
-                        newValue.canOpenCloseNozzleProperty().not()
-                                .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                fineNozzleButton.disableProperty()
+                        .bind(newValue.canOpenCloseNozzleProperty().not()
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not())
+                                .or(printerConnectionOffline));
+                fillNozzleButton.disableProperty()
+                        .bind(newValue.canOpenCloseNozzleProperty().not()
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not())
+                                .or(printerConnectionOffline));
+                openNozzleButton.disableProperty()
+                        .bind(newValue.canOpenCloseNozzleProperty().not()
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not())
+                                .or(printerConnectionOffline));
                 closeNozzleButton.disableProperty().bind(
                         newValue.canOpenCloseNozzleProperty().not()
-                                .or(Lookup.getUserPreferences().advancedModeProperty().not()));
-                homeButton.disableProperty().bind(newValue.canPrintProperty().not()
-                        .or(Lookup.getUserPreferences().advancedModeProperty().not()));
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not())
+                                .or(printerConnectionOffline));
+                homeButton.disableProperty()
+                        .bind(newValue.canPrintProperty().not()
+                                .or(Lookup.getUserPreferences().advancedModeProperty().not())
+                                .or(printerConnectionOffline));
 
                 newValue.getPrinterAncillarySystems().headFanOnProperty().addListener(
                         headFanStatusListener);
 
+                lightsButton.disableProperty().bind(printerConnectionOffline);
+                headFanButton.disableProperty().bind(printerConnectionOffline);
                 calibrateButton.disableProperty()
-                        .bind(newValue.canCalibrateHeadProperty().not());
-                removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not());
+                        .bind(newValue.canCalibrateHeadProperty().not()
+                        .or(printerConnectionOffline));
+                removeHeadButton.disableProperty().bind(newValue.canPrintProperty().not()
+                        .or(printerConnectionOffline));
                 purgeButton.disableProperty()
-                        .bind(newValue.canPurgeHeadProperty().not());
-                reprintButton.disableProperty().bind(newValue.canPrintProperty().not());
+                        .bind(newValue.canPurgeHeadProperty().not()
+                        .or(printerConnectionOffline));
+                reprintButton.disableProperty().bind(newValue.canPrintProperty().not()
+                        .or(printerConnectionOffline));
 
                 if (newValue.headProperty().get() != null)
                 {
@@ -1448,6 +1499,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             updatePrintButtonConditionalText(currentPrinter, selectedProject);
             dealWithOutOfBoundsModels();
             checkRemainingFilament();
+            printerConnectionOffline.set(currentPrinter.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
         } catch (Exception ex)
         {
             steno.exception("Error updating can print or print button conditionals", ex);
@@ -1516,6 +1568,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                     .and(headIsSingleX
                                              .or(printer.effectiveFilamentsProperty().get(0).getFilledProperty().not()
                                                      .and(printer.effectiveFilamentsProperty().get(1).getFilledProperty().not())))
+                                    .and(printerConnectionOffline.not())
                     );
                 } else
                 {
@@ -1539,6 +1592,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                     .and(modelOffBedWithSpiral.not())
                                     .and(headIsSingleX
                                             .or(printer.effectiveFilamentsProperty().get(extruderNumber).getFilledProperty().not()))
+                                    .and(printerConnectionOffline.not())
                     );
                 }
                 printButton.disableProperty().bind(canPrintProject.not());

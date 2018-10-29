@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import celtech.coreUI.components.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox id="licenseSelection" fx:id="rootVBox" alignment="TOP_CENTER" prefWidth="500" spacing="10" style="-fx-padding:10;" styleClass="inset-panel-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.licensing.SelectLicenseController">
+    <children>
+       <TextFlow prefHeight="91.0" prefWidth="480.0" />
+       <TextArea fx:id="licenseInfo" editable="false" prefHeight="103.0" prefWidth="480.0" />
+       <HBox prefHeight="0.0" prefWidth="480.0" spacing="10.0">
+          <children>
+            <Label fx:id="fileLabel" alignment="BOTTOM_LEFT" prefHeight="33.0" text="Choose a file..." />
+          </children>
+       </HBox>
+       <HBox prefHeight="8.0" prefWidth="480.0" spacing="10.0">
+          <children>
+            <Button fx:id="browseButton" alignment="CENTER_LEFT" mnemonicParsing="false" onAction="#browse" text="Select" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+            <Button fx:id="acceptButton" alignment="CENTER_RIGHT" mnemonicParsing="false" onAction="#accept" text="Accept" />
+          </children>
+       </HBox>
+    </children>
+</VBox>

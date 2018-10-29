@@ -12,6 +12,8 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
+import celtech.coreUI.controllers.billing.SignInController;
+import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
@@ -24,6 +26,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -32,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
@@ -495,10 +500,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         }
     }
 
-    ////////////////////////////////////
     /**
-     * Returns 0 for failure, 1 for reset, 2 for temporary set.
+     * @param printerToUse
+     * @param printerID
+     * @return 0 for failure, 1 for reset, 2 for temporary set.
      */
+    @Override
     public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
     {
         Callable<RoboxResetIDResult> resetPrinterIDCallable = new Callable()
@@ -543,8 +550,61 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return RoboxResetIDResult.RESET_FAILED;
         }
     }
-
-    //////////////////////////////////////////////////////
+    
+    @Override
+    public Boolean showSignInDialogue() {
+        Callable<Boolean> askUserForSignInDialogue = () -> {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlBillingResourcePath + "signIn.fxml");
+            FXMLLoader resetDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+            VBox resetVBox = (VBox) resetDialogLoader.load();
+            SignInController controller = (SignInController) resetVBox.getUserData();
+            Stage signInDialogueStage = new Stage(StageStyle.UNDECORATED);
+            signInDialogueStage.initModality(Modality.APPLICATION_MODAL);
+            signInDialogueStage.setScene(new Scene(resetVBox));
+            signInDialogueStage.initOwner(DisplayManager.getMainStage());
+            signInDialogueStage.showAndWait();
+            return null;
+        };
+        
+        FutureTask<Boolean> signInTask = new FutureTask<>(askUserForSignInDialogue);
+        BaseLookup.getTaskExecutor().runOnGUIThread(signInTask);
+        
+        try {
+            return signInTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) {
+            steno.error("Error during sign in request");
+            steno.error(ex.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean showSelectLicenseDialogue() {
+        Callable<Boolean> registerDialogue = () -> {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
+            FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+            VBox resetVBox = (VBox) registerDialogLoader.load();
+            SelectLicenseController controller = (SelectLicenseController) registerDialogLoader.getController();
+            Stage registerDialogueStage = new Stage(StageStyle.UNDECORATED);
+            registerDialogueStage.initModality(Modality.APPLICATION_MODAL);
+            registerDialogueStage.setScene(new Scene(resetVBox));
+            registerDialogueStage.initOwner(DisplayManager.getMainStage());
+            registerDialogueStage.showAndWait();
+            return controller.isLicenseValid();
+        };
+        
+        FutureTask<Boolean> registerTask = new FutureTask<>(registerDialogue);
+        BaseLookup.getTaskExecutor().runOnGUIThread(registerTask);
+        
+        try {
+            return registerTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) {
+            steno.exception("Error during license valication", ex);
+            return false;
+        }
+    }
 
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)

@@ -3,6 +3,8 @@ package celtech.configuration.fileRepresentation;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.units.CurrencySymbol;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import libertysystems.stenographer.LogLevel;
 
@@ -37,6 +39,8 @@ public class UserPreferenceFile
     private int timelapseDelay = 2;
     private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
+    private PrinterType customPrinterType = PrinterType.ROBOX;
+    private String custromPrinterHead = HeadContainer.defaultHeadID;
 
     public String getLanguageTag()
     {
@@ -257,6 +261,22 @@ public class UserPreferenceFile
     {
         this.loosePartSplitOnLoad = loosePartSplitOnLoad;
     }
+    
+    public PrinterType getCustomPrinterType() {
+        return customPrinterType;
+    }
+    
+    public void setCustomPrinterType(PrinterType customPrinterType) {
+        this.customPrinterType = customPrinterType;
+    }
+
+    public String getCustromPrinterHead() {
+        return custromPrinterHead;
+    }
+
+    public void setCustromPrinterHead(String custromPrinterHead) {
+        this.custromPrinterHead = custromPrinterHead;
+    }
 
     public void populateFromSettings(UserPreferences userPreferences)
     {
@@ -282,5 +302,7 @@ public class UserPreferenceFile
         setTimelapseDelay(userPreferences.getTimelapseDelay());
         setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
+        setCustomPrinterType(userPreferences.getCustomPrinterType());
+        setCustromPrinterHead(userPreferences.getCustomPrinterHead());
     }
 }

@@ -4,21 +4,30 @@ import celtech.Lookup;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
+import celtech.roboxbase.licensing.License;
+import celtech.roboxbase.licensing.LicenseManager;
+import celtech.roboxbase.licensing.LicenseManager.LicenseChangeListener;
+import celtech.roboxbase.licensing.LicenseType;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.scene.control.ListView;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
  * @author Ian
  */
-public class SlicerTypePreference implements PreferencesInnerPanelController.Preference
+public class SlicerTypePreference implements PreferencesInnerPanelController.Preference, LicenseChangeListener
 {
+    private static final Stenographer STENO = StenographerFactory.getStenographer(SlicerTypePreference.class.getName());
 
     private final ComboBox<SlicerType> control;
     private final UserPreferences userPreferences;
+    private final ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
 
     public SlicerTypePreference(UserPreferences userPreferences)
     {
@@ -26,23 +35,29 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
 
         control = new ComboBox<>();
         control.getStyleClass().add("cmbCleanCombo");
-        ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
+        
         slicerTypes.add(SlicerType.Cura);
         slicerTypes.add(SlicerType.Cura3);
         control.setItems(slicerTypes);
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
-        control.valueProperty().addListener(
-                (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) ->
-                {
+        control.setCellFactory((ListView<SlicerType> param) -> new SlicerTypeCell());
+        control.valueProperty()
+                .addListener((ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
                     updateValueFromControl();
                 });
+        
+        LicenseManager.getInstance().addLicenseChangeListener(this);
     }
 
     @Override
     public void updateValueFromControl()
     {
         SlicerType slicerType = control.getValue();
+        if(slicerType == null) {
+            STENO.warning("SlicerType from Slicer setting is null. Setting to default Cura");
+            slicerType = SlicerType.Cura;
+        }
         userPreferences.setSlicerType(slicerType);
     }
 
@@ -74,5 +89,17 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     {
         control.disableProperty().unbind();
         control.disableProperty().bind(disableProperty);
+    }
+
+    @Override
+    public void onLicenseChange(License license) {
+        SlicerType currentSelection = control.getSelectionModel().getSelectedItem();
+        // Reset list in order to invoke SlicerTypeCell updateItem method
+        control.setItems(FXCollections.observableArrayList(SlicerType.Cura));
+        control.setItems(slicerTypes);
+        if(license.getLicenseType() == LicenseType.AUTOMAKER_FREE) {
+            currentSelection = SlicerType.Cura;
+        }
+        control.getSelectionModel().select(currentSelection);
     }
 }
