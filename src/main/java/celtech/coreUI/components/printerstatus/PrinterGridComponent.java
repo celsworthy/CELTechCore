@@ -9,6 +9,7 @@ import celtech.coreUI.components.PrinterIDDialog;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
@@ -181,7 +182,7 @@ public class PrinterGridComponent extends FlowPane implements PrinterListChanges
         Stenographer steno = StenographerFactory.getStenographer(
                 PrinterGridComponent.class.getName());
         PrinterColourMap colourMap = PrinterColourMap.getInstance();
-        if (printer != null)
+        if (printer != null && printer.printerConnectionProperty().isNotEqualTo(PrinterConnection.OFFLINE).get())
         {
             printerIDDialog.setPrinterToUse(printer);
             PrinterIdentity printerIdentity = printer.getPrinterIdentity();

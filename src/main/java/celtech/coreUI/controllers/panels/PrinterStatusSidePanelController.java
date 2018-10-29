@@ -10,6 +10,7 @@ import celtech.roboxbase.printerControl.model.Extruder;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.NozzleHeater;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import java.net.URL;
@@ -496,12 +497,19 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
 
     private void controlDetailsVisibility()
     {
-        boolean visible = Lookup.getSelectedPrinterProperty().get() != null;
+        boolean visible = false;
+        boolean printerOffline = false;
+        Printer connectedPrinter = Lookup.getSelectedPrinterProperty().get();
+        if(connectedPrinter != null) {
+            visible = true;
+            printerOffline = connectedPrinter.printerConnectionProperty()
+                    .isEqualTo(PrinterConnection.OFFLINE).get();
+        }     
 
-        temperatureChart.setVisible(visible);
-        temperatureChartXLabels.setVisible(visible);
-        legendContainer.setVisible(visible);
-        materialContainer.setVisible(visible);
+        temperatureChart.setVisible(visible && !printerOffline);
+        temperatureChartXLabels.setVisible(visible && !printerOffline);
+        legendContainer.setVisible(visible && !printerOffline);
+        materialContainer.setVisible(visible && !printerOffline);
     }
 
     @Override

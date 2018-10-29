@@ -3,7 +3,10 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
+import celtech.roboxbase.comms.DetectedDevice;
+import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import java.util.Optional;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
@@ -30,7 +33,17 @@ public class CustomPrinterHeadPreference implements PreferencesInnerPanelControl
     
     @Override
     public void updateValueFromControl() {
-        userPreferences.setCustomPrinterHead(control.getSelectionModel().selectedItemProperty().get());
+        RoboxCommsManager comms = RoboxCommsManager.getInstance();
+        
+        String headType = control.getSelectionModel().selectedItemProperty().get();
+        userPreferences.setCustomPrinterHead(headType);
+        comms.setDummyPrinterHeadType(headType);
+        
+        Optional<DetectedDevice> dummyPrinterHandle = comms.getDummyPrinter(RoboxCommsManager.CUSTOM_CONNECTION_HANDLE);
+        if(dummyPrinterHandle.isPresent()) {
+            comms.removeDummyPrinter(dummyPrinterHandle.get());
+            comms.addDummyPrinter(true);
+        }
     }
 
     @Override

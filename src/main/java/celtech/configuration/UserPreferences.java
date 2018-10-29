@@ -1,13 +1,15 @@
 package celtech.configuration;
 
+import celtech.Lookup;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.configuration.units.CurrencySymbol;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
+import java.util.Optional;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -28,8 +30,7 @@ import libertysystems.stenographer.StenographerFactory;
  * @author Ian
  */
 public class UserPreferences
-{
-
+{   
     private final ObjectProperty<SlicerType> slicerType = new SimpleObjectProperty<>(SlicerType.Cura);
     private final BooleanProperty safetyFeaturesOn = new SimpleBooleanProperty(true);
     private String languageTag = "";
@@ -60,15 +61,19 @@ public class UserPreferences
     {
         saveSettings();
     };
+    
     private final ChangeListener<Boolean> booleanChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         saveSettings();
     };
+    
     private final ChangeListener<Number> numberChangeListener = (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) ->
     {
         saveSettings();
     };
+    
     private boolean suppressAdvancedModeListenerCheck = false;
+    
     private final ChangeListener<Boolean> advancedModeChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
     {
         if (!suppressAdvancedModeListenerCheck)
@@ -76,6 +81,15 @@ public class UserPreferences
             confirmAdvancedModeChange(newValue);
         }
         saveSettings();
+    };
+    
+    private final ChangeListener<Boolean> enableCustomPrinterChangeListener = (observable, oldValue, newValue) -> {
+        if(newValue) {
+            RoboxCommsManager.getInstance()
+                    .addDummyPrinter(true);
+        } else {
+            RoboxCommsManager.getInstance().removeAllDummyPrinters();
+        }
     };
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
@@ -101,7 +115,6 @@ public class UserPreferences
         this.timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
         this.timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
         this.loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
-        customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
         customPrinterType = userPreferenceFile.getCustomPrinterType();
         customPrinterHead = userPreferenceFile.getCustromPrinterHead();
 
@@ -122,7 +135,7 @@ public class UserPreferences
         timelapseDelay.addListener(numberChangeListener);
         timelapseDelayBeforeCapture.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
-        customPrinterEnabled.addListener(booleanChangeListener);
+        customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
     }
 
     public String getLanguageTag()

@@ -14,17 +14,22 @@
             <right>
                 <VBox alignment="BOTTOM_CENTER">
                     <children>
-                        <StackPane>
+                        <FlowPane fx:id="printSaveForwardButtonBox" alignment="BOTTOM_CENTER" prefWrapLength="200">
                             <children>
+                                <GraphicButtonWithLabel fx:id="saveButton" fxmlFileName="saveButton" labelText="%buttonText.save" onAction="#savePressed"/>
                                 <StackPane>
                                     <children>
-                                        <GraphicButtonWithLabel fx:id="forwardButtonSettings" fxmlFileName="forwardButton" labelText="%buttonText.toSettings" onAction="#forwardPressed" />
-                                        <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" labelText="%buttonText.toLayout" onAction="#forwardPressed" />
+                                        <StackPane>
+                                            <children>
+                                                <GraphicButtonWithLabel fx:id="forwardButtonSettings" fxmlFileName="forwardButton" labelText="%buttonText.toSettings" onAction="#forwardPressed" />
+                                                <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" labelText="%buttonText.toLayout" onAction="#forwardPressed" />
+                                            </children>
+                                        </StackPane>
+                                        <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
                                     </children>
                                 </StackPane>
-                                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
                             </children>
-                        </StackPane>
+                        </FlowPane>
                     </children>
                 </VBox>
             </right>

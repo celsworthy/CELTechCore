@@ -3,7 +3,10 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.Lookup;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
+import celtech.roboxbase.comms.DetectedDevice;
+import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
+import java.util.Optional;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
@@ -30,7 +33,17 @@ public class CustomPrinterTypePreference implements PreferencesInnerPanelControl
     
     @Override
     public void updateValueFromControl() {
-        userPreferences.setCustomPrinterType(control.getSelectionModel().selectedItemProperty().get());
+        RoboxCommsManager comms = RoboxCommsManager.getInstance();
+        
+        PrinterType printerType = control.getSelectionModel().selectedItemProperty().get();
+        userPreferences.setCustomPrinterType(printerType);
+        comms.setDummyPrinterType(printerType);
+        
+        Optional<DetectedDevice> dummyPrinterHandle = comms.getDummyPrinter(RoboxCommsManager.CUSTOM_CONNECTION_HANDLE);
+        if(dummyPrinterHandle.isPresent()) {
+            comms.removeDummyPrinter(dummyPrinterHandle.get());
+            comms.addDummyPrinter(true);
+        }
     }
 
     @Override

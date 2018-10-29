@@ -25,6 +25,7 @@ import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrid
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.utils.TimeUtils;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import java.net.URL;
@@ -1404,6 +1405,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                         }
                     }
                 } else
+                {
+                    materialToUseForExtruder0 = extruder1Material;
+                    materialToUseForExtruder1 = extruder2Material;
+                }
+                
+                if(selectedPrinter != null && 
+                        selectedPrinter.printerConnectionProperty().isEqualTo(PrinterConnection.OFFLINE).get()) 
                 {
                     materialToUseForExtruder0 = extruder1Material;
                     materialToUseForExtruder1 = extruder2Material;

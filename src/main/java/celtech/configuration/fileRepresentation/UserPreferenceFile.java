@@ -39,7 +39,6 @@ public class UserPreferenceFile
     private int timelapseDelay = 2;
     private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
-    private boolean customPrinerEnabled = false;
     private PrinterType customPrinterType = PrinterType.ROBOX;
     private String custromPrinterHead = HeadContainer.defaultHeadID;
 
@@ -263,14 +262,6 @@ public class UserPreferenceFile
         this.loosePartSplitOnLoad = loosePartSplitOnLoad;
     }
     
-    public boolean isCustomPrinterEnabled() {
-        return customPrinerEnabled;
-    }
-    
-    public void setCustomPrinterEnabled(boolean customPrinterEnabled) {
-        this.customPrinerEnabled = customPrinterEnabled;
-    }
-    
     public PrinterType getCustomPrinterType() {
         return customPrinterType;
     }
@@ -311,7 +302,6 @@ public class UserPreferenceFile
         setTimelapseDelay(userPreferences.getTimelapseDelay());
         setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
-        setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
         setCustomPrinterType(userPreferences.getCustomPrinterType());
         setCustromPrinterHead(userPreferences.getCustomPrinterHead());
     }
