@@ -15,6 +15,7 @@ import celtech.coreUI.components.Notifications.ProgressDisplay;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -78,6 +79,40 @@ public class Lookup
         steno.debug("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
 
+        Locale appLocale;
+        String languageTag = userPreferences.getLanguageTag();
+        if (languageTag == null || languageTag.length() == 0)
+        {
+            steno.debug("Starting AutoMaker - language tag is null - using default locale.");
+            appLocale = Locale.getDefault();
+        } else
+        {
+            steno.debug("Starting AutoMaker - language tag is \"" + languageTag + "\"");
+            String[] languageElements = languageTag.split("-");
+            switch (languageElements.length)
+            {
+                case 1:
+                    appLocale = new Locale(languageElements[0]);
+                    break;
+                case 2:
+                    appLocale = new Locale(languageElements[0], languageElements[1]);
+                    break;
+                case 3:
+                    appLocale = new Locale(languageElements[0], languageElements[1],
+                            languageElements[2]);
+                    break;
+                default:
+                    appLocale = Locale.getDefault();
+                    break;
+            }
+        }
+
+        if (appLocale == null)
+        {
+            steno.debug("Starting AutoMaker - default language tag is null - using \"en\" locale.");
+            appLocale = Locale.ENGLISH;
+        }
+        
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
 				      BaseLookup.getDefaultApplicationLocale(),
 				      new SystemNotificationManagerJavaFX());
