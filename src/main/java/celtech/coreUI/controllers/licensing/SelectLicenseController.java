@@ -49,9 +49,12 @@ public class SelectLicenseController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Optional<License> potentialLicense = LicenseManager.getInstance().readCachedLicenseFile();
-        license = potentialLicense.isPresent() ? potentialLicense.get() : null;
+        if(potentialLicense.isPresent()) {
+            license = potentialLicense.get();
+            licenseInfo.setText(license.toString());
+        }
         
-        licenseInfo.setText(license.toString());
+        //licenseInfo.setText(license.toString());
     }
     
     public boolean isLicenseValid() {
