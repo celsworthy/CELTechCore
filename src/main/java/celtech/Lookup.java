@@ -81,12 +81,13 @@ public class Lookup
 
         Locale appLocale;
         String languageTag = userPreferences.getLanguageTag();
-        steno.debug("Starting AutoMaker - language tag is " + languageTag);
         if (languageTag == null || languageTag.length() == 0)
         {
+            steno.debug("Starting AutoMaker - language tag is null - using default locale.");
             appLocale = Locale.getDefault();
         } else
         {
+            steno.debug("Starting AutoMaker - language tag is \"" + languageTag + "\"");
             String[] languageElements = languageTag.split("-");
             switch (languageElements.length)
             {
@@ -106,6 +107,12 @@ public class Lookup
             }
         }
 
+        if (appLocale == null)
+        {
+            steno.debug("Starting AutoMaker - default language tag is null - using \"en\" locale.");
+            appLocale = Locale.ENGLISH;
+        }
+        
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
                 appLocale, new SystemNotificationManagerJavaFX());
 
