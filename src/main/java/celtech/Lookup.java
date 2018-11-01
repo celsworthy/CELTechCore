@@ -109,9 +109,10 @@ public class Lookup
 
         if (appLocale == null)
         {
-            steno.debug("Starting AutoMaker - default language tag is null - using \"en\" locale.");
+            steno.info("Starting AutoMaker - default language tag is null - using \"en\" locale.");
             appLocale = Locale.ENGLISH;
         }
+        steno.info("Starting AutoMaker - locale is \"" + appLocale + "\"");
         
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
                 appLocale, new SystemNotificationManagerJavaFX());
