@@ -5,37 +5,25 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
-import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
-import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
-import celtech.roboxbase.printerControl.model.HardwarePrinter;
-import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
-import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
-import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.SimpleCancellable;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.MapChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -45,7 +33,6 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.io.FileUtils;
 
 /**
  * FXML Controller class
@@ -57,8 +44,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             TimeCostInsetPanelController.class.getName());
-
-    private static final RoboxProfileSettingsContainer ROBOX_PROFILE_SETTINGS_CONTAINER = RoboxProfileSettingsContainer.getInstance();
     
     @FXML
     private HBox timeCostInsetRoot;
@@ -105,6 +90,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private String currentHeadType;
 
     private boolean settingPrintQuality = false;
+    
+    private List<PrintQualityEnumeration> sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.values()));
     
     private final TimeCostThreadManager timeCostThreadManager = TimeCostThreadManager.getInstance();
 
@@ -187,18 +174,31 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         rbFine.setUserData(PrintQualityEnumeration.FINE);
         rbCustom.setToggleGroup(qualityToggleGroup);
         rbCustom.setUserData(PrintQualityEnumeration.CUSTOM);
-        rbDraft.setSelected(true);
+        rbNormal.setSelected(true);
         qualityToggleGroup.selectedToggleProperty().addListener(
                 (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
                 {
                     settingPrintQuality = true;
-                    if (currentProject != null && currentProject instanceof ModelContainerProject)
+                    changeSlicingOrder((PrintQualityEnumeration) newValue.getUserData());
+                    
+                    if (currentProject != null && currentProject instanceof ModelContainerProject) {
                         ((ModelContainerProject)currentProject).getGCodeGenManager().setSuppressReaction(true);
+                    }
+                    
                     currentProject.getPrinterSettings().setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
-                    if (currentProject != null && currentProject instanceof ModelContainerProject)
+                    
+                    if (currentProject != null && currentProject instanceof ModelContainerProject) {
                         ((ModelContainerProject)currentProject).getGCodeGenManager().setSuppressReaction(false);
+                    }
+                    
                     settingPrintQuality = false;
                 });
+    }
+    
+    private void changeSlicingOrder(PrintQualityEnumeration firstToSlice) {
+        sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.values()));
+        sliceOrder.remove(firstToSlice);
+        sliceOrder.add(0, firstToSlice);
     }
 
     @Override
@@ -303,34 +303,37 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
                 Runnable runUpdateFields = () ->
                 {
-                    updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
+                    for(PrintQualityEnumeration printQuality : sliceOrder) {
+                        switch(printQuality) {
+                            case DRAFT:
+                                updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
                                 lblDraftWeight,
                                 lblDraftCost, cancellable);
-                    if (cancellable.cancelled().get())
-                    {
-                        return;
-                    }
-                    updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
-                            lblNormalWeight,
-                            lblNormalCost, cancellable);
-                    if (cancellable.cancelled().get())
-                    {
-                        return;
-                    }
-                    updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
-                            lblFineWeight,
-                            lblFineCost, cancellable);
-                    if (cancellable.cancelled().get())
-                    {
-                        return;
-                    }
-
-                    if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
-                    {
-                        updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
-                                lblCustomWeight,
-                                lblCustomCost, cancellable);
-                    }
+                                break;
+                            case NORMAL:
+                                updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
+                                lblNormalWeight,
+                                lblNormalCost, cancellable);
+                                break;
+                            case FINE:
+                                updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
+                                lblFineWeight,
+                                lblFineCost, cancellable);
+                                break;
+                            case CUSTOM:
+                                if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
+                                {
+                                    updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
+                                            lblCustomWeight,
+                                            lblCustomCost, cancellable);
+                                }
+                                break;
+                        }
+                        if (cancellable.cancelled().get())
+                        {
+                            return;
+                        }
+                    };
                 };
 
                 timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
