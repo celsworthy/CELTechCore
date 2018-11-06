@@ -5,12 +5,9 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.postprocessor.PrintJobStatistics;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
@@ -47,29 +44,18 @@ public class GetTimeWeightCost
     private final Label lblTime;
     private final Label lblWeight;
     private final Label lblCost;
-    private final RoboxProfile settings;
-    private final String temporaryDirectory;
-
-    private File printJobDirectory;
+    
     private final Cancellable cancellable;
-    private Random random = new Random();
+    private final Random random = new Random();
 
-    public GetTimeWeightCost(ModelContainerProject project, RoboxProfile settings,
+    public GetTimeWeightCost(ModelContainerProject project,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
         this.project = project;
         this.lblTime = lblTime;
         this.lblWeight = lblWeight;
         this.lblCost = lblCost;
-        this.settings = settings;
         this.cancellable = cancellable;
-
-        temporaryDirectory = BaseConfiguration.getApplicationStorageDirectory()
-                + ApplicationConfiguration.timeAndCostFileSubpath
-                + random.nextInt(10000)
-                + File.separator;
-
-        new File(temporaryDirectory).mkdirs();
 
         cancellable.cancelled().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->

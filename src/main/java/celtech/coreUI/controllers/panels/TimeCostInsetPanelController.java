@@ -358,7 +358,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                 lblCost.setText(working);
             });
 
-            GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project, null,
+            GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project,
                         lblTime, lblWeight,
                         lblCost, cancellable);
 
