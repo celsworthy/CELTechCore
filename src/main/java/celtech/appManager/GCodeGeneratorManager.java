@@ -8,7 +8,6 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
@@ -38,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,8 +44,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -363,7 +359,10 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     public String getGCodeDirectory(PrintQualityEnumeration printQuality)
     {
         String directoryName = ApplicationConfiguration.getProjectDirectory()
-                + project.getProjectName() + "-GCode" + File.separator;
+                + project.getProjectName() + "-GCode" 
+                + File.separator 
+                + printQuality.getFriendlyName()
+                + File.separator;
         File dirHandle = new File(directoryName);
 
         if (!dirHandle.exists())

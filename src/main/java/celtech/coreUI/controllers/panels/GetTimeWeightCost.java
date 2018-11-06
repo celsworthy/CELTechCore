@@ -13,9 +13,7 @@ import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.tasks.Cancellable;
-import java.io.File;
 import java.util.Optional;
-import java.util.Random;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import libertysystems.stenographer.Stenographer;
@@ -46,7 +44,6 @@ public class GetTimeWeightCost
     private final Label lblCost;
     
     private final Cancellable cancellable;
-    private final Random random = new Random();
 
     public GetTimeWeightCost(ModelContainerProject project,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
