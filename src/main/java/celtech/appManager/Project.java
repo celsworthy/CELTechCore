@@ -142,7 +142,10 @@ public abstract class Project
 
     public final String getAbsolutePath()
     {
-        return ApplicationConfiguration.getProjectDirectory() + File.separator
+        return ApplicationConfiguration.getProjectDirectory() 
+                + File.separator
+                + getProjectName()
+                + File.separator
                 + projectNameProperty.get()
                 + ApplicationConfiguration.projectFileExtension;
     }
@@ -189,8 +192,15 @@ public abstract class Project
     {
         if (project != null)
         {
-            String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-                    + project.getProjectName();
+            String basePath = ApplicationConfiguration.getProjectDirectory() 
+                    + File.separator
+                    + project.getProjectName()
+                    + File.separator;
+            File dirHandle = new File(basePath);
+            if (!dirHandle.exists()) {
+                dirHandle.mkdirs();
+            }
+            basePath = basePath + project.getProjectName();
             project.save(basePath);
         }
     }

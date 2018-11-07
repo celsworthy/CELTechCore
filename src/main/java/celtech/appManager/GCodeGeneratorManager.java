@@ -4,9 +4,6 @@
 package celtech.appManager;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationMode;
-import celtech.appManager.ApplicationStatus;
-import celtech.appManager.ModelContainerProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -359,7 +356,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     public String getGCodeDirectory(PrintQualityEnumeration printQuality)
     {
         String directoryName = ApplicationConfiguration.getProjectDirectory()
-                + project.getProjectName() + "-GCode" 
+                + project.getProjectName() 
                 + File.separator 
                 + printQuality.getFriendlyName()
                 + File.separator;
@@ -372,6 +369,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         return directoryName;
     }
     
+    // NOT USED CURRENTLY?? NEED TO THINK ABOUT PROJECTS A BIT MORE
     public void tidyProjectDirectories()
     {
         // Erase old gCode directories
