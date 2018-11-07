@@ -1,7 +1,6 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Date;
 
 //@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
@@ -9,10 +8,11 @@ import java.util.Date;
 public abstract class ProjectFile
 {
     private ProjectFileTypeEnum projectType;
-    private int version = 4;
+    private int version = 5;
     private String projectName;
     private Date lastModifiedDate;
     private String lastPrintJobID = "";
+    private boolean projectNameModified = false;
 
     public ProjectFileTypeEnum getProjectType()
     {
@@ -63,6 +63,18 @@ public abstract class ProjectFile
     {
         this.version = version;
     }
+
+    public boolean isProjectNameModified() 
+    {
+        return projectNameModified;
+    }
+
+    public void setProjectNameModified(boolean projectNameModified) 
+    {
+        this.projectNameModified = projectNameModified;
+    }
+    
+    
            
     public abstract void implementationSpecificPopulate(Project project);
     
@@ -70,6 +82,7 @@ public abstract class ProjectFile
         projectName = project.getProjectName();
         lastModifiedDate = project.getLastModifiedDate().get();
         lastPrintJobID = project.getLastPrintJobID();
+        projectNameModified = project.isProjectNameModified();
         
         implementationSpecificPopulate(project);
     }

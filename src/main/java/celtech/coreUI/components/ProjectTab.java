@@ -552,6 +552,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             Set<String> currentProjectNames = projectManager.getOpenAndAvailableProjectNames();
             newProjectName = suggestNonDuplicateName(newProjectName, currentProjectNames);
             project.setProjectName(newProjectName);
+            project.setProjectNameModified(true);
             setGraphic(nonEditableProjectNameField);
             titleBeingEdited = false;
         }

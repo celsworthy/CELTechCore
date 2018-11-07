@@ -22,7 +22,6 @@ import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterConnection;

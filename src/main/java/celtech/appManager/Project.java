@@ -81,6 +81,8 @@ public abstract class Project
     protected ObservableList<ProjectifiableThing> topLevelThings;
 
     protected String lastPrintJobID = "";
+    
+    protected boolean projectNameModified = false;
 
     public Project()
     {
@@ -579,6 +581,16 @@ public abstract class Project
     public String getLastPrintJobID()
     {
         return lastPrintJobID;
+    }
+
+    public boolean isProjectNameModified()
+    {
+        return projectNameModified;
+    }
+
+    public void setProjectNameModified(boolean projectNameModified)
+    {
+        this.projectNameModified = projectNameModified;
     }
 
     public ModelGroup group(Set<Groupable> modelContainers)

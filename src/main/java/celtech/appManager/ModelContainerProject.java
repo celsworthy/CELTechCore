@@ -4,7 +4,6 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
-import celtech.appManager.GCodeGeneratorManager;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ModelContainer;
@@ -158,6 +157,7 @@ public class ModelContainerProject extends Project
                 projectNameProperty.set(projectFile.getProjectName());
                 lastModifiedDate.set(projectFile.getLastModifiedDate());
                 lastPrintJobID = projectFile.getLastPrintJobID();
+                projectNameModified = projectFile.isProjectNameModified();
 
                 String filamentID0 = mcProjectFile.getExtruder0FilamentID();
                 String filamentID1 = mcProjectFile.getExtruder1FilamentID();
