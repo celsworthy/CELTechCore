@@ -178,7 +178,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         rbFine.setUserData(PrintQualityEnumeration.FINE);
         rbCustom.setToggleGroup(qualityToggleGroup);
         rbCustom.setUserData(PrintQualityEnumeration.CUSTOM);
-        rbNormal.setSelected(true);
         qualityToggleGroup.selectedToggleProperty().addListener(
                 (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
                 {
@@ -215,8 +214,29 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
         
         currentProject = project;
+        if(currentProject != null) {
+            selectPrintProfile(currentProject.getPrintQuality());
+        }
+        
         if (currentProject != null && currentProject instanceof ModelContainerProject)
             ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
+    }
+    
+    private void selectPrintProfile(PrintQualityEnumeration printQuality) {
+        switch(printQuality) {
+            case DRAFT:
+                rbDraft.setSelected(true);
+                break;
+            case NORMAL:
+                rbNormal.setSelected(true);
+                break;
+            case FINE:
+                rbFine.setSelected(true);
+                break;
+            case CUSTOM:
+                rbCustom.setSelected(true);
+                break;
+        }
     }
 
     /**
