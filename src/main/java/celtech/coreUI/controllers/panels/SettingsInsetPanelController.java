@@ -5,11 +5,9 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
@@ -20,13 +18,15 @@ import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.configuration.fileRepresentation.SupportType;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
-import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -402,6 +402,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             || now.doubleValue() <= fillDensitySlider.getMin())
                     {
                         printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
+                    } else if (fillDensitySlider.isValueChanging()) {
+                        printerSettings.setFillDensityChanged(true);
                     }
                 });
 
@@ -716,7 +718,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
 
         if (currentProject != null) {
-            if (settings.isPresent()) {
+            if (settings.isPresent() && !printerSettings.isFillDensityChanged()) {
                 float fillDensity = settings.get().getSpecificFloatSetting("fillDensity_normalised");
                 printerSettings.setFillDensityOverride(fillDensity);
                 fillDensitySlider.setValue(fillDensity * 100.0);

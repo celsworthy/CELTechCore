@@ -23,7 +23,7 @@ public class ModelContainerProjectFile extends ProjectFile
     private String extruder0FilamentID;
     private String extruder1FilamentID;
     private String settingsName = BaseConfiguration.draftSettingsProfileName;
-    private PrintQualityEnumeration printQuality = PrintQualityEnumeration.DRAFT;
+    private PrintQualityEnumeration printQuality = PrintQualityEnumeration.NORMAL;
 
     private Map<Integer, Set<Integer>> groupStructure = new HashMap<>();
     private Map<Integer, ItemState> groupState = new HashMap<>();

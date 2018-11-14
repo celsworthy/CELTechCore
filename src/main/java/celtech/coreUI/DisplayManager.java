@@ -38,7 +38,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -426,8 +425,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
                             if (lastTab != newTab)
                             {
-                                ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
-                                getSelectedItem();
+                                ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
                                 projectTab.fireProjectSelected();
                             }
                         } else

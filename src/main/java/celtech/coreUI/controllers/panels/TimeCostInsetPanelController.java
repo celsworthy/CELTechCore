@@ -3,16 +3,17 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
+import celtech.appManager.GCodeGeneratorManager;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
-import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.tasks.Cancellable;
@@ -91,7 +92,10 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     private boolean settingPrintQuality = false;
     
-    private List<PrintQualityEnumeration> sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.values()));
+    private List<PrintQualityEnumeration> sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.NORMAL,
+            PrintQualityEnumeration.DRAFT,
+            PrintQualityEnumeration.FINE,
+            PrintQualityEnumeration.CUSTOM));
     
     private final TimeCostThreadManager timeCostThreadManager = TimeCostThreadManager.getInstance();
 
@@ -179,26 +183,28 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                 (ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) ->
                 {
                     settingPrintQuality = true;
-                    changeSlicingOrder((PrintQualityEnumeration) newValue.getUserData());
+                    GCodeGeneratorManager gCodeGeneratorManager = ((ModelContainerProject) currentProject).getGCodeGenManager();
+                    changeSlicingOrder((PrintQualityEnumeration) newValue.getUserData(), gCodeGeneratorManager);
                     
                     if (currentProject != null && currentProject instanceof ModelContainerProject) {
-                        ((ModelContainerProject)currentProject).getGCodeGenManager().setSuppressReaction(true);
+                        gCodeGeneratorManager.setSuppressReaction(true);
                     }
                     
                     currentProject.getPrinterSettings().setPrintQuality((PrintQualityEnumeration) newValue.getUserData());
                     
                     if (currentProject != null && currentProject instanceof ModelContainerProject) {
-                        ((ModelContainerProject)currentProject).getGCodeGenManager().setSuppressReaction(false);
+                        gCodeGeneratorManager.setSuppressReaction(false);
                     }
                     
                     settingPrintQuality = false;
                 });
     }
     
-    private void changeSlicingOrder(PrintQualityEnumeration firstToSlice) {
+    private void changeSlicingOrder(PrintQualityEnumeration firstToSlice, GCodeGeneratorManager gCodeGeneratorManager) {
         sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.values()));
         sliceOrder.remove(firstToSlice);
         sliceOrder.add(0, firstToSlice);
+        gCodeGeneratorManager.setSlicingOrder(sliceOrder);
     }
 
     @Override
