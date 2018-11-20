@@ -44,14 +44,11 @@ import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.utils.PrinterUtils;
-import celtech.roboxbase.utils.models.MeshForProcessing;
-import celtech.roboxbase.utils.models.PrintableMeshes;
+import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.TaskResponse;
-import celtech.roboxbase.utils.threed.CentreCalculations;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import java.io.File;
 import static java.lang.Double.max;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -71,7 +68,6 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Bounds;
 import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -81,7 +77,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
  *
@@ -331,35 +326,40 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         if (currentProject instanceof ModelContainerProject)
         {
+            String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                    + currentProject.getProjectName();
+            PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
+                    currentProject.getPrintQuality(), projectLocation);
+            
             PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
                     ((ModelContainerProject) currentProject).getUsedExtruders(printer));
 
-            List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
-            List<Integer> extruderForModel = new ArrayList<>();
-
-            Set<ModelContainer> modelContainers = (Set) currentProject.getAllModels();
-            for (ModelContainer modelContainer : modelContainers)
-            {
-                if (!(modelContainer instanceof ModelGroup))
-                {
-                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainer.getMeshView(), modelContainer);
-                    meshesForProcessing.add(meshForProcessing);
-                    extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
-                }
-            }
-
-            //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-            CentreCalculations centreCalc = new CentreCalculations();
-
-            currentProject.getAllModels().forEach(model ->
-            {
-                Bounds modelBounds = model.getBoundsInParent();
-                centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
-                centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
-            });
-
-            Vector3D centreOfPrintedObject = centreCalc.getResult();
-
+//            List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
+//            List<Integer> extruderForModel = new ArrayList<>();
+//
+//            Set<ModelContainer> modelContainers = (Set) currentProject.getAllModels();
+//            for (ModelContainer modelContainer : modelContainers)
+//            {
+//                if (!(modelContainer instanceof ModelGroup))
+//                {
+//                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainer.getMeshView(), modelContainer);
+//                    meshesForProcessing.add(meshForProcessing);
+//                    extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
+//                }
+//            }
+//
+//            //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+//            CentreCalculations centreCalc = new CentreCalculations();
+//
+//            currentProject.getAllModels().forEach(model ->
+//            {
+//                Bounds modelBounds = model.getBoundsInParent();
+//                centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
+//                centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
+//            });
+//
+//            Vector3D centreOfPrintedObject = centreCalc.getResult();
+//
             CameraTriggerData cameraTriggerData = null;
 
             if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
@@ -372,21 +372,24 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
                         Lookup.getUserPreferences().getTimelapseDelay());
             }
+            
+            printableProject.setCameraTriggerData(cameraTriggerData);
+            printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
 
-            PrintableMeshes printableMeshes = new PrintableMeshes(
-                    meshesForProcessing,
-                    ((ModelContainerProject) currentProject).getUsedExtruders(printer),
-                    extruderForModel,
-                    currentProject.getProjectName(),
-                    ((ModelContainerProject) currentProject).getLastPrintJobID(),
-                    currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get(), getSlicerType()),
-                    currentProject.getPrinterSettings(),
-                    currentProject.getPrintQuality(),
-                    Lookup.getUserPreferences().getSlicerType(),
-                    centreOfPrintedObject,
-                    Lookup.getUserPreferences().isSafetyFeaturesOn(),
-                    Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
-                    cameraTriggerData);
+//            PrintableMeshes printableMeshes = new PrintableMeshes(
+//                    meshesForProcessing,
+//                    ((ModelContainerProject) currentProject).getUsedExtruders(printer),
+//                    extruderForModel,
+//                    currentProject.getProjectName(),
+//                    ((ModelContainerProject) currentProject).getLastPrintJobID(),
+//                    currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get(), getSlicerType()),
+//                    currentProject.getPrinterSettings(),
+//                    currentProject.getPrintQuality(),
+//                    Lookup.getUserPreferences().getSlicerType(),
+//                    centreOfPrintedObject,
+//                    Lookup.getUserPreferences().isSafetyFeaturesOn(),
+//                    Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
+//                    cameraTriggerData);
 
             try
             {
@@ -398,6 +401,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         || purgeConsent == PurgeResponse.NOT_NECESSARY)
                 {
                     ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
+                    printableProject.setUsedExtruders(usedExtruders);
                     for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
                     {
                         if (usedExtruders.get(extruderNumber))
@@ -417,7 +421,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             }
                         }
                     }
-                    printer.printMeshes(printableMeshes, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                    printer.printProject(printableProject, Lookup.getUserPreferences().isSafetyFeaturesOn());
                     applicationStatus.setMode(ApplicationMode.STATUS);
                 }
             } catch (PrinterException ex)

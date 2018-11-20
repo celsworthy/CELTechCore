@@ -231,6 +231,13 @@ public class ModelContainerProject extends Project
                 + project.getProjectName();
         project.save(basePath);
     }
+    
+    public String getProjectLocation() {
+        return ApplicationConfiguration.getProjectDirectory() 
+                + File.separator
+                + projectNameProperty.get() 
+                + File.separator;
+    }
 
     private void saveModels(String path) throws IOException
     {
