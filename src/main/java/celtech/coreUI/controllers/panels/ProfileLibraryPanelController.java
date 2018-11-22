@@ -411,12 +411,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
         setupHeadType();
 
-        setupPrintProfileCombo();
-
-        selectFirstPrintProfile();
-
-        setupWidgetEditableBindings();
-
         setupFirstLayerNozzleChoice();
 
         setupPerimeterNozzleChoice();
@@ -425,11 +419,17 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
         setupSupportNozzleChoice();
 
+        supportInterfaceNozzleChoice.setItems(nozzleOptions);
+
+        setupPrintProfileCombo();
+
+        selectFirstPrintProfile();
+
+        setupWidgetEditableBindings();
+
         setupSlicerChooser();
 
         supportPattern.setItems(FXCollections.observableArrayList(SupportPattern.values()));
-
-        supportInterfaceNozzleChoice.setItems(nozzleOptions);
 
         fillPatternChoice.setItems(fillPatternOptions);
 
@@ -703,18 +703,15 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
                                   .filter(nn -> (nn.getMinExtrusionWidth() > 0.0) && (Float.toString(nn.getDiameter()) + " mm").equals(widthOption))
                                   .findFirst();
         // At Java 9, Optional has an ifPresentOrElse() method. But for the moment this is the easiest way to do this.
+        float minExtrusionWidth;
+        float maxExtrusionWidth;
+        float defaultExtrusionWidth;
         if (ond.isPresent())
         {
             NozzleData nd = ond.get();
-            float minExtrusionWidth = nd.getMinExtrusionWidth();
-            float maxExtrusionWidth = nd.getMaxExtrusionWidth();
-            if (currentWidth < minExtrusionWidth ||
-                currentWidth > maxExtrusionWidth)
-            {
-                widthField.setValue(nd.getDefaultExtrusionWidth());
-            }
-            widthSlider.setMin(minExtrusionWidth);
-            widthSlider.setMax(maxExtrusionWidth);
+            minExtrusionWidth = nd.getMinExtrusionWidth();
+            maxExtrusionWidth = nd.getMaxExtrusionWidth();
+            defaultExtrusionWidth = nd.getDefaultExtrusionWidth();
         }
         else
         {
@@ -722,52 +719,50 @@ private void setExtrusionWidthLimits(Number newValue, ObservableList<String> wid
             {
                 case "0.3mm":
                     // The point 3 nozzle has been selected
-                    if (currentWidth < minPoint3ExtrusionWidth ||
-                        currentWidth > maxPoint3ExtrusionWidth)
-                    {
-                        widthField.setValue(defaultPoint3ExtrusionWidth);
-                    }
-                    widthSlider.setMin(minPoint3ExtrusionWidth);
-                    widthSlider.setMax(maxPoint3ExtrusionWidth);
+                    minExtrusionWidth = minPoint3ExtrusionWidth;
+                    maxExtrusionWidth = maxPoint3ExtrusionWidth;
+                    defaultExtrusionWidth = defaultPoint3ExtrusionWidth;
                     break;
                 case "0.4mm":
                     // The point 4 nozzle has been selected
-                    if (currentWidth < minPoint4ExtrusionWidth ||
-                        currentWidth > maxPoint4ExtrusionWidth)
-                    {
-                        widthField.setValue(defaultPoint4ExtrusionWidth);
-                    }
-                    widthSlider.setMin(minPoint4ExtrusionWidth);
-                    widthSlider.setMax(maxPoint4ExtrusionWidth);
+                    minExtrusionWidth = minPoint4ExtrusionWidth;
+                    maxExtrusionWidth = maxPoint4ExtrusionWidth;
+                    defaultExtrusionWidth = defaultPoint4ExtrusionWidth;
                     break;
                 case "0.6mm":
                     // The point 6 nozzle has been selected
-                    if (currentWidth < minPoint6ExtrusionWidth ||
-                        currentWidth > maxPoint6ExtrusionWidth)
-                    {
-                        widthField.setValue(defaultPoint6ExtrusionWidth);
-                    }
-                    widthSlider.setMin(minPoint6ExtrusionWidth);
-                    widthSlider.setMax(maxPoint6ExtrusionWidth);
+                    minExtrusionWidth = minPoint6ExtrusionWidth;
+                    maxExtrusionWidth = maxPoint6ExtrusionWidth;
+                    defaultExtrusionWidth = defaultPoint6ExtrusionWidth;
                     break;
                 case "0.8mm":
                     // The point 8 nozzle has been selected
-                    if (currentWidth < minPoint8ExtrusionWidth ||
-                        currentWidth > maxPoint8ExtrusionWidth)
-                    {
-                        widthField.setValue(defaultPoint8ExtrusionWidth);
-                    }
-                    widthSlider.setMin(minPoint8ExtrusionWidth);
-                    widthSlider.setMax(maxPoint8ExtrusionWidth);
+                    minExtrusionWidth = minPoint8ExtrusionWidth;
+                    maxExtrusionWidth = maxPoint8ExtrusionWidth;
+                    defaultExtrusionWidth = defaultPoint8ExtrusionWidth;
                     break;
                     
                 default:
                     float nozzleWidth = Float.parseFloat(widthOption);
-                    widthField.setValue(nozzleWidth);
-                    widthSlider.setMin(nozzleWidth);
-                    widthSlider.setMax(nozzleWidth);
+                    minExtrusionWidth = nozzleWidth;
+                    maxExtrusionWidth = nozzleWidth;
+                    defaultExtrusionWidth = nozzleWidth;
                     break;
             }
+
+        }
+        widthSlider.setMin(minExtrusionWidth);
+        widthSlider.setMax(maxExtrusionWidth);
+        if (currentWidth < minExtrusionWidth ||
+            currentWidth > maxExtrusionWidth)
+        {
+            widthSlider.setValue(defaultExtrusionWidth);
+        }
+        else
+        {
+            // Reset the slider value, as sometimes it is modifed when
+            // the limits are set, although why is not clear.
+            widthSlider.setValue(currentWidth);
         }
     }
 
