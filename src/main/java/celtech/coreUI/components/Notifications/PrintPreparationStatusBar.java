@@ -4,7 +4,6 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;

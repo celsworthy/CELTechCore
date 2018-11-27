@@ -43,6 +43,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
+import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.utils.PrinterUtils;
 import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.TaskResponse;
@@ -51,6 +52,7 @@ import java.io.File;
 import static java.lang.Double.max;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
@@ -334,32 +336,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
                     ((ModelContainerProject) currentProject).getUsedExtruders(printer));
 
-//            List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
-//            List<Integer> extruderForModel = new ArrayList<>();
-//
-//            Set<ModelContainer> modelContainers = (Set) currentProject.getAllModels();
-//            for (ModelContainer modelContainer : modelContainers)
-//            {
-//                if (!(modelContainer instanceof ModelGroup))
-//                {
-//                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainer.getMeshView(), modelContainer);
-//                    meshesForProcessing.add(meshForProcessing);
-//                    extruderForModel.add(modelContainer.getAssociateWithExtruderNumberProperty().get());
-//                }
-//            }
-//
-//            //We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-//            CentreCalculations centreCalc = new CentreCalculations();
-//
-//            currentProject.getAllModels().forEach(model ->
-//            {
-//                Bounds modelBounds = model.getBoundsInParent();
-//                centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
-//                centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
-//            });
-//
-//            Vector3D centreOfPrintedObject = centreCalc.getResult();
-//
             CameraTriggerData cameraTriggerData = null;
 
             if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
@@ -375,21 +351,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             
             printableProject.setCameraTriggerData(cameraTriggerData);
             printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
-
-//            PrintableMeshes printableMeshes = new PrintableMeshes(
-//                    meshesForProcessing,
-//                    ((ModelContainerProject) currentProject).getUsedExtruders(printer),
-//                    extruderForModel,
-//                    currentProject.getProjectName(),
-//                    ((ModelContainerProject) currentProject).getLastPrintJobID(),
-//                    currentProject.getPrinterSettings().getSettings(printer.headProperty().get().typeCodeProperty().get(), getSlicerType()),
-//                    currentProject.getPrinterSettings(),
-//                    currentProject.getPrintQuality(),
-//                    Lookup.getUserPreferences().getSlicerType(),
-//                    centreOfPrintedObject,
-//                    Lookup.getUserPreferences().isSafetyFeaturesOn(),
-//                    Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
-//                    cameraTriggerData);
 
             try
             {
@@ -421,7 +382,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             }
                         }
                     }
-                    printer.printProject(printableProject, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                    Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                            .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+                    printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
                     applicationStatus.setMode(ApplicationMode.STATUS);
                 }
             } catch (PrinterException ex)
