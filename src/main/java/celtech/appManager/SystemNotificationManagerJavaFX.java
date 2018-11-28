@@ -1,32 +1,30 @@
 package celtech.appManager;
 
-import celtech.roboxbase.appManager.PurgeResponse;
-import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
-import celtech.roboxbase.SystemErrorHandlerOptions;
-import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
-import celtech.coreUI.controllers.billing.SignInController;
 import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.SystemErrorHandlerOptions;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.appManager.PurgeResponse;
+import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -35,8 +33,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
@@ -548,34 +544,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         {
             steno.error("Error during printer id reset");
             return RoboxResetIDResult.RESET_FAILED;
-        }
-    }
-    
-    @Override
-    public Boolean showSignInDialogue() {
-        Callable<Boolean> askUserForSignInDialogue = () -> {
-            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlBillingResourcePath + "signIn.fxml");
-            FXMLLoader resetDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
-            VBox resetVBox = (VBox) resetDialogLoader.load();
-            SignInController controller = (SignInController) resetVBox.getUserData();
-            Stage signInDialogueStage = new Stage(StageStyle.UNDECORATED);
-            signInDialogueStage.initModality(Modality.APPLICATION_MODAL);
-            signInDialogueStage.setScene(new Scene(resetVBox));
-            signInDialogueStage.initOwner(DisplayManager.getMainStage());
-            signInDialogueStage.showAndWait();
-            return null;
-        };
-        
-        FutureTask<Boolean> signInTask = new FutureTask<>(askUserForSignInDialogue);
-        BaseLookup.getTaskExecutor().runOnGUIThread(signInTask);
-        
-        try {
-            return signInTask.get();
-        }
-        catch (InterruptedException | ExecutionException ex) {
-            steno.error("Error during sign in request");
-            steno.error(ex.getMessage());
-            return false;
         }
     }
     
