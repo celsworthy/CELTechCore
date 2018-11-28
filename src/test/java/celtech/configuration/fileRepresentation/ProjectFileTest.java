@@ -4,8 +4,8 @@ import celtech.JavaFXConfiguredTest;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Test;
 
 /**
  *
@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class ProjectFileTest extends JavaFXConfiguredTest
 {
 
-    private static final String jsonifiedClass = "{\"projectType\":\"MODEL\",\"version\":4,\"projectName\":null,\"lastModifiedDate\":null,\"lastPrintJobID\":\"\",\"subVersion\":1,\"brimOverride\":0,\"fillDensityOverride\":0.0,\"printSupportOverride\":false,\"printSupportTypeOverride\":\"MATERIAL_1\",\"printRaft\":false,\"spiralPrint\":false,\"extruder0FilamentID\":null,\"extruder1FilamentID\":null,\"settingsName\":\"Draft\",\"printQuality\":\"DRAFT\",\"groupStructure\":{},\"groupState\":{}}";
+    private static final String jsonifiedClass = "{\"projectType\":\"MODEL\",\"version\":5,\"projectName\":null,\"lastModifiedDate\":null,\"lastPrintJobID\":\"\",\"projectNameModified\":false,\"subVersion\":1,\"brimOverride\":0,\"fillDensityOverride\":0.0,\"printSupportOverride\":false,\"printSupportTypeOverride\":\"MATERIAL_1\",\"printRaft\":false,\"spiralPrint\":false,\"extruder0FilamentID\":null,\"extruder1FilamentID\":null,\"settingsName\":\"Draft\",\"printQuality\":\"NORMAL\",\"groupStructure\":{},\"groupState\":{}}";
     private static final String jsonifiedClass_2_03_01 = "{\"version\":3,\"projectName\":null,\"lastModifiedDate\":null,\"lastPrintJobID\":\"\",\"subVersion\":3,\"brimOverride\":0,\"fillDensityOverride\":0.0,\"printSupportOverride\":false,\"printSupportTypeOverride\":\"MATERIAL_1\",\"printRaft\":false,\"spiralPrint\":false,\"extruder0FilamentID\":null,\"extruder1FilamentID\":null,\"settingsName\":\"Draft\",\"printQuality\":\"DRAFT\",\"groupStructure\":{},\"groupState\":{}}";
 
     public ProjectFileTest()
