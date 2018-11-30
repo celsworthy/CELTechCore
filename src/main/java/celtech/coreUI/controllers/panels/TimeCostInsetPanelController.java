@@ -91,6 +91,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private String currentHeadType;
 
     private boolean settingPrintQuality = false;
+    private boolean slicedAlready = false;
     
     private List<PrintQualityEnumeration> sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.NORMAL,
             PrintQualityEnumeration.DRAFT,
@@ -196,6 +197,10 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     }
                     
                     settingPrintQuality = false;
+                    
+                    if((PrintQualityEnumeration) oldValue.getUserData() == PrintQualityEnumeration.CUSTOM && !slicedAlready) {
+                        updateFields(currentProject);
+                    }
                 });
     }
     
@@ -361,7 +366,8 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                         }
                     };
                 };
-
+                
+                slicedAlready = true;
                 timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
             }
         }
