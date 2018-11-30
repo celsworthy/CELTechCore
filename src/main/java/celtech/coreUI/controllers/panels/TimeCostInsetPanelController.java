@@ -198,7 +198,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     
                     settingPrintQuality = false;
                     
-                    if((PrintQualityEnumeration) oldValue.getUserData() == PrintQualityEnumeration.CUSTOM && !slicedAlready) {
+                    if(oldValue != null 
+                            && (PrintQualityEnumeration) oldValue.getUserData() == PrintQualityEnumeration.CUSTOM 
+                            && !slicedAlready) {
                         updateFields(currentProject);
                     }
                 });

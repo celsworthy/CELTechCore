@@ -1465,7 +1465,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             updatePrintButtonConditionalText(currentPrinter, selectedProject);
             dealWithOutOfBoundsModels();
             checkRemainingFilament();
-            printerConnectionOffline.set(currentPrinter.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
+            if(currentPrinter != null) {
+                printerConnectionOffline.set(currentPrinter.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
+            }
         } catch (Exception ex)
         {
             steno.exception("Error updating can print or print button conditionals", ex);
