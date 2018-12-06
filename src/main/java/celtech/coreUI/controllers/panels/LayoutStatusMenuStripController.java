@@ -49,6 +49,7 @@ import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import java.io.File;
+import java.io.IOException;
 import static java.lang.Double.max;
 import java.util.List;
 import java.util.ListIterator;
@@ -79,6 +80,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -93,6 +95,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
     private final FileChooser modelFileChooser = new FileChooser();
+    private final FileChooser saveGCodeFileChooser = new FileChooser();
     private PrinterUtils printerUtils = null;
     private final PrinterColourMap colourMap = PrinterColourMap.getInstance();
 
@@ -395,9 +398,32 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
     
     @FXML
-    void savePressed(ActionEvent event)
-    {
-        
+    void savePressed(ActionEvent event) {
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        steno.trace("Save slice to file pressed");
+        if (currentProject instanceof ModelContainerProject) {
+            String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                        + currentProject.getProjectName();
+            Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+            if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) {
+                steno.debug("Slicing successful prompting user to save sliced files...");
+                String slicedFilesLocation = projectLocation 
+                        + File.separator 
+                        + currentProject.getPrintQuality();
+                saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
+                saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
+                File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
+                if (dest != null) {
+                    try {
+                        FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
+                        steno.debug("Files copied to new location - " + dest.getPath());
+                    } catch (IOException ex) {
+                        steno.exception("Error occured when attempting to save sliced GCode", ex);
+                    }
+                }
+            }
+        }
     }
 
     @FXML
@@ -967,11 +993,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         backwardFromSettingsButton.visibleProperty().bind(applicationStatus.modeProperty().
                 isEqualTo(ApplicationMode.SETTINGS));
 
-        printButton.visibleProperty().bind(applicationStatus.modeProperty()
-                .isEqualTo(ApplicationMode.SETTINGS));
-
-        saveButton.visibleProperty().bind(applicationStatus.modeProperty()
-                .isEqualTo(ApplicationMode.SETTINGS));
+        updateSaveAndPrintButtonVisibility();
         
         closeNozzleButton.setVisible(false);
         fillNozzleButton.setVisible(false);
@@ -1018,6 +1040,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 ApplicationMode.LAYOUT));
         forwardButtonLayout.visibleProperty().bind((applicationStatus.modeProperty().isEqualTo(
                 ApplicationMode.STATUS)));
+    }
+    
+    private void updateSaveAndPrintButtonVisibility() {
+        printButton.visibleProperty().unbind();
+        saveButton.visibleProperty().unbind();
+        
+        printButton.visibleProperty().bind(applicationStatus.modeProperty()
+                .isEqualTo(ApplicationMode.SETTINGS)
+                .and(printerConnectionOffline.not()));
+
+        saveButton.visibleProperty().bind(applicationStatus.modeProperty()
+                .isEqualTo(ApplicationMode.SETTINGS)
+                .and(printerConnectionOffline));
     }
 
     ChangeListener<Printer> printerSettingsListener = (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) ->
@@ -1462,6 +1497,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         try
         {
             updateCanPrintProjectBindings(currentPrinter, selectedProject);
+            updateSaveAndPrintButtonVisibility();
             updatePrintButtonConditionalText(currentPrinter, selectedProject);
             dealWithOutOfBoundsModels();
             checkRemainingFilament();

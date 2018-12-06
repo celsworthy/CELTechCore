@@ -14,22 +14,18 @@
             <right>
                 <VBox alignment="BOTTOM_CENTER">
                     <children>
-                        <FlowPane fx:id="printSaveForwardButtonBox" alignment="BOTTOM_CENTER" prefWrapLength="200">
+                        <StackPane>
                             <children>
-                                <GraphicButtonWithLabel fx:id="saveButton" fxmlFileName="saveButton" labelText="%buttonText.save" onAction="#savePressed"/>
                                 <StackPane>
                                     <children>
-                                        <StackPane>
-                                            <children>
-                                                <GraphicButtonWithLabel fx:id="forwardButtonSettings" fxmlFileName="forwardButton" labelText="%buttonText.toSettings" onAction="#forwardPressed" />
-                                                <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" labelText="%buttonText.toLayout" onAction="#forwardPressed" />
-                                            </children>
-                                        </StackPane>
-                                        <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
+                                        <GraphicButtonWithLabel fx:id="forwardButtonSettings" fxmlFileName="forwardButton" labelText="%buttonText.toSettings" onAction="#forwardPressed" />
+                                        <GraphicButtonWithLabel fx:id="forwardButtonLayout" fxmlFileName="forwardButton" labelText="%buttonText.toLayout" onAction="#forwardPressed" />
                                     </children>
                                 </StackPane>
+                                <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
+                                <GraphicButtonWithLabel fx:id="saveButton" fxmlFileName="saveButton" labelText="%buttonText.save" onAction="#savePressed"/>
                             </children>
-                        </FlowPane>
+                        </StackPane>
                     </children>
                 </VBox>
             </right>

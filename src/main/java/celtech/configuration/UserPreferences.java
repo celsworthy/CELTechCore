@@ -1,15 +1,15 @@
 package celtech.configuration;
 
-import celtech.Lookup;
-import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.datafileaccessors.UserPreferenceContainer;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.configuration.units.CurrencySymbol;
+import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
-import java.util.Optional;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -85,8 +85,13 @@ public class UserPreferences
     
     private final ChangeListener<Boolean> enableCustomPrinterChangeListener = (observable, oldValue, newValue) -> {
         if(newValue) {
-            RoboxCommsManager.getInstance()
-                    .addDummyPrinter(true);
+            // check if application feature is enabled
+            if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.OFFLINE_PRINTER)) {
+                RoboxCommsManager.getInstance().addDummyPrinter(true);
+            } else {
+                boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialogue();
+                customPrinterEnabled.set(false);
+            }
         } else {
             RoboxCommsManager.getInstance().removeAllDummyPrinters();
         }
