@@ -85,7 +85,6 @@ public class UserPreferences
     
     private final ChangeListener<Boolean> enableCustomPrinterChangeListener = (observable, oldValue, newValue) -> {
         if(newValue) {
-            // check if application feature is enabled
             if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.OFFLINE_PRINTER)) {
                 RoboxCommsManager.getInstance().addDummyPrinter(true);
             } else {

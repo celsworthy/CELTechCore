@@ -37,6 +37,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
@@ -181,6 +182,15 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         setupWidgetEditableBindings();
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(slicerTypeChangeListener);
+        
+        container.setOnKeyPressed(event -> {
+            STENO.debug("F5 pressed, attempting refresh of print profile settings");
+            KeyCode keyCode = event.getCode();
+            if(keyCode == KeyCode.F5) {
+                PrintProfileSettingsContainer.loadPrintProfileSettingsFile();
+                regenerateSettings(getSlicerType());
+            }
+        });
     }
     
     private void regenerateSettings(SlicerType slicerType) {

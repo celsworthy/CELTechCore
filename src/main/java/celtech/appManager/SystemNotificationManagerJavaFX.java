@@ -38,7 +38,9 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -552,11 +554,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         Callable<Boolean> registerDialogue = () -> {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
             FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
-            VBox resetVBox = (VBox) registerDialogLoader.load();
+            StackPane licensePane = (StackPane) registerDialogLoader.load();
             SelectLicenseController controller = (SelectLicenseController) registerDialogLoader.getController();
-            Stage registerDialogueStage = new Stage(StageStyle.UNDECORATED);
+            Stage registerDialogueStage = new Stage(StageStyle.TRANSPARENT);
             registerDialogueStage.initModality(Modality.APPLICATION_MODAL);
-            registerDialogueStage.setScene(new Scene(resetVBox));
+            registerDialogueStage.setScene(new Scene(licensePane, Color.TRANSPARENT));
             registerDialogueStage.initOwner(DisplayManager.getMainStage());
             registerDialogueStage.showAndWait();
             return controller.isLicenseValid();

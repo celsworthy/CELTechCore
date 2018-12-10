@@ -35,6 +35,7 @@
     light_grey_30: rgb(99,99,99, 0.3);
     superlight_grey_30: rgb(200,200,200, 0.3);
     superlight_grey: rgb(200,200,200);
+    not_as_superlight_grey: rgb(120,120,120);
     robox_blue: #0096e1;
     robox_blue_darker: #0087d2;
     robox_blue_lighter: #0fa5f0;
@@ -2400,9 +2401,12 @@ modal-dialogue{
 
 .inset-panel-redux
 {
-    -fx-background-color: light_grey;
+    -fx-background-color: not_as_superlight_grey;
     -fx-min-width: 10px;
     -fx-min-height: 10px;
+    -fx-background-insets: 12;
+    -fx-padding: 20;
+    -fx-spacing: 10;
 }
 
 .inset-panel-centre-redux
@@ -3014,4 +3018,16 @@ color-picker-label .text-field {
 {
     -fx-control-inner-background: dark_grey;
     -fx-text-fill: white;
+}
+
+.dialog_drop_shadow
+{
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6), 10, 0, 6, 6);
+    -fx-background-insets: 12; 
+    -fx-background-color: black;
+}
+
+.transparent
+{
+    -fx-background-color: transparent;
 }
