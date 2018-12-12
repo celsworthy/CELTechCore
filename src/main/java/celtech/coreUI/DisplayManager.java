@@ -18,6 +18,7 @@ import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LibraryMenuPanelController;
+import celtech.coreUI.controllers.panels.PreviewManager;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
@@ -140,6 +141,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private final int SHORT_SCALE_BELOW_HEIGHT = 890;
     private final int VERY_SHORT_SCALE_BELOW_HEIGHT = 700;
 
+    // This is here solely so it shutdown can be called on it when the application closes.
+    // If other things need to be added, it should be changed to a more generic callback mechanism.
+    private PreviewManager previewManager = null;
+
     private DisplayManager()
     {
         this.rootStackPane = new StackPane();
@@ -156,6 +161,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         this.rhPanel = new AnchorPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
         steno.debug("Starting AutoMaker - machine type is " + BaseConfiguration.getMachineType());
+    }
+    
+    // This is here solely so it shutdown can be called on it when the application closes.
+    public void setPreviewManager(PreviewManager previewManager) {
+        this.previewManager = previewManager;
     }
 
     private void loadProjectsAtStartup()
@@ -604,6 +614,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     public void shutdown()
     {
+        // This is here solely so it shutdown can be called on it when the application closes.
+        if (previewManager != null)
+        {
+            previewManager.shutdown();
+        }
+        
         if (projectManager != null)
         {
             projectManager.saveState();

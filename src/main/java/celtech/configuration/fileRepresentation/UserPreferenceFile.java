@@ -30,6 +30,7 @@ public class UserPreferenceFile
     private boolean showDiagnostics = false;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
+    private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
     private String goProWifiPassword = "";
@@ -157,6 +158,11 @@ public class UserPreferenceFile
         return showAdjustments;
     }
 
+    public boolean isAutoGCodePreview()
+    {
+        return autoGCodePreview;
+    }
+
     public void setShowDiagnostics(boolean showDiagnostics)
     {
         this.showDiagnostics = showDiagnostics;
@@ -170,6 +176,11 @@ public class UserPreferenceFile
     public void setShowAdjustments(boolean showAdjustments)
     {
         this.showAdjustments = showAdjustments;
+    }
+
+    public void setAutoGCodePreview(boolean autoGCodePreview)
+    {
+        this.autoGCodePreview = autoGCodePreview;
     }
 
     public boolean isShowMetricUnits()

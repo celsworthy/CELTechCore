@@ -90,7 +90,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private LoadedPanelData settingsInsetPanelData = null;
     private LoadedPanelData timeCostInsetPanelData = null;
     private LoadedPanelData modelActionsInsetPanelData = null;
-
+    
     private class LoadedPanelData
     {
 
@@ -227,20 +227,19 @@ public class ProjectTab extends Tab implements ProjectCallback
 
     private void initialiseWithProject()
     {
-
         rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
 
         rhInsetContainer.mouseTransparentProperty().bind(ApplicationStatus.getInstance().modeProperty().isNotEqualTo(ApplicationMode.SETTINGS));
-
-        VBox dimensionContainer = new VBox();
-        dimensionContainer.setMouseTransparent(true);
-        AnchorPane.setBottomAnchor(dimensionContainer, 0.0);
-        AnchorPane.setTopAnchor(dimensionContainer, 0.0);
-        AnchorPane.setRightAnchor(dimensionContainer, 0.0);
-        AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
-
         basePane.getChildren().add(rhInsetContainer);
+
+//        VBox dimensionContainer = new VBox();
+//        dimensionContainer.setMouseTransparent(true);
+//        AnchorPane.setBottomAnchor(dimensionContainer, 0.0);
+//        AnchorPane.setTopAnchor(dimensionContainer, 0.0);
+//        AnchorPane.setRightAnchor(dimensionContainer, 0.0);
+//        AnchorPane.setLeftAnchor(dimensionContainer, 0.0);
+
 
         modelActionsInsetPanelData = loadInsetPanel("modelEditInsetPanel.fxml", project);
         AnchorPane.setTopAnchor(modelActionsInsetPanelData.getNode(), 30.0);
@@ -275,10 +274,8 @@ public class ProjectTab extends Tab implements ProjectCallback
             }
         });
 
-        AnchorPane.setTopAnchor(rhInsetContainer,
-                30.0);
-        AnchorPane.setRightAnchor(rhInsetContainer,
-                30.0);
+        AnchorPane.setTopAnchor(rhInsetContainer, 30.0);
+        AnchorPane.setRightAnchor(rhInsetContainer, 30.0);
 
         setupNameFields();
 

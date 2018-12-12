@@ -88,7 +88,6 @@ import org.apache.commons.io.FileUtils;
  */
 public class LayoutStatusMenuStripController implements PrinterListChangesListener
 {
-
     private final Stenographer steno = StenographerFactory.getStenographer(
             LayoutStatusMenuStripController.class.getName());
     private PrinterSettingsOverrides printerSettings = null;
@@ -104,6 +103,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final BooleanProperty canPrintProject = new SimpleBooleanProperty(false);
 
     private ReprintPanel reprintPanel = new ReprintPanel();
+
+    private PreviewManager previewManager = null;
 
     @FXML
     private GraphicButtonWithLabel undoButton;
@@ -163,10 +164,16 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private GraphicButtonWithLabel printButton;
     
     @FXML
+    private GraphicToggleButtonWithLabel previewButton;
+
+    @FXML
     private GraphicButtonWithLabel saveButton;
 
     @FXML
     private FlowPane layoutButtonHBox;
+
+    @FXML
+    private FlowPane settingsButtonHBox;
 
     @FXML
     private FlowPane statusButtonHBox;
@@ -424,6 +431,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
             }
         }
+    }
+	
+    @FXML
+    void previewPressed(ActionEvent event)
+    {
+        if (previewManager != null)
+            previewManager.previewPressed(event);
     }
 
     @FXML
@@ -980,7 +994,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 newValue.effectiveFilamentsProperty().addListener(effectiveFilamentListener);
             }
         });
+        
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
+        previewManager = new PreviewManager(previewButton);
+        previewManager.setProjectAndPrinter(selectedProject, currentPrinter);
+        displayManager.setPreviewManager(previewManager);
 
         BaseLookup.getPrinterListChangesNotifier().addListener(this);
     }
@@ -1002,32 +1020,27 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         ungroupButton.setVisible(false);
 
         // Prevent the status bar affecting layout when it is invisible
-        statusButtonHBox.visibleProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(
-                    ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                statusButtonHBox.setManaged(newValue);
-            }
+        statusButtonHBox.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            statusButtonHBox.setManaged(newValue);
         });
 
         // Prevent the layout bar affecting layout when it is invisible
-        layoutButtonHBox.visibleProperty().addListener(new ChangeListener<Boolean>()
-        {
-            @Override
-            public void changed(
-                    ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue)
-            {
-                layoutButtonHBox.setManaged(newValue);
-            }
+        layoutButtonHBox.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            layoutButtonHBox.setManaged(newValue);
         });
 
+        // Prevent the settings bar affecting layout when it is invisible
+        settingsButtonHBox.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            settingsButtonHBox.setManaged(newValue);
+        });
+        
         statusButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
                 ApplicationMode.STATUS)
                 .and(printerAvailable));
         layoutButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
                 ApplicationMode.LAYOUT));
+        settingsButtonHBox.visibleProperty().bind(applicationStatus.modeProperty().isEqualTo(
+                ApplicationMode.SETTINGS));
         modelFileChooser.setTitle(Lookup.i18n("dialogs.modelFileChooser"));
         modelFileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(Lookup.i18n(
@@ -1496,6 +1509,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         try
         {
+            if (previewManager != null)
+                previewManager.setProjectAndPrinter(selectedProject, currentPrinter);
             updateCanPrintProjectBindings(currentPrinter, selectedProject);
             updateSaveAndPrintButtonVisibility();
             updatePrintButtonConditionalText(currentPrinter, selectedProject);

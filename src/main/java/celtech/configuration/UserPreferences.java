@@ -53,6 +53,7 @@ public class UserPreferences
     private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseDelayBeforeCapture = new SimpleIntegerProperty(0);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
+    private final BooleanProperty autoGCodePreview = new SimpleBooleanProperty(true);
     private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
     private PrinterType customPrinterType = PrinterType.ROBOX;
     private String customPrinterHead = HeadContainer.defaultHeadID;
@@ -108,6 +109,7 @@ public class UserPreferences
         showDiagnostics.set(userPreferenceFile.isShowDiagnostics());
         showGCode.set(userPreferenceFile.isShowGCode());
         showAdjustments.set(userPreferenceFile.isShowAdjustments());
+        autoGCodePreview.set(userPreferenceFile.isAutoGCodePreview());
         this.currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
@@ -129,6 +131,7 @@ public class UserPreferences
         showDiagnostics.addListener(booleanChangeListener);
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
+        autoGCodePreview.addListener(booleanChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
         timelapseTriggerEnabled.addListener(booleanChangeListener);
@@ -488,6 +491,21 @@ public class UserPreferences
         return loosePartSplitOnLoad;
     }
     
+    public BooleanProperty autoGCodePreviewProperty()
+    {
+        return autoGCodePreview;
+    }
+
+    public boolean isAutoGCodePreview()
+    {
+        return autoGCodePreview.get();
+    }
+
+    public void setAutoGCodePreview(boolean autoGCodePreview)
+    {
+        this.autoGCodePreview.set(autoGCodePreview);
+    }
+
     public boolean isCustomPrinterEnabled() {
         return customPrinterEnabled.get();
     }
