@@ -148,9 +148,9 @@ public class GCodePreviewTask extends Task<Boolean> {
         ArrayList<String> commands = new ArrayList<>();
         
         commands.add("java");
-        commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodePreviewDirectory() + "GCodeViewer.configFile.xml");
+        commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.configFile.xml");
         commands.add("-jar");
-        commands.add(BaseConfiguration.getGCodePreviewDirectory() + "GCodeViewer.jar");
+        commands.add(BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.jar");
 
         if (commands.size() > 0)
         {
