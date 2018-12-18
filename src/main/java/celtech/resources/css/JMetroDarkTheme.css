@@ -2314,9 +2314,10 @@ modal-dialogue{
     -fx-background-color: mid_grey_solid;
     -fx-font-family: "Source Sans Pro";
     -fx-spacing: 5;
-    -fx-padding: 5;
+    -fx-padding: 30;
     -fx-max-width: 500;
     -fx-min-width: 100;
+    -fx-background-insets: 12;
 }
 
 .textflow .text

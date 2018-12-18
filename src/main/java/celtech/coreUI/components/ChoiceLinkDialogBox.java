@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Control;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -22,7 +23,7 @@ import javafx.stage.StageStyle;
  *
  * @author Ian
  */
-public class ChoiceLinkDialogBox extends VBox
+public class ChoiceLinkDialogBox extends StackPane
 {
     
     public class PrinterDisconnectedException extends Exception {
@@ -34,6 +35,9 @@ public class ChoiceLinkDialogBox extends VBox
         
     }
 
+    @FXML
+    private VBox rootVBox;
+    
     @FXML
     private HyperlinkedLabel title;
 
@@ -86,7 +90,7 @@ public class ChoiceLinkDialogBox extends VBox
         
         openDialogs.add(this);
         
-        dialogStage = new Stage(StageStyle.UNDECORATED);
+        dialogStage = new Stage(StageStyle.TRANSPARENT);
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
             "/celtech/resources/fxml/components/ChoiceLinkDialogBox.fxml"));
@@ -109,7 +113,7 @@ public class ChoiceLinkDialogBox extends VBox
         dialogStage.initOwner(DisplayManager.getMainStage());
         dialogStage.initModality(Modality.APPLICATION_MODAL);
 
-        getStyleClass().add("error-dialog");
+        //getStyleClass().add("error-dialog");
     }
 
     public void setTitle(final String i18nTitle)
