@@ -8,6 +8,7 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
+import celtech.coreUI.controllers.licensing.PurchaseLicenseController;
 import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
@@ -25,6 +26,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -574,6 +576,25 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             steno.exception("Error during license valication", ex);
             return false;
         }
+    }
+    
+    @Override
+    public void showPurchaseLicenseDialog() {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+            try {
+                URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "PurchaseLicense.fxml");
+                FXMLLoader purchaseLicenseDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+                StackPane licensePane = (StackPane) purchaseLicenseDialogLoader.load();
+                PurchaseLicenseController controller = (PurchaseLicenseController) purchaseLicenseDialogLoader.getController();
+                Stage purchaseLicenseDialogueStage = new Stage(StageStyle.TRANSPARENT);
+                purchaseLicenseDialogueStage.initModality(Modality.APPLICATION_MODAL);
+                purchaseLicenseDialogueStage.setScene(new Scene(licensePane, Color.TRANSPARENT));
+                purchaseLicenseDialogueStage.initOwner(DisplayManager.getMainStage());
+                purchaseLicenseDialogueStage.showAndWait();
+            } catch (IOException ex) {
+                steno.exception("Error during purchase license dialog", ex);
+            }
+        });
     }
     
     @Override

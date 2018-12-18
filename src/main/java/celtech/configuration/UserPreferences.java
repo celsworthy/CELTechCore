@@ -88,7 +88,7 @@ public class UserPreferences
             if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.OFFLINE_PRINTER)) {
                 RoboxCommsManager.getInstance().addDummyPrinter(true);
             } else {
-                boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialog();
+                BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
                 customPrinterEnabled.set(false);
             }
         } else {

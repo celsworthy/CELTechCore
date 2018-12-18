@@ -1,5 +1,6 @@
 package celtech.coreUI.controllers.licensing;
 
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.licensing.License;
 import celtech.roboxbase.licensing.LicenseManager;
 import java.io.File;
@@ -53,8 +54,6 @@ public class SelectLicenseController implements Initializable {
             license = potentialLicense.get();
             licenseInfo.setText(license.toString());
         }
-        
-        //licenseInfo.setText(license.toString());
     }
     
     public boolean isLicenseValid() {
@@ -64,7 +63,7 @@ public class SelectLicenseController implements Initializable {
     @FXML
     private void browse() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Robox License");
+        fileChooser.setTitle(BaseLookup.i18n("dialogs.selectLicense"));
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("License Files", "*.lic"));
         File selectedLicenseFile = fileChooser.showOpenDialog(rootVBox.getScene().getWindow());
         
