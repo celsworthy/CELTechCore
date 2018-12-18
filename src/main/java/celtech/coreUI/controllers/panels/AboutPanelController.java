@@ -91,7 +91,7 @@ public class AboutPanelController implements Initializable
     @FXML
     private void selectLicense(ActionEvent event) 
     {
-        boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialogue();
+        boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialog();
     }
 
     @FXML
