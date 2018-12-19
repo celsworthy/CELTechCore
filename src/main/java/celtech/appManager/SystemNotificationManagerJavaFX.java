@@ -603,7 +603,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
             choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.connectLicensedPrinterTitle"));
             choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.connectLicensedPrinterMessage"));
-            ChoiceLinkButton openTheLidChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
+            ChoiceLinkButton okButton = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
 
             try {
                 choiceLinkDialogBox.getUserInput();

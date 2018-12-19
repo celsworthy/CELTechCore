@@ -1,12 +1,13 @@
 package celtech.coreUI.controllers.licensing;
 
+import celtech.Lookup;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.roboxbase.BaseLookup;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
@@ -20,11 +21,11 @@ public class PurchaseLicenseController implements Initializable {
     VBox rootVBox;
     
     @FXML
-    Text licensePurchaseInfo;
+    HyperlinkedLabel licensePurchaseInfo;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-       licensePurchaseInfo.setText(BaseLookup.i18n("dialogs.licensePurchaseInfo"));
+        licensePurchaseInfo.replaceText(Lookup.i18n("dialogs.licensePurchaseInfo"));
     }    
     
     @FXML
