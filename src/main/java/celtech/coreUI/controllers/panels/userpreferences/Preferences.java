@@ -58,12 +58,16 @@ public class Preferences
         Preference loosePartSplitPref = new TickBoxPreference(userPreferences.loosePartSplitOnLoadProperty(),
                 "preferences.loosePartSplit");
 
+        Preference autoGCodePreviewPref = new TickBoxPreference(userPreferences.autoGCodePreviewProperty(),
+        "preferences.autoGCodePreview");
+
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
         preferences.add(currencySymbolPref);
         preferences.add(currencyGBPToLocalMultiplierPref);
         preferences.add(loosePartSplitPref);
+        preferences.add(autoGCodePreviewPref);
 
         return preferences;
     }
@@ -87,7 +91,7 @@ public class Preferences
         TickBoxPreference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
                 "preferences.showAdjustments");
         showAdjustmentsPref.disableProperty(advancedModePref.getSelectedProperty().not());
-
+        
         advancedModePref.getSelectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -103,7 +107,7 @@ public class Preferences
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);
         preferences.add(showAdjustmentsPref);
-
+ 
         return preferences;
     }
 
