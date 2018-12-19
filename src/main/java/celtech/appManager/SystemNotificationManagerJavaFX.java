@@ -8,6 +8,7 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
+import celtech.coreUI.controllers.licensing.PurchaseLicenseController;
 import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
@@ -25,6 +26,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -577,12 +579,31 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
     
     @Override
+    public void showPurchaseLicenseDialog() {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+            try {
+                URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "PurchaseLicense.fxml");
+                FXMLLoader purchaseLicenseDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+                StackPane licensePane = (StackPane) purchaseLicenseDialogLoader.load();
+                PurchaseLicenseController controller = (PurchaseLicenseController) purchaseLicenseDialogLoader.getController();
+                Stage purchaseLicenseDialogueStage = new Stage(StageStyle.TRANSPARENT);
+                purchaseLicenseDialogueStage.initModality(Modality.APPLICATION_MODAL);
+                purchaseLicenseDialogueStage.setScene(new Scene(licensePane, Color.TRANSPARENT));
+                purchaseLicenseDialogueStage.initOwner(DisplayManager.getMainStage());
+                purchaseLicenseDialogueStage.showAndWait();
+            } catch (IOException ex) {
+                steno.exception("Error during purchase license dialog", ex);
+            }
+        });
+    }
+    
+    @Override
     public void showConnectLicensedPrinterDialog() {
         BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
             ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
             choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.connectLicensedPrinterTitle"));
             choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.connectLicensedPrinterMessage"));
-            ChoiceLinkButton openTheLidChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
+            ChoiceLinkButton okButton = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
 
             try {
                 choiceLinkDialogBox.getUserInput();
