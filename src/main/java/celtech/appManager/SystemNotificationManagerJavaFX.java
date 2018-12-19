@@ -550,7 +550,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
     
     @Override
-    public boolean showSelectLicenseDialogue() {
+    public boolean showSelectLicenseDialog() {
         Callable<Boolean> registerDialogue = () -> {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
             FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
@@ -574,6 +574,22 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             steno.exception("Error during license valication", ex);
             return false;
         }
+    }
+    
+    @Override
+    public void showConnectLicensedPrinterDialog() {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+            ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
+            choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.connectLicensedPrinterTitle"));
+            choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.connectLicensedPrinterMessage"));
+            ChoiceLinkButton openTheLidChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
+
+            try {
+                choiceLinkDialogBox.getUserInput();
+            } catch (PrinterDisconnectedException ex) {
+                steno.exception("this should never happen", ex);
+            }
+        });
     }
 
     @Override
