@@ -22,22 +22,24 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import libertysystems.stenographer.Stenographer;
-import libertysystems.stenographer.StenographerFactory;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * FXML Controller class
@@ -56,6 +58,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     @FXML
     private TableView<DetectedServer> scannedRoots;
     
+    private TableColumn colourColumn;
     private TableColumn nameColumn;
     private TableColumn ipAddressColumn;
     private TableColumn versionColumn;
@@ -153,22 +156,48 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     {
         URL.setURLStreamHandlerFactory(new AMURLStreamHandlerFactory());
         
+        colourColumn = new TableColumn<>();
+        colourColumn.setPrefWidth(20);
+        colourColumn.setResizable(false);
+        colourColumn.setCellValueFactory(new PropertyValueFactory<>("colours"));
+        colourColumn.setCellFactory(column -> {
+            return new TableCell<DetectedServer, List<String>>() {
+                
+                @Override
+                protected void updateItem(List<String> colours, boolean empty) {
+                    super.updateItem(colours, empty); //This is mandatory
+
+                    setText(null);
+                    
+                    if (colours == null || empty || colours.isEmpty()) { //If the cell is empty
+                        setStyle("");
+                    } else { //If the cell is not empty
+
+                        // For now let's get the first colour
+                        Color printerColour = Color.valueOf(colours.get(0));
+                        String printerColourFormatted = formatColor(printerColour);
+                        setStyle("-fx-background-color: " + printerColourFormatted);
+                    }
+                }
+            };
+        });
+        
         nameColumn = new TableColumn<>();
-        nameColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("name"));
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setText(Lookup.i18n("rootScanner.name"));
         nameColumn.setPrefWidth(160);
         nameColumn.setResizable(false);
         nameColumn.setStyle("-fx-alignment: CENTER_LEFT;");
         
         ipAddressColumn = new TableColumn<>();
-        ipAddressColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("serverIP"));
+        ipAddressColumn.setCellValueFactory(new PropertyValueFactory<>("serverIP"));
         ipAddressColumn.setText(Lookup.i18n("rootScanner.ipAddress"));
         ipAddressColumn.setPrefWidth(100);
         ipAddressColumn.setResizable(false);
         ipAddressColumn.setStyle("-fx-alignment: CENTER;");
         
         versionColumn = new TableColumn<>();
-        versionColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, String>("version"));
+        versionColumn.setCellValueFactory(new PropertyValueFactory<>("version"));
         versionColumn.setText(Lookup.i18n("rootScanner.version"));
         versionColumn.setPrefWidth(100);
         versionColumn.setResizable(false);
@@ -176,7 +205,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         
         statusColumn = new TableColumn<>();
         statusColumn.setCellFactory(statusCell -> new RootTableCell());
-        statusColumn.setCellValueFactory(new PropertyValueFactory<DetectedServer, ServerStatus>("serverStatus"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("serverStatus"));
         statusColumn.setPrefWidth(40);
         statusColumn.setResizable(false);
         
@@ -187,6 +216,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRootButtonsColumn.setMaxWidth(Integer.MAX_VALUE);
         scannedRootButtonsColumn.setResizable(false);
         
+        scannedRoots.getColumns().add(colourColumn);
         scannedRoots.getColumns().add(nameColumn);
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
@@ -342,5 +372,13 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     public List<OperationButton> getOperationButtons()
     {
         return null;
+    }
+    
+    // Format color as string for CSS (#rrggbb format, values in hex).
+    private String formatColor(Color c) {
+        int r = (int) (255 * c.getRed());
+        int g = (int) (255 * c.getGreen());
+        int b = (int) (255 * c.getBlue());
+        return String.format("#%02x%02x%02x", r, g, b);
     }
 }
