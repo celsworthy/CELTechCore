@@ -4,10 +4,15 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.appManager.GCodeGeneratorManager;
+import celtech.appManager.ModelContainerProject;
+import celtech.appManager.Project;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -24,6 +29,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
 {
 
     private Printer printer = null;
+    private Project project;
 
     private final ChangeListener<Boolean> serviceStatusListener = (ObservableValue<? extends Boolean> ov, Boolean lastState, Boolean newState) ->
     {
@@ -52,24 +58,51 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         }
     };
 
-    public PrintPreparationStatusBar(Printer printer)
+    public PrintPreparationStatusBar()
     {
         super();
-        this.printer = printer;
 
-        printer.getPrintEngine().slicerService.runningProperty().addListener(serviceStatusListener);
-        printer.getPrintEngine().slicerService.progressProperty().addListener(serviceProgressListener);
+        getStyleClass().add("secondaryStatusBar");
+    }
+    
+    public void bindToPrinter(Printer printer) {
+        this.printer = printer;
         printer.getPrintEngine().postProcessorService.runningProperty().addListener(serviceStatusListener);
         printer.getPrintEngine().postProcessorService.progressProperty().addListener(serviceProgressListener);
         printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(serviceStatusListener);
         printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().addListener(serviceProgressListener);
-
+        
         cancelButton.visibleProperty().bind(printer.canCancelProperty().and(cancelAllowed));
         cancelButton.setOnAction(cancelEventHandler);
-
-        getStyleClass().add("secondaryStatusBar");
-
+        
         reassessStatus();
+    }
+    
+    public void bindToProject(Project project) {
+        this.project = project;
+        
+        if(project instanceof ModelContainerProject) {
+            GCodeGeneratorManager gCodeGeneratorManager = ((ModelContainerProject) project).getGCodeGenManager();
+            gCodeGeneratorManager.getObservableTaskMap().addListener((Observable change) -> {
+                bindToTask(gCodeGeneratorManager.getTaskFromTaskMap(((ModelContainerProject) project).getPrintQuality()));
+            });
+        }
+        
+        reassessStatus();
+    }
+    
+    private void bindToTask(GCodeGeneratorTask gCodeGeneratorTask) {
+        if(gCodeGeneratorTask != null) {
+            gCodeGeneratorTask.runningProperty().addListener(serviceStatusListener);
+            gCodeGeneratorTask.progressProperty().addListener(serviceProgressListener);
+        }
+    }
+    
+    private void unbindTask(GCodeGeneratorTask gCodeGeneratorTask) {
+        if(gCodeGeneratorTask != null) {
+            gCodeGeneratorTask.runningProperty().removeListener(serviceStatusListener);
+            gCodeGeneratorTask.progressProperty().removeListener(serviceProgressListener);
+        }
     }
 
     @Override
@@ -87,19 +120,24 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         boolean showBar = false;
 
-        if (printer.getPrintEngine().slicerService.runningProperty().get())
+        GCodeGeneratorManager gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
+        
+        if (gCodeGenManager.isGCodeForPrintOrSave() 
+                && gCodeGenManager.getTaskFromTaskMap(project.getPrintQuality()).runningProperty().get())
         {
             largeProgressDescription.setText(Lookup.i18n("printerStatus.slicing"));
-            progressBar.setProgress(printer.getPrintEngine().slicerService.getProgress());
+            progressBar.setProgress(gCodeGenManager.getTaskFromTaskMap(project.getPrintQuality()).getProgress());
             cancelAllowed.set(true);
             showBar = true;
-        } else if (printer.getPrintEngine().postProcessorService.runningProperty().get())
+        }
+        
+        if (printer != null && printer.getPrintEngine().postProcessorService.runningProperty().get())
         {
             largeProgressDescription.setText(Lookup.i18n("printerStatus.postProcessing"));
             progressBar.setProgress(printer.getPrintEngine().postProcessorService.getProgress());
             cancelAllowed.set(true);
             showBar = true;
-        } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
+        } else if (printer != null && printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
         {
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
             progressBar.setProgress(printer.getPrintEngine().transferGCodeToPrinterService.getProgress());
@@ -119,15 +157,26 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
 
     public void unbindAll()
     {
-        if (printer != null)
-        {
-            printer.getPrintEngine().slicerService.runningProperty().removeListener(serviceStatusListener);
-            printer.getPrintEngine().slicerService.progressProperty().removeListener(serviceProgressListener);
+        unbindFromProject();
+        unbindFromPrinter();
+    }
+    
+    public void unbindFromPrinter() {
+        if (printer != null) {
             printer.getPrintEngine().postProcessorService.runningProperty().removeListener(serviceStatusListener);
             printer.getPrintEngine().postProcessorService.progressProperty().removeListener(serviceProgressListener);
             printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().removeListener(serviceStatusListener);
             printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().removeListener(serviceProgressListener);
             printer = null;
+        }
+    }
+    
+    public void unbindFromProject() {
+        if(project != null) {
+            GCodeGeneratorManager gCodeGeneratorManager = ((ModelContainerProject) project).getGCodeGenManager();
+            gCodeGeneratorManager.getObservableTaskMap().addListener((Observable change) -> {
+                unbindTask(gCodeGeneratorManager.getTaskFromTaskMap(((ModelContainerProject) project).getPrintQuality()));
+            });
         }
     }
 }

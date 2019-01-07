@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -362,44 +364,45 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             printableProject.setCameraTriggerData(cameraTriggerData);
             printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
 
-            try
+            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
             {
-                if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+                displayManager.getPurgeInsetPanelController().purgeAndPrint(
+                        (ModelContainerProject) currentProject, printer);
+            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
+                    || purgeConsent == PurgeResponse.NOT_NECESSARY)
+            {
+                ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
+                printableProject.setUsedExtruders(usedExtruders);
+                for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
                 {
-                    displayManager.getPurgeInsetPanelController().purgeAndPrint(
-                            (ModelContainerProject) currentProject, printer);
-                } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
-                        || purgeConsent == PurgeResponse.NOT_NECESSARY)
-                {
-                    ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
-                    printableProject.setUsedExtruders(usedExtruders);
-                    for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
+                    if (usedExtruders.get(extruderNumber))
                     {
-                        if (usedExtruders.get(extruderNumber))
+                        if (extruderNumber == 0)
                         {
-                            if (extruderNumber == 0)
+                            if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
                             {
-                                if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                                {
-                                    currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
-                                } else
-                                {
-                                    currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
-                                }
+                                currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
                             } else
                             {
                                 currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                             }
+                        } else
+                        {
+                            currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                         }
                     }
-                    Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                            .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
-                    printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
-                    applicationStatus.setMode(ApplicationMode.STATUS);
                 }
-            } catch (PrinterException ex)
-            {
-                steno.error("Error during print project " + ex.getMessage());
+                ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+                singleThreadExecutor.submit(() -> {
+                    try {
+                        Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
+                        printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                        BaseLookup.getTaskExecutor().runOnGUIThread(() -> applicationStatus.setMode(ApplicationMode.STATUS));
+                    } catch (PrinterException ex) {
+                        steno.error("Error during print project " + ex.getMessage());
+                    }
+                });
             }
         }
     }
@@ -412,7 +415,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             String projectLocation = ApplicationConfiguration.getProjectDirectory()
                         + currentProject.getProjectName();
             Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
             if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) {
                 steno.debug("Slicing successful prompting user to save sliced files...");
                 String slicedFilesLocation = projectLocation 

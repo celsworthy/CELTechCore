@@ -1,6 +1,7 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
+import celtech.appManager.Project;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  *
@@ -18,13 +21,14 @@ import javafx.scene.layout.VBox;
  */
 public class ProgressDisplay extends VBox
 {
+    private static final Stenographer STENO = StenographerFactory.getStenographer(ProgressDisplay.class.getName());
 
     private Printer printerInUse = null;
-    private PrintStatusBar stateDisplayBar;
-    private BedHeaterStatusBar bedTemperatureDisplayBar;
+    private PrintStatusBar stateDisplayBar = new PrintStatusBar();
+    private BedHeaterStatusBar bedTemperatureDisplayBar = new BedHeaterStatusBar();
     private MaterialHeatingStatusBar material1TemperatureDisplayBar;
     private MaterialHeatingStatusBar material2TemperatureDisplayBar;
-    private PrintPreparationStatusBar printPreparationDisplayBar;
+    private PrintPreparationStatusBar printPreparationDisplayBar = new PrintPreparationStatusBar();
     private final List<Node> printerRelatedNodes = new ArrayList<>();
 
     private final ChangeListener<Boolean> headDataChangedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -57,14 +61,20 @@ public class ProgressDisplay extends VBox
         setFillWidth(true);
         setPickOnBounds(false);
 
-        Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> ov, Printer oldSelection, Printer newSelection) ->
-        {
+        Lookup.getSelectedPrinterProperty().addListener((observable, oldSelection, newSelection) -> {
             unbindFromPrinter();
-            if (newSelection != null)
-            {
+            if (newSelection != null) {
                 bindToPrinter(newSelection);
             }
         });
+        
+        Lookup.getSelectedProjectProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                bindToProject(newValue);
+            }
+        });
+        
+        addPrinterElementToDisplay(bedTemperatureDisplayBar, printPreparationDisplayBar, stateDisplayBar);
     }
 
     private void bindToPrinter(Printer printer)
@@ -74,9 +84,9 @@ public class ProgressDisplay extends VBox
             unbindFromPrinter();
         }
         this.printerInUse = printer;
-        stateDisplayBar = new PrintStatusBar(printer);
-        printPreparationDisplayBar = new PrintPreparationStatusBar(printer);
-        bedTemperatureDisplayBar = new BedHeaterStatusBar(printer.getPrinterAncillarySystems());
+        stateDisplayBar.bindToPrinter(printer);
+        printPreparationDisplayBar.bindToPrinter(printer);
+        bedTemperatureDisplayBar.bindToPrinterSystems(printer.getPrinterAncillarySystems());
 
         printer.headProperty().addListener(headListener);
         if (printer.headProperty().get() != null)
@@ -84,8 +94,11 @@ public class ProgressDisplay extends VBox
             printerInUse.headProperty().get().dataChangedProperty().addListener(headDataChangedListener);
             createMaterialHeatBars(printer.headProperty().get());
         }
-
-        addPrinterElementToDisplay(printPreparationDisplayBar, bedTemperatureDisplayBar, stateDisplayBar);
+    }
+    
+    private void bindToProject(Project project) {
+        printPreparationDisplayBar.unbindFromProject();
+        printPreparationDisplayBar.bindToProject(project);
     }
 
     private void destroyMaterialHeatBars()
@@ -142,10 +155,8 @@ public class ProgressDisplay extends VBox
 
             destroyMaterialHeatBars();
             stateDisplayBar.unbindAll();
-            printPreparationDisplayBar.unbindAll();
+            printPreparationDisplayBar.unbindFromPrinter();
             bedTemperatureDisplayBar.unbindAll();
-
-            removeAllPrinterElementsFromDisplay();
         }
         printerInUse = null;
     }
@@ -176,8 +187,15 @@ public class ProgressDisplay extends VBox
     {
         for (Node node : nodes)
         {
-            printerRelatedNodes.add(node);
-            getChildren().add(node);
+            if(!printerRelatedNodes.contains(node)) 
+            {
+                printerRelatedNodes.add(node);
+                getChildren().add(node);
+            }
+            else
+            {
+                STENO.trace("Printer element " + node.toString() + " has already been added to display.");
+            }
         }
     }
 
