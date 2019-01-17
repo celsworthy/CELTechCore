@@ -44,7 +44,9 @@ import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
+import celtech.roboxbase.utils.PrintJobUtils;
 import celtech.roboxbase.utils.PrinterUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import static celtech.utils.StringMetrics.getWidthOfString;
@@ -408,15 +410,20 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     }
     
     @FXML
-    void savePressed(ActionEvent event) {
+    void savePressed(ActionEvent event) 
+    {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
         steno.trace("Save slice to file pressed");
-        if (currentProject instanceof ModelContainerProject) {
+        
+        if (currentProject instanceof ModelContainerProject) 
+        {
             String projectLocation = ApplicationConfiguration.getProjectDirectory()
                         + currentProject.getProjectName();
             Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
                                 .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
-            if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) {
+            
+            if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) 
+            {
                 steno.debug("Slicing successful prompting user to save sliced files...");
                 String slicedFilesLocation = projectLocation 
                         + File.separator 
@@ -424,11 +431,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
                 saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
                 File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
-                if (dest != null) {
-                    try {
+                if (dest != null) 
+                {
+                    try 
+                    {
                         FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
                         steno.debug("Files copied to new location - " + dest.getPath());
-                    } catch (IOException ex) {
+                        
+                        // The files must use an appropriate print job id in order for the printer to accept it at.
+                        String jobUUID = SystemUtils.generate16DigitID();
+                        PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                    } 
+                    catch (IOException ex) 
+                    {
                         steno.exception("Error occured when attempting to save sliced GCode", ex);
                     }
                 }
