@@ -12,15 +12,18 @@ import javafx.scene.control.ListCell;
 public class SlicerTypeCell extends ListCell<SlicerType> {
     
     @Override
-    protected void updateItem(SlicerType slicerType, boolean empty) {
+    protected void updateItem(SlicerType slicerType, boolean empty) 
+    {
         super.updateItem(slicerType, empty);
         
-        if(slicerType != null && slicerType.equals(SlicerType.Cura3)) {
-            if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) {
-                setDisable(false);
+        if(slicerType != null && slicerType.equals(SlicerType.Cura3)) 
+        {
+            if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
+            {
                 setStyle("-fx-text-fill:black");
-            } else {
-                setDisable(true);
+            } 
+            else
+            {
                 setStyle("-fx-text-fill:grey");
             }
         }

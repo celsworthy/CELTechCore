@@ -1,13 +1,17 @@
 package celtech.coreUI.controllers.panels.userpreferences;
 
 import celtech.Lookup;
-import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
+import celtech.roboxbase.ApplicationFeature;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.licensing.License;
 import celtech.roboxbase.licensing.LicenseManager;
 import celtech.roboxbase.licensing.LicenseManager.LicenseChangeListener;
 import celtech.roboxbase.licensing.LicenseType;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,6 +33,10 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     private final UserPreferences userPreferences;
     private final ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
 
+    private final ChangeListener<SlicerType> slicerTypeChangeListener = (observable, oldValue, newValue) -> {
+        updateValueFromControl();
+    };
+    
     public SlicerTypePreference(UserPreferences userPreferences)
     {
         this.userPreferences = userPreferences;
@@ -42,10 +50,7 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
         control.setCellFactory((ListView<SlicerType> param) -> new SlicerTypeCell());
-        control.valueProperty()
-                .addListener((ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
-                    updateValueFromControl();
-                });
+        control.valueProperty().addListener(slicerTypeChangeListener);
         
         LicenseManager.getInstance().addLicenseChangeListener(this);
     }
@@ -54,10 +59,25 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     public void updateValueFromControl()
     {
         SlicerType slicerType = control.getValue();
-        if(slicerType == null) {
+        if(slicerType == null) 
+        {
             STENO.warning("SlicerType from Slicer setting is null. Setting to default Cura");
             slicerType = SlicerType.Cura;
+        } 
+        else if (slicerType == SlicerType.Cura3)
+        {
+            if(!BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
+            {
+                BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
+                slicerType = SlicerType.Cura;
+            }
         }
+        
+        // Remove and re-add the listener around setting the value so this method is not called twice.
+        control.valueProperty().removeListener(slicerTypeChangeListener);
+        control.setValue(slicerType);
+        control.valueProperty().addListener(slicerTypeChangeListener);
+        
         userPreferences.setSlicerType(slicerType);
     }
 
