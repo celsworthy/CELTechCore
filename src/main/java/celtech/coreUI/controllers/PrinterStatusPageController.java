@@ -253,7 +253,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             Printer t, Printer selectedPrinter)
                     {
                         printerToUse = selectedPrinter;
-                        printerConnectionOffline.set(printerToUse.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
+                        printerConnectionOffline.set(printerToUse != null && printerToUse.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
                         unbindFromSelectedPrinter();
                         setupBaseDisplay();
                         setupAmbientLight();

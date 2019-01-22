@@ -151,6 +151,9 @@ public class GCodePreviewTask extends Task<Boolean> {
         commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.configFile.xml");
         commands.add("-jar");
         commands.add(BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.jar");
+        String languageTag = BaseConfiguration.getApplicationLocale();
+        if (languageTag != null)
+            commands.add("-l" + languageTag);
 
         if (commands.size() > 0)
         {

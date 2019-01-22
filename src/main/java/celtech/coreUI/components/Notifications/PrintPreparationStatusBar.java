@@ -57,10 +57,10 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         super();
         this.printer = printer;
 
-        printer.getPrintEngine().slicerService.runningProperty().addListener(serviceStatusListener);
-        printer.getPrintEngine().slicerService.progressProperty().addListener(serviceProgressListener);
-        printer.getPrintEngine().postProcessorService.runningProperty().addListener(serviceStatusListener);
-        printer.getPrintEngine().postProcessorService.progressProperty().addListener(serviceProgressListener);
+//        printer.getPrintEngine().slicerService.runningProperty().addListener(serviceStatusListener);
+//        printer.getPrintEngine().slicerService.progressProperty().addListener(serviceProgressListener);
+//        printer.getPrintEngine().postProcessorService.runningProperty().addListener(serviceStatusListener);
+//        printer.getPrintEngine().postProcessorService.progressProperty().addListener(serviceProgressListener);
         printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(serviceStatusListener);
         printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().addListener(serviceProgressListener);
 
@@ -87,19 +87,20 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         boolean showBar = false;
 
-        if (printer.getPrintEngine().slicerService.runningProperty().get())
-        {
-            largeProgressDescription.setText(Lookup.i18n("printerStatus.slicing"));
-            progressBar.setProgress(printer.getPrintEngine().slicerService.getProgress());
-            cancelAllowed.set(true);
-            showBar = true;
-        } else if (printer.getPrintEngine().postProcessorService.runningProperty().get())
-        {
-            largeProgressDescription.setText(Lookup.i18n("printerStatus.postProcessing"));
-            progressBar.setProgress(printer.getPrintEngine().postProcessorService.getProgress());
-            cancelAllowed.set(true);
-            showBar = true;
-        } else if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
+//        if (printer.getPrintEngine().slicerService.runningProperty().get())
+//        {
+//            largeProgressDescription.setText(Lookup.i18n("printerStatus.slicing"));
+//            progressBar.setProgress(printer.getPrintEngine().slicerService.getProgress());
+//            cancelAllowed.set(true);
+//            showBar = true;
+//        } else if (printer.getPrintEngine().postProcessorService.runningProperty().get())
+//        {
+//            largeProgressDescription.setText(Lookup.i18n("printerStatus.postProcessing"));
+//            progressBar.setProgress(printer.getPrintEngine().postProcessorService.getProgress());
+//            cancelAllowed.set(true);
+//            showBar = true;
+//        } else 
+        if (printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
         {
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
             progressBar.setProgress(printer.getPrintEngine().transferGCodeToPrinterService.getProgress());
@@ -121,10 +122,10 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         if (printer != null)
         {
-            printer.getPrintEngine().slicerService.runningProperty().removeListener(serviceStatusListener);
-            printer.getPrintEngine().slicerService.progressProperty().removeListener(serviceProgressListener);
-            printer.getPrintEngine().postProcessorService.runningProperty().removeListener(serviceStatusListener);
-            printer.getPrintEngine().postProcessorService.progressProperty().removeListener(serviceProgressListener);
+//            printer.getPrintEngine().slicerService.runningProperty().removeListener(serviceStatusListener);
+//            printer.getPrintEngine().slicerService.progressProperty().removeListener(serviceProgressListener);
+//            printer.getPrintEngine().postProcessorService.runningProperty().removeListener(serviceStatusListener);
+//            printer.getPrintEngine().postProcessorService.progressProperty().removeListener(serviceProgressListener);
             printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().removeListener(serviceStatusListener);
             printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().removeListener(serviceProgressListener);
             printer = null;
