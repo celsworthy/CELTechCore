@@ -9,6 +9,7 @@ import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
+import celtech.roboxbase.configuration.datafileaccessors.SlicerMappingsContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -188,6 +189,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             KeyCode keyCode = event.getCode();
             if(keyCode == KeyCode.F5) {
                 PrintProfileSettingsContainer.loadPrintProfileSettingsFile();
+                SlicerMappingsContainer.getInstance().loadSlicerMappingsFile();
                 regenerateSettings(getSlicerType());
             }
         });
