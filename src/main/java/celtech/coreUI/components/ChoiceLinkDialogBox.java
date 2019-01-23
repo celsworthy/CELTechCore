@@ -53,6 +53,8 @@ public class ChoiceLinkDialogBox extends StackPane
     
     private final boolean closeOnPrinterDisconnect;
     
+    private boolean closeOnPrinterConnect = false;
+    
     private boolean closedDueToPrinterDisconnect = false;
     
     private static List<ChoiceLinkDialogBox> openDialogs = new ArrayList<>();
@@ -68,6 +70,12 @@ public class ChoiceLinkDialogBox extends StackPane
             }
         }
     } 
+    
+    public static void whenPrinterConnected() {
+        openDialogs.stream()
+                .filter(openDialog -> openDialog.closeOnPrinterConnect)
+                .forEach(openDialog -> openDialog.close());
+    }
     
     public void closeDueToPrinterDisconnect() {
         closedDueToPrinterDisconnect = true;
@@ -114,6 +122,12 @@ public class ChoiceLinkDialogBox extends StackPane
         dialogStage.initModality(Modality.APPLICATION_MODAL);
 
         //getStyleClass().add("error-dialog");
+    }
+    
+    public ChoiceLinkDialogBox(boolean closeOnPrinterDisconnect, boolean closeOnPrinterConnect)
+    {
+        this(closeOnPrinterDisconnect);
+        this.closeOnPrinterConnect = closeOnPrinterConnect;
     }
 
     public void setTitle(final String i18nTitle)

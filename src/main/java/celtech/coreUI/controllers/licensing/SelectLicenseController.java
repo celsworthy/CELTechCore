@@ -45,7 +45,7 @@ public class SelectLicenseController implements Initializable {
     
     private License license;
     
-    private File licenseFile = null;
+    private File licenseFile;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -54,6 +54,7 @@ public class SelectLicenseController implements Initializable {
             license = potentialLicense.get();
             licenseInfo.setText(license.toString());
         }
+        licenseFile = LicenseManager.getInstance().tryAndGetCachedLicenseFile();
     }
     
     public boolean isLicenseValid() {
@@ -78,10 +79,15 @@ public class SelectLicenseController implements Initializable {
     }
     
     @FXML
-    private void accept() {
-        licenseValid = LicenseManager.getInstance().checkEncryptedLicenseFileValid(licenseFile, true, true);
-
-        if(licenseValid) {
+    private void accept() 
+    {
+        if(licenseFile.exists()) 
+        {
+            licenseValid = LicenseManager.getInstance().checkEncryptedLicenseFileValid(licenseFile, true, true);
+        }
+        
+        if(licenseValid) 
+        {
             closeDialog();
         }
     }

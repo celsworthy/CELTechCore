@@ -552,8 +552,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     }
     
     @Override
-    public boolean showSelectLicenseDialog() {
-        Callable<Boolean> registerDialogue = () -> {
+    public boolean showSelectLicenseDialog() 
+    {
+        Callable<Boolean> registerDialogue = () -> 
+        {
             URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
             FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
             StackPane licensePane = (StackPane) registerDialogLoader.load();
@@ -569,10 +571,12 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         FutureTask<Boolean> registerTask = new FutureTask<>(registerDialogue);
         BaseLookup.getTaskExecutor().runOnGUIThread(registerTask);
         
-        try {
+        try 
+        {
             return registerTask.get();
         }
-        catch (InterruptedException | ExecutionException ex) {
+        catch (InterruptedException | ExecutionException ex) 
+        {
             steno.exception("Error during license valication", ex);
             return false;
         }
@@ -580,8 +584,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     
     @Override
     public void showPurchaseLicenseDialog() {
-        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
-            try {
+        Callable<Boolean> purchaseLicenseDialog = () -> 
+        {
+            try 
+            {
                 URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "PurchaseLicense.fxml");
                 FXMLLoader purchaseLicenseDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
                 StackPane licensePane = (StackPane) purchaseLicenseDialogLoader.load();
@@ -591,26 +597,60 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 purchaseLicenseDialogueStage.setScene(new Scene(licensePane, Color.TRANSPARENT));
                 purchaseLicenseDialogueStage.initOwner(DisplayManager.getMainStage());
                 purchaseLicenseDialogueStage.showAndWait();
-            } catch (IOException ex) {
+                return true;
+            } 
+            catch (IOException ex) 
+            {
                 steno.exception("Error during purchase license dialog", ex);
+                return false;
             }
-        });
+        };
+        
+        FutureTask<Boolean> purchaseLicenseTask = new FutureTask<>(purchaseLicenseDialog);
+        BaseLookup.getTaskExecutor().runOnGUIThread(purchaseLicenseTask);
+        
+        try 
+        {
+            purchaseLicenseTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) 
+        {
+            steno.exception("Error during license valication", ex);
+        }
     }
     
     @Override
     public void showConnectLicensedPrinterDialog() {
-        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
-            ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
+        Callable<Boolean> connectLicensedPrinterDialog = () -> 
+        {
+            ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false, true);
             choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.connectLicensedPrinterTitle"));
             choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.connectLicensedPrinterMessage"));
             ChoiceLinkButton okButton = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
 
-            try {
+            try 
+            {
                 choiceLinkDialogBox.getUserInput();
-            } catch (PrinterDisconnectedException ex) {
-                steno.exception("this should never happen", ex);
+                return true;
             }
-        });
+            catch (PrinterDisconnectedException ex) 
+            {
+                steno.exception("Printer disconnection exception", ex);
+                return false;
+            }
+        };
+        
+        FutureTask<Boolean> connectLicensedPrinterTask = new FutureTask<>(connectLicensedPrinterDialog);
+        BaseLookup.getTaskExecutor().runOnGUIThread(connectLicensedPrinterTask);
+        
+        try 
+        {
+            connectLicensedPrinterTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) 
+        {
+            steno.exception("Error during license valication", ex);
+        }
     }
 
     @Override

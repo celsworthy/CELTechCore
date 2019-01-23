@@ -47,6 +47,10 @@ public class Lookup
                 {
                     ChoiceLinkDialogBox.whenPrinterDisconnected();
                 }
+                else if (change.wasAdded())
+                {
+                    ChoiceLinkDialogBox.whenPrinterConnected();
+                }
             }
         });
     }
