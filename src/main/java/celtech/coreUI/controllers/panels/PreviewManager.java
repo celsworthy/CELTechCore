@@ -7,26 +7,19 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.coreUI.StandardColours;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
-import celtech.coreUI.controllers.ProjectAwareController;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
-import celtech.services.gcodepreview.GCodePreviewTask;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.services.gcodepreview.GCodePreviewExecutorService;
-import java.net.URL;
+import celtech.services.gcodepreview.GCodePreviewTask;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -201,7 +194,7 @@ public class PreviewManager
                 }
                 ModelContainerProject mProject = (ModelContainerProject)currentProject;
                 steno.info("Waiting for prep result");
-                Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+                Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), false);
                 steno.info("Got prep result - ifPresent() = " + Boolean.toString(resultOpt.isPresent()) + "isSuccess() = " + (resultOpt.isPresent() ? Boolean.toString(resultOpt.get().isSuccess()) : "---"));
                 if (resultOpt.isPresent() && resultOpt.get().isSuccess())
                 {
@@ -222,9 +215,11 @@ public class PreviewManager
                     // Set tool colours.
                     Color t0Colour = StandardColours.ROBOX_BLUE;
                     Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
+                    String printerType = "DEFAULT";
                     Printer printer = Lookup.getSelectedPrinterProperty().get();
                     if (printer != null)
                     {
+                        printerType = printer.printerConfigurationProperty().get().getTypeCode();
                         Head head = printer.headProperty().get();
                         if (head != null)
                         {
@@ -254,6 +249,7 @@ public class PreviewManager
                         }
                     }
                     steno.info("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
+                    previewTask.setPrinterType(printerType);
                     previewTask.setToolColour(0, t0Colour);
                     previewTask.setToolColour(1, t1Colour);
                     previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
@@ -278,7 +274,7 @@ public class PreviewManager
                 previewButton.setFxmlFileName("waitPreviewButton");
             });
             ModelContainerProject mProject = (ModelContainerProject)currentProject;
-            Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+            Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), false);
             if (resultOpt.isPresent() && resultOpt.get().isSuccess())
             {
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->

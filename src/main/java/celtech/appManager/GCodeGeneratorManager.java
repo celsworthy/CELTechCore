@@ -49,7 +49,9 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
 import javafx.geometry.Bounds;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -61,13 +63,14 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author tony
  */
-public class GCodeGeneratorManager implements ModelContainerProject.ProjectChangesListener 
+public class GCodeGeneratorManager implements ModelContainerProject.ProjectChangesListener
 {
     private static final Stenographer steno = StenographerFactory.getStenographer(GCodeGeneratorManager.class.getName());
     private final ExecutorService executorService;
     private final ModelContainerProject project;
     private Future restartTask = null;
     private Map<PrintQualityEnumeration, Future> taskMap = new HashMap<>();
+    private ObservableMap<PrintQualityEnumeration, Future> observableTaskMap = FXCollections.observableMap(taskMap);
     private Cancellable cancellable = null;
     private Printer currentPrinter = null;
     private boolean projectListenerInstalled = false;
@@ -81,6 +84,8 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private ChangeListener selectedPrinterReactionChangeListener;
     private PrinterListChangesListener printerListChangesListener;
     private MapChangeListener<Integer, Filament> filamentListener;
+    
+    private boolean gCodeForPrintOrSave = false;
     
     public GCodeGeneratorManager(ModelContainerProject project)
     {
@@ -102,9 +107,10 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         return project;
     }
     
-    public Optional<GCodeGeneratorResult> getPrepResult(PrintQualityEnumeration quality)
+    public Optional<GCodeGeneratorResult> getPrepResult(PrintQualityEnumeration quality, boolean gCodeForPrintOrSave)
     {
         Future<GCodeGeneratorResult> resultFuture = taskMap.get(quality);
+        this.gCodeForPrintOrSave = gCodeForPrintOrSave;
         if (resultFuture != null)
         {
             try 
@@ -281,7 +287,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
 
                     if (cancellable.cancelled().get())
                         return;
-                    taskMap.put(printQuality, prepTask);
+                    observableTaskMap.put(printQuality, prepTask);
                     prepTask.initialise(currentPrinter, meshSupplier, getGCodeDirectory(printQuality));
                     executorService.submit(prepTask);
                 }
@@ -494,5 +500,21 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     
     public void setSlicingOrder(List<PrintQualityEnumeration> slicingOrder) {
         this.slicingOrder = slicingOrder;
+    }
+    
+    public GCodeGeneratorTask getTaskFromTaskMap(PrintQualityEnumeration printQuality) {
+        if(taskMap.get(printQuality) instanceof GCodeGeneratorTask) {
+            return (GCodeGeneratorTask) taskMap.get(printQuality);
+        }
+        
+        return null;
+    }
+    
+    public boolean isGCodeForPrintOrSave() {
+        return gCodeForPrintOrSave;
+    }
+    
+    public ObservableMap<PrintQualityEnumeration, Future> getObservableTaskMap() {
+        return observableTaskMap;
     }
 }

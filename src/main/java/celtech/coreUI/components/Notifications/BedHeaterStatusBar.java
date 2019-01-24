@@ -4,7 +4,6 @@
 package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.model.HeaterMode;
 import celtech.roboxbase.printerControl.model.PrinterAncillarySystems;
 import java.net.URL;
@@ -39,25 +38,14 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
         reassessStatus();
     };
 
-    public BedHeaterStatusBar(PrinterAncillarySystems printerSystems)
+    public BedHeaterStatusBar()
     {
         super();
-        this.heaterMode = printerSystems.bedHeaterModeProperty();
-        this.bedTemperature = printerSystems.bedTemperatureProperty();
-        this.bedFirstLayerTargetTemperature = printerSystems.bedFirstLayerTargetTemperatureProperty();
-        this.bedTargetTemperature = printerSystems.bedTargetTemperatureProperty();
-
-        this.bedTemperature.addListener(numberChangeListener);
-        this.bedFirstLayerTargetTemperature.addListener(numberChangeListener);
-        this.bedTargetTemperature.addListener(numberChangeListener);
-        this.heaterMode.addListener(heaterModeChangeListener);
-
+        
         getStyleClass().add("secondaryStatusBar");
 
         setPickOnBounds(false);
         setMouseTransparent(true);
-
-        reassessStatus();
     }
 
     @Override
@@ -146,6 +134,20 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
         }
     }
 
+    public void bindToPrinterSystems(PrinterAncillarySystems printerSystems) {
+        this.heaterMode = printerSystems.bedHeaterModeProperty();
+        this.bedTemperature = printerSystems.bedTemperatureProperty();
+        this.bedFirstLayerTargetTemperature = printerSystems.bedFirstLayerTargetTemperatureProperty();
+        this.bedTargetTemperature = printerSystems.bedTargetTemperatureProperty();
+
+        this.bedTemperature.addListener(numberChangeListener);
+        this.bedFirstLayerTargetTemperature.addListener(numberChangeListener);
+        this.bedTargetTemperature.addListener(numberChangeListener);
+        this.heaterMode.addListener(heaterModeChangeListener);
+        
+        reassessStatus();
+    }
+    
     public void unbindAll()
     {
         if (heaterMode != null)

@@ -5,9 +5,9 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.postprocessor.PrintJobStatistics;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
@@ -81,7 +81,7 @@ public class GetTimeWeightCost
     {
         ModelContainerProject mProject = (ModelContainerProject)project;
         Printer printer = Lookup.getSelectedPrinterProperty().get();
-        Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(printQuality);
+        Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(printQuality, false);
         if (resultOpt.isPresent())
         {
             if (resultOpt.get().isSuccess())

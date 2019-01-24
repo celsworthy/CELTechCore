@@ -44,7 +44,9 @@ import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
+import celtech.roboxbase.utils.PrintJobUtils;
 import celtech.roboxbase.utils.PrinterUtils;
+import celtech.roboxbase.utils.SystemUtils;
 import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import static celtech.utils.StringMetrics.getWidthOfString;
@@ -55,6 +57,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -362,58 +366,64 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             printableProject.setCameraTriggerData(cameraTriggerData);
             printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
 
-            try
+            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
             {
-                if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+                displayManager.getPurgeInsetPanelController().purgeAndPrint(
+                        (ModelContainerProject) currentProject, printer);
+            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
+                    || purgeConsent == PurgeResponse.NOT_NECESSARY)
+            {
+                ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
+                printableProject.setUsedExtruders(usedExtruders);
+                for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
                 {
-                    displayManager.getPurgeInsetPanelController().purgeAndPrint(
-                            (ModelContainerProject) currentProject, printer);
-                } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
-                        || purgeConsent == PurgeResponse.NOT_NECESSARY)
-                {
-                    ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
-                    printableProject.setUsedExtruders(usedExtruders);
-                    for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
+                    if (usedExtruders.get(extruderNumber))
                     {
-                        if (usedExtruders.get(extruderNumber))
+                        if (extruderNumber == 0)
                         {
-                            if (extruderNumber == 0)
+                            if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
                             {
-                                if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                                {
-                                    currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
-                                } else
-                                {
-                                    currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
-                                }
+                                currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
                             } else
                             {
                                 currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                             }
+                        } else
+                        {
+                            currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                         }
                     }
-                    Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                            .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
-                    printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
-                    applicationStatus.setMode(ApplicationMode.STATUS);
                 }
-            } catch (PrinterException ex)
-            {
-                steno.error("Error during print project " + ex.getMessage());
+                ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+                singleThreadExecutor.submit(() -> {
+                    try {
+                        Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
+                        printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                        BaseLookup.getTaskExecutor().runOnGUIThread(() -> applicationStatus.setMode(ApplicationMode.STATUS));
+                    } catch (PrinterException ex) {
+                        steno.error("Error during print project " + ex.getMessage());
+                    }
+                });
             }
         }
     }
     
     @FXML
-    void savePressed(ActionEvent event) {
+    void savePressed(ActionEvent event) 
+    {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
         steno.trace("Save slice to file pressed");
-        if (currentProject instanceof ModelContainerProject) {
+        
+        if (currentProject instanceof ModelContainerProject) 
+        {
             String projectLocation = ApplicationConfiguration.getProjectDirectory()
                         + currentProject.getProjectName();
             Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
-            if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) {
+                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
+            
+            if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) 
+            {
                 steno.debug("Slicing successful prompting user to save sliced files...");
                 String slicedFilesLocation = projectLocation 
                         + File.separator 
@@ -421,11 +431,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
                 saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
                 File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
-                if (dest != null) {
-                    try {
+                if (dest != null) 
+                {
+                    try 
+                    {
                         FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
                         steno.debug("Files copied to new location - " + dest.getPath());
-                    } catch (IOException ex) {
+                        
+                        // The files must use an appropriate print job id in order for the printer to accept it at.
+                        String jobUUID = SystemUtils.generate16DigitID();
+                        PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                    } 
+                    catch (IOException ex) 
+                    {
                         steno.exception("Error occured when attempting to save sliced GCode", ex);
                     }
                 }

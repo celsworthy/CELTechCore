@@ -79,11 +79,21 @@ public class GCodePreviewTask extends Task<Boolean> {
         }
     }
 
-    public void loadGCodeFile(String fileName)
+    public void loadGCodeFile(String filePath)
     {
         StringBuilder command = new StringBuilder();
         command.append("load ");
-        command.append(fileName);
+        command.append(filePath);
+        command.trimToSize();
+
+        writeCommand(command.toString());
+    }
+
+    public void setPrinterType(String printerType)
+    {
+        StringBuilder command = new StringBuilder();
+        command.append("printer ");
+        command.append(printerType);
         command.trimToSize();
 
         writeCommand(command.toString());
