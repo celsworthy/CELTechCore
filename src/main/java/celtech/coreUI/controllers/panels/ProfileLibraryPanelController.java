@@ -409,8 +409,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             isDirty.set(false);
             repopulateCmbPrintProfile();
             state.set(ProfileLibraryPanelController.State.CUSTOM);
-            
-            repopulateCmbPrintProfile();
             cmbPrintProfile.setValue(savedProfile);
         }
     }

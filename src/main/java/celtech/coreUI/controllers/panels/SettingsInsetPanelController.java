@@ -165,18 +165,25 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     };
 
     private final ListChangeListener<RoboxProfile> roboxProfileChangeListener = 
-            (ListChangeListener.Change<? extends RoboxProfile> change) -> {
-        populateCustomProfileChooser();
-        showPleaseCreateProfile(
-                ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(getSlicerType()).isEmpty());
-        clearSettingsIfNoCustomProfileAvailable();
+            (ListChangeListener.Change<? extends RoboxProfile> change) -> 
+    {
+        while(change.next())
+        {
+            populateCustomProfileChooser();
+            showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
+            if(change.wasAdded())
+            {
+                RoboxProfile savedProfile = change.getAddedSubList().get(0);
+                customProfileChooser.getSelectionModel().select(savedProfile);
+            }
+            clearSettingsIfNoCustomProfileAvailable();
+        }
     };
         
     private final ChangeListener<SlicerType> slicerTypeChangeListener = 
             (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
         populateCustomProfileChooser();
-        showPleaseCreateProfile(
-                ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(newValue).isEmpty());
+        showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
         clearSettingsIfNoCustomProfileAvailable();
     };
 
@@ -560,9 +567,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         printQualityWidgetsUpdate(printQuality.get());
 
         // just in case custom settings are changing through some other mechanism
-        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-            selectCurrentCustomSettings();
-        });
+//        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+//            selectCurrentCustomSettings();
+//        });
 
         brimSlider.setValue(saveBrim);
         fillDensitySlider.setValue(saveFillDensity * 100);
@@ -724,13 +731,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 fillDensitySlider.setValue(fillDensity * 100.0);
             }
 
-            if (printQuality.get() == PrintQualityEnumeration.CUSTOM) {
-                if (!settings.isPresent()) {
-                    customProfileChooser.setValue(null);
-                } else  {
-                    customProfileChooser.getSelectionModel().select(settings.get());
-                }
-            }
+//            if (printQuality.get() == PrintQualityEnumeration.CUSTOM) {
+//                if (!settings.isPresent()) {
+//                    customProfileChooser.setValue(null);
+//                } else  {
+//                    customProfileChooser.getSelectionModel().select(settings.get());
+//                }
+//            }
         }
     }
 
