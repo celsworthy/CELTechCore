@@ -643,7 +643,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 && !(currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() != currentPrinter.effectiveFilamentsProperty().get(1).getMaterial()
                 && !((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
 
-        supportGapButton.setSelected(supportGapEnabledDriver);
+        if(getSlicerType() == SlicerType.Cura) {
+            supportGapButton.setSelected(supportGapEnabledDriver);
+        }
     }
 
     private void dealWithIncompatibleMaterials()
