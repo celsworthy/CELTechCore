@@ -119,7 +119,6 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     private void reassessStatus()
     {
         boolean showBar = false;
-
         GCodeGeneratorManager gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
         
         if (gCodeGenManager.isGCodeForPrintOrSave() 

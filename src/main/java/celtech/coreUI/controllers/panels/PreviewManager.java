@@ -215,9 +215,11 @@ public class PreviewManager
                     // Set tool colours.
                     Color t0Colour = StandardColours.ROBOX_BLUE;
                     Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
+                    String printerType = "DEFAULT";
                     Printer printer = Lookup.getSelectedPrinterProperty().get();
                     if (printer != null)
                     {
+                        printerType = printer.printerConfigurationProperty().get().getTypeCode();
                         Head head = printer.headProperty().get();
                         if (head != null)
                         {
@@ -247,6 +249,7 @@ public class PreviewManager
                         }
                     }
                     steno.info("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
+                    previewTask.setPrinterType(printerType);
                     previewTask.setToolColour(0, t0Colour);
                     previewTask.setToolColour(1, t1Colour);
                     previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
