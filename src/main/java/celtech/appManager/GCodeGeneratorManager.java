@@ -288,6 +288,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                     if (cancellable.cancelled().get())
                         return;
                     observableTaskMap.put(printQuality, prepTask);
+                    tidyProjectDirectory(getGCodeDirectory(printQuality));
                     prepTask.initialise(currentPrinter, meshSupplier, getGCodeDirectory(printQuality));
                     executorService.submit(prepTask);
                 }
@@ -354,12 +355,8 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         return directoryName;
     }
     
-    // NOT USED CURRENTLY?? NEED TO THINK ABOUT PROJECTS A BIT MORE
-    public void tidyProjectDirectories()
+    private void tidyProjectDirectory(String directoryName)
     {
-        // Erase old gCode directories
-        String directoryName = ApplicationConfiguration.getProjectDirectory()
-                + project.getProjectName() + "-GCode";
         File projectDirectory = new File(directoryName);
         File[] filesOnDisk = projectDirectory.listFiles();
         if (filesOnDisk != null)
