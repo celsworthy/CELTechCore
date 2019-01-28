@@ -82,13 +82,13 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     @FXML
     private RadioButton rbCustom;
     @FXML
-    private Label headType;
+    private Label headAndSlicerType;
 
     private ToggleGroup qualityToggleGroup;
 
     private Project currentProject;
     private Printer currentPrinter;
-    private String currentHeadType;
+    private String currentHeadType = "";
 
     private boolean settingPrintQuality = false;
     private boolean slicedAlready = false;
@@ -130,6 +130,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
     /**
      * Initialises the controller class.
+     * 
+     * @param url
+     * @param rb
      */
     @Override
     public void initialize(URL url, ResourceBundle rb)
@@ -143,9 +146,13 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                     .modeProperty().addListener(applicationModeChangeListener);
 
             setupQualityRadioButtons();
+            
+            Lookup.getUserPreferences().getSlicerTypeProperty().addListener((observable, oldValue, newValue) -> {
+                updateHeadAndSlicerType();
+            });
         } catch (Exception ex)
         {
-            ex.printStackTrace();
+            steno.exception("Exception when initializing TimeCostInsetPanel", ex);
         }
     }
 
@@ -159,13 +166,22 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         {
             currentHeadType = HeadContainer.defaultHeadID;
         }
-        if (headTypeBefore != currentHeadType)
+        if (!headTypeBefore.equals(currentHeadType))
         {
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
-                headType.setText("Estimates for head type: " + currentHeadType.toString());
+                updateHeadAndSlicerType();
             });
         }
+    }
+    
+    private void updateHeadAndSlicerType() 
+    {
+        headAndSlicerType.setText(Lookup.i18n("Estimates for head type: " 
+                + currentHeadType
+                + "   -   "
+                + "Slicing with: "
+                + getSlicerType()));
     }
 
     private void setupQualityRadioButtons()
@@ -366,7 +382,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                         {
                             return;
                         }
-                    };
+                    }
                 };
                 
                 slicedAlready = true;
