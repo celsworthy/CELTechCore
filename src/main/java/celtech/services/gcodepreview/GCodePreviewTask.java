@@ -5,18 +5,14 @@
  */
 package celtech.services.gcodepreview;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.MachineType;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -31,9 +27,14 @@ public class GCodePreviewTask extends Task<Boolean> {
     private OutputStream stdInStream;
     private final IntegerProperty layerCountProperty = new SimpleIntegerProperty(0);
     private List<String> pendingCommands = null;
+    private final String projectDirectory;
+    private String printerType;
+    private Rectangle2D normalisedScreenBounds;
     
-    public GCodePreviewTask()
+    public GCodePreviewTask(String projectDirectory, String printerType, Rectangle2D normalisedScreenBounds)
     {
+        this.projectDirectory = projectDirectory;
+        this.normalisedScreenBounds = normalisedScreenBounds;
         this.stdInStream = null;
     }
 
@@ -161,13 +162,39 @@ public class GCodePreviewTask extends Task<Boolean> {
         commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.configFile.xml");
         commands.add("-jar");
         commands.add(BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.jar");
-        String languageTag = BaseConfiguration.getApplicationLocale();
-        if (languageTag != null)
-            commands.add("-l" + languageTag);
+        //commands.add("-wt");
 
+        String languageTag = BaseConfiguration.getApplicationLocale();
+        if (languageTag != null) {
+            commands.add("-l");
+            commands.add(languageTag);
+        }
+        
+        if (printerType != null) {
+            commands.add("-p");
+            commands.add(printerType);
+        }
+ 
+        if (projectDirectory != null) {
+            commands.add("-pd");
+            commands.add(projectDirectory);
+        }
+        
+        if (normalisedScreenBounds != null) {
+            commands.add("-wn");
+            commands.add("-wx");
+            commands.add(Double.toString(normalisedScreenBounds.getMinX()));
+            commands.add("-wy");
+            commands.add(Double.toString(normalisedScreenBounds.getMinY()));
+            commands.add("-ww");
+            commands.add(Double.toString(normalisedScreenBounds.getWidth()));
+            commands.add("-wh");
+            commands.add(Double.toString(normalisedScreenBounds.getHeight()));
+        }
+        
         if (commands.size() > 0)
         {
-            steno.debug("GCodePreviewTask command is \"" + String.join(" ", commands) + "\"");
+            steno.info("GCodePreviewTask command is \"" + String.join(" ", commands) + "\"");
             ProcessBuilder previewProcessBuilder = new ProcessBuilder(commands);
             previewProcessBuilder.redirectErrorStream(true);
 

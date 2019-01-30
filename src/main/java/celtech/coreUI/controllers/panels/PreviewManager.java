@@ -5,6 +5,8 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.configuration.ApplicationConfiguration;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.roboxbase.BaseLookup;
@@ -33,13 +35,12 @@ public class PreviewManager
 {
     private final Stenographer steno = StenographerFactory.getStenographer(PreviewManager.class.getName());
 
+    private DisplayManager displayManager = null;
     private Project currentProject = null;
     private GCodePreviewExecutorService buttonExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService updateExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService previewExecutor = new GCodePreviewExecutorService();
     private final GraphicToggleButtonWithLabel previewButton;
-    private boolean autoPreview = true;
-    
     private GCodePreviewTask previewTask = null;
     
     private final ChangeListener<Boolean> previewRunningListener =(ObservableValue<? extends Boolean> observable, Boolean wasRunning, Boolean isRunning) -> {
@@ -79,9 +80,11 @@ public class PreviewManager
         }
     };
     
-    public PreviewManager(GraphicToggleButtonWithLabel previewButton)
+    public PreviewManager(GraphicToggleButtonWithLabel previewButton,
+                          DisplayManager displayManager)
     {
         this.previewButton = previewButton;
+        this.displayManager = displayManager;
         try
         {
             ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
@@ -199,20 +202,8 @@ public class PreviewManager
                 if (resultOpt.isPresent() && resultOpt.get().isSuccess())
                 {
                     steno.info("GCodePrepResult = " + resultOpt.get().getPostProcOutputFileName());
-                    BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        steno.info("Setting preview button selected");
-                        previewButton.selectedProperty().set(true);
-                    });
-                    if (previewTask == null)
-                    {
-                        steno.info("Starting preview task");
-                        previewTask = new GCodePreviewTask();
-                        previewTask.runningProperty().addListener(previewRunningListener);
-                        previewExecutor.runTask(previewTask);
-                    }
-                    // Set filament factors.
-                    // Set tool colours.
+
+                    // Get tool colours.
                     Color t0Colour = StandardColours.ROBOX_BLUE;
                     Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
                     String printerType = "DEFAULT";
@@ -248,8 +239,27 @@ public class PreviewManager
                                 t1Colour = t0Colour;
                         }
                     }
+
+                    BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                    {
+                        steno.info("Setting preview button selected");
+                        previewButton.selectedProperty().set(true);
+                    });
+
+                    if (previewTask == null)
+                    {
+                        String projDirectory = ApplicationConfiguration.getProjectDirectory()
+                                                   + currentProject.getProjectName(); 
+                        steno.info("Starting preview task");
+                        previewTask = new GCodePreviewTask(projDirectory, printerType, displayManager.getNormalisedPreviewRectangle());
+                        previewTask.runningProperty().addListener(previewRunningListener);
+                        previewExecutor.runTask(previewTask);
+                    }
+                    else
+                    {
+                        previewTask.setPrinterType(printerType);
+                    }
                     steno.info("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
-                    previewTask.setPrinterType(printerType);
                     previewTask.setToolColour(0, t0Colour);
                     previewTask.setToolColour(1, t1Colour);
                     previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
