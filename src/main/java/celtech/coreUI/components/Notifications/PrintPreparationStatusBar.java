@@ -65,7 +65,8 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         getStyleClass().add("secondaryStatusBar");
     }
     
-    public void bindToPrinter(Printer printer) {
+    public void bindToPrinter(Printer printer) 
+    {
         this.printer = printer;
 //        printer.getPrintEngine().postProcessorService.runningProperty().addListener(serviceStatusListener);
 //        printer.getPrintEngine().postProcessorService.progressProperty().addListener(serviceProgressListener);
@@ -75,31 +76,43 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         cancelButton.visibleProperty().bind(printer.canCancelProperty().and(cancelAllowed));
         cancelButton.setOnAction(cancelEventHandler);
         
-        reassessStatus();
+        if(project != null) 
+        {
+            reassessStatus();
+        }
     }
     
-    public void bindToProject(Project project) {
+    public void bindToProject(Project project) 
+    {
         this.project = project;
         
-        if(project instanceof ModelContainerProject) {
+        if(project instanceof ModelContainerProject) 
+        {
             GCodeGeneratorManager gCodeGeneratorManager = ((ModelContainerProject) project).getGCodeGenManager();
             gCodeGeneratorManager.getObservableTaskMap().addListener((Observable change) -> {
                 bindToTask(gCodeGeneratorManager.getTaskFromTaskMap(((ModelContainerProject) project).getPrintQuality()));
             });
         }
         
-        reassessStatus();
+        if(printer != null) 
+        {
+            reassessStatus();
+        }
     }
     
-    private void bindToTask(GCodeGeneratorTask gCodeGeneratorTask) {
-        if(gCodeGeneratorTask != null) {
+    private void bindToTask(GCodeGeneratorTask gCodeGeneratorTask) 
+    {
+        if(gCodeGeneratorTask != null) 
+        {
             gCodeGeneratorTask.runningProperty().addListener(serviceStatusListener);
             gCodeGeneratorTask.progressProperty().addListener(serviceProgressListener);
         }
     }
     
-    private void unbindTask(GCodeGeneratorTask gCodeGeneratorTask) {
-        if(gCodeGeneratorTask != null) {
+    private void unbindTask(GCodeGeneratorTask gCodeGeneratorTask) 
+    {
+        if(gCodeGeneratorTask != null) 
+        {
             gCodeGeneratorTask.runningProperty().removeListener(serviceStatusListener);
             gCodeGeneratorTask.progressProperty().removeListener(serviceProgressListener);
         }
