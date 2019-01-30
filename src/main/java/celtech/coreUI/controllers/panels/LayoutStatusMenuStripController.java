@@ -394,13 +394,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                         }
                     }
                 }
+                applicationStatus.setMode(ApplicationMode.STATUS);
                 ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
                 singleThreadExecutor.submit(() -> {
                     try {
                         Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
                                 .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
                         printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
-                        BaseLookup.getTaskExecutor().runOnGUIThread(() -> applicationStatus.setMode(ApplicationMode.STATUS));
                     } catch (PrinterException ex) {
                         steno.error("Error during print project " + ex.getMessage());
                     }
@@ -417,37 +417,42 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         
         if (currentProject instanceof ModelContainerProject) 
         {
-            String projectLocation = ApplicationConfiguration.getProjectDirectory()
+            ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+            singleThreadExecutor.submit(() -> {
+                String projectLocation = ApplicationConfiguration.getProjectDirectory()
                         + currentProject.getProjectName();
-            Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
-            
-            if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess()) 
-            {
-                steno.debug("Slicing successful prompting user to save sliced files...");
-                String slicedFilesLocation = projectLocation 
-                        + File.separator 
-                        + currentProject.getPrintQuality();
-                saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
-                saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
-                File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
-                if (dest != null) 
+                Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                        .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
+                if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess())
                 {
-                    try 
-                    {
-                        FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
-                        steno.debug("Files copied to new location - " + dest.getPath());
-                        
-                        // The files must use an appropriate print job id in order for the printer to accept it at.
-                        String jobUUID = SystemUtils.generate16DigitID();
-                        PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
-                    } 
-                    catch (IOException ex) 
-                    {
-                        steno.exception("Error occured when attempting to save sliced GCode", ex);
-                    }
+                    BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+                        steno.debug("Slicing successful prompting user to save sliced files..."); 
+                        String slicedFilesLocation = projectLocation
+                                + File.separator
+                                + currentProject.getPrintQuality();
+                        saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
+                        saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
+                        File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
+
+                        if (dest != null)
+                        {
+                            try 
+                            {
+                                FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
+                                steno.debug("Files copied to new location - " + dest.getPath());
+
+                                // The files must use an appropriate print job id in order for the printer to accept it at.
+                                String jobUUID = SystemUtils.generate16DigitID();
+                                PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                            }
+                            catch (IOException ex)
+                            {
+                                steno.exception("Error occured when attempting to save sliced GCode", ex);
+                            }
+                        }
+                    });
                 }
-            }
+            });
         }
     }
 	

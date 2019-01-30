@@ -214,6 +214,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             
             slicingOrder.forEach(printQuality ->
             {
+                steno.info("SLICING FOR PRINT QUALITY: " + printQuality);
                 String headType = HeadContainer.defaultHeadID;
                 SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
 
@@ -384,7 +385,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                     restartAllTasks();
                 }
             } else {
-                purgeAllTasks();
+                //purgeAllTasks();
             }
         };
         
