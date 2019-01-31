@@ -34,6 +34,7 @@ public class GCodePreviewTask extends Task<Boolean> {
     public GCodePreviewTask(String projectDirectory, String printerType, Rectangle2D normalisedScreenBounds)
     {
         this.projectDirectory = projectDirectory;
+        this.printerType = printerType;
         this.normalisedScreenBounds = normalisedScreenBounds;
         this.stdInStream = null;
     }
