@@ -37,7 +37,9 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
@@ -47,7 +49,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -65,7 +66,6 @@ public class ProjectTab extends Tab implements ProjectCallback
     private final Label nonEditableProjectNameField = new Label();
     private final RestrictedTextField editableProjectNameField = new RestrictedTextField();
     private Project project = null;
-    private Pane baseContainer = null;
     private AnchorPane basePane = null;
     private AnchorPane overlayPane = null;
     private ThreeDViewManager viewManager = null;
@@ -197,8 +197,6 @@ public class ProjectTab extends Tab implements ProjectCallback
         Label loadAModel = new Label(BaseLookup.i18n("projectTab.loadAModel"));
         loadAModel.getStyleClass().add("load-a-model-text");
         nonSpecificModelIndicator.getChildren().add(loadAModel);
-
-        baseContainer = new Pane();
 
         basePane = new AnchorPane();
         basePane.getStyleClass().add("project-view-background");
@@ -601,4 +599,20 @@ public class ProjectTab extends Tab implements ProjectCallback
             initialiseWithProject();
         }
     }
+    
+    public Rectangle2D getPreviewRectangle()
+    {
+        Rectangle2D nRectangle = null;
+        Node ss = viewManager.getSubScene();
+        Bounds ssBounds = ss.localToScreen(ss.getBoundsInLocal());
+        Bounds rhBounds = rhInsetContainer.localToScreen(rhInsetContainer.getBoundsInLocal());
+
+        double w = rhBounds.getWidth(); // Width of the rhs is a measure of the size of the app.
+        nRectangle = new Rectangle2D(ssBounds.getMinX() + 0.05 * w,
+                                     ssBounds.getMinY() + 0.05 * w,
+                                     ssBounds.getWidth() - 1.2 * w,
+                                     ssBounds.getHeight() - 0.35 * w);
+        return nRectangle;
+    }
+
 }

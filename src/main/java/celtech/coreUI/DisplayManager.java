@@ -51,6 +51,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
@@ -69,6 +70,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -163,7 +165,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         steno.debug("Starting AutoMaker - machine type is " + BaseConfiguration.getMachineType());
     }
     
-    // This is here solely so it shutdown can be called on it when the application closes.
+    // This is here solely so shutdown can be called on it when the application closes.
     public void setPreviewManager(PreviewManager previewManager) {
         this.previewManager = previewManager;
     }
@@ -607,6 +609,24 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return projectTab;
     }
 
+    public Rectangle2D getNormalisedPreviewRectangle()
+    {
+        Rectangle2D nRectangle = null;
+        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
+
+        if (currentTab instanceof ProjectTab)
+        {
+            ProjectTab currentProjectTab = (ProjectTab)currentTab;
+            Rectangle2D previewBounds =  currentProjectTab.getPreviewRectangle();
+            Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+            nRectangle = new Rectangle2D(previewBounds.getMinX() / primaryScreenBounds.getWidth(), 
+                                         previewBounds.getMinY() / primaryScreenBounds.getHeight(),
+                                         previewBounds.getWidth() / primaryScreenBounds.getWidth(),
+                                         previewBounds.getHeight() / primaryScreenBounds.getHeight());
+        }
+        return nRectangle;
+    }
+        
     public static Stage getMainStage()
     {
         return mainStage;

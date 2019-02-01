@@ -1019,7 +1019,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         });
         
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
-        previewManager = new PreviewManager(previewButton);
+        previewManager = new PreviewManager(previewButton, displayManager);
         previewManager.setProjectAndPrinter(selectedProject, currentPrinter);
         displayManager.setPreviewManager(previewManager);
 
