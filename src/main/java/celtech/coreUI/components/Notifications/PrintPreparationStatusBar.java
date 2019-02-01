@@ -10,13 +10,16 @@ import celtech.appManager.Project;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.Observable;
+import java.util.concurrent.Future;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.Initializable;
@@ -30,6 +33,11 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
 
     private Printer printer = null;
     private Project project;
+    
+    private GCodeGeneratorTask boundTask = null;
+    private PrintQualityEnumeration selectedPrintQuality = null;
+    
+    private GCodeGeneratorManager gCodeGenManager;
 
     private final ChangeListener<Boolean> serviceStatusListener = (ObservableValue<? extends Boolean> ov, Boolean lastState, Boolean newState) ->
     {
@@ -39,6 +47,28 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     private final ChangeListener<Number> serviceProgressListener = (ObservableValue<? extends Number> ov, Number lastState, Number newState) ->
     {
         reassessStatus();
+    };
+    
+    private final ListChangeListener<PrintQualityEnumeration> slicingOrderChangeListener = (ListChangeListener.Change<? extends PrintQualityEnumeration> change) -> {
+        if(boundTask != null) 
+        {
+            unbindTask(boundTask);
+        }
+        // First enum in list should be quality selected
+        selectedPrintQuality = change.getList().get(0);
+        GCodeGeneratorTask selectedTask = gCodeGenManager.getTaskFromTaskMap(selectedPrintQuality);
+        bindToTask(selectedTask);
+        boundTask = selectedTask;
+    };
+    
+    private final MapChangeListener<PrintQualityEnumeration, Future> taskMapListener = (MapChangeListener.Change<? extends PrintQualityEnumeration, ? extends Future> change) -> {
+        if(boundTask != null) 
+        {
+            unbindTask(boundTask);
+        }
+        GCodeGeneratorTask selectedTask = gCodeGenManager.getTaskFromTaskMap(selectedPrintQuality);
+        bindToTask(selectedTask);
+        boundTask = selectedTask;
     };
 
     private final BooleanProperty cancelAllowed = new SimpleBooleanProperty(false);
@@ -88,10 +118,9 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         
         if(project instanceof ModelContainerProject) 
         {
-            GCodeGeneratorManager gCodeGeneratorManager = ((ModelContainerProject) project).getGCodeGenManager();
-            gCodeGeneratorManager.getObservableTaskMap().addListener((Observable change) -> {
-                bindToTask(gCodeGeneratorManager.getTaskFromTaskMap(((ModelContainerProject) project).getPrintQuality()));
-            });
+            gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
+            gCodeGenManager.getSlicingOrder().addListener(slicingOrderChangeListener);
+            gCodeGenManager.getObservableTaskMap().addListener(taskMapListener);
         }
         
         if(printer != null) 
@@ -132,23 +161,16 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     private void reassessStatus()
     {
         boolean showBar = false;
-        GCodeGeneratorManager gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
+        GCodeGeneratorTask gCodeGenTask = gCodeGenManager.getTaskFromTaskMap(project.getPrintQuality());
         
-        if (gCodeGenManager.isGCodeForPrintOrSave() 
-                && gCodeGenManager.getTaskFromTaskMap(project.getPrintQuality()).runningProperty().get())
+        if (gCodeGenManager.isGCodeForPrintOrSave() && gCodeGenTask.runningProperty().get())
         {
-            largeProgressDescription.setText(Lookup.i18n("printerStatus.slicing"));
-            progressBar.setProgress(gCodeGenManager.getTaskFromTaskMap(project.getPrintQuality()).getProgress());
+            largeProgressDescription.setText(gCodeGenTask.getMessage());
+            progressBar.setProgress(gCodeGenTask.getProgress());
             cancelAllowed.set(true);
             showBar = true;
         }
         
-//        if (printer != null && printer.getPrintEngine().postProcessorService.runningProperty().get())
-//        {
-//            largeProgressDescription.setText(Lookup.i18n("printerStatus.postProcessing"));
-//            progressBar.setProgress(printer.getPrintEngine().postProcessorService.getProgress());
-//            cancelAllowed.set(true);
-//            showBar = true;
         if (printer != null && printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
         {
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
@@ -185,10 +207,10 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     
     public void unbindFromProject() {
         if(project != null) {
-            GCodeGeneratorManager gCodeGeneratorManager = ((ModelContainerProject) project).getGCodeGenManager();
-            gCodeGeneratorManager.getObservableTaskMap().addListener((Observable change) -> {
-                unbindTask(gCodeGeneratorManager.getTaskFromTaskMap(((ModelContainerProject) project).getPrintQuality()));
-            });
+            gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
+            gCodeGenManager.getSlicingOrder().removeListener(slicingOrderChangeListener);
+            gCodeGenManager.getObservableTaskMap().removeListener(taskMapListener);
+            unbindTask(boundTask);
         }
     }
 }
