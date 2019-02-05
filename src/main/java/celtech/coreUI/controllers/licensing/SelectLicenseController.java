@@ -1,8 +1,9 @@
 package celtech.coreUI.controllers.licensing;
 
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.licensing.License;
-import celtech.roboxbase.licensing.LicenseManager;
+import celtech.roboxbase.licence.Licence;
+import celtech.roboxbase.licence.LicenceUtilities;
+import celtech.roboxbase.licensing.LicenceManager;
 import java.io.File;
 import java.net.URL;
 import java.util.Optional;
@@ -43,18 +44,18 @@ public class SelectLicenseController implements Initializable {
     
     private boolean licenseValid;
     
-    private License license;
+    private Licence licence;
     
     private File licenseFile;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Optional<License> potentialLicense = LicenseManager.getInstance().readCachedLicenseFile();
+        Optional<Licence> potentialLicense = LicenceManager.getInstance().readCachedLicenseFile();
         if(potentialLicense.isPresent()) {
-            license = potentialLicense.get();
-            licenseInfo.setText(license.toString());
+            licence = potentialLicense.get();
+            licenseInfo.setText(licence.toString());
         }
-        licenseFile = LicenseManager.getInstance().tryAndGetCachedLicenseFile();
+        licenseFile = LicenceManager.getInstance().tryAndGetCachedLicenseFile();
     }
     
     public boolean isLicenseValid() {
@@ -70,7 +71,7 @@ public class SelectLicenseController implements Initializable {
         
         if(selectedLicenseFile != null) {
             fileLabel.setText(selectedLicenseFile.getAbsolutePath());
-            Optional<License> potentialLicense = LicenseManager.getInstance().readEncryptedLicenseFile(selectedLicenseFile);
+            Optional<Licence> potentialLicense = LicenceUtilities.readEncryptedLicenceFile(selectedLicenseFile);
             if(potentialLicense.isPresent()) {
                 licenseInfo.setText(potentialLicense.get().toString());
             }
@@ -83,7 +84,7 @@ public class SelectLicenseController implements Initializable {
     {
         if(licenseFile.exists()) 
         {
-            licenseValid = LicenseManager.getInstance().checkEncryptedLicenseFileValid(licenseFile, true, true);
+            licenseValid = LicenceManager.getInstance().checkEncryptedLicenseFileValid(licenseFile, true, true);
         }
         
         if(licenseValid) 
