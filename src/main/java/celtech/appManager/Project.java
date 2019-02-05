@@ -19,6 +19,7 @@ import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.Version;
@@ -83,6 +84,8 @@ public abstract class Project
     protected String lastPrintJobID = "";
     
     protected boolean projectNameModified = false;
+    
+    private GCodeGeneratorManager gCodeGenManager;
 
     public Project()
     {
@@ -102,11 +105,16 @@ public abstract class Project
                 + formatter.format(now));
         lastModifiedDate.set(now);
 
+        gCodeGenManager = new GCodeGeneratorManager(this);
+        
         customSettingsNotChosen.bind(
                 printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
                 .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
-        canPrint.bind(customSettingsNotChosen.not());
+        canPrint.bind(customSettingsNotChosen.not()
+                .and((gCodeGenManager.selectedTaskRunningProperty()
+                        .and(gCodeGenManager.getGCodeForPrintOrSaveProperty()))
+                        .not()));
 
         printerSettings.getDataChanged().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -120,7 +128,6 @@ public abstract class Project
                 {
                     projectModified();
                 });
-
     }
 
     protected abstract void initialise();
@@ -257,6 +264,15 @@ public abstract class Project
     public final BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
+    }
+    
+    public ObservableList<Boolean> getUsedExtruders(Printer printer)
+    {
+        List<Boolean> localUsedExtruders = new ArrayList<>();
+        localUsedExtruders.add(false);
+        localUsedExtruders.add(false);
+        
+        return FXCollections.observableArrayList(localUsedExtruders);
     }
 
     /**
@@ -696,5 +712,10 @@ public abstract class Project
     public void invalidate()
     {
         projectModified();
+    }
+    
+    public GCodeGeneratorManager getGCodeGenManager()
+    {
+        return gCodeGenManager;
     }
 }

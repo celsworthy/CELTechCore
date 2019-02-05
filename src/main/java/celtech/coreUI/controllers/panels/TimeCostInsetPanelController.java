@@ -226,7 +226,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         sliceOrder = new ArrayList<>(Arrays.asList(PrintQualityEnumeration.values()));
         sliceOrder.remove(firstToSlice);
         sliceOrder.add(0, firstToSlice);
-        gCodeGeneratorManager.setSlicingOrder(sliceOrder);
+        gCodeGeneratorManager.changeSlicingOrder(sliceOrder);
     }
 
     @Override

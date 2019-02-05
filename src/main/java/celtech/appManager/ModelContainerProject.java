@@ -79,7 +79,6 @@ public class ModelContainerProject extends Project
     private BooleanProperty modelColourChanged;
     private BooleanBinding hasInvalidMeshes;
 
-    private GCodeGeneratorManager gCodeGenManager;
     private FilamentContainer filamentContainer;
 
     //Changed to make this list always include both extruders
@@ -106,19 +105,12 @@ public class ModelContainerProject extends Project
             @Override
             protected boolean computeValue()
             {
-                if (getModelContainersWithInvalidMesh().isEmpty())
-                {
-                    return false;
-                } else
-                {
-                    return true;
-                }
+                return !getModelContainersWithInvalidMesh().isEmpty();
             }
         };
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
-        modelColourChanged = new SimpleBooleanProperty();
-        gCodeGenManager = new GCodeGeneratorManager(this);
+        modelColourChanged = new SimpleBooleanProperty();        
         filamentContainer = FilamentContainer.getInstance();
         
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
@@ -354,6 +346,7 @@ public class ModelContainerProject extends Project
      * @param printer
      * @return
      */
+    @Override
     public ObservableList<Boolean> getUsedExtruders(Printer printer)
     {
         List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
@@ -1091,10 +1084,5 @@ public class ModelContainerProject extends Project
         }
         modelGroup.checkOffBed();
         return modelGroup;
-    }
-    
-    public GCodeGeneratorManager getGCodeGenManager()
-    {
-        return gCodeGenManager;
     }
 }

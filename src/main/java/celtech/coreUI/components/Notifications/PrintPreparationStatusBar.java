@@ -9,17 +9,12 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
-import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
-import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.Future;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.Initializable;
@@ -30,12 +25,8 @@ import javafx.fxml.Initializable;
  */
 public class PrintPreparationStatusBar extends AppearingProgressBar implements Initializable
 {
-
     private Printer printer = null;
     private Project project;
-    
-    private GCodeGeneratorTask boundTask = null;
-    private PrintQualityEnumeration selectedPrintQuality = null;
     
     private GCodeGeneratorManager gCodeGenManager;
 
@@ -48,30 +39,9 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         reassessStatus();
     };
-    
-    private final ListChangeListener<PrintQualityEnumeration> slicingOrderChangeListener = (ListChangeListener.Change<? extends PrintQualityEnumeration> change) -> {
-        if(boundTask != null) 
-        {
-            unbindTask(boundTask);
-        }
-        // First enum in list should be quality selected
-        selectedPrintQuality = change.getList().get(0);
-        GCodeGeneratorTask selectedTask = gCodeGenManager.getTaskFromTaskMap(selectedPrintQuality);
-        bindToTask(selectedTask);
-        boundTask = selectedTask;
-    };
-    
-    private final MapChangeListener<PrintQualityEnumeration, Future> taskMapListener = (MapChangeListener.Change<? extends PrintQualityEnumeration, ? extends Future> change) -> {
-        if(boundTask != null) 
-        {
-            unbindTask(boundTask);
-        }
-        GCodeGeneratorTask selectedTask = gCodeGenManager.getTaskFromTaskMap(selectedPrintQuality);
-        bindToTask(selectedTask);
-        boundTask = selectedTask;
-    };
 
     private final BooleanProperty cancelAllowed = new SimpleBooleanProperty(false);
+    private final BooleanProperty gCodeGenTaskRunning = new SimpleBooleanProperty(false);
 
     private final EventHandler<ActionEvent> cancelEventHandler = new EventHandler<ActionEvent>()
     {
@@ -80,6 +50,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         {
             try
             {
+                gCodeGenManager.purgeAllTasks();
                 printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
@@ -98,12 +69,10 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     public void bindToPrinter(Printer printer) 
     {
         this.printer = printer;
-//        printer.getPrintEngine().postProcessorService.runningProperty().addListener(serviceStatusListener);
-//        printer.getPrintEngine().postProcessorService.progressProperty().addListener(serviceProgressListener);
         printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(serviceStatusListener);
         printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().addListener(serviceProgressListener);
         
-        cancelButton.visibleProperty().bind(printer.canCancelProperty().and(cancelAllowed));
+        cancelButton.visibleProperty().bind((printer.canCancelProperty().or(gCodeGenTaskRunning)).and(cancelAllowed));
         cancelButton.setOnAction(cancelEventHandler);
         
         if(project != null) 
@@ -119,31 +88,13 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         if(project instanceof ModelContainerProject) 
         {
             gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
-            gCodeGenManager.getSlicingOrder().addListener(slicingOrderChangeListener);
-            gCodeGenManager.getObservableTaskMap().addListener(taskMapListener);
+            gCodeGenManager.selectedTaskRunningProperty().addListener(serviceStatusListener);
+            gCodeGenManager.selectedTaskProgressProperty().addListener(serviceProgressListener);
         }
         
         if(printer != null) 
         {
             reassessStatus();
-        }
-    }
-    
-    private void bindToTask(GCodeGeneratorTask gCodeGeneratorTask) 
-    {
-        if(gCodeGeneratorTask != null) 
-        {
-            gCodeGeneratorTask.runningProperty().addListener(serviceStatusListener);
-            gCodeGeneratorTask.progressProperty().addListener(serviceProgressListener);
-        }
-    }
-    
-    private void unbindTask(GCodeGeneratorTask gCodeGeneratorTask) 
-    {
-        if(gCodeGeneratorTask != null) 
-        {
-            gCodeGeneratorTask.runningProperty().removeListener(serviceStatusListener);
-            gCodeGeneratorTask.progressProperty().removeListener(serviceProgressListener);
         }
     }
 
@@ -161,14 +112,18 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     private void reassessStatus()
     {
         boolean showBar = false;
-        GCodeGeneratorTask gCodeGenTask = gCodeGenManager.getTaskFromTaskMap(project.getPrintQuality());
         
-        if (gCodeGenManager.isGCodeForPrintOrSave() && gCodeGenTask.runningProperty().get())
+        if (gCodeGenManager.getGCodeForPrintOrSaveProperty().get() && gCodeGenManager.selectedTaskRunningProperty().get())
         {
-            largeProgressDescription.setText(gCodeGenTask.getMessage());
-            progressBar.setProgress(gCodeGenTask.getProgress());
+            largeProgressDescription.setText(gCodeGenManager.getSelectedTaskMessage());
+            progressBar.setProgress(gCodeGenManager.selectedTaskProgressProperty().get());
             cancelAllowed.set(true);
+            gCodeGenTaskRunning.set(true);
             showBar = true;
+        }
+        else
+        {
+            gCodeGenTaskRunning.set(false);
         }
         
         if (printer != null && printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
@@ -179,7 +134,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             cancelAllowed.set(false);
             showBar = true;
         }
-
+        
         if (showBar)
         {
             startSlidingInToView();
@@ -197,8 +152,6 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     
     public void unbindFromPrinter() {
         if (printer != null) {
-//            printer.getPrintEngine().postProcessorService.runningProperty().removeListener(serviceStatusListener);
-//            printer.getPrintEngine().postProcessorService.progressProperty().removeListener(serviceProgressListener);
             printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().removeListener(serviceStatusListener);
             printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().removeListener(serviceProgressListener);
             printer = null;
@@ -208,9 +161,8 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     public void unbindFromProject() {
         if(project != null) {
             gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
-            gCodeGenManager.getSlicingOrder().removeListener(slicingOrderChangeListener);
-            gCodeGenManager.getObservableTaskMap().removeListener(taskMapListener);
-            unbindTask(boundTask);
+            gCodeGenManager.selectedTaskRunningProperty().removeListener(serviceStatusListener);
+            gCodeGenManager.selectedTaskProgressProperty().removeListener(serviceProgressListener);
         }
     }
 }

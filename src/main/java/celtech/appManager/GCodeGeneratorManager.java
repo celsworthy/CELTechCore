@@ -27,6 +27,7 @@ import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.geometry.Bounds;
 import libertysystems.stenographer.Stenographer;
@@ -60,7 +60,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 /**
- * GCodePreparationManager makes sure that all tasks are properly cancelled.
+ * GCodePreparationManager deals with {@link GCodeGeneratorTask}s.
+ * It's job is to restart and cancel the tasks when appropriate and to also keep
+ * track of the currently selected task.
  *
  * @author Tony and George
  */
@@ -69,11 +71,18 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private static final Stenographer STENO = StenographerFactory.getStenographer(GCodeGeneratorManager.class.getName());
     
     private final ExecutorService executorService;
-    private final ModelContainerProject project;
+    private final Project project;
     
     private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
     private final DoubleProperty selectedTaskProgress = new SimpleDoubleProperty(-1);
     private final BooleanProperty selectedTaskRunning = new SimpleBooleanProperty(false);
+    private String selectedTaskMessage = "";
+    
+    private final BooleanProperty gCodeForPrintOrSave = new SimpleBooleanProperty(false);
+    
+    private ChangeListener<Number> taskProgressChangeListener;
+    private ChangeListener<Boolean> taskRunningChangeListener;
+    private ChangeListener<String> taskMessageChangeListener;
     
     private Future restartTask = null;
     private Map<PrintQualityEnumeration, Future> taskMap = new HashMap<>();
@@ -85,16 +94,17 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private boolean suppressReaction = false;
     
     private ObjectProperty<PrintQualityEnumeration> currentPrintQuality = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
-    private ObservableList<PrintQualityEnumeration> slicingOrder = FXCollections.observableArrayList(PrintQualityEnumeration.values()); 
+    private List<PrintQualityEnumeration> slicingOrder = Arrays.asList(PrintQualityEnumeration.values()); 
+    private GCodeGeneratorTask selectedTask;
 
     private ChangeListener applicationModeChangeListener;
     private ChangeListener selectedPrinterReactionChangeListener;
     private PrinterListChangesListener printerListChangesListener;
     private MapChangeListener<Integer, Filament> filamentListener;
     
-    private boolean gCodeForPrintOrSave = false;
+    private boolean projectNeedsSlicing = true;
     
-    public GCodeGeneratorManager(ModelContainerProject project)
+    public GCodeGeneratorManager(Project project)
     {
         this.project = project;
         ThreadFactory threadFactory = (Runnable runnable) ->
@@ -109,20 +119,124 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         initialiseListeners();
     }
     
+    private void initialiseListeners() 
+    {
+        
+        filamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) -> 
+        {
+            reactToChange();
+        };
+        
+        applicationModeChangeListener = (o, oldValue, newValue) -> 
+        {
+            if (newValue == ApplicationMode.SETTINGS)
+            {
+                if (!projectListenerInstalled)
+                {
+                    project.addProjectChangesListener(this);
+                    projectListenerInstalled = true;
+                }
+                if(isCurrentProjectSelected() && projectNeedsSlicing) 
+                {
+                    restartAllTasks();
+                    waitAndThenBindNewTask();
+                    projectNeedsSlicing = false;
+                }
+            }
+        };
+        
+        selectedPrinterReactionChangeListener = (o, oldValue, newValue) -> 
+        {
+            if (currentPrinter != newValue) 
+            {
+                if (currentPrinter != null) 
+                {
+                    currentPrinter.effectiveFilamentsProperty().removeListener(filamentListener);
+                }
+                purgeAllTasks();
+                currentPrinter = (Printer) newValue;
+                if (currentPrinter != null) 
+                {
+                    currentPrinter.effectiveFilamentsProperty().addListener(filamentListener);
+                }
+                reactToChange();
+            }
+        };
+        
+        printerListChangesListener = new PrinterListChangesAdapter() 
+        {
+            @Override
+            public void whenHeadAdded(Printer printer)
+            {
+                if (printer == currentPrinter)
+                {
+                    reactToChange();
+                }
+            }
+
+            @Override
+            public void whenExtruderAdded(Printer printer, int extruderIndex) 
+            {
+                if (printer == currentPrinter)
+                {
+                    reactToChange();
+                }
+            }
+        };
+        
+        taskProgressChangeListener = (observable, oldValue, newValue) -> 
+        {
+            selectedTaskProgress.set((double) newValue);
+        };
+        
+        taskRunningChangeListener = (observable, oldValue, newValue) -> 
+        {
+            selectedTaskRunning.set(newValue);
+        };
+        
+        taskMessageChangeListener = (observable, oldValue, newValue) -> 
+        {
+            selectedTaskMessage = newValue;
+        };
+        
+        ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
+        Lookup.getSelectedPrinterProperty().addListener(selectedPrinterReactionChangeListener);
+        BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
+    }
+    
     public Optional<GCodeGeneratorResult> getPrepResult(PrintQualityEnumeration quality, boolean gCodeForPrintOrSave)
     {
         Future<GCodeGeneratorResult> resultFuture = taskMap.get(quality);
-        this.gCodeForPrintOrSave = gCodeForPrintOrSave;
+        
+        // If we have already flagged that we are printing or saving, leave the flag be.
+        // When canceled or finished the flag will be explicitly set to false.
+        if(!this.gCodeForPrintOrSave.get())
+        {
+            this.gCodeForPrintOrSave.set(gCodeForPrintOrSave);
+        }
         if (resultFuture != null)
         {
             try 
             {
-                return Optional.ofNullable(resultFuture.get());
+                GCodeGeneratorResult result = resultFuture.get();
+                // Once result fetched reset the flag.
+                this.gCodeForPrintOrSave.set(false);
+                return Optional.ofNullable(result);
             }
-            catch (InterruptedException | ExecutionException | CancellationException ex)
+            catch (InterruptedException ex)
             {
+                STENO.debug("Thread interrupted, usually the case when the user has selected differen't profile settings");
+            }
+            catch (CancellationException ex) 
+            {
+                STENO.debug("Thread cancelled, usually the case when the user has started a print then cancelled during slicing");
+            }
+            catch (ExecutionException ex)
+            {
+                STENO.exception("Unexpected error when fetching GCodeGeneratorResult", ex);
             }
         }
+        this.gCodeForPrintOrSave.set(false);
         return Optional.empty();
     }
     
@@ -144,7 +258,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         {
             if (cancellable != null)
             {
-                    cancellable.cancelled().set(true);
+                cancellable.cancelled().set(true);
             }
             
             if (restartTask != null)
@@ -155,10 +269,13 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             
             observableTaskMap.forEach((q, t) -> t.cancel(true));
             observableTaskMap.clear();
+            
+            gCodeForPrintOrSave.set(false);
+            projectNeedsSlicing = true;
         }
     }
 
-    public void restartAllTasks()
+    private void restartAllTasks()
     {
         STENO.info("Restarting all GCodePrep tasks");
         purgeAllTasks();
@@ -195,15 +312,18 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                         List<Integer> extruderForModel = new ArrayList<>();
 
                         // Only to be run on a ModelContainerProject
-                        project.getTopLevelThings().forEach((modelContainer) -> 
+                        if(project instanceof ModelContainerProject)
                         {
-                            ((ModelContainer)modelContainer).getModelsHoldingMeshViews().forEach((modelContainerWithMesh) ->
+                            project.getTopLevelThings().forEach((modelContainer) -> 
                             {
-                                MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
-                                meshesForProcessing.add(meshForProcessing);
-                                extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
+                                ((ModelContainer)modelContainer).getModelsHoldingMeshViews().forEach((modelContainerWithMesh) ->
+                                {
+                                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                                    meshesForProcessing.add(meshForProcessing);
+                                    extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
+                                });
                             });
-                        });
+                        }
 
                         // We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
                         CentreCalculations centreCalc = new CentreCalculations();
@@ -261,45 +381,6 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         restartTask = executorService.submit(restartAfterDelay);
     }
     
-//    private Optional<RoboxProfile> getProfileSettings(String headType,
-//                                                      SlicerType slicerType,
-//                                                      PrintQualityEnumeration printQuality)
-//    {
-//        Optional<RoboxProfile> profileSettings = Optional.empty();
-//
-//        switch (printQuality)
-//        {
-//            case CUSTOM:
-//                if (!project.getPrinterSettings().getSettingsName().equals(""))
-//                {
-//                    String settingsName = project.getPrinterSettings().getSettingsName();
-//                    profileSettings = RoboxProfileSettingsContainer.getInstance().getRoboxProfileWithName(
-//                            settingsName, slicerType, headType);
-//                }
-//                break;
-//                
-//            case DRAFT:
-//                profileSettings = RoboxProfileSettingsContainer.getInstance().getRoboxProfileWithName(
-//                            BaseConfiguration.draftSettingsProfileName, slicerType, headType);
-//                break;
-//
-//            case NORMAL:
-//                profileSettings = RoboxProfileSettingsContainer.getInstance().getRoboxProfileWithName(
-//                            BaseConfiguration.normalSettingsProfileName, slicerType, headType);
-//                break;
-//
-//            case FINE:
-//                profileSettings = RoboxProfileSettingsContainer.getInstance().getRoboxProfileWithName(
-//                            BaseConfiguration.fineSettingsProfileName, slicerType, headType);
-//                break;
-//                
-//            default:
-//                break;
-//        }
-//        
-//        return profileSettings;
-//    }
-    
     public String getGCodeDirectory(PrintQualityEnumeration printQuality)
     {
         String directoryName = ApplicationConfiguration.getProjectDirectory()
@@ -328,78 +409,6 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             }
         }
     }
-
-    private void initialiseListeners() 
-    {
-        
-        filamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) -> 
-        {
-            reactToChange();
-        };
-        
-        applicationModeChangeListener = (o, oldValue, newValue) -> 
-        {
-            if (newValue == ApplicationMode.SETTINGS)
-            {
-                if (!projectListenerInstalled)
-                {
-                    project.addProjectChangesListener(this);
-                    projectListenerInstalled = true;
-                }
-                if(isCurrentProjectSelected()) 
-                {
-                    restartAllTasks();
-                }
-            } 
-            else 
-            {
-                //purgeAllTasks();
-            }
-        };
-        
-        selectedPrinterReactionChangeListener = (o, oldValue, newValue) -> 
-        {
-            if (currentPrinter != newValue) 
-            {
-                if (currentPrinter != null) 
-                {
-                    currentPrinter.effectiveFilamentsProperty().removeListener(filamentListener);
-                }
-                purgeAllTasks();
-                currentPrinter = (Printer) newValue;
-                if (currentPrinter != null) 
-                {
-                    currentPrinter.effectiveFilamentsProperty().addListener(filamentListener);
-                }
-                reactToChange();
-            }
-        };
-        
-        printerListChangesListener = new PrinterListChangesAdapter() 
-        {
-            @Override
-            public void whenHeadAdded(Printer printer)
-            {
-                if (printer == currentPrinter)
-                {
-                    reactToChange();
-                }
-            }
-
-            @Override
-            public void whenExtruderAdded(Printer printer, int extruderIndex) 
-            {
-                if (printer == currentPrinter)
-                {
-                    reactToChange();
-                }
-            }
-        };
-        
-        ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
-        Lookup.getSelectedPrinterProperty().addListener(selectedPrinterReactionChangeListener);
-        BaseLookup.getPrinterListChangesNotifier().addListener(printerListChangesListener);
-    }
     
     private void reactToChange() 
     {
@@ -408,7 +417,9 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             if ((ApplicationStatus.getInstance().modeProperty().get() == ApplicationMode.SETTINGS) 
                     && modelIsSuitable()) 
             {
-                restartAllTasks(); 
+                restartAllTasks();
+                waitAndThenBindNewTask();
+                projectNeedsSlicing = false;
             }
             else 
             {
@@ -474,28 +485,87 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         return false;
     }
     
-    private boolean isCurrentProjectSelected() {
+    private boolean isCurrentProjectSelected()
+    {
         return Lookup.getSelectedProjectProperty().get() == project;
     }
     
-    public void setSlicingOrder(List<PrintQualityEnumeration> slicingOrder) {
-        this.slicingOrder.setAll(slicingOrder);
+    public void changeSlicingOrder(List<PrintQualityEnumeration> slicingOrder) 
+    {
+        this.slicingOrder = slicingOrder;
+        PrintQualityEnumeration selectedQuality = slicingOrder.get(0);
+        bindToSelectedTask(selectedQuality);
     }
     
-    public GCodeGeneratorTask getTaskFromTaskMap(PrintQualityEnumeration printQuality) {
-        if(taskMap.get(printQuality) instanceof GCodeGeneratorTask) {
-            return (GCodeGeneratorTask) taskMap.get(printQuality);
+    /**
+     * Return the {@link GCodeGeneratorTask} attached to the given {@link PrintQualityEnumeration}
+     * 
+     * @param printQuality
+     * @return An Optional task as the map may not contain anything
+     */
+    public Optional<GCodeGeneratorTask> getTaskFromTaskMap(PrintQualityEnumeration printQuality) 
+    {
+        Future gCodeGenTask = taskMap.get(printQuality);
+        if(gCodeGenTask != null && gCodeGenTask instanceof GCodeGeneratorTask) 
+        {
+            return Optional.of((GCodeGeneratorTask) gCodeGenTask);
         }
         
-        return null;
+        return Optional.empty();
     }
     
-    public ModelContainerProject getProject()
+    /**
+     * Bind the {@link GCodeGeneratorTask} denoted by the selected print quality.
+     * Attaches listeners to the Tasks running and progress properties.
+     * 
+     * @param selectedQuality 
+     */
+    private void bindToSelectedTask(PrintQualityEnumeration selectedQuality) 
+    {
+        unbindCurrentTask();
+        Optional<GCodeGeneratorTask> potentialSelectedTask = getTaskFromTaskMap(selectedQuality);
+        if(potentialSelectedTask.isPresent())
+        {
+            selectedTask = potentialSelectedTask.get();
+            selectedTask.runningProperty().addListener(taskRunningChangeListener);
+            selectedTask.progressProperty().addListener(taskProgressChangeListener);
+            selectedTask.messageProperty().addListener(taskMessageChangeListener);
+        }
+    }
+    
+    /**
+     * Unbind the currently bound {@link GCodeGeneratorTask} by removing the listeners attached 
+     */
+    private void unbindCurrentTask()
+    {
+        if(selectedTask != null) 
+        {
+            selectedTask.runningProperty().removeListener(taskRunningChangeListener);
+            selectedTask.progressProperty().removeListener(taskProgressChangeListener);
+            selectedTask.messageProperty().removeListener(taskMessageChangeListener);
+        }
+    }
+    
+    private void waitAndThenBindNewTask() 
+    {
+        executorService.submit(() -> 
+        {
+            try {
+                restartTask.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                STENO.exception("Restarting tasks in GCodeGeneratorManager has caused an error", ex);
+            }
+            PrintQualityEnumeration selectedQuality = slicingOrder.get(0);
+            BaseLookup.getTaskExecutor().runOnGUIThread(() -> {bindToSelectedTask(selectedQuality);});
+        });
+    }
+    
+    public Project getProject()
     {
         return project;
     }
     
-    public boolean isGCodeForPrintOrSave()
+    public BooleanProperty getGCodeForPrintOrSaveProperty()
     {
         return gCodeForPrintOrSave;
     }
@@ -503,11 +573,6 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     public ObservableMap<PrintQualityEnumeration, Future> getObservableTaskMap() 
     {
         return observableTaskMap;
-    }
-    
-    public ObservableList<PrintQualityEnumeration> getSlicingOrder() 
-    {
-        return slicingOrder;
     }
     
     public Cancellable getCancellable()
@@ -548,6 +613,11 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     public ReadOnlyObjectProperty<PrintQualityEnumeration> getPrintQualityProperty()
     {
         return currentPrintQuality;
+    }
+    
+    public String getSelectedTaskMessage() 
+    {
+        return selectedTaskMessage;
     }
     
     @Override
