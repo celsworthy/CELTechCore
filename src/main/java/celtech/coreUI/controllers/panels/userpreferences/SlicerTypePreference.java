@@ -7,10 +7,10 @@ import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.SlicerType;
-import celtech.roboxbase.licensing.License;
-import celtech.roboxbase.licensing.LicenseManager;
-import celtech.roboxbase.licensing.LicenseManager.LicenseChangeListener;
-import celtech.roboxbase.licensing.LicenseType;
+import celtech.roboxbase.licence.Licence;
+import celtech.roboxbase.licence.LicenceType;
+import celtech.roboxbase.licensing.LicenceManager;
+import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -25,7 +25,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class SlicerTypePreference implements PreferencesInnerPanelController.Preference, LicenseChangeListener
+public class SlicerTypePreference implements PreferencesInnerPanelController.Preference, LicenceChangeListener
 {
     private static final Stenographer STENO = StenographerFactory.getStenographer(SlicerTypePreference.class.getName());
 
@@ -52,7 +52,7 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         control.setCellFactory((ListView<SlicerType> param) -> new SlicerTypeCell());
         control.valueProperty().addListener(slicerTypeChangeListener);
         
-        LicenseManager.getInstance().addLicenseChangeListener(this);
+        LicenceManager.getInstance().addLicenceChangeListener(this);
     }
 
     @Override
@@ -112,12 +112,12 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     }
 
     @Override
-    public void onLicenseChange(License license) {
+    public void onLicenceChange(Licence license) {
         SlicerType currentSelection = control.getSelectionModel().getSelectedItem();
         // Reset list in order to invoke SlicerTypeCell updateItem method
         control.setItems(FXCollections.observableArrayList(SlicerType.Cura));
         control.setItems(slicerTypes);
-        if(license.getLicenseType() == LicenseType.AUTOMAKER_FREE) {
+        if(license.getLicenceType() == LicenceType.AUTOMAKER_FREE) {
             currentSelection = SlicerType.Cura;
         }
         control.getSelectionModel().select(currentSelection);

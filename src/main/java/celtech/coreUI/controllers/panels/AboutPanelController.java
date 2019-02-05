@@ -6,8 +6,8 @@ import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.licensing.License;
-import celtech.roboxbase.licensing.LicenseManager;
+import celtech.roboxbase.licence.Licence;
+import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
@@ -171,7 +171,7 @@ public class AboutPanelController implements Initializable
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
         updateLicenseData();
-        LicenseManager.getInstance().addLicenseChangeListener(license -> autoMakerLicense.setText(license.toShortString()));
+        LicenceManager.getInstance().addLicenceChangeListener(license -> autoMakerLicense.setText(license.toShortString()));
     }
 
     private void updateHeadData(Head head)
@@ -210,7 +210,7 @@ public class AboutPanelController implements Initializable
     }
     
     private void updateLicenseData() {
-        Optional<License> potentiaLicense = LicenseManager.getInstance().readCachedLicenseFile();
+        Optional<Licence> potentiaLicense = LicenceManager.getInstance().readCachedLicenseFile();
         if(potentiaLicense.isPresent()) {
             autoMakerLicense.setText(potentiaLicense.get().toShortString());
         } else {
