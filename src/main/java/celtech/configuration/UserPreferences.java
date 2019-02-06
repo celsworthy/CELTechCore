@@ -97,6 +97,14 @@ public class UserPreferences
         }
     };
 
+    private final ChangeListener<Boolean> enableAutoGCodePreviewChangeListener = (observable, oldValue, newValue) -> {
+        if (newValue && !BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
+            BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
+            autoGCodePreview.set(false);
+        }
+        saveSettings();
+    };
+
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType.set(userPreferenceFile.getSlicerType());
@@ -131,7 +139,7 @@ public class UserPreferences
         showDiagnostics.addListener(booleanChangeListener);
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
-        autoGCodePreview.addListener(booleanChangeListener);
+        autoGCodePreview.addListener(enableAutoGCodePreviewChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
         timelapseTriggerEnabled.addListener(booleanChangeListener);

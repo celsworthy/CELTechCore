@@ -67,7 +67,7 @@ public class PreviewManager
         {
             if (newValue == ApplicationMode.SETTINGS)
             {
-                if (Lookup.getUserPreferences().isAutoGCodePreview())
+                if (Lookup.getUserPreferences().isAutoGCodePreview() && BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION))
                 {
                     BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                     {
