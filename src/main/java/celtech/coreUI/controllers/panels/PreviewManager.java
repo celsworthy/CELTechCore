@@ -9,7 +9,10 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
+import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.model.Head;
@@ -97,10 +100,16 @@ public class PreviewManager
 
     public void previewPressed(ActionEvent event)
     {
-        if (previewButton.selectedProperty().get())
-            updatePreview();
-        else
-            removePreview();
+        if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
+            if (previewButton.selectedProperty().get())
+                updatePreview();
+            else
+                removePreview();
+        }
+        else {
+            BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
+            previewButton.selectedProperty().set(false);
+        }
     }
 
     public void setProjectAndPrinter(Project project, Printer printer)
