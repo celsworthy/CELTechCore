@@ -171,7 +171,7 @@ public class AboutPanelController implements Initializable
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
         updateLicenseData();
-        LicenceManager.getInstance().addLicenceChangeListener(license -> autoMakerLicense.setText(license.toShortString()));
+        LicenceManager.getInstance().addLicenceChangeListener(licenceOption -> autoMakerLicense.setText(licenceOption.map(Licence::toShortString).orElse("")));
     }
 
     private void updateHeadData(Head head)

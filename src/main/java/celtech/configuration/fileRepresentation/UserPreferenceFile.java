@@ -41,7 +41,7 @@ public class UserPreferenceFile
     private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
     private PrinterType customPrinterType = PrinterType.ROBOX;
-    private String custromPrinterHead = HeadContainer.defaultHeadID;
+    private String customPrinterHead = HeadContainer.defaultHeadID;
 
     public String getLanguageTag()
     {
@@ -281,12 +281,12 @@ public class UserPreferenceFile
         this.customPrinterType = customPrinterType;
     }
 
-    public String getCustromPrinterHead() {
-        return custromPrinterHead;
+    public String getCustomPrinterHead() {
+        return customPrinterHead;
     }
 
-    public void setCustromPrinterHead(String custromPrinterHead) {
-        this.custromPrinterHead = custromPrinterHead;
+    public void setCustomPrinterHead(String customPrinterHead) {
+        this.customPrinterHead = customPrinterHead;
     }
 
     public void populateFromSettings(UserPreferences userPreferences)
@@ -304,6 +304,7 @@ public class UserPreferenceFile
         setShowDiagnostics(userPreferences.getShowDiagnostics());
         setShowGCode(userPreferences.getShowGCode());
         setShowAdjustments(userPreferences.getShowAdjustments());
+        setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
         setGoProWifiPassword(userPreferences.getGoProWifiPassword());
@@ -314,6 +315,6 @@ public class UserPreferenceFile
         setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
         setCustomPrinterType(userPreferences.getCustomPrinterType());
-        setCustromPrinterHead(userPreferences.getCustomPrinterHead());
+        setCustomPrinterHead(userPreferences.getCustomPrinterHead());
     }
 }

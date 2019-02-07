@@ -10,6 +10,10 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
+import celtech.roboxbase.licence.Licence;
+import celtech.roboxbase.licence.LicenceType;
+import celtech.roboxbase.licensing.LicenceManager;
+import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.IntegerProperty;
@@ -105,11 +109,19 @@ public class UserPreferences
         saveSettings();
     };
 
+    private final LicenceChangeListener autoGCodePreviewLicenceChangeListener = (licenceOption) -> {
+        if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) {
+            autoGCodePreview.set(false);
+        }
+        saveSettings();
+    };
+
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType.set(userPreferenceFile.getSlicerType());
         safetyFeaturesOn.set(userPreferenceFile.isSafetyFeaturesOn());
         languageTag = userPreferenceFile.getLanguageTag();
+        showTooltips.set(userPreferenceFile.isShowTooltips());
         loggingLevel = userPreferenceFile.getLoggingLevel();
         advancedMode.set(userPreferenceFile.isAdvancedMode());
         firstUse.set(userPreferenceFile.isFirstUse());
@@ -118,21 +130,22 @@ public class UserPreferences
         showGCode.set(userPreferenceFile.isShowGCode());
         showAdjustments.set(userPreferenceFile.isShowAdjustments());
         autoGCodePreview.set(userPreferenceFile.isAutoGCodePreview());
-        this.currencySymbol.set(userPreferenceFile.getCurrencySymbol());
-        this.currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
-        this.showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
-        this.timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
-        this.goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
-        this.timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
-        this.timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
-        this.timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
-        this.timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
-        this.timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
-        this.loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
+        currencySymbol.set(userPreferenceFile.getCurrencySymbol());
+        currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
+        showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
+        timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
+        goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
+        timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
+        timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
+        timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
+        timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
+        timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
+        loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
         customPrinterType = userPreferenceFile.getCustomPrinterType();
-        customPrinterHead = userPreferenceFile.getCustromPrinterHead();
+        customPrinterHead = userPreferenceFile.getCustomPrinterHead();
 
         safetyFeaturesOn.addListener(booleanChangeListener);
+        showTooltips.addListener(booleanChangeListener);
         advancedMode.addListener(advancedModeChangeListener);
         firstUse.addListener(booleanChangeListener);
         detectLoadedFilament.addListener(booleanChangeListener);
@@ -140,6 +153,7 @@ public class UserPreferences
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
         autoGCodePreview.addListener(enableAutoGCodePreviewChangeListener);
+        LicenceManager.getInstance().addLicenceChangeListener(autoGCodePreviewLicenceChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
         timelapseTriggerEnabled.addListener(booleanChangeListener);
