@@ -11,6 +11,7 @@ import celtech.roboxbase.licence.Licence;
 import celtech.roboxbase.licence.LicenceType;
 import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
+import java.util.Optional;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -112,13 +113,13 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     }
 
     @Override
-    public void onLicenceChange(Licence license) {
+    public void onLicenceChange(Optional<Licence> licenceOption) {
         SlicerType currentSelection = control.getSelectionModel().getSelectedItem();
         // Reset list in order to invoke SlicerTypeCell updateItem method
         control.setItems(FXCollections.observableArrayList(SlicerType.Cura));
         control.setItems(slicerTypes);
-        if(license.getLicenceType() == LicenceType.AUTOMAKER_FREE) {
-            currentSelection = SlicerType.Cura;
+       if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) {
+             currentSelection = SlicerType.Cura;
         }
         control.getSelectionModel().select(currentSelection);
     }

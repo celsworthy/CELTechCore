@@ -59,7 +59,7 @@ public class Preferences
                 "preferences.loosePartSplit");
 
         Preference autoGCodePreviewPref = new TickBoxPreference(userPreferences.autoGCodePreviewProperty(),
-        "preferences.autoGCodePreview");
+            "preferences.autoGCodePreview");
 
         preferences.add(firstUsePref);
         preferences.add(languagePref);
