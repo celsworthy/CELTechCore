@@ -111,10 +111,7 @@ public abstract class Project
                 printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
                 .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
-        canPrint.bind(customSettingsNotChosen.not()
-                .and((gCodeGenManager.selectedTaskRunningProperty()
-                        .and(gCodeGenManager.getGCodeForPrintOrSaveProperty()))
-                        .not()));
+        canPrint.bind(customSettingsNotChosen.not().and(gCodeGenManager.printOrSaveTaskRunningProperty().not()));
 
         printerSettings.getDataChanged().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->

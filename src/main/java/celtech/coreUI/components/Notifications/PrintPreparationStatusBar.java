@@ -11,8 +11,6 @@ import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -40,9 +38,6 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         reassessStatus();
     };
 
-    private final BooleanProperty cancelAllowed = new SimpleBooleanProperty(false);
-    private final BooleanProperty gCodeGenTaskRunning = new SimpleBooleanProperty(false);
-
     private final EventHandler<ActionEvent> cancelEventHandler = new EventHandler<ActionEvent>()
     {
         @Override
@@ -50,7 +45,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         {
             try
             {
-                gCodeGenManager.purgeAllTasks();
+                gCodeGenManager.cancelPrintOrSaveTask();
                 printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
@@ -72,7 +67,6 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().addListener(serviceStatusListener);
         printer.getPrintEngine().transferGCodeToPrinterService.progressProperty().addListener(serviceProgressListener);
         
-        cancelButton.visibleProperty().bind((printer.canCancelProperty().or(gCodeGenTaskRunning)).and(cancelAllowed));
         cancelButton.setOnAction(cancelEventHandler);
         
         if(project != null) 
@@ -113,17 +107,15 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         boolean showBar = false;
         
-        if (gCodeGenManager.getGCodeForPrintOrSaveProperty().get() && gCodeGenManager.selectedTaskRunningProperty().get())
+        if (gCodeGenManager.printOrSaveTaskRunningProperty().get() && gCodeGenManager.selectedTaskRunningProperty().get())
         {
             largeProgressDescription.setText(gCodeGenManager.getSelectedTaskMessage());
             progressBar.setProgress(gCodeGenManager.selectedTaskProgressProperty().get());
-            cancelAllowed.set(true);
-            gCodeGenTaskRunning.set(true);
+            cancelButton.visibleProperty().set(true);
             showBar = true;
-        }
-        else
+        } else
         {
-            gCodeGenTaskRunning.set(false);
+            cancelButton.visibleProperty().set(true);
         }
         
         if (printer != null && printer.getPrintEngine().transferGCodeToPrinterService.runningProperty().get())
@@ -131,7 +123,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             largeProgressDescription.setText(Lookup.i18n("printerStatus.sendingToPrinter"));
             progressBar.setProgress(printer.getPrintEngine().transferGCodeToPrinterService.getProgress());
             //Cancel is provided from the print bar in this mode
-            cancelAllowed.set(false);
+            cancelButton.visibleProperty().set(false);
             showBar = true;
         }
         

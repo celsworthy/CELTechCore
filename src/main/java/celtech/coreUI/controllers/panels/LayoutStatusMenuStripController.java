@@ -57,8 +57,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -73,6 +71,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Side;
@@ -97,6 +96,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private PrinterSettingsOverrides printerSettings = null;
     private ApplicationStatus applicationStatus = null;
     private DisplayManager displayManager = null;
+    
     private final FileChooser modelFileChooser = new FileChooser();
     private final FileChooser saveGCodeFileChooser = new FileChooser();
     private PrinterUtils printerUtils = null;
@@ -395,16 +395,30 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     }
                 }
                 applicationStatus.setMode(ApplicationMode.STATUS);
-                ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-                singleThreadExecutor.submit(() -> {
-                    try {
-                        Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                                .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
-                        printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
-                    } catch (PrinterException ex) {
-                        steno.error("Error during print project " + ex.getMessage());
+
+                Task<Boolean> fetchGCodeResultAndPrint = new Task<Boolean>() 
+                {
+                    @Override
+                    protected Boolean call() throws Exception 
+                    {
+                        try 
+                        {
+                            Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                                    .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+                            if(potentialGCodeGenResult.isPresent())
+                            {
+                                printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                            }
+                            return true;
+                        } catch (PrinterException ex)
+                        {
+                            steno.error("Error during print project " + ex.getMessage());
+                            return false;
+                        }
                     }
-                });
+                };
+                // Run the task from GCodeGenManager so it can be managed...
+                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndPrint);
             }
         }
     }
@@ -417,42 +431,51 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         
         if (currentProject instanceof ModelContainerProject) 
         {
-            ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-            singleThreadExecutor.submit(() -> {
-                String projectLocation = ApplicationConfiguration.getProjectDirectory()
-                        + currentProject.getProjectName();
-                Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                        .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), true);
-                if(potentialGCodeGenResult.isPresent() && potentialGCodeGenResult.get().isSuccess())
+            Task<Boolean> fetchGCodeResultAndSave = new Task<Boolean>() 
+            {
+                @Override
+                protected Boolean call() throws Exception 
                 {
-                    BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
-                        steno.debug("Slicing successful prompting user to save sliced files..."); 
-                        String slicedFilesLocation = projectLocation
-                                + File.separator
-                                + currentProject.getPrintQuality();
-                        saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
-                        saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
-                        File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
+                    String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                            + currentProject.getProjectName();
+                    Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                            .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+                    if(potentialGCodeGenResult.isPresent() 
+                            && potentialGCodeGenResult.get().isSuccess())
+                    {
+                        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+                            steno.debug("Slicing successful prompting user to save sliced files..."); 
+                            String slicedFilesLocation = projectLocation
+                                    + File.separator
+                                    + currentProject.getPrintQuality();
+                            saveGCodeFileChooser.setTitle(Lookup.i18n("dialogs.saveGCodeToFile"));
+                            saveGCodeFileChooser.setInitialFileName(currentProject.getProjectName());
+                            File dest = saveGCodeFileChooser.showSaveDialog(DisplayManager.getMainStage());
 
-                        if (dest != null)
-                        {
-                            try 
+                            if (dest != null)
                             {
-                                FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
-                                steno.debug("Files copied to new location - " + dest.getPath());
+                                try 
+                                {
+                                    FileUtils.copyDirectory(new File(slicedFilesLocation), dest);
+                                    steno.debug("Files copied to new location - " + dest.getPath());
 
-                                // The files must use an appropriate print job id in order for the printer to accept it at.
-                                String jobUUID = SystemUtils.generate16DigitID();
-                                PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                                    // The files must use an appropriate print job id in order for the printer to accept it at.
+                                    String jobUUID = SystemUtils.generate16DigitID();
+                                    PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                                }
+                                catch (IOException ex)
+                                {
+                                    steno.exception("Error occured when attempting to save sliced GCode", ex);
+                                }
                             }
-                            catch (IOException ex)
-                            {
-                                steno.exception("Error occured when attempting to save sliced GCode", ex);
-                            }
-                        }
-                    });
+                        });
+                        return true;
+                    }
+                    return false;
                 }
-            });
+            };
+            // Run the task from GCodeGenManager so it can be managed...
+            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndSave);
         }
     }
 	

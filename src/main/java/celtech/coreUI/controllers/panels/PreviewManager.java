@@ -11,7 +11,6 @@ import celtech.coreUI.StandardColours;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
-import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
@@ -206,7 +205,7 @@ public class PreviewManager
                 }
                 ModelContainerProject mProject = (ModelContainerProject)currentProject;
                 steno.info("Waiting for prep result");
-                Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), false);
+                Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
                 steno.info("Got prep result - ifPresent() = " + Boolean.toString(resultOpt.isPresent()) + "isSuccess() = " + (resultOpt.isPresent() ? Boolean.toString(resultOpt.get().isSuccess()) : "---"));
                 if (resultOpt.isPresent() && resultOpt.get().isSuccess())
                 {
@@ -293,7 +292,7 @@ public class PreviewManager
                 previewButton.setFxmlFileName("waitPreviewButton");
             });
             ModelContainerProject mProject = (ModelContainerProject)currentProject;
-            Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality(), false);
+            Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
             if (resultOpt.isPresent() && resultOpt.get().isSuccess())
             {
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
