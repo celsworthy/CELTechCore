@@ -117,6 +117,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     @FXML
     private HBox fillDensityHBox;
+    
+    @FXML
+    private CheckBox overrideFillDensityCheckbox;
 
     @FXML
     private HBox spiralPrintHBox;
@@ -292,6 +295,9 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         raftHBox.disableProperty().bind(brimSlider.valueProperty().greaterThan(0));
         
         brimHBox.disableProperty().bind(raftButton.selectedProperty());
+        
+        fillDensityHBox.disableProperty().bind(overrideFillDensityCheckbox.selectedProperty().not());
+        fillDensitySlider.disableProperty().bind(overrideFillDensityCheckbox.selectedProperty().not());
     }
 
     PropertyChangeListener customSettingsListener = (PropertyChangeEvent evt) -> {
@@ -409,8 +415,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             || now.doubleValue() <= fillDensitySlider.getMin())
                     {
                         printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
-                    } else if (fillDensitySlider.isValueChanging()) {
-                        printerSettings.setFillDensityChanged(true);
                     }
                 });
 
@@ -434,6 +438,16 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
 
             printerSettings.setSpiralPrintOverride(selected);
+        });
+        
+        overrideFillDensityCheckbox.selectedProperty().addListener((ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) -> {
+            if (populatingForProject)
+            {
+                return;
+            }
+            
+            printerSettings.setFillDensityChangedByUser(t1);
+            printQualityWidgetsUpdate(printQuality.get());
         });
     }
 
@@ -727,7 +741,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
 
         if (currentProject != null) {
-            if (settings.isPresent() && !printerSettings.isFillDensityChanged()) {
+            if (settings.isPresent() && !printerSettings.isFillDensityChangedByUser()) {
                 float fillDensity = settings.get().getSpecificFloatSetting("fillDensity_normalised");
                 printerSettings.setFillDensityOverride(fillDensity);
                 fillDensitySlider.setValue(fillDensity * 100.0);

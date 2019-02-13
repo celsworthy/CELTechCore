@@ -82,6 +82,16 @@
                                         <CheckBox fx:id="spiralPrintCheckbox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
                                     </children>
                                 </HBox>
+                            </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <HBox fx:id="overrideFillDensityHBox" alignment="CENTER" spacing="5.0">
+                                    <children>
+                                        <Label text="%settingsInsetPanel.overrideFillDensity" />
+                                        <CheckBox fx:id="overrideFillDensityCheckbox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" />
+                                    </children>
+                                </HBox>
                                 <HBox fx:id="fillDensityHBox" alignment="CENTER_RIGHT" spacing="5.0" HBox.hgrow="ALWAYS">
                                     <children>
                                         <Label text="%sidePanel_settings.fillDensityLabel">
