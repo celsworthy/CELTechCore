@@ -180,6 +180,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 customProfileChooser.getSelectionModel().select(savedProfile);
             }
             clearSettingsIfNoCustomProfileAvailable();
+            currentProject.getGCodeGenManager().purgeAllTasks();
         }
     };
         
