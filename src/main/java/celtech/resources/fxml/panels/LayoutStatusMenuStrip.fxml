@@ -92,7 +92,7 @@
                                 </FlowPane>
                                 <FlowPane fx:id="settingsButtonHBox" alignment="CENTER" prefWrapLength="200">
                                     <children>
-                                        <GraphicToggleButtonWithLabel id="previewButton" fx:id="previewButton" fxmlFileName="previewButton" labelText="%buttonText.preview" onAction="#previewPressed" />
+                                        <GraphicButtonWithLabel id="previewButton" fx:id="previewButton" fxmlFileName="previewButton" labelText="%buttonText.preview" onAction="#previewPressed" />
                                     </children>
                                 </FlowPane>
                             </children>
