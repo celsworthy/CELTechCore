@@ -180,7 +180,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 customProfileChooser.getSelectionModel().select(savedProfile);
             }
             clearSettingsIfNoCustomProfileAvailable();
-            currentProject.getGCodeGenManager().purgeAllTasks();
         }
     };
         
@@ -691,15 +690,18 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
     }
 
-    private void selectCurrentCustomSettings() {
-        if (currentPrinter != null) {
+    private void selectCurrentCustomSettings() 
+    {
+        if (currentPrinter != null) 
+        {
             Head currentHead = currentPrinter.headProperty().get();
             String headType = HeadContainer.defaultHeadID;
-            if (currentHead != null) {
+            if (currentHead != null) 
+            {
                 headType = currentHead.typeCodeProperty().get();
             }
-            customProfileChooser.getSelectionModel().select(
-                    printerSettings.getSettings(headType, getSlicerType()));
+            RoboxProfile customSettings = printerSettings.getSettings(headType, getSlicerType());
+            customProfileChooser.getSelectionModel().select(customSettings);
         }
     }
 
