@@ -130,19 +130,47 @@ public class GCodePreviewTask extends Task<Boolean> {
     public void setMovesVisible(boolean flag)
     {
         StringBuilder command = new StringBuilder();
-        command.append("set moves ");
         if (flag)
-            command.append("visible");
+            command.append("show moves");
         else
-            command.append("hidden");
+            command.append("hide moves");
         command.trimToSize();
 
         writeCommand(command.toString());
     }
     
+    public void setFilamentFactor(int toolIndex, double factor)
+    {
+        StringBuilder command = new StringBuilder();
+        command.append("tool ");
+        command.append(Integer.toString(toolIndex));
+        command.append(" filamentFactor ");
+        command.append(Double.toString(factor));
+        command.trimToSize();
+
+        writeCommand(command.toString());
+    }
+
+    public void setNozzleEjectVolume(int toolIndex, double ejectVolume)
+    {
+        StringBuilder command = new StringBuilder();
+        command.append("tool ");
+        command.append(Integer.toString(toolIndex));
+        command.append(" nozzleEjectVolume ");
+        command.append(Double.toString(ejectVolume));
+        command.trimToSize();
+
+        writeCommand(command.toString());
+    }
+
     public void clearGCode()
     {
         writeCommand("clear");
+    }
+
+    public void giveFocus()
+    {
+        writeCommand("focus");
     }
 
     public void terminatePreview()

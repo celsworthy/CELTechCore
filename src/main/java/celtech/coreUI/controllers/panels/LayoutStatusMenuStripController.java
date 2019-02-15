@@ -168,7 +168,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private GraphicButtonWithLabel printButton;
     
     @FXML
-    private GraphicToggleButtonWithLabel previewButton;
+    private GraphicButtonWithLabel previewButton;
 
     @FXML
     private GraphicButtonWithLabel saveButton;
@@ -1409,6 +1409,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Lookup.getSelectedPrinterProperty().removeListener(printerSettingsListener);
         layoutSubmode.removeListener(layoutSubmodeListener);
         project.removeProjectChangesListener(projectChangesListener);
+        if (previewManager != null)
+            previewManager.setProjectAndPrinter(null, currentPrinter);
         undoButton.disableProperty().unbind();
         redoButton.disableProperty().unbind();
     }
@@ -1431,7 +1433,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
         redoButton.disableProperty().bind(
                 Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
-
+        if (previewManager != null)
+            previewManager.setProjectAndPrinter(project, currentPrinter);
     }
 
     private void dealWithOutOfBoundsModels()
