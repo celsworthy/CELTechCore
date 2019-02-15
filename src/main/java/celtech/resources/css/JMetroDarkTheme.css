@@ -2383,7 +2383,7 @@ modal-dialogue{
 .splashCopyright
 {
     -fx-font-family: "Source Sans Pro";
-    -fx-font-size: 12pt;
+    -fx-font-size: 11pt;
     -fx-fill: white;
     -fx-text-alignment: left;
 }
@@ -2391,7 +2391,7 @@ modal-dialogue{
 .splashVersion
 {
     -fx-font-family: "Source Sans Pro";
-    -fx-font-size: 12pt;
+    -fx-font-size: 11pt;
     -fx-fill: white;
     -fx-text-alignment: right;
 }
