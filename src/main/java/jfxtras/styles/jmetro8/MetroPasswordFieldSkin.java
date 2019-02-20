@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
  * Created by pedro_000 on 12/15/13.
  */
 public class MetroPasswordFieldSkin extends TextFieldWithButtonSkin{
+    static final char BULLET = '\u25cf';
     private boolean shouldMaskText = true;
 
     public MetroPasswordFieldSkin(TextField textField) {

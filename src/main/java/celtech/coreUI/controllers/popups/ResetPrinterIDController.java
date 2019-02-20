@@ -1,11 +1,8 @@
 package celtech.coreUI.controllers.popups;
 
 import celtech.Lookup;
-import celtech.appManager.ApplicationMode;
-import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
@@ -20,12 +17,11 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -43,9 +39,10 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 
 /**
  *
@@ -282,11 +279,11 @@ public class ResetPrinterIDController implements Initializable
     private static String encrypt(final String plainMessage,
                                  final String symKeyHex)
     {
-        final byte[] symKeyData = DatatypeConverter.parseHexBinary(symKeyHex);
-
-        final byte[] encodedMessage = plainMessage.getBytes(Charset.forName("UTF-8"));
+        
         try
         {
+            final byte[] symKeyData = Hex.decodeHex(symKeyHex.toCharArray());
+            final byte[] encodedMessage = plainMessage.getBytes(Charset.forName("UTF-8"));
             final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             final int blockSize = cipher.getBlockSize();
 
@@ -311,10 +308,13 @@ public class ResetPrinterIDController implements Initializable
             System.arraycopy(encryptedMessage, 0, ivAndEncryptedMessage,
                     blockSize, encryptedMessage.length);
 
-            final String ivAndEncryptedMessageBase64 = DatatypeConverter
-                    .printBase64Binary(ivAndEncryptedMessage);
+            final String ivAndEncryptedMessageBase64 = Base64.getEncoder().encodeToString(ivAndEncryptedMessage);
 
             return ivAndEncryptedMessageBase64;
+        }
+        catch (DecoderException e)
+        {
+            throw new IllegalArgumentException("Cannot decode symKeyHex");
         }
         catch (InvalidKeyException e)
         {
@@ -329,12 +329,10 @@ public class ResetPrinterIDController implements Initializable
     private static String decrypt(final String ivAndEncryptedMessageBase64,
                                  final String symKeyHex)
     {
-        final byte[] symKeyData = DatatypeConverter.parseHexBinary(symKeyHex);
-
-        final byte[] ivAndEncryptedMessage = DatatypeConverter
-                .parseBase64Binary(ivAndEncryptedMessageBase64);
         try 
         {
+            final byte[] symKeyData = Hex.decodeHex(symKeyHex.toCharArray());
+            final byte[] ivAndEncryptedMessage = Base64.getDecoder().decode(ivAndEncryptedMessageBase64);
             final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             final int blockSize = cipher.getBlockSize();
 
@@ -361,6 +359,10 @@ public class ResetPrinterIDController implements Initializable
                                               Charset.forName("UTF-8"));
 
             return message;
+        }
+        catch (DecoderException e)
+        {
+            throw new IllegalArgumentException("Cannot decode symKeyHex");
         }
         catch (InvalidKeyException e)
         {

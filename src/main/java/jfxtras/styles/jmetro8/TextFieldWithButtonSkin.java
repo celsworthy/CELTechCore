@@ -1,7 +1,6 @@
 package jfxtras.styles.jmetro8;
 
-import com.sun.javafx.scene.control.behavior.TextFieldBehavior;
-import com.sun.javafx.scene.control.skin.TextFieldSkin;
+import javafx.scene.control.skin.TextFieldSkin;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
