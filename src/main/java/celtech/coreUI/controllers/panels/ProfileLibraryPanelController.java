@@ -38,6 +38,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
@@ -104,7 +105,13 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private ComboBox<RoboxProfile> cmbPrintProfile;
 
     @FXML
+    private TabPane customTabPane;
+    
+    @FXML
     private GridPane extrusion;
+    
+    @FXML
+    private GridPane infill;
     
     @FXML
     private GridPane extrusionControl;
@@ -114,6 +121,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     
     @FXML
     private GridPane support;
+    
+    @FXML
+    private GridPane advancedSupport;
 
     @FXML
     private GridPane cooling;
@@ -193,6 +203,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 regenerateSettings(getSlicerType());
             }
         });
+        
+        // Weird bit of code to enable tabs to fit the width of the pane and to change size with the window
+        customTabPane.tabMinWidthProperty().bind(customTabPane.widthProperty().divide(customTabPane.getTabs().size()).subtract(20));
     }
     
     private void regenerateSettings(SlicerType slicerType) {
@@ -201,9 +214,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         profileDetailsFxmlGenerator.setHeadType(currentHeadType.get());
         profileDetailsFxmlGenerator.setNozzleOptions(nozzleOptions);
         profileDetailsFxmlGenerator.generateProfileSettingsForTab(extrusion);
+        profileDetailsFxmlGenerator.generateProfileSettingsForTab(infill);
         profileDetailsFxmlGenerator.generateProfileSettingsForTab(extrusionControl);
         profileDetailsFxmlGenerator.generateProfileSettingsForTab(nozzles);
         profileDetailsFxmlGenerator.generateProfileSettingsForTab(support);
+        profileDetailsFxmlGenerator.generateProfileSettingsForTab(advancedSupport);
         profileDetailsFxmlGenerator.generateProfileSettingsForTab(speed);
         profileDetailsFxmlGenerator.generateProfileSettingsForTab(cooling);
         FXMLUtilities.addColonsToLabels(container);
@@ -316,9 +331,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         profileNameField.disableProperty().bind(isEditable.not());
         cooling.disableProperty().bind(isEditable.not());
         extrusion.disableProperty().bind(isEditable.not());
+        infill.disableProperty().bind(isEditable.not());
         extrusionControl.disableProperty().bind(isEditable.not());
         nozzles.disableProperty().bind(isEditable.not());
         support.disableProperty().bind(isEditable.not());
+        advancedSupport.disableProperty().bind(isEditable.not());
         speed.disableProperty().bind(isEditable.not());
     }
     

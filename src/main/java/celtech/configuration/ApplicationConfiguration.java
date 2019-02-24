@@ -4,15 +4,9 @@ import celtech.appManager.ProjectMode;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.MachineType;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
@@ -42,6 +36,8 @@ public class ApplicationConfiguration
     public static final String fxmlDiagramsResourcePath = resourcePath + "fxml/diagrams/";
 
     public static final String fxmlButtonsResourcePath = resourcePath + "fxml/buttons/";
+    
+    public static final String fxmlTabsResourcePath = resourcePath + "fxml/tabs/";
 
     public static final String fxmlPrinterStatusResourcePath = resourcePath + "fxml/printerstatus/";
 
