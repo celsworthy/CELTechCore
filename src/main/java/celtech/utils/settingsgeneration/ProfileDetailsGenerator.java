@@ -3,8 +3,8 @@ package celtech.utils.settingsgeneration;
 import celtech.Lookup;
 import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.roboxbase.configuration.PrintProfileSetting;
-import celtech.roboxbase.configuration.PrintProfileSettingsWrapper;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
@@ -67,18 +67,18 @@ public class ProfileDetailsGenerator {
     
     private static final Pattern NUMBER_LIST_PATTERN = Pattern.compile("^-?[0-9]*(,-?[0-9]*)*,?");
     
-    private PrintProfileSettingsWrapper printProfileSettings;
+    private PrintProfileSettings printProfileSettings;
     
     private String headType;
     
     private ObservableList<String> nozzleOptions;
     
-    public ProfileDetailsGenerator(PrintProfileSettingsWrapper printProfileSettings, BooleanProperty isDirty) {
+    public ProfileDetailsGenerator(PrintProfileSettings printProfileSettings, BooleanProperty isDirty) {
         this.printProfileSettings = printProfileSettings;
         this.isDirty = isDirty;
     }
     
-    public void setPrintProfilesettings(PrintProfileSettingsWrapper printProfileSettings) {
+    public void setPrintProfilesettings(PrintProfileSettings printProfileSettings) {
         this.printProfileSettings = printProfileSettings;
     }
     

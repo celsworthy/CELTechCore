@@ -22,6 +22,7 @@
                       <String fx:value="cmbCleanCombo" />
                    </styleClass>
                 </ComboBox>
+                <HBox id="headerSettings" alignment="CENTER_LEFT" spacing="10.0"></HBox>
             </children>
             <padding>
                 <Insets bottom="10.0" top="10.0" />
