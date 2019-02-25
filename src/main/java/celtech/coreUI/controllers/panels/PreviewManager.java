@@ -180,7 +180,7 @@ public class PreviewManager
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 // Disable preview button.
-                previewButton.setFxmlFileName("noPreviewButton");
+                previewButton.setFxmlFileName("previewLoadingButton");
                 previewButton.disableProperty().set(true);
             });
             clearPreview();
@@ -194,7 +194,7 @@ public class PreviewManager
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
                     // Enable preview button.
-                    previewButton.setFxmlFileName("waitPreviewButton");
+                    previewButton.setFxmlFileName("previewLoadingButton");
                     previewButton.disableProperty().set(false);
                 });
                 clearPreview();
@@ -290,7 +290,7 @@ public class PreviewManager
                     {
                         steno.info("Setting button state to failed");
                         previewButton.disableProperty().set(true);
-                        previewButton.setFxmlFileName("noPreviewButton");
+                        previewButton.setFxmlFileName("previewLoadingButton");
                     });
                 }
             };

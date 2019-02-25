@@ -5,6 +5,7 @@
  */
 package celtech.services.gcodepreview;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -188,6 +189,8 @@ public class GCodePreviewTask extends Task<Boolean> {
         ArrayList<String> commands = new ArrayList<>();
         
         commands.add("java");
+        if (BaseConfiguration.getMachineType() == MachineType.MAC)
+            commands.add("-XstartOnFirstThread");
         commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.configFile.xml");
         commands.add("-jar");
         commands.add(BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.jar");
