@@ -95,6 +95,11 @@ public class ProfileDetailsGenerator {
         String gridId = gridPane.getId();
         List<PrintProfileSetting> profileSettingsForTab = printProfileSettings.getPrintProfileSettings().get(gridId);
         
+        if(profileSettingsForTab == null)
+        {
+            return;
+        }
+        
         setupColumnsForGridPane(gridPane);
         
         int rowNumber = 0;
