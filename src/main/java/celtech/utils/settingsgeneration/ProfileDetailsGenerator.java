@@ -175,6 +175,7 @@ public class ProfileDetailsGenerator {
         scrollableSettingsPane.setFitToWidth(true);
         scrollableSettingsPane.setFitToHeight(true);
         scrollableSettingsPane.setContent(settingGridPane);
+        createBindingToWindowHeight(scrollableSettingsPane);
         
         VBox tabContent = new VBox();
         tabContent.setAlignment(Pos.TOP_CENTER);
@@ -260,6 +261,30 @@ public class ProfileDetailsGenerator {
                 default:
                     STENO.error("Value type of " + valueType + " not recognised, setting will be ignored");
             }
+        }
+    }
+    
+    /**
+     * This method gets the {@link ScrollPane} to behave in a sensible-ish manner
+     * It's height is bound to a multiple of the height of the window which means it will resize with the window
+     * and a scrollbar will appear once the content exceeds it's length.
+     * During initialisation the Scene is null so it is necessary to bind the height later.
+     * 
+     * @param scrollPane 
+     */
+    private void createBindingToWindowHeight(ScrollPane scrollPane)
+    {
+        if (tabPane.getScene() != null)
+        {
+            scrollPane.prefHeightProperty().bind(tabPane.getScene().getWindow().heightProperty().multiply(0.5));
+        } else
+        {
+            tabPane.sceneProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) 
+                {
+                    scrollPane.prefHeightProperty().bind(tabPane.getScene().getWindow().heightProperty().multiply(0.5));
+                }
+            });
         }
     }
     
