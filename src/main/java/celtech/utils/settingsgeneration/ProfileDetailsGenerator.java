@@ -1,14 +1,16 @@
 package celtech.utils.settingsgeneration;
 
 import celtech.Lookup;
+import celtech.coreUI.components.GraphicTab;
 import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
-import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.configuration.fileRepresentation.NozzleData;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSettingsTab;
 import celtech.roboxbase.printerControl.model.Head;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,13 +23,18 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -48,6 +55,15 @@ public class ProfileDetailsGenerator {
         SINGLE
     }
     
+    private static final String HEADER_SETTINGS_SELECTOR = "#headerSettings";
+    private static final String TAB_PANE_SELECTOR = "#printProfileTabPane";
+    
+    private static final String TAB_VBOX_STYLE_CLASS = "printProfileTabVBox";
+    private static final String TAB_LABEL_HBOX_STYLE_CLASS = "blackTabUnderline";
+    private static final String TAB_TITLE_STYLE_CLASS = "tabTitle";
+    private static final String TAB_SETTINGS_GRID_STYLE_CLASS = "printProfileGrid";
+    private static final String TAB_SETTINGS_GRID_ID = "tabSettingsGrid";
+    
     private static final String FLOAT = "float";
     private static final String INT = "int";
     private static final String BOOLEAN = "boolean";
@@ -66,6 +82,9 @@ public class ProfileDetailsGenerator {
     private static final double POINT_3_MAX_WIDTH = 0.6;
     
     private static final Pattern NUMBER_LIST_PATTERN = Pattern.compile("^-?[0-9]*(,-?[0-9]*)*,?");
+    
+    private HBox headerSettingsBox;
+    private TabPane tabPane;
     
     private PrintProfileSettings printProfileSettings;
     
@@ -90,63 +109,150 @@ public class ProfileDetailsGenerator {
         this.nozzleOptions = nozzleOptions;
     }
     
-    public void generateProfileSettingsForTab(GridPane gridPane) {
-        clearGrid(gridPane);
-        String gridId = gridPane.getId();
-        List<PrintProfileSetting> profileSettingsForTab = printProfileSettings.getPrintProfileSettings().get(gridId);
+    public void bindTabsToEditableProperty(BooleanProperty isEditable)
+    {
+        if (!tabPane.getTabs().isEmpty())
+        {
+            tabPane.getTabs().forEach(tab -> 
+            {
+                Node gridPaneNode = tab.getContent().lookup("." + TAB_SETTINGS_GRID_ID);
+                if(gridPaneNode != null)
+                {
+                    gridPaneNode.disableProperty().bind(isEditable.not());
+                }
+            });
+        }
+    }
+    
+    public void generateSettingsForProfileDetails(VBox root) throws ProfileDetailsGenerationException
+    {   
+        Node headerNode = root.lookup(HEADER_SETTINGS_SELECTOR);
+        Node tabPaneNode = root.lookup(TAB_PANE_SELECTOR);
         
-        setupColumnsForGridPane(gridPane);
+        if(headerNode instanceof HBox && tabPaneNode instanceof TabPane) 
+        {
+            headerSettingsBox = (HBox) headerNode;
+            tabPane = (TabPane) tabPaneNode;
+        } else
+        {
+            throw new ProfileDetailsGenerationException("The given root Node " 
+                    + root.getClass().getName() 
+                    + "does not contain the correct nodes to hook onto for profile settings generation.");
+        }
+        
+        // Clear previously generated settings
+        headerSettingsBox.getChildren().clear();
+        tabPane.getTabs().clear();
+        
+        // Generate settings for header
+        
+        // Generate settings for tabs
+        List<PrintProfileSettingsTab> printProfileTabs = printProfileSettings.getTabs();
+        printProfileTabs.forEach(tab -> tabPane.getTabs().add(generateProfileSettingsTab(tab)));
+        
+        // Weird bit of code to enable tabs to fit the width of the pane and to change size with the window
+        tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(20));
+    }
+    
+    private GraphicTab generateProfileSettingsTab(PrintProfileSettingsTab printProfileSettingsTab)
+    {
+        Label tabTitle = new Label(printProfileSettingsTab.getTabName());
+        tabTitle.getStyleClass().add(TAB_TITLE_STYLE_CLASS);
+        
+        HBox tabTitleHBox = new HBox();
+        tabTitleHBox.setAlignment(Pos.CENTER);
+        tabTitleHBox.getStyleClass().add(TAB_LABEL_HBOX_STYLE_CLASS);
+        tabTitleHBox.getChildren().add(tabTitle);
+        
+        GridPane settingGridPane = new GridPane();
+        settingGridPane.setAlignment(Pos.TOP_CENTER);
+        settingGridPane.setVgap(8.0);
+        settingGridPane.setId(TAB_SETTINGS_GRID_ID);
+        settingGridPane.getStyleClass().add(TAB_SETTINGS_GRID_STYLE_CLASS);
+        generateSettingsForTabGrid(settingGridPane, printProfileSettingsTab.getSettings());
+        
+        ScrollPane scrollableSettingsPane = new ScrollPane();
+        scrollableSettingsPane.setContent(settingGridPane);
+        
+        VBox tabContent = new VBox();
+        tabContent.setAlignment(Pos.TOP_CENTER);
+        tabContent.getStyleClass().add(TAB_VBOX_STYLE_CLASS);
+        tabContent.getChildren().addAll(tabTitleHBox, scrollableSettingsPane);
+
+        GraphicTab newTab = new GraphicTab(printProfileSettingsTab.getFxmlIconName());
+        if (printProfileSettingsTab.getFxmlSelectedIconName().isPresent())
+        {
+            newTab.setFxmlSelectedIconName(printProfileSettingsTab.getFxmlSelectedIconName().get());
+        }
+        
+        newTab.setContent(tabContent);
+        return newTab;        
+    }
+    
+    private void generateSettingsForTabGrid(GridPane tabGridPane, List<PrintProfileSetting> settingsToGenerate)
+    {
+        setupColumnsForGridPane(tabGridPane);
         
         int rowNumber = 0;
         
-        for(PrintProfileSetting printProfileSetting : profileSettingsForTab) {
-            gridPane.getRowConstraints().add(new RowConstraints());
+        for(PrintProfileSetting printProfileSetting : settingsToGenerate) 
+        {
+            tabGridPane.getRowConstraints().add(new RowConstraints());
             
             // Some changes to nozzle settings if there are no valves on the head
             boolean valvesFitted = HeadContainer.getHeadByID(headType).getValves() == Head.ValveType.FITTED;
-            if(printProfileSetting.getId().equals("ejectionVolume")) {
+            if(printProfileSetting.getId().equals("ejectionVolume")) 
+            {
                 changeLabelingOfEjectionVolumeBasedOnValves(printProfileSetting, valvesFitted);
             }
-            if(printProfileSetting.getId().equals("partialBMinimum") && !valvesFitted) {
+            if(printProfileSetting.getId().equals("partialBMinimum") && !valvesFitted) 
+            {
                 continue;
             }
             
             String valueType = printProfileSetting.getValueType();
-            switch(valueType) {
+            switch(valueType) 
+            {
                 case FLOAT:
-                    if(printProfileSetting.isPerExtruder() && printProfileSetting.getValue().contains(":")) {
-                        addPerExtruderValueRow(gridPane, printProfileSetting, rowNumber);
-                    } else {
-                        addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
+                    if(printProfileSetting.isPerExtruder() && printProfileSetting.getValue().contains(":")) 
+                    {
+                        addPerExtruderValueRow(tabGridPane, printProfileSetting, rowNumber);
+                    } else 
+                    {
+                        addSingleFieldRow(tabGridPane, printProfileSetting, rowNumber);
                     }
                     rowNumber++;
                     break;
                 case INT:
-                    if(printProfileSetting.isPerExtruder() && printProfileSetting.getValue().contains(":")) {
-                        addPerExtruderValueRow(gridPane, printProfileSetting, rowNumber);
-                    } else {
-                        addSingleFieldRow(gridPane, printProfileSetting, rowNumber);
+                    if(printProfileSetting.isPerExtruder() && printProfileSetting.getValue().contains(":")) 
+                    {
+                        addPerExtruderValueRow(tabGridPane, printProfileSetting, rowNumber);
+                    } else 
+                    {
+                        addSingleFieldRow(tabGridPane, printProfileSetting, rowNumber);
                     }
                     rowNumber++;
                     break;
                 case BOOLEAN:
-                    addCheckBoxRow(gridPane, printProfileSetting, rowNumber);
+                    addCheckBoxRow(tabGridPane, printProfileSetting, rowNumber);
                     rowNumber++;
                     break;
                 case OPTION:
-                    if(printProfileSetting.getOptions().isPresent()) {
-                        addComboBoxRow(gridPane, printProfileSetting, rowNumber);
+                    if(printProfileSetting.getOptions().isPresent()) 
+                    {
+                        addComboBoxRow(tabGridPane, printProfileSetting, rowNumber);
                         rowNumber++;
-                    } else {
+                    } else
+                    {
                         STENO.warning("Option setting, "+ printProfileSetting.getId() + ", has no options, setting will be ignored");
                     }
                     break;
                 case NOZZLE:
-                    addSelectionAndValueRow(gridPane, printProfileSetting, rowNumber);
+                    addSelectionAndValueRow(tabGridPane, printProfileSetting, rowNumber);
                     rowNumber++;
                     break;
                 case NUMBER_LIST:
-                    addListFieldRow(gridPane, printProfileSetting, rowNumber, NUMBER_LIST_PATTERN);
+                    addListFieldRow(tabGridPane, printProfileSetting, rowNumber, NUMBER_LIST_PATTERN);
                     rowNumber++;
                     break;
                 default:
@@ -559,6 +665,14 @@ public class ProfileDetailsGenerator {
         } else {
             ejectionVolume.setSettingName("nozzle.retractionVolume");
             ejectionVolume.setTooltip("profileLibraryHelp.nozzleRetractionVolume");
+        }
+    }
+    
+    public class ProfileDetailsGenerationException extends Exception
+    {
+        public ProfileDetailsGenerationException(String message) 
+        {
+            super(message);
         }
     }
 }

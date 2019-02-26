@@ -14,6 +14,7 @@ import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.utils.settingsgeneration.ProfileDetailsGenerator;
+import celtech.utils.settingsgeneration.ProfileDetailsGenerator.ProfileDetailsGenerationException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,9 +39,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -105,33 +104,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private ComboBox<RoboxProfile> cmbPrintProfile;
 
     @FXML
-    private TabPane customTabPane;
-    
-    @FXML
-    private GridPane extrusion;
-    
-    @FXML
-    private GridPane infill;
-    
-    @FXML
-    private GridPane extrusionControl;
-        
-    @FXML
-    private GridPane nozzles;
-    
-    @FXML
-    private GridPane support;
-    
-    @FXML
-    private GridPane advancedSupport;
-
-    @FXML
-    private GridPane cooling;
-
-    @FXML
-    private GridPane speed;
-
-    @FXML
     private RestrictedTextField profileNameField;
 
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
@@ -190,7 +162,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         setupHeadType();
         setupPrintProfileCombo();
         selectFirstPrintProfile();
-        setupWidgetEditableBindings();
+        profileNameField.disableProperty().bind(isEditable.not());
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(slicerTypeChangeListener);
         
@@ -203,9 +175,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 regenerateSettings(getSlicerType());
             }
         });
-        
-        // Weird bit of code to enable tabs to fit the width of the pane and to change size with the window
-        customTabPane.tabMinWidthProperty().bind(customTabPane.widthProperty().divide(customTabPane.getTabs().size()).subtract(20));
     }
     
     private void regenerateSettings(SlicerType slicerType) {
@@ -213,14 +182,14 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         profileDetailsFxmlGenerator.setPrintProfilesettings(PRINT_PROFILE_SETTINGS_CONTAINER.getPrintProfileSettingsForSlicer(slicerType));
         profileDetailsFxmlGenerator.setHeadType(currentHeadType.get());
         profileDetailsFxmlGenerator.setNozzleOptions(nozzleOptions);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(extrusion);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(infill);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(extrusionControl);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(nozzles);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(support);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(advancedSupport);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(speed);
-        profileDetailsFxmlGenerator.generateProfileSettingsForTab(cooling);
+        try
+        {
+            profileDetailsFxmlGenerator.generateSettingsForProfileDetails(container);
+            profileDetailsFxmlGenerator.bindTabsToEditableProperty(isEditable);
+        } catch (ProfileDetailsGenerationException ex) 
+        {
+            STENO.exception("Settings not generated.", ex);
+        }
         FXMLUtilities.addColonsToLabels(container);
         STENO.debug("========== Finished regenerating settings ==========");
     }
@@ -325,18 +294,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         String headType = cmbHeadType.getValue();
         List<RoboxProfile> filesForHeadType = roboxProfiles.get(headType);
         cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
-    }
-
-    private void setupWidgetEditableBindings() {
-        profileNameField.disableProperty().bind(isEditable.not());
-        cooling.disableProperty().bind(isEditable.not());
-        extrusion.disableProperty().bind(isEditable.not());
-        infill.disableProperty().bind(isEditable.not());
-        extrusionControl.disableProperty().bind(isEditable.not());
-        nozzles.disableProperty().bind(isEditable.not());
-        support.disableProperty().bind(isEditable.not());
-        advancedSupport.disableProperty().bind(isEditable.not());
-        speed.disableProperty().bind(isEditable.not());
     }
     
     private void setupSlicerInUseLabel() {
