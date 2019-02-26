@@ -172,13 +172,15 @@ public class ProfileDetailsGenerator {
         generateSettingsForTabGrid(settingGridPane, printProfileSettingsTab.getSettings());
         
         ScrollPane scrollableSettingsPane = new ScrollPane();
+        scrollableSettingsPane.setFitToWidth(true);
+        scrollableSettingsPane.setFitToHeight(true);
         scrollableSettingsPane.setContent(settingGridPane);
         
         VBox tabContent = new VBox();
         tabContent.setAlignment(Pos.TOP_CENTER);
         tabContent.getStyleClass().add(TAB_VBOX_STYLE_CLASS);
         tabContent.getChildren().addAll(tabTitleHBox, scrollableSettingsPane);
-
+        
         GraphicTab newTab = new GraphicTab(printProfileSettingsTab.getFxmlIconName());
         if (printProfileSettingsTab.getFxmlSelectedIconName().isPresent())
         {
