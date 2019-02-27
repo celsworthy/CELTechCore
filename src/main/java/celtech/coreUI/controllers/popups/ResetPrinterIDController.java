@@ -138,6 +138,8 @@ public class ResetPrinterIDController implements Initializable
                     PrinterDefinitionFile printerConfigFile = PrinterContainer.getPrinterByID(newIdentity.printermodelProperty().get());
                     if (printerConfigFile != null)
                     {
+                        // The electronicsVersion should always be empty.
+                        newIdentity.printerelectronicsVersionProperty().setValue("");
                         printerToUse.setPrinterConfiguration(printerConfigFile);
                         printerConfigFile.getEditions().stream()
                                                        .filter(configEdition -> configEdition.getTypeCode().equalsIgnoreCase(newIdentity.printereditionProperty().get()))

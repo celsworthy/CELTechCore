@@ -189,20 +189,7 @@ public class AboutPanelController implements Initializable
     {
         if (identity != null)
         {
-            StringBuilder idString = new StringBuilder();
-            idString.append(identity.printermodelProperty().get());
-            idString.append("-");
-            idString.append(identity.printereditionProperty().get());
-            idString.append("-");
-            idString.append(identity.printerweekOfManufactureProperty().get());
-            idString.append(identity.printeryearOfManufactureProperty().get());
-            idString.append("-");
-            idString.append(identity.printerpoNumberProperty().get());
-            idString.append("-");
-            idString.append(identity.printerserialNumberProperty().get());
-            idString.append("-");
-            idString.append(identity.printercheckByteProperty().get());
-            roboxSerialNumber.setText(idString.toString());
+            roboxSerialNumber.setText(identity.toString());
         } else
         {
             roboxSerialNumber.setText("");
