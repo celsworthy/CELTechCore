@@ -103,6 +103,9 @@ public class ResetPrinterIDController implements Initializable
     private RestrictedTextField printerChecksumField;
 
     @FXML
+    private RestrictedTextField printerElectronicsVersionField;
+
+    @FXML
     private RadioButton tempSetRadioButton;
 
     @FXML
@@ -138,8 +141,6 @@ public class ResetPrinterIDController implements Initializable
                     PrinterDefinitionFile printerConfigFile = PrinterContainer.getPrinterByID(newIdentity.printermodelProperty().get());
                     if (printerConfigFile != null)
                     {
-                        // The electronicsVersion should always be empty.
-                        newIdentity.printerelectronicsVersionProperty().setValue("");
                         printerToUse.setPrinterConfiguration(printerConfigFile);
                         printerConfigFile.getEditions().stream()
                                                        .filter(configEdition -> configEdition.getTypeCode().equalsIgnoreCase(newIdentity.printereditionProperty().get()))
@@ -211,6 +212,7 @@ public class ResetPrinterIDController implements Initializable
         printerPONumberField.disableProperty().bind(tempSetRadioButton.selectedProperty());
         printerSerialNumberField.disableProperty().bind(tempSetRadioButton.selectedProperty());
         printerChecksumField.disableProperty().bind(tempSetRadioButton.selectedProperty());
+        printerElectronicsVersionField.disableProperty().bind(tempSetRadioButton.selectedProperty());
 
         printerIDCodeField.textProperty().addListener((observable, oldValue, newValue) -> 
                                                       {
@@ -224,6 +226,10 @@ public class ResetPrinterIDController implements Initializable
                                                               printerPONumberField.setText(identity.printerpoNumberProperty().get());
                                                               printerSerialNumberField.setText(identity.printerserialNumberProperty().get());
                                                               printerChecksumField.setText(identity.printercheckByteProperty().get());
+                                                              if (!identity.printerelectronicsVersionProperty().get().isEmpty())
+                                                                  printerElectronicsVersionField.setText(identity.printerelectronicsVersionProperty().get());
+                                                              else
+                                                                  printerElectronicsVersionField.clear();
                                                               identityValid.set(true);
                                                           }
                                                           else
@@ -235,6 +241,7 @@ public class ResetPrinterIDController implements Initializable
                                                               printerPONumberField.clear();
                                                               printerSerialNumberField.clear();
                                                               printerChecksumField.clear();
+                                                              printerElectronicsVersionField.clear();
                                                               identityValid.set(true);
                                                           }
                                                       });
@@ -396,7 +403,14 @@ public class ResetPrinterIDController implements Initializable
                 newIdentity.printeryearOfManufactureProperty().set(components[3].trim());
                 newIdentity.printerpoNumberProperty().set(components[4].trim());
                 newIdentity.printerserialNumberProperty().set(components[5].trim());
-                newIdentity.printercheckByteProperty().set(components[6].trim());
+                String checkByte = components[6].trim();
+                String electronicsVersion = "1";
+                if (checkByte.length() == 3 && (checkByte.charAt(1) == 'E' || checkByte.charAt(1) == 'e')) {
+                    electronicsVersion = checkByte.substring(2, 3);
+                    checkByte = checkByte.substring(0, 1);
+                }
+                newIdentity.printercheckByteProperty().set(checkByte);
+                newIdentity.printerelectronicsVersionProperty().set(electronicsVersion);
                 newIdentity.firmwareVersionProperty().set("r762"); // Force a reload of the firmware.
                 if (newIdentity.isValid())
                 {

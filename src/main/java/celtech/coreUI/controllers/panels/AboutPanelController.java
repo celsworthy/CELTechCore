@@ -39,6 +39,9 @@ public class AboutPanelController implements Initializable
     private Label roboxSerialNumber;
 
     @FXML
+    private Label roboxElectronicsVersion;
+
+    @FXML
     private Label headSerialNumber;
     
     @FXML
@@ -190,9 +193,14 @@ public class AboutPanelController implements Initializable
         if (identity != null)
         {
             roboxSerialNumber.setText(identity.toString());
+            if (!identity.printerelectronicsVersionProperty().get().isEmpty())
+                roboxElectronicsVersion.setText("E" + identity.printerelectronicsVersionProperty().get());
+            else
+                roboxElectronicsVersion.setText("");
         } else
         {
             roboxSerialNumber.setText("");
+            roboxElectronicsVersion.setText("");
         }
     }
     
