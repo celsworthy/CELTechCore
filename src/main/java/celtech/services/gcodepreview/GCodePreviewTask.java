@@ -35,9 +35,18 @@ public class GCodePreviewTask extends Task<Boolean> {
     public GCodePreviewTask(String projectDirectory, String printerType, Rectangle2D normalisedScreenBounds)
     {
         this.projectDirectory = projectDirectory;
-        this.printerType = printerType;
+        this.printerType = printerTypeOrDefault(printerType);
         this.normalisedScreenBounds = normalisedScreenBounds;
         this.stdInStream = null;
+    }
+
+    private String printerTypeOrDefault(String printerType)
+    {
+        String pt = (printerType != null ? printerType.trim() : "");
+        if (pt.isEmpty())
+            pt = "DEFAULT";
+        
+        return pt;
     }
 
     public IntegerProperty getLayerCountProperty()
@@ -96,7 +105,7 @@ public class GCodePreviewTask extends Task<Boolean> {
     {
         StringBuilder command = new StringBuilder();
         command.append("printer ");
-        command.append(printerType);
+        command.append(printerTypeOrDefault(printerType));
         command.trimToSize();
 
         writeCommand(command.toString());
