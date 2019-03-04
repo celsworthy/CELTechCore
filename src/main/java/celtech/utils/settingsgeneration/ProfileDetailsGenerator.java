@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.coreUI.components.GraphicTab;
 import celtech.coreUI.components.HideableTooltip;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
@@ -145,6 +146,7 @@ public class ProfileDetailsGenerator {
         tabPane.getTabs().clear();
         
         // Generate settings for header
+        generateHeaderSettings(headerSettingsBox, printProfileSettings.getHeaderSettings());
         
         // Generate settings for tabs
         List<PrintProfileSettingsTab> printProfileTabs = printProfileSettings.getTabs();
@@ -154,9 +156,25 @@ public class ProfileDetailsGenerator {
         tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(20));
     }
     
+    private void generateHeaderSettings(HBox headerSettingsBox, List<PrintProfileSetting> headerSettings) 
+    {
+        headerSettings.forEach(setting -> 
+        {
+            String valueType = setting.getValueType();
+            switch(valueType)
+            {
+                case FLOAT:
+                    headerSettingsBox.getChildren().add(createLabelElement(setting.getSettingName(), true));
+                    headerSettingsBox.getChildren().add(createInputFieldWithOptionalUnit(setting, setting.getValue(), Nozzle.SINGLE));
+                default:
+                    STENO.error("Setting value type of " + valueType + " is not yet supported for 'header settings'");
+            }
+        });
+    }
+    
     private GraphicTab generateProfileSettingsTab(PrintProfileSettingsTab printProfileSettingsTab)
     {
-        Label tabTitle = new Label(printProfileSettingsTab.getTabName());
+        Label tabTitle = new Label(BaseLookup.i18n(printProfileSettingsTab.getTabName()));
         tabTitle.getStyleClass().add(TAB_TITLE_STYLE_CLASS);
         
         HBox tabTitleHBox = new HBox();

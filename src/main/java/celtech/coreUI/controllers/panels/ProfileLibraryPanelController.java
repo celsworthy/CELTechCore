@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -101,11 +102,13 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private ComboBox<String> cmbHeadType;
 
     @FXML
-    private ComboBox<RoboxProfile> cmbPrintProfile;
+    private ComboBox<String> cmbPrintProfile;
 
     @FXML
     private RestrictedTextField profileNameField;
 
+    Map<String, RoboxProfile> roboxProfilesMap;
+    
     private final ObservableList<String> nozzleOptions = FXCollections.observableArrayList(
             "0.3mm", "0.4mm", "0.6mm", "0.8mm");
     
@@ -248,11 +251,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
     }
 
-    private void setupPrintProfileCombo() {
+    private void setupPrintProfileCombo() 
+    {
         repopulateCmbPrintProfile();
 
         cmbPrintProfile.valueProperty().addListener(
-                (ObservableValue<? extends RoboxProfile> observable, RoboxProfile oldValue, RoboxProfile newValue) -> {
+                (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
                     selectPrintProfile();
                 }
         );
@@ -269,23 +273,41 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     public void setAndSelectPrintProfile(RoboxProfile printProfile) {
         if (printProfile != null) {
             cmbHeadType.setValue(printProfile.getHeadType());
-            cmbPrintProfile.setValue(printProfile);
+            cmbPrintProfile.setValue(printProfile.getName());
         }
     }
 
-    private void selectPrintProfile() {
-        RoboxProfile printProfile = cmbPrintProfile.getValue();
-
-        if (printProfile == null) {
+    private void selectPrintProfile()
+    {
+        String selectedPrintProfileName = cmbPrintProfile.getValue();
+        
+        if(selectedPrintProfileName == null || selectedPrintProfileName.isEmpty())
+        {
             return;
         }
-        currentProfileName = printProfile.getName();
-        updateSettingsFromProfile(printProfile);
-        if (printProfile.isStandardProfile()) {
-            state.set(State.ROBOX);
-        } else {
-            state.set(State.CUSTOM);
+        
+        RoboxProfile printProfile = roboxProfilesMap.get(selectedPrintProfileName);
+        currentProfileName = selectedPrintProfileName;
+        
+        if(printProfile == null)
+        {
+            return;
         }
+        
+        updateSettingsFromProfile(printProfile);
+        if (printProfile.isStandardProfile()) 
+        {
+            state.set(State.ROBOX);
+            cmbPrintProfile.setEditable(false);
+        } else
+        {
+            state.set(State.CUSTOM);
+            cmbPrintProfile.setEditable(true);
+        }
+        
+        cmbPrintProfile.getItems().removeIf(name -> !roboxProfilesMap.containsKey(name));
+        cmbPrintProfile.setValue(selectedPrintProfileName);
+        
         isDirty.set(false);
     }
 
@@ -293,7 +315,9 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         Map<String, List<RoboxProfile>> roboxProfiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType());
         String headType = cmbHeadType.getValue();
         List<RoboxProfile> filesForHeadType = roboxProfiles.get(headType);
-        cmbPrintProfile.setItems(FXCollections.observableArrayList(filesForHeadType));
+        roboxProfilesMap = filesForHeadType.stream()
+                .collect(Collectors.toMap(RoboxProfile::getName, Function.identity()));
+        cmbPrintProfile.setItems(FXCollections.observableArrayList(roboxProfilesMap.keySet()));
     }
     
     private void setupSlicerInUseLabel() {
@@ -394,7 +418,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             isDirty.set(false);
             repopulateCmbPrintProfile();
             state.set(ProfileLibraryPanelController.State.CUSTOM);
-            cmbPrintProfile.setValue(savedProfile);
+            cmbPrintProfile.setValue(savedProfile.getName());
         }
     }
 
@@ -402,10 +426,16 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         isNameValid.set(false);
         state.set(ProfileLibraryPanelController.State.NEW);
 
-        profileNameField.requestFocus();
+        //profileNameField.requestFocus();
         profileNameField.selectAll();
         currentProfileName = "";
         profileNameField.pseudoClassStateChanged(ERROR, true);
+        
+        cmbPrintProfile.setEditable(true);
+        cmbPrintProfile.getEditor().requestFocus();
+        String newProfileName = "New";
+        cmbPrintProfile.getItems().add(newProfileName);
+        cmbPrintProfile.setValue(newProfileName);
     }
 
     void whenDeletePressed() {
