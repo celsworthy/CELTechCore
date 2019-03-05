@@ -161,18 +161,6 @@ public class GCodePreviewTask extends Task<Boolean> {
         writeCommand(command.toString());
     }
 
-    public void setNozzleEjectVolume(int toolIndex, double ejectVolume)
-    {
-        StringBuilder command = new StringBuilder();
-        command.append("tool ");
-        command.append(Integer.toString(toolIndex));
-        command.append(" nozzleEjectVolume ");
-        command.append(Double.toString(ejectVolume));
-        command.trimToSize();
-
-        writeCommand(command.toString());
-    }
-
     public void clearGCode()
     {
         writeCommand("clear");

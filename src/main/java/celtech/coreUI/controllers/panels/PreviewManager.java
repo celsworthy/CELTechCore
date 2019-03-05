@@ -274,16 +274,6 @@ public class PreviewManager
                     steno.debug("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
                     previewTask.setToolColour(0, t0Colour);
                     previewTask.setToolColour(1, t1Colour);
-                    Optional<RoboxProfile> profileOpt = getPrintProfile(currentProject.getPrintQuality(), headTypeCode);
-                    if (profileOpt.isPresent()) {
-                        RoboxProfile profile = profileOpt.get();
-                        List<NozzleParameters> np = profile.getNozzleParameters();
-                        if (np != null) {
-                            for (int i = 0; i < np.size(); ++i) {
-                                previewTask.setNozzleEjectVolume(i, np.get(i).getEjectionVolume());
-                            }
-                        }
-                    }
                     previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
                     if (Lookup.getUserPreferences().isAutoGCodePreview())
                         previewTask.giveFocus();
