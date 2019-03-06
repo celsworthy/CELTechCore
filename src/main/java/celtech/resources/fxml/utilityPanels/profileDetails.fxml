@@ -15,163 +15,21 @@
         </HBox>
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <children>
-                <ComboBox fx:id="cmbHeadType" prefWidth="150.0" styleClass="cmbCleanCombo" />
-                <ComboBox fx:id="cmbPrintProfile" prefWidth="150.0">
+                <ComboBox fx:id="cmbHeadType" prefWidth="100.0" styleClass="cmbCleanCombo" />
+                <RestrictedComboBox fx:id="cmbPrintProfile" directorySafeName="true" maxLength="24" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" prefWidth="150.0">
                    <styleClass>
                       <String fx:value="cmbPrintProfile" />
                       <String fx:value="cmbCleanCombo" />
                    </styleClass>
-                </ComboBox>
+                </RestrictedComboBox>
+                <HBox id="headerSettings" alignment="CENTER_LEFT" spacing="10.0"></HBox>
             </children>
             <padding>
-                <Insets bottom="10.0" top="10.0" />
+                <Insets bottom="5.0" top="5.0" />
             </padding>
         </HBox>
-        <HBox prefHeight="30.0" prefWidth="600.0" spacing="20.0">
-            <children>
-                <HBox alignment="CENTER_LEFT" spacing="5.0">
-                    <children>
-                        <Label styleClass="colon" text="%sidePanel_settings.Profilename" />
-                        <RestrictedTextField id="printProfileName" fx:id="profileNameField" directorySafeName="true" forceUpperCase="false" maxLength="24" prefColumnCount="18" prefHeight="30.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+">
-                            <tooltip>
-                               <HideableTooltip text="%profileLibraryHelp.name" />
-                            </tooltip>
-                        </RestrictedTextField>
-                    </children>
-                </HBox>
-            </children>
-        </HBox>
-        <VBox>
-            <children>
-                <HBox alignment="TOP_CENTER" spacing="5.0">
-                    <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </VBox.margin>
-                </HBox>
-                <HBox alignment="CENTER" />
-            </children>
-        </VBox>
         <TabPane id="printProfileTabPane" fx:id="customTabPane" minHeight="-Infinity" opacity="1.0" tabClosingPolicy="UNAVAILABLE">
             <tabs>
-                <GraphicTab fxmlIconName="shellIcon" fxmlSelectedIconName="shellIconSelected">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.shellTabTitle" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="extrusion" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-                
-                <GraphicTab fxmlIconName="infillIcon" fxmlSelectedIconName="infillIconSelected">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.infillTabTitle" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="infill" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-                
-                <GraphicTab fxmlIconName="nozzlesIcon">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.NozzleTab" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="extrusionControl" alignment="TOP_CENTER" maxHeight="-1.0" styleClass="printProfileGrid" vgap="8.0" VBox.vgrow="ALWAYS"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-                
-                <GraphicTab fxmlIconName="valvesIcon">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.ValveTab" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="nozzles" alignment="TOP_CENTER" hgap="5.0" maxHeight="-1.0" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-                
-                <GraphicTab fxmlIconName="supportIcon">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                           <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.supportTab" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="support" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-                
-                <GraphicTab fxmlIconName="advancedSupportIcon">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                           <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.advancedSupportTabTitle" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="advancedSupport" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-                
-                <GraphicTab fxmlIconName="speedIcon">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.speedTab" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="speed" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
-     
-                <GraphicTab fxmlIconName="coolingIcon">
-                    <content>
-                        <VBox alignment="TOP_CENTER" styleClass="printProfileTabVBox">
-                            <children>
-                                <HBox alignment="CENTER" styleClass="blackTabUnderline">
-                                    <children>
-                                        <Label text="%sidePanel_settings.coolingTabTitle" styleClass="tabTitle" />
-                                    </children>
-                                </HBox>
-                                <GridPane fx:id="cooling" alignment="TOP_CENTER" styleClass="printProfileGrid" vgap="8.0"></GridPane>
-                            </children>
-                        </VBox>
-                    </content>
-                </GraphicTab>
             </tabs>
         </TabPane>
     </children>
