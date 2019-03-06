@@ -116,10 +116,14 @@ public class ProfileDetailsGenerator {
         {
             tabPane.getTabs().forEach(tab -> 
             {
-                Node gridPaneNode = tab.getContent().lookup("." + TAB_SETTINGS_GRID_ID);
-                if(gridPaneNode != null)
+                ScrollPane scrollPane = (ScrollPane) tab.getContent().lookup("ScrollPane");
+                if (scrollPane != null)
                 {
-                    gridPaneNode.disableProperty().bind(isEditable.not());
+                    Node gridPaneNode = scrollPane.getContent();
+                    if(gridPaneNode != null)
+                    {
+                        gridPaneNode.disableProperty().bind(isEditable.not());
+                    }
                 }
             });
         }
