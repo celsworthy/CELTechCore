@@ -58,13 +58,13 @@ public class PreviewManager
     };
     
     private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-        updatePreview();
+        autoStartAndUpdatePreview();
     };
 
     private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
-        updatePreview();
+        autoStartAndUpdatePreview();
     };
-
+    
     private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
     {
         @Override
@@ -72,11 +72,7 @@ public class PreviewManager
         {
             if (newValue == ApplicationMode.SETTINGS)
             {
-                if ((Lookup.getUserPreferences().isAutoGCodePreview() || previewTask != null)  &&
-                    BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION))
-                {
-                    updatePreview();
-                }
+                autoStartAndUpdatePreview();
             }
         }
     };
@@ -185,10 +181,19 @@ public class PreviewManager
         }
     }
 
+    private void autoStartAndUpdatePreview()
+    {
+            if (previewTask != null ||
+                (Lookup.getUserPreferences().isAutoGCodePreview() &&
+                BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
+        {
+            updatePreview();
+        }
+    }
+
     private void updatePreview()
     {
         steno.debug("Updating preview");
-        //updatePreviewButtonIcon();
         
         boolean modelUnsuitable = !modelIsSuitable();
         if (modelUnsuitable)
