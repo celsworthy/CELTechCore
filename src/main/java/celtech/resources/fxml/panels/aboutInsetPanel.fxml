@@ -75,7 +75,7 @@
                                         <String fx:value="aboutBodyTextRegular" />
                                     </styleClass>
                                 </Text>
-                                <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Christopher Elsworthy" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <Text fx:id="bdNames" layoutX="10.0" layoutY="29.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Chris Elsworthy" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                     <styleClass>
                                         <String fx:value="aboutBodyText" />
                                         <String fx:value="blue-inset-panel-text" />
@@ -137,12 +137,13 @@
                                                 <HBox alignment="CENTER_LEFT" spacing="3.0">
                                                     <children>
                                                         <Label fx:id="roboxSerialNumber" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="?" />
+                                                        <Label fx:id="roboxElectronicsVersion" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="?" />
                                                         <GraphicButton fxmlFileName="copyTextButton" onAction="#copyPrinterSerialNumber" styleClassOverride="mini-button" />
                                                     </children>
                                                 </HBox>
                                             </children>
                                         </VBox>
-                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                             <children>
                                                 <HBox alignment="CENTER_LEFT" spacing="3.0">
                                                     <children>
@@ -152,7 +153,7 @@
                                                 </HBox>
                                             </children>
                                         </VBox>
-                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                             <children>
                                                 <HBox alignment="CENTER_LEFT" spacing="3.0">
                                                     <children>
@@ -161,12 +162,9 @@
                                                 </HBox>
                                             </children>
                                         </VBox>
-                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.roboxSerialNumber" wrapText="true">
-                                        </Label>
-                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.headSerialNumber" wrapText="true" GridPane.rowIndex="1">
-                                        </Label>
-                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.autoMakerLicense" wrapText="true" GridPane.rowIndex="2">
-                                        </Label>
+                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.roboxSerialNumber" wrapText="true"/>
+                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.headSerialNumber" wrapText="true" GridPane.rowIndex="2"/>
+                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.autoMakerLicense" wrapText="true" GridPane.rowIndex="3"/>
                                     </children>
                                     <VBox.margin>
                                         <Insets />

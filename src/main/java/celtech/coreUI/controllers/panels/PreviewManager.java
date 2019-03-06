@@ -58,13 +58,13 @@ public class PreviewManager
     };
     
     private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-        updatePreview();
+        autoStartAndUpdatePreview();
     };
 
     private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
-        updatePreview();
+        autoStartAndUpdatePreview();
     };
-
+    
     private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
     {
         @Override
@@ -72,11 +72,7 @@ public class PreviewManager
         {
             if (newValue == ApplicationMode.SETTINGS)
             {
-                if ((Lookup.getUserPreferences().isAutoGCodePreview() || previewTask != null)  &&
-                    BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION))
-                {
-                    updatePreview();
-                }
+                autoStartAndUpdatePreview();
             }
         }
     };
@@ -169,10 +165,35 @@ public class PreviewManager
         previewTask = null;
     }
     
+    private void startPreview() {
+        if (previewTask == null)
+        {
+            String printerType = null;
+            Printer printer = Lookup.getSelectedPrinterProperty().get();
+            if (printer != null)
+                printerType = printer.printerConfigurationProperty().get().getTypeCode();
+            String projDirectory = ApplicationConfiguration.getProjectDirectory()
+                                       + currentProject.getProjectName(); 
+            steno.debug("Starting preview task");
+            previewTask = new GCodePreviewTask(projDirectory, printerType, displayManager.getNormalisedPreviewRectangle());
+            previewTask.runningProperty().addListener(previewRunningListener);
+            previewExecutor.runTask(previewTask);
+        }
+    }
+
+    private void autoStartAndUpdatePreview()
+    {
+            if (previewTask != null ||
+                (Lookup.getUserPreferences().isAutoGCodePreview() &&
+                BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
+        {
+            updatePreview();
+        }
+    }
+
     private void updatePreview()
     {
         steno.debug("Updating preview");
-        //updatePreviewButtonIcon();
         
         boolean modelUnsuitable = !modelIsSuitable();
         if (modelUnsuitable)
@@ -180,7 +201,7 @@ public class PreviewManager
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 // Disable preview button.
-                previewButton.setFxmlFileName("noPreviewButton");
+                previewButton.setFxmlFileName("previewLoadingButton");
                 previewButton.disableProperty().set(true);
             });
             clearPreview();
@@ -194,10 +215,14 @@ public class PreviewManager
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
                     // Enable preview button.
-                    previewButton.setFxmlFileName("waitPreviewButton");
+                    previewButton.setFxmlFileName("previewLoadingButton");
                     previewButton.disableProperty().set(false);
                 });
-                clearPreview();
+
+                if (previewTask == null)
+                    startPreview();
+                else
+                    clearPreview();
                 ModelContainerProject mProject = (ModelContainerProject)currentProject;
                 steno.debug("Waiting for prep result");
                 Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
@@ -209,7 +234,7 @@ public class PreviewManager
                     // Get tool colours.
                     Color t0Colour = StandardColours.ROBOX_BLUE;
                     Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
-                    String printerType = "DEFAULT";
+                    String printerType = null;
                     String headTypeCode = HeadContainer.defaultHeadID;
                     Printer printer = Lookup.getSelectedPrinterProperty().get();
                     if (printer != null)
@@ -248,31 +273,12 @@ public class PreviewManager
                     }
 
                     if (previewTask == null)
-                    {
-                        String projDirectory = ApplicationConfiguration.getProjectDirectory()
-                                                   + currentProject.getProjectName(); 
-                        steno.debug("Starting preview task");
-                        previewTask = new GCodePreviewTask(projDirectory, printerType, displayManager.getNormalisedPreviewRectangle());
-                        previewTask.runningProperty().addListener(previewRunningListener);
-                        previewExecutor.runTask(previewTask);
-                    }
+                        startPreview();
                     else
-                    {
                         previewTask.setPrinterType(printerType);
-                    }
                     steno.debug("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
                     previewTask.setToolColour(0, t0Colour);
                     previewTask.setToolColour(1, t1Colour);
-                    Optional<RoboxProfile> profileOpt = getPrintProfile(currentProject.getPrintQuality(), headTypeCode);
-                    if (profileOpt.isPresent()) {
-                        RoboxProfile profile = profileOpt.get();
-                        List<NozzleParameters> np = profile.getNozzleParameters();
-                        if (np != null) {
-                            for (int i = 0; i < np.size(); ++i) {
-                                previewTask.setNozzleEjectVolume(i, np.get(i).getEjectionVolume());
-                            }
-                        }
-                    }
                     previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
                     if (Lookup.getUserPreferences().isAutoGCodePreview())
                         previewTask.giveFocus();
@@ -290,7 +296,7 @@ public class PreviewManager
                     {
                         steno.info("Setting button state to failed");
                         previewButton.disableProperty().set(true);
-                        previewButton.setFxmlFileName("noPreviewButton");
+                        previewButton.setFxmlFileName("previewLoadingButton");
                     });
                 }
             };

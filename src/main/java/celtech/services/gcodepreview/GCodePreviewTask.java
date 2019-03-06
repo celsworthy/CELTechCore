@@ -5,6 +5,7 @@
  */
 package celtech.services.gcodepreview;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.MachineType;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -34,9 +35,18 @@ public class GCodePreviewTask extends Task<Boolean> {
     public GCodePreviewTask(String projectDirectory, String printerType, Rectangle2D normalisedScreenBounds)
     {
         this.projectDirectory = projectDirectory;
-        this.printerType = printerType;
+        this.printerType = printerTypeOrDefault(printerType);
         this.normalisedScreenBounds = normalisedScreenBounds;
         this.stdInStream = null;
+    }
+
+    private String printerTypeOrDefault(String printerType)
+    {
+        String pt = (printerType != null ? printerType.trim() : "");
+        if (pt.isEmpty())
+            pt = "DEFAULT";
+        
+        return pt;
     }
 
     public IntegerProperty getLayerCountProperty()
@@ -95,7 +105,7 @@ public class GCodePreviewTask extends Task<Boolean> {
     {
         StringBuilder command = new StringBuilder();
         command.append("printer ");
-        command.append(printerType);
+        command.append(printerTypeOrDefault(printerType));
         command.trimToSize();
 
         writeCommand(command.toString());
@@ -151,18 +161,6 @@ public class GCodePreviewTask extends Task<Boolean> {
         writeCommand(command.toString());
     }
 
-    public void setNozzleEjectVolume(int toolIndex, double ejectVolume)
-    {
-        StringBuilder command = new StringBuilder();
-        command.append("tool ");
-        command.append(Integer.toString(toolIndex));
-        command.append(" nozzleEjectVolume ");
-        command.append(Double.toString(ejectVolume));
-        command.trimToSize();
-
-        writeCommand(command.toString());
-    }
-
     public void clearGCode()
     {
         writeCommand("clear");
@@ -188,6 +186,8 @@ public class GCodePreviewTask extends Task<Boolean> {
         ArrayList<String> commands = new ArrayList<>();
         
         commands.add("java");
+        if (BaseConfiguration.getMachineType() == MachineType.MAC)
+            commands.add("-XstartOnFirstThread");
         commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.configFile.xml");
         commands.add("-jar");
         commands.add(BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.jar");
