@@ -2537,7 +2537,11 @@ color-picker-label .text-field {
 */
 
 .cmbPrintProfile {
-    -fx-pref-width: 290;
+    -fx-pref-width: 280;
+}
+
+.cmbPrintProfile:error {
+    
 }
 
 .cmbPrintProfile .combo-box .list-cell {
@@ -2547,7 +2551,6 @@ color-picker-label .text-field {
 #printProfileInnerPanel {
     -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt; 
-
 }
 
 #printProfileInnerPanel .tab-pane, .tab-header-background {
@@ -2582,13 +2585,8 @@ color-picker-label .text-field {
     -fx-min-width: 80;
 }
 
-#printProfileName {
-    -fx-padding: 2 2 2 2;
-}
-
-#printProfileName:error {
-    -fx-text-box-border: red ;
-    -fx-focus-color: red ;
+#headerSettings HBox {
+    -fx-alignment: CENTER;
 }
 
 .printProfileGrid {

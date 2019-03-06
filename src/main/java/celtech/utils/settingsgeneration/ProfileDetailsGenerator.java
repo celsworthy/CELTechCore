@@ -166,6 +166,7 @@ public class ProfileDetailsGenerator {
                 case FLOAT:
                     headerSettingsBox.getChildren().add(createLabelElement(setting.getSettingName(), true));
                     headerSettingsBox.getChildren().add(createInputFieldWithOptionalUnit(setting, setting.getValue(), Nozzle.SINGLE));
+                    break;
                 default:
                     STENO.error("Setting value type of " + valueType + " is not yet supported for 'header settings'");
             }
