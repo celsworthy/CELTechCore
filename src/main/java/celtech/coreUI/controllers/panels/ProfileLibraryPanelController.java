@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedComboBox;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
@@ -178,6 +179,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 STENO.debug("F5 pressed, attempting refresh of print profile settings");
                 PrintProfileSettingsContainer.loadPrintProfileSettingsFile();
                 SlicerMappingsContainer.getInstance().loadSlicerMappingsFile();
+                BaseLookup.setSlicerMappings(SlicerMappingsContainer.getInstance().getSlicerMappings());
                 regenerateSettings(getSlicerType(), true);
             }
         });
