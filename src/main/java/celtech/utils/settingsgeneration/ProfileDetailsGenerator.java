@@ -30,6 +30,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -129,7 +130,7 @@ public class ProfileDetailsGenerator {
         }
     }
     
-    public void generateSettingsForProfileDetails(VBox root) throws ProfileDetailsGenerationException
+    public void generateSettingsForProfileDetails(VBox root, boolean recreateTabs) throws ProfileDetailsGenerationException
     {   
         Node headerNode = root.lookup(HEADER_SETTINGS_SELECTOR);
         Node tabPaneNode = root.lookup(TAB_PANE_SELECTOR);
@@ -144,17 +145,19 @@ public class ProfileDetailsGenerator {
                     + root.getClass().getName() 
                     + "does not contain the correct nodes to hook onto for profile settings generation.");
         }
-        
-        // Clear previously generated settings
-        headerSettingsBox.getChildren().clear();
-        tabPane.getTabs().clear();
-        
+
         // Generate settings for header
+        headerSettingsBox.getChildren().clear();
         generateHeaderSettings(headerSettingsBox, printProfileSettings.getHeaderSettings());
         
-        // Generate settings for tabs
         List<PrintProfileSettingsTab> printProfileTabs = printProfileSettings.getTabs();
-        printProfileTabs.forEach(tab -> tabPane.getTabs().add(generateProfileSettingsTab(tab)));
+        
+        // Generate new tabs and settings
+        if(recreateTabs)
+        {
+            tabPane.getTabs().clear();
+        }
+        printProfileTabs.forEach(profileTab -> generateProfileSettingsTab(profileTab));
         
         // Weird bit of code to enable tabs to fit the width of the pane and to change size with the window
         tabPane.tabMinWidthProperty().bind(tabPane.widthProperty().divide(tabPane.getTabs().size()).subtract(20));
@@ -177,9 +180,31 @@ public class ProfileDetailsGenerator {
         });
     }
     
-    private GraphicTab generateProfileSettingsTab(PrintProfileSettingsTab printProfileSettingsTab)
+    private void generateProfileSettingsTab(PrintProfileSettingsTab printProfileSettingsTab)
     {
-        Label tabTitle = new Label(BaseLookup.i18n(printProfileSettingsTab.getTabName()));
+        Optional<Tab> currentTab = tabPane.getTabs().stream()
+                .filter(tab -> tab.getId().equals(BaseLookup.i18n(printProfileSettingsTab.getTabName())))
+                .findFirst();
+        
+        if (currentTab.isPresent())
+        {
+            generateProfileSettingsForTab(printProfileSettingsTab, (GraphicTab) currentTab.get());
+        } else
+        {
+            GraphicTab newTab = new GraphicTab(printProfileSettingsTab.getFxmlIconName());
+            if (printProfileSettingsTab.getFxmlSelectedIconName().isPresent())
+            {
+                newTab.setFxmlSelectedIconName(printProfileSettingsTab.getFxmlSelectedIconName().get());
+            }
+            
+            tabPane.getTabs().add(generateProfileSettingsForTab(printProfileSettingsTab, newTab));
+        }
+    }
+    
+    private GraphicTab generateProfileSettingsForTab(PrintProfileSettingsTab printProfileSettingsTab, GraphicTab graphicTab)
+    {
+        String tabName = BaseLookup.i18n(printProfileSettingsTab.getTabName());
+        Label tabTitle = new Label(tabName);
         tabTitle.getStyleClass().add(TAB_TITLE_STYLE_CLASS);
         
         HBox tabTitleHBox = new HBox();
@@ -205,14 +230,10 @@ public class ProfileDetailsGenerator {
         tabContent.getStyleClass().add(TAB_VBOX_STYLE_CLASS);
         tabContent.getChildren().addAll(tabTitleHBox, scrollableSettingsPane);
         
-        GraphicTab newTab = new GraphicTab(printProfileSettingsTab.getFxmlIconName());
-        if (printProfileSettingsTab.getFxmlSelectedIconName().isPresent())
-        {
-            newTab.setFxmlSelectedIconName(printProfileSettingsTab.getFxmlSelectedIconName().get());
-        }
         
-        newTab.setContent(tabContent);
-        return newTab;        
+        graphicTab.setId(tabName);
+        graphicTab.setContent(tabContent);
+        return graphicTab;        
     }
     
     private void generateSettingsForTabGrid(GridPane tabGridPane, List<PrintProfileSetting> settingsToGenerate)

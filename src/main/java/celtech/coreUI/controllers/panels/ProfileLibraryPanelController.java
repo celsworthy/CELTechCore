@@ -127,7 +127,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     
     private final ChangeListener<SlicerType> slicerTypeChangeListener = 
             (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
-        regenerateSettings(newValue);
+        regenerateSettings(newValue, true);
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();
         setupSlicerInUseLabel();
@@ -178,12 +178,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 STENO.debug("F5 pressed, attempting refresh of print profile settings");
                 PrintProfileSettingsContainer.loadPrintProfileSettingsFile();
                 SlicerMappingsContainer.getInstance().loadSlicerMappingsFile();
-                regenerateSettings(getSlicerType());
+                regenerateSettings(getSlicerType(), true);
             }
         });
     }
     
-    private void regenerateSettings(SlicerType slicerType) 
+    private void regenerateSettings(SlicerType slicerType, boolean recreateTabs) 
     {
         STENO.debug("========== Begin regenerating settings ==========");
         profileDetailsFxmlGenerator.setPrintProfilesettings(PRINT_PROFILE_SETTINGS_CONTAINER.getPrintProfileSettingsForSlicer(slicerType));
@@ -191,7 +191,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         profileDetailsFxmlGenerator.setNozzleOptions(nozzleOptions);
         try
         {
-            profileDetailsFxmlGenerator.generateSettingsForProfileDetails(container);
+            profileDetailsFxmlGenerator.generateSettingsForProfileDetails(container, recreateTabs);
             profileDetailsFxmlGenerator.bindTabsToEditableProperty(isEditable);
         } catch (ProfileDetailsGenerationException ex) 
         {
@@ -368,7 +368,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         printProfileSettings.setHiddenSettings(defaultSettingsCopy.getHiddenSettings());
         
         overwriteSettingsFromProfle(printProfileSettings, roboxProfile);
-        regenerateSettings(getSlicerType());
+        regenerateSettings(getSlicerType(), false);
     }
     
     private void overwriteSettingsFromProfle(PrintProfileSettings settingsToOverwrite, RoboxProfile roboxProfile) {
