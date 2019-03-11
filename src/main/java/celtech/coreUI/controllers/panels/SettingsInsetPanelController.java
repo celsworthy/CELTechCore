@@ -414,7 +414,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             || now.doubleValue() >= fillDensitySlider.getMax()
                             || now.doubleValue() <= fillDensitySlider.getMin())
                     {
-                        printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
+                        if (getSlicerType() == SlicerType.Cura3)
+                        {
+                            printerSettings.setFillDensityOverride(now.floatValue());
+                        } else
+                        {
+                            printerSettings.setFillDensityOverride(now.floatValue() / 100.0f);
+                        }
                     }
                 });
 
@@ -586,7 +592,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 //        });
 
         brimSlider.setValue(saveBrim);
-        fillDensitySlider.setValue(saveFillDensity * 100);
+        
+        if(getSlicerType() == SlicerType.Cura3)
+        {
+            fillDensitySlider.setValue(saveFillDensity);
+        } else
+        {
+            fillDensitySlider.setValue(saveFillDensity * 100);
+        }
 
         raftButton.setSelected(savePrintRaft);
 
@@ -745,9 +758,17 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         if (currentProject != null) {
             if (settings.isPresent() && !printerSettings.isFillDensityChangedByUser()) {
-                float fillDensity = settings.get().getSpecificFloatSetting("fillDensity_normalised");
-                printerSettings.setFillDensityOverride(fillDensity);
-                fillDensitySlider.setValue(fillDensity * 100.0);
+                if(getSlicerType() == SlicerType.Cura3)
+                {
+                    int fillDensity = settings.get().getSpecificIntSetting("fillDensity_normalised");
+                    printerSettings.setFillDensityOverride(fillDensity);
+                    fillDensitySlider.setValue(fillDensity);
+                } else
+                {
+                    float fillDensity = settings.get().getSpecificFloatSetting("fillDensity_normalised");
+                    printerSettings.setFillDensityOverride(fillDensity);
+                    fillDensitySlider.setValue(fillDensity * 100.0);
+                }
             }
 
 //            if (printQuality.get() == PrintQualityEnumeration.CUSTOM) {
