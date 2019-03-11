@@ -1,8 +1,8 @@
 package celtech.configuration.fileRepresentation;
 
-import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.units.CurrencySymbol;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -40,6 +40,7 @@ public class UserPreferenceFile
     private int timelapseDelay = 2;
     private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
+    private boolean customPrinterEnabled = false;
     private PrinterType customPrinterType = PrinterType.ROBOX;
     private String customPrinterHead = HeadContainer.defaultHeadID;
 
@@ -272,12 +273,24 @@ public class UserPreferenceFile
     {
         this.loosePartSplitOnLoad = loosePartSplitOnLoad;
     }
+
+    public boolean isCustomPrinterEnabled() 
+    {
+        return customPrinterEnabled;
+    }
+
+    public void setCustomPrinterEnabled(boolean customPrinterEnabled)
+    {
+        this.customPrinterEnabled = customPrinterEnabled;
+    }
     
-    public PrinterType getCustomPrinterType() {
+    public PrinterType getCustomPrinterType() 
+    {
         return customPrinterType;
     }
     
-    public void setCustomPrinterType(PrinterType customPrinterType) {
+    public void setCustomPrinterType(PrinterType customPrinterType) 
+    {
         this.customPrinterType = customPrinterType;
     }
 
@@ -285,7 +298,8 @@ public class UserPreferenceFile
         return customPrinterHead;
     }
 
-    public void setCustomPrinterHead(String customPrinterHead) {
+    public void setCustomPrinterHead(String customPrinterHead) 
+    {
         this.customPrinterHead = customPrinterHead;
     }
 
@@ -314,6 +328,7 @@ public class UserPreferenceFile
         setTimelapseDelay(userPreferences.getTimelapseDelay());
         setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
+        setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
         setCustomPrinterType(userPreferences.getCustomPrinterType());
         setCustomPrinterHead(userPreferences.getCustomPrinterHead());
     }

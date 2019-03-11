@@ -59,8 +59,8 @@ public class UserPreferences
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
     private final BooleanProperty autoGCodePreview = new SimpleBooleanProperty(true);
     private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
-    private PrinterType customPrinterType = PrinterType.ROBOX;
-    private String customPrinterHead = HeadContainer.defaultHeadID;
+    private final ObjectProperty<PrinterType> customPrinterType = new SimpleObjectProperty<>(PrinterType.ROBOX);
+    private final StringProperty customPrinterHead = new SimpleStringProperty(HeadContainer.defaultHeadID);
     
     private final ChangeListener<String> stringChangeListener = (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
     {
@@ -89,16 +89,21 @@ public class UserPreferences
     };
     
     private final ChangeListener<Boolean> enableCustomPrinterChangeListener = (observable, oldValue, newValue) -> {
-        if(newValue) {
-            if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.OFFLINE_PRINTER)) {
+        if(newValue) 
+        {
+            if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.OFFLINE_PRINTER)) 
+            {
                 RoboxCommsManager.getInstance().addDummyPrinter(true);
-            } else {
+            } else 
+            {
                 BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
                 customPrinterEnabled.set(false);
             }
-        } else {
+        } else
+        {
             RoboxCommsManager.getInstance().removeAllDummyPrinters();
         }
+        saveSettings();
     };
 
     private final ChangeListener<Boolean> enableAutoGCodePreviewChangeListener = (observable, oldValue, newValue) -> {
@@ -141,8 +146,9 @@ public class UserPreferences
         timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
         timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
         loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
-        customPrinterType = userPreferenceFile.getCustomPrinterType();
-        customPrinterHead = userPreferenceFile.getCustomPrinterHead();
+        customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
+        customPrinterType.set(userPreferenceFile.getCustomPrinterType());
+        customPrinterHead.set(userPreferenceFile.getCustomPrinterHead());
 
         safetyFeaturesOn.addListener(booleanChangeListener);
         showTooltips.addListener(booleanChangeListener);
@@ -528,31 +534,48 @@ public class UserPreferences
         this.autoGCodePreview.set(autoGCodePreview);
     }
 
-    public boolean isCustomPrinterEnabled() {
+    public boolean isCustomPrinterEnabled()
+    {
         return customPrinterEnabled.get();
     }
     
-    public void setCustomPrinterEnabled(boolean value) {
+    public void setCustomPrinterEnabled(boolean value) 
+    {
         customPrinterEnabled.set(value);
     }
     
-    public BooleanProperty customPrinterEnabledProperty() {
+    public BooleanProperty customPrinterEnabledProperty() 
+    {
         return customPrinterEnabled;
     }
     
-    public PrinterType getCustomPrinterType() {
+    public ObjectProperty<PrinterType> customPrinterTypeProperty()
+    {
         return customPrinterType;
     }
     
-    public void setCustomPrinterType(PrinterType customPrinterType) {
-        this.customPrinterType = customPrinterType;
+    public PrinterType getCustomPrinterType() 
+    {
+        return customPrinterType.get();
     }
     
-    public String getCustomPrinterHead() {
+    public void setCustomPrinterType(PrinterType customPrinterType) 
+    {
+        this.customPrinterType.set(customPrinterType);
+    }
+    
+    public StringProperty customPrinterHeadProperty()
+    {
         return customPrinterHead;
     }
     
-    public void setCustomPrinterHead(String customPrinterHead) {
-        this.customPrinterHead = customPrinterHead;
+    public String getCustomPrinterHead() 
+    {
+        return customPrinterHead.get();
+    }
+    
+    public void setCustomPrinterHead(String customPrinterHead) 
+    {
+        this.customPrinterHead.set(customPrinterHead);
     }
 }
