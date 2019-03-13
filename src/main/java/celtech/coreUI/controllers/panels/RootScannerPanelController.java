@@ -381,4 +381,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         int b = (int) (255 * c.getBlue());
         return String.format("#%02x%02x%02x", r, g, b);
     }
+    
+    @Override
+    public void panelSelected() {}
 }

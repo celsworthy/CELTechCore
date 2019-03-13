@@ -70,7 +70,6 @@ public class GraphicTab extends Tab
         {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 ApplicationConfiguration.fxmlTabsResourcePath + fxmlIconName + ".fxml"));
-//            fxmlLoader.setController(this);
 
             fxmlLoader.setClassLoader(this.getClass().getClassLoader());
 

@@ -130,6 +130,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     //Display scaling
     private BooleanProperty nodesMayHaveMoved;
+    
+    private final BooleanProperty libraryModeEntered = new SimpleBooleanProperty(false);
 
     public enum DisplayScalingMode
     {
@@ -197,6 +199,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
     {
+        libraryModeEntered.set(false);
         infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
 
         // Remove the existing side panel
@@ -226,32 +229,37 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             interchangeablePanelAreaWithNotificationArea.getChildren().add(0, newInsetPanel);
         }
 
-        if (newMode == ApplicationMode.LAYOUT)
-        {
-            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
-
-            //Switch tabs if necessary
-            if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
-                    == false)
-            {
-                if (lastLayoutTab != null
-                        && tabDisplay.getTabs().contains(lastLayoutTab))
+        if (null != newMode)
+        switch (newMode) {
+            case LAYOUT:
+                interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
+                //Switch tabs if necessary
+                if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
+                        == false)
                 {
-                    //Select the last project tab
-                    tabDisplaySelectionModel.select(lastLayoutTab);
-                } else
-                {
-                    //Select either the first tab or the the + tab (so that a new project is added)
-                    tabDisplaySelectionModel.select(1);
-                }
-            }
-        } else if (newMode == ApplicationMode.SETTINGS)
-        {
-            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
-        } else if (newMode == ApplicationMode.STATUS)
-        {
-            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
-            tabDisplaySelectionModel.select(0);
+                    if (lastLayoutTab != null
+                            && tabDisplay.getTabs().contains(lastLayoutTab))
+                    {
+                        //Select the last project tab
+                        tabDisplaySelectionModel.select(lastLayoutTab);
+                    } else
+                    {
+                        //Select either the first tab or the the + tab (so that a new project is added)
+                        tabDisplaySelectionModel.select(1);
+                    }
+                }   break;
+            case SETTINGS:
+                interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
+                break;
+            case STATUS:
+                interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
+                tabDisplaySelectionModel.select(0);
+                break;
+            case LIBRARY:
+                libraryModeEntered.set(true);
+                break;
+            default:
+                break;
         }
     }
 
@@ -1094,5 +1102,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     public void initialiseBlank2DProject()
     {
         ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).initialiseBlank2DProject();
+    }
+    
+    public BooleanProperty libraryModeEnteredProperty()
+    {
+        return libraryModeEntered;
     }
 }

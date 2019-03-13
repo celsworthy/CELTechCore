@@ -117,4 +117,7 @@ public class PreferencesInnerPanelController implements Initializable, MenuInner
         List<MenuInnerPanel.OperationButton> operationButtons = new ArrayList<>();
         return operationButtons;
     }
+    
+    @Override
+    public void panelSelected() {}
 }

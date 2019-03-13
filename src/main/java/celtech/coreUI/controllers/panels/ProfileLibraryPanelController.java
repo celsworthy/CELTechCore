@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedComboBox;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.RoboxProfile;
@@ -126,12 +127,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         headHasChanged(t1);
     };
     
+    private boolean regenerateSettings;
+    
     private final ChangeListener<SlicerType> slicerTypeChangeListener = 
             (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
-        regenerateSettings(newValue, true);
-        repopulateCmbPrintProfile();
-        selectFirstPrintProfile();
-        setupSlicerInUseLabel();
+                regenerateSettings = true;
     };
 
     public ProfileLibraryPanelController() {}
@@ -171,6 +171,16 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         selectFirstPrintProfile();
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(slicerTypeChangeListener);
+        
+        DisplayManager.getInstance().libraryModeEnteredProperty().addListener((observable, oldValue, enteredLibraryMode) -> {
+            if (enteredLibraryMode)
+            {
+                regenerateSettings(getSlicerType(), true);
+                repopulateCmbPrintProfile();
+                selectFirstPrintProfile();
+                setupSlicerInUseLabel();
+            }
+        });
         
         container.setOnKeyPressed(event -> {
             KeyCode keyCode = event.getCode();
@@ -468,6 +478,16 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         }
         repopulateCmbPrintProfile();
         selectFirstPrintProfile();
+    }
+    
+    @Override
+    public void panelSelected()
+    {
+        if (regenerateSettings)
+        {
+            regenerateSettings(getSlicerType(), true);
+            regenerateSettings = false;
+        }
     }
 
     @Override

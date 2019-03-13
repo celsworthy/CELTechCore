@@ -320,13 +320,13 @@ public class ProfileDetailsGenerator {
     {
         if (tabPane.getScene() != null)
         {
-            scrollPane.prefHeightProperty().bind(tabPane.getScene().getWindow().heightProperty().multiply(0.5));
+            scrollPane.prefHeightProperty().bind(tabPane.getScene().getWindow().heightProperty().multiply(0.6).add(-50));
         } else
         {
             tabPane.sceneProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) 
                 {
-                    scrollPane.prefHeightProperty().bind(tabPane.getScene().getWindow().heightProperty().multiply(0.5));
+                    scrollPane.prefHeightProperty().bind(tabPane.getScene().getWindow().heightProperty().multiply(0.6).add(-50));
                 }
             });
         }
