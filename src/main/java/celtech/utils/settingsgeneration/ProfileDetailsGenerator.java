@@ -128,6 +128,8 @@ public class ProfileDetailsGenerator {
                 }
             });
         }
+        
+        headerSettingsBox.disableProperty().bind(isEditable.not());
     }
     
     public void generateSettingsForProfileDetails(VBox root, boolean recreateTabs) throws ProfileDetailsGenerationException
