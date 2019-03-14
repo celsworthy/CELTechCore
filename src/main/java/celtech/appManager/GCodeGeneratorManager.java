@@ -684,7 +684,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     @Override
     public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings) 
     {
-        reactToChange(true);
+        reactToChange(false);
         if (printerSettings.getPrintQuality() != currentPrintQuality.get())
         {
             currentPrintQuality.set(printerSettings.getPrintQuality());

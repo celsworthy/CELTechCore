@@ -1,24 +1,24 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
-import celtech.roboxbase.comms.remote.EEPROMState;
-import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.MaterialType;
-import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.RestrictedTextField;
 import celtech.coreUI.components.material.FilamentMenuButton;
 import celtech.coreUI.components.material.FilamentSelectionListener;
 import celtech.coreUI.components.material.SpecialItemSelectionListener;
 import celtech.roboxbase.BaseLookup;
-import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
-import static celtech.roboxbase.utils.ColourStringConverter.stringToColor;
+import celtech.roboxbase.MaterialType;
 import celtech.roboxbase.comms.exceptions.RoboxCommsException;
+import celtech.roboxbase.comms.remote.EEPROMState;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
-import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
+import celtech.roboxbase.printerControl.model.Reel;
+import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
+import static celtech.roboxbase.utils.ColourStringConverter.stringToColor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -918,4 +918,7 @@ public class FilamentLibraryPanelController implements Initializable, MenuInnerP
             selectFilament(filament);
         }
     }
+    
+    @Override
+    public void panelSelected() {}
 }

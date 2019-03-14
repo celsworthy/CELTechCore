@@ -3,12 +3,10 @@ package celtech.coreUI.controllers.utilityPanels;
 import celtech.CoreTest;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.coreUI.components.ModalDialog;
 import celtech.coreUI.components.RestrictedTextField;
-import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import static celtech.coreUI.controllers.panels.FXMLUtilities.addColonsToLabels;
-import static celtech.coreUI.visualisation.metaparts.ModelLoadResultType.Image;
+import celtech.coreUI.controllers.panels.MenuInnerPanel;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.exceptions.RoboxCommsException;
 import celtech.roboxbase.comms.remote.EEPROMState;
@@ -25,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableBooleanValue;
@@ -746,5 +743,7 @@ public class HeadEEPROMController implements Initializable, PrinterListChangesLi
         operationButtons.add(resetToDefaultsButton);
         return operationButtons;
     }
-
+    
+    @Override
+    public void panelSelected() {}
 }

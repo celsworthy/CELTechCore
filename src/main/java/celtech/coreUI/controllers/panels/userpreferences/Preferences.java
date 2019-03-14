@@ -8,6 +8,7 @@ import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController.Preference;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -152,8 +153,8 @@ public class Preferences
         UserPreferences userPreferences) {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
         
-        Preference enableCustomPrinterPref = new TickBoxPreference(userPreferences.customPrinterEnabledProperty(),
-                "preferences.customPrinterEnabled");
+        BooleanProperty customPrinterEnabled = userPreferences.customPrinterEnabledProperty();
+        Preference enableCustomPrinterPref = new TickBoxPreference(customPrinterEnabled, "preferences.customPrinterEnabled");
         Preference customPrinterTypePref = new CustomPrinterTypePreference(userPreferences);
         Preference customPrinterHeadPref = new CustomPrinterHeadPreference(userPreferences);
         

@@ -26,7 +26,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     private Printer printer = null;
     private Project project;
     
-    private GCodeGeneratorManager gCodeGenManager;
+    private GCodeGeneratorManager gCodeGenManager = null;
 
     private final ChangeListener<Boolean> serviceStatusListener = (ObservableValue<? extends Boolean> ov, Boolean lastState, Boolean newState) ->
     {
@@ -45,7 +45,8 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         {
             try
             {
-                gCodeGenManager.cancelPrintOrSaveTask();
+                if (gCodeGenManager != null)
+                    gCodeGenManager.cancelPrintOrSaveTask();
                 printer.cancel(null, Lookup.getUserPreferences().isSafetyFeaturesOn());
             } catch (PrinterException ex)
             {
@@ -82,8 +83,11 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         if(project instanceof ModelContainerProject) 
         {
             gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
-            gCodeGenManager.selectedTaskRunningProperty().addListener(serviceStatusListener);
-            gCodeGenManager.selectedTaskProgressProperty().addListener(serviceProgressListener);
+            if (gCodeGenManager != null)
+            {
+                gCodeGenManager.selectedTaskRunningProperty().addListener(serviceStatusListener);
+                gCodeGenManager.selectedTaskProgressProperty().addListener(serviceProgressListener);
+            }
         }
         
         if(printer != null) 
@@ -107,7 +111,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         boolean showBar = false;
         
-        if (gCodeGenManager.printOrSaveTaskRunningProperty().get() && gCodeGenManager.selectedTaskRunningProperty().get())
+        if (gCodeGenManager!= null && gCodeGenManager.printOrSaveTaskRunningProperty().get() && gCodeGenManager.selectedTaskRunningProperty().get())
         {
             largeProgressDescription.setText(gCodeGenManager.getSelectedTaskMessage());
             progressBar.setProgress(gCodeGenManager.selectedTaskProgressProperty().get());
@@ -151,10 +155,12 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     }
     
     public void unbindFromProject() {
-        if(project != null) {
+        if (project != null) {
             gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
-            gCodeGenManager.selectedTaskRunningProperty().removeListener(serviceStatusListener);
-            gCodeGenManager.selectedTaskProgressProperty().removeListener(serviceProgressListener);
+            if (gCodeGenManager != null) {
+                gCodeGenManager.selectedTaskRunningProperty().removeListener(serviceStatusListener);
+                gCodeGenManager.selectedTaskProgressProperty().removeListener(serviceProgressListener);
+            }
         }
     }
 }
