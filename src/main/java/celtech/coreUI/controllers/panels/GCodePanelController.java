@@ -7,6 +7,7 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.printerControl.comms.commands.GCodeMacros;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Optional;
@@ -28,7 +29,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
-import org.codehaus.plexus.util.FileUtils;
 
 /**
  *
@@ -112,10 +112,10 @@ public class GCodePanelController implements Initializable, StatusInsetControlle
         }
         String gcodeFileWithPathUser = BaseConfiguration.getUserStorageDirectory() + BaseConfiguration.macroFileSubpath + macroFilename + ".gcode";
 
-        if (FileUtils.fileExists(gcodeFileWithPathUser))
+        if (new File(gcodeFileWithPathUser).exists())
         {
             return Optional.of(gcodeFileWithPathUser);
-        } else if (FileUtils.fileExists(gcodeFileWithPathApp))
+        } else if (new File(gcodeFileWithPathApp).exists())
         {
             return Optional.of(gcodeFileWithPathApp);
         } else
