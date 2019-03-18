@@ -411,14 +411,23 @@ public class ProfileDetailsGenerator {
      * @param row the row number of the grid to add to
      * @return the GridPane
      */
-    protected GridPane addSelectionAndValueRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) {
+    protected GridPane addSelectionAndValueRow(GridPane gridPane, PrintProfileSetting printProfileSetting, int row) 
+    {
         gridPane.add(createLabelElement(printProfileSetting.getSettingName(), true), 0, row);
         gridPane.add(createLabelElement("extrusion.nozzle", true), 1, row);
         ComboBox comboBox = createComboBox(printProfileSetting);
         gridPane.add(comboBox, 2, row);
-        if(printProfileSetting.getChildren().isPresent()) {
-            PrintProfileSetting extrusionSetting = printProfileSetting.getChildren().get().get(0);
-            gridPane.add(createInputFieldForNozzleSelection(extrusionSetting, extrusionSetting.getValue(), comboBox), 4, row);
+        if(printProfileSetting.getChildren().isPresent()) 
+        {
+            PrintProfileSetting childSetting = printProfileSetting.getChildren().get().get(0);
+            gridPane.add(createLabelElement(childSetting.getSettingName(), true), 3, row);
+            if (childSetting.getValueType().equals(EXTRUSION))
+            {
+                gridPane.add(createInputFieldForNozzleSelection(childSetting, childSetting.getValue(), comboBox), 4, row);
+            } else
+            {
+                gridPane.add(createInputFieldWithOptionalUnit(childSetting, childSetting.getValue(), Nozzle.SINGLE), 4, row);
+            }
         }
         return gridPane;
     }
@@ -526,7 +535,7 @@ public class ProfileDetailsGenerator {
                 printProfileSetting.getValueType().equals(EXTRUSION)) {
             restrictedNumberField.setAllowedDecimalPlaces(2);
         }
-        restrictedNumberField.setMaxLength(5);
+        restrictedNumberField.setMaxLength(6);
         
         if(printProfileSetting.getMinimumValue().isPresent()) {
             restrictedNumberField.setMinValue(Double.valueOf(printProfileSetting.getMinimumValue().get()));

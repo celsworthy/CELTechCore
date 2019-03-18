@@ -1,18 +1,12 @@
 package celtech.utils.settingsgeneration;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
-import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
-import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.PrintProfileSettingsContainer;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
+import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +22,11 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
-
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -172,7 +169,7 @@ public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
         Label label = (Label) gridPane.getChildren().get(0);
         Label boxLabel = (Label) gridPane.getChildren().get(1);
         ComboBox combo = (ComboBox) gridPane.getChildren().get(2);
-        HBox fieldHBox = (HBox) gridPane.getChildren().get(3);
+        HBox fieldHBox = (HBox) gridPane.getChildren().get(4);
         
         assertThat(label.getText(), is(equalTo(SLICER_SETTING_NAME)));
         assertTrue(label.getStyleClass().contains(COLON_STYLE));
