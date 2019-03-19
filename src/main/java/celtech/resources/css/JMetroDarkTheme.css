@@ -2375,6 +2375,13 @@ modal-dialogue{
     -fx-max-height: -1;
 }
 
+#dialogMessageLarge
+{
+    -fx-font-size: 16pt;
+    -fx-padding: 5 20 5 20;
+    -fx-max-height: 1000;
+    -fx-wrap-text: true;
+}
 
 /*
  * Splash screen settings
