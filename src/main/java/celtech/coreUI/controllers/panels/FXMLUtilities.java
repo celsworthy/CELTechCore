@@ -6,6 +6,7 @@ package celtech.coreUI.controllers.panels;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.text.Text;
@@ -50,6 +51,16 @@ public class FXMLUtilities
                         {
                             addColonsToLabels((Parent) content);
                         }
+                    }
+                }
+                
+                if (node instanceof ScrollPane)
+                {
+                    ScrollPane scrollPane = (ScrollPane) node;
+                    Node content = scrollPane.getContent();
+                    if (content instanceof Parent)
+                    {
+                        addColonsToLabels((Parent) content);
                     }
                 }
             }
