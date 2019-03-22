@@ -618,7 +618,7 @@ public class ProfileDetailsGenerator {
         
         HeadFile currentHead = HeadContainer.getHeadByID(headType);
         if(currentHead.getNozzleHeaters().size() == 2 && 
-                Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura3) {
+                Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura4) {
             nozzles.set(0, nozzleOptions.get(0) + " (Material 2)");
             nozzles.set(1, nozzleOptions.get(1) + " (Material 1)");
             

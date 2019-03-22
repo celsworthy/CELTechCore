@@ -46,7 +46,7 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         control.getStyleClass().add("cmbCleanCombo");
         
         slicerTypes.add(SlicerType.Cura);
-        slicerTypes.add(SlicerType.Cura3);
+        slicerTypes.add(SlicerType.Cura4);
         control.setItems(slicerTypes);
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
@@ -65,7 +65,7 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
             STENO.warning("SlicerType from Slicer setting is null. Setting to default Cura");
             slicerType = SlicerType.Cura;
         } 
-        else if (slicerType == SlicerType.Cura3)
+        else if (slicerType == SlicerType.Cura4)
         {
             if(!BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
             {

@@ -241,7 +241,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
             setupOverrides();
             
-            if(getSlicerType() == SlicerType.Cura3)
+            if(getSlicerType() == SlicerType.Cura4)
             {
                 supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
             } else 
@@ -352,7 +352,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         
         supportComboBox.getItems().clear();
         
-        if (getSlicerType() == SlicerType.Cura3) 
+        if (getSlicerType() == SlicerType.Cura4) 
         {
             supportComboBox.getItems().addAll(SupportType.values());
             supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
@@ -443,7 +443,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             || now.doubleValue() >= fillDensitySlider.getMax()
                             || now.doubleValue() <= fillDensitySlider.getMin())
                     {
-                        if (getSlicerType() == SlicerType.Cura3)
+                        if (getSlicerType() == SlicerType.Cura4)
                         {
                             printerSettings.setFillDensityOverride(now.floatValue());
                         } else
@@ -622,7 +622,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         brimSlider.setValue(saveBrim);
         
-        if(getSlicerType() == SlicerType.Cura3)
+        if(getSlicerType() == SlicerType.Cura4)
         {
             fillDensitySlider.setValue(saveFillDensity);
         } else
@@ -787,7 +787,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         if (currentProject != null) {
             if (settings.isPresent() && !printerSettings.isFillDensityChangedByUser()) {
-                if(getSlicerType() == SlicerType.Cura3)
+                if(getSlicerType() == SlicerType.Cura4)
                 {
                     int fillDensity = settings.get().getSpecificIntSetting("fillDensity_normalised");
                     printerSettings.setFillDensityOverride(fillDensity);

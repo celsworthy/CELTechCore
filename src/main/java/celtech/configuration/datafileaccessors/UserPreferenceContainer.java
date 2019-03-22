@@ -1,10 +1,10 @@
 package celtech.configuration.datafileaccessors;
 
-import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.fileRepresentation.UserPreferenceFile;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
@@ -44,6 +44,7 @@ public class UserPreferenceContainer
         {
             try
             {
+                mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
                 userPreferenceFile = mapper.readValue(userPreferenceInputFile, UserPreferenceFile.class);
             } catch (IOException ex)
             {

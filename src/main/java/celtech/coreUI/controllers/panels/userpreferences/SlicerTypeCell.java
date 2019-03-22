@@ -16,7 +16,7 @@ public class SlicerTypeCell extends ListCell<SlicerType> {
     {
         super.updateItem(slicerType, empty);
         
-        if(slicerType != null && slicerType.equals(SlicerType.Cura3)) 
+        if(slicerType != null && slicerType.equals(SlicerType.Cura4)) 
         {
             if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
             {
