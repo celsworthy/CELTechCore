@@ -149,18 +149,6 @@ public class GCodePreviewTask extends Task<Boolean> {
         writeCommand(command.toString());
     }
     
-    public void setFilamentFactor(int toolIndex, double factor)
-    {
-        StringBuilder command = new StringBuilder();
-        command.append("tool ");
-        command.append(Integer.toString(toolIndex));
-        command.append(" filamentFactor ");
-        command.append(Double.toString(factor));
-        command.trimToSize();
-
-        writeCommand(command.toString());
-    }
-
     public void clearGCode()
     {
         writeCommand("clear");
