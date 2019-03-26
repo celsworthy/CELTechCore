@@ -10,7 +10,7 @@ public enum CustomSlicerType
 {
     Default(null), 
     Cura(SlicerType.Cura),
-    Cura3(SlicerType.Cura3);
+    Cura4(SlicerType.Cura4);
     
     private final SlicerType slicerType;
 

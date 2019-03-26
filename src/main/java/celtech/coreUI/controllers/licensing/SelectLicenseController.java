@@ -1,5 +1,7 @@
 package celtech.coreUI.controllers.licensing;
 
+import celtech.Lookup;
+import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.licence.Licence;
 import celtech.roboxbase.licence.LicenceUtilities;
@@ -42,6 +44,9 @@ public class SelectLicenseController implements Initializable {
     @FXML
     private TextArea licenseInfo;
     
+    @FXML
+    HyperlinkedLabel selectLicenceInfo;
+    
     private boolean licenseValid;
     
     private Licence licence;
@@ -55,6 +60,7 @@ public class SelectLicenseController implements Initializable {
             licence = potentialLicense.get();
             licenseInfo.setText(licence.toString());
         }
+        selectLicenceInfo.replaceText(Lookup.i18n("dialogs.selectLicenseInfo"));
         licenseFile = LicenceManager.getInstance().tryAndGetCachedLicenseFile();
     }
     

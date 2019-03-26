@@ -12,18 +12,20 @@ import celtech.roboxbase.configuration.MachineType;
 import celtech.roboxbase.utils.SystemUtils;
 import celtech.utils.TaskWithProgessCallback;
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -47,7 +49,11 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
 {
     private static final String ROOT_UPGRADE_FILE_PREFIX = "RootARM-32bit-";
 
-    private GenericProgressBar rootSoftwareUpDownloadProgress;
+    private static  FutureTask<Optional<File>> rootDownloadFuture = null;
+    private static ExecutorService rootDownloadExecutor = Executors.newFixedThreadPool(1);
+    private static GenericProgressBar rootSoftwareDownloadProgress;
+
+    private GenericProgressBar rootSoftwareUploadProgress;
 
     private BooleanProperty inhibitUpdate = new SimpleBooleanProperty(false);
 
@@ -100,7 +106,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         }
     }
 
-    private void tidyRootFiles(String path, String filename)
+    private static void tidyRootFiles(String path, String filename)
     {
         try
         {
@@ -134,7 +140,24 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 @Override
                 protected Boolean call() throws Exception
                 {
-                    return associatedServer.upgradeRootSoftware(path, filename, this);
+                    inhibitUpdate.set(true);
+                    Optional<File> rootFileOptional = getRootDownloadFuture(path, filename).get();
+                    if (rootFileOptional.isPresent())
+                    {
+                        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                        {
+                            rootSoftwareUploadProgress = Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootUploadTitle"),
+                                runningProperty(),
+                                progressProperty());
+                        });
+
+                        return associatedServer.upgradeRootSoftware(path, filename, this);
+                    }
+                    else
+                    {
+                        inhibitUpdate.set(false);
+                        return false;
+                    }
                 }
 
                 @Override
@@ -152,8 +175,8 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
             rootUploader.setOnFailed((event) ->
             {
                 BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUploadProgress);
+                rootSoftwareUploadProgress = null;
                 inhibitUpdate.set(false);
             });
 
@@ -166,20 +189,16 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 {
                     BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootUploadTitle"), Lookup.i18n("rootScanner.failedUploadMessage"));
                 }
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUploadProgress);
+                rootSoftwareUploadProgress = null;
                 inhibitUpdate.set(false);
             });
 
-            if (rootSoftwareUpDownloadProgress != null)
+            if (rootSoftwareUploadProgress != null)
             {
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUploadProgress);
+                rootSoftwareUploadProgress = null;
             }
-
-            Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootUploadTitle"),
-                    rootUploader.runningProperty(),
-                    rootUploader.progressProperty());
 
             Thread rootUploaderThread = new Thread(rootUploader);
             rootUploaderThread.setName("Root uploader");
@@ -188,30 +207,65 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         }
     }
 
-    @FXML
-    void updateRoot(ActionEvent event)
+    private static synchronized Future<Optional<File>> getRootDownloadFuture(String rootFileDirectory,
+                                                                                   String rootFileName)
     {
-        //Is root file there?
-        //The format is RootARM-32bit-3.01.01.zip
-        String pathToRootFile = BaseConfiguration.getUserTempDirectory();
-        String rootFile = ROOT_UPGRADE_FILE_PREFIX + BaseConfiguration.getApplicationVersion() + ".zip";
-        Path rootFilePath = Paths.get(pathToRootFile + rootFile);
+        Path rootFilePath = Paths.get(rootFileDirectory + rootFileName);
+        try
+        {
+            if (!Files.exists(rootFilePath, LinkOption.NOFOLLOW_LINKS))
+            {
+                rootDownloadFuture = null;
+            }
+            else if (Files.size(rootFilePath) < 10000000)
+            {
+                // Sanity check - less than 10 Mb seems to be too small for a Root install file.
+                Files.delete(rootFilePath);
+                rootDownloadFuture = null;
+            }
+        }
+        catch (IOException ex)
+        {
+            rootDownloadFuture = null;
+        }
 
-        if (Files.exists(rootFilePath, LinkOption.NOFOLLOW_LINKS))
+        // It is static synchronized, so all other instances are blocked.
+        if (rootDownloadFuture == null)
         {
-            //Use this file to upgrade the root
-            upgradeRootWithFile(pathToRootFile, rootFile);
-        } else
-        {
-            //We need to download it
-            TaskWithProgessCallback<Boolean> rootDownloader = new TaskWithProgessCallback<Boolean>()
+            TaskWithProgessCallback<Optional<File>> rootDownloader = new TaskWithProgessCallback<Optional<File>>()
             {
                 @Override
-                protected Boolean call() throws Exception
+                protected Optional<File> call() throws Exception
                 {
-                    URL obj = new URL("http://www.cel-robox.com/wp-content/uploads/Software/Root/" + rootFile);
-                    boolean success = SystemUtils.downloadFromUrl(obj, pathToRootFile + rootFile, this);
-                    return success;
+                    BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                    {
+                        if (rootSoftwareDownloadProgress != null)
+                        {
+                            Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareDownloadProgress);
+                            rootSoftwareDownloadProgress = null;
+                        }
+                    });
+            
+                    if (Files.exists(rootFilePath, LinkOption.NOFOLLOW_LINKS))
+                    {
+                        return Optional.of(rootFilePath.toFile());
+                    }
+                    else
+                    {
+                        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                        {
+                            rootSoftwareDownloadProgress = Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootDownloadTitle"),
+                                    runningProperty(),
+                                    progressProperty());
+
+                        });
+                        
+                        // Download the file from the web server.
+                        URL rootDownloadURL = new URL("http://www.cel-robox.com/wp-content/uploads/Software/Root/" + rootFileName);
+                        if (SystemUtils.downloadFromUrl(rootDownloadURL, rootFilePath.toString(), this))
+                            return Optional.of(rootFilePath.toFile());
+                    }
+                    return Optional.empty();
                 }
 
                 @Override
@@ -223,42 +277,38 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
 
             rootDownloader.setOnScheduled((result) ->
             {
-                inhibitUpdate.set(true);
             });
 
             rootDownloader.setOnSucceeded((result) ->
             {
-                BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
-                tidyRootFiles(pathToRootFile, rootFile);
-                upgradeRootWithFile(pathToRootFile, rootFile);
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-                inhibitUpdate.set(false);
+                tidyRootFiles(rootFileDirectory, rootFileName);
+                if (rootSoftwareDownloadProgress != null)
+                {
+                    BaseLookup.getSystemNotificationHandler().showInformationNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.successfulDownloadMessage"));
+                    Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareDownloadProgress);
+                    rootSoftwareDownloadProgress = null;
+                }
             });
 
             rootDownloader.setOnFailed((result) ->
             {
                 BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.rootDownloadTitle"), Lookup.i18n("rootScanner.failedDownloadMessage"));
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-                inhibitUpdate.set(false);
+                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareDownloadProgress);
+                rootSoftwareDownloadProgress = null;
             });
 
-            if (rootSoftwareUpDownloadProgress != null)
-            {
-                Lookup.getProgressDisplay().removeGenericProgressBarFromDisplay(rootSoftwareUpDownloadProgress);
-                rootSoftwareUpDownloadProgress = null;
-            }
-
-            Lookup.getProgressDisplay().addGenericProgressBarToDisplay(Lookup.i18n("rootScanner.rootDownloadTitle"),
-                    rootDownloader.runningProperty(),
-                    rootDownloader.progressProperty());
-
-            Thread rootDownloaderThread = new Thread(rootDownloader);
-            rootDownloaderThread.setName("Root software downloader");
-            rootDownloaderThread.setDaemon(true);
-            rootDownloaderThread.start();
+            rootDownloadFuture = rootDownloader;
+            rootDownloadExecutor.execute(rootDownloader);
         }
+        return rootDownloadFuture;
+    }
+
+    @FXML
+    void updateRoot(ActionEvent event)
+    {
+        String pathToRootFile = BaseConfiguration.getUserTempDirectory();
+        String rootFile = ROOT_UPGRADE_FILE_PREFIX + BaseConfiguration.getApplicationVersion() + ".zip";
+        upgradeRootWithFile(pathToRootFile, rootFile);
     }
 
     @FXML

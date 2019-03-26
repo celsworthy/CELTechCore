@@ -125,6 +125,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private final ChangeListener<Head> headChangeListener = (ObservableValue<? extends Head> ov, Head t, Head t1) -> {
         headHasChanged(t1);
+        regenerateSettings = true;
     };
     
     private boolean regenerateSettings;
@@ -283,6 +284,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private void selectFirstPrintProfile() {
         if (cmbPrintProfile.getItems().size() > 0) {
             cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
+            selectPrintProfile();
         }
     }
     

@@ -12,7 +12,7 @@
     <Pane id="dropShadowPane" styleClass="dialog_drop_shadow"></Pane>
     <VBox id="licenseSelection" fx:id="rootVBox" alignment="CENTER" prefWidth="600" styleClass="inset-panel-redux">
         <children>
-           <TextFlow prefHeight="91.0" prefWidth="480.0" />
+           <HyperlinkedLabel id="dialogMessageLarge" fx:id="selectLicenceInfo" text="" />
            <TextArea fx:id="licenseInfo" editable="false" prefHeight="103.0" prefWidth="480.0" />
            <HBox prefHeight="0.0" prefWidth="480.0" spacing="10.0">
               <children>

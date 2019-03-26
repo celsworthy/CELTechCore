@@ -186,6 +186,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private final ChangeListener<SlicerType> slicerTypeChangeListener = 
             (ObservableValue<? extends SlicerType> observable, SlicerType oldValue, SlicerType newValue) -> {
         populateCustomProfileChooser();
+        populateSupportChooser();
         showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
         clearSettingsIfNoCustomProfileAvailable();
     };
@@ -234,15 +235,19 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         try {
             supportComboBox.getItems().clear();
 
-            if(getSlicerType() == SlicerType.Cura3) {
-                supportComboBox.getItems().addAll(SupportType.values());
-            } else {
-                supportComboBox.getItems().addAll(SupportType.MATERIAL_1, SupportType.MATERIAL_2);
-            }
+            populateSupportChooser();
 
             setupCustomProfileChooser();
 
             setupOverrides();
+            
+            if(getSlicerType() == SlicerType.Cura4)
+            {
+                supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
+            } else 
+            {
+                supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+            }
 
             Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
 
@@ -340,6 +345,30 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
 
     }
+    
+    private void populateSupportChooser()
+    {
+        populatingForProject = true;
+        
+        supportComboBox.getItems().clear();
+        
+        if (getSlicerType() == SlicerType.Cura4) 
+        {
+            supportComboBox.getItems().addAll(SupportType.values());
+            supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
+        } else 
+        {
+            supportComboBox.getItems().addAll(SupportType.MATERIAL_1, SupportType.MATERIAL_2);
+            supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+        }
+        
+        if (printerSettings != null)
+        {
+            supportComboBox.getSelectionModel().select(printerSettings.getPrintSupportTypeOverride());
+        }
+        
+        populatingForProject = false;
+    }
 
     private void whenCustomProfileChanges(RoboxProfile newValue)
     {
@@ -414,7 +443,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                             || now.doubleValue() >= fillDensitySlider.getMax()
                             || now.doubleValue() <= fillDensitySlider.getMin())
                     {
-                        if (getSlicerType() == SlicerType.Cura3)
+                        if (getSlicerType() == SlicerType.Cura4)
                         {
                             printerSettings.setFillDensityOverride(now.floatValue());
                         } else
@@ -593,7 +622,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         brimSlider.setValue(saveBrim);
         
-        if(getSlicerType() == SlicerType.Cura3)
+        if(getSlicerType() == SlicerType.Cura4)
         {
             fillDensitySlider.setValue(saveFillDensity);
         } else
@@ -758,7 +787,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         if (currentProject != null) {
             if (settings.isPresent() && !printerSettings.isFillDensityChangedByUser()) {
-                if(getSlicerType() == SlicerType.Cura3)
+                if(getSlicerType() == SlicerType.Cura4)
                 {
                     int fillDensity = settings.get().getSpecificIntSetting("fillDensity_normalised");
                     printerSettings.setFillDensityOverride(fillDensity);
