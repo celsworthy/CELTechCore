@@ -191,7 +191,8 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 PrintProfileSettingsContainer.loadPrintProfileSettingsFile();
                 SlicerMappingsContainer.getInstance().loadSlicerMappingsFile();
                 BaseLookup.setSlicerMappings(SlicerMappingsContainer.getInstance().getSlicerMappings());
-                regenerateSettings(getSlicerType(), true);
+                RoboxProfile printProfile = roboxProfilesMap.get(currentProfileName);
+                updateSettingsFromProfile(printProfile, true);
             }
         });
     }
@@ -313,7 +314,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         
         currentProfileName = selectedPrintProfileName;
         
-        updateSettingsFromProfile(printProfile);
+        updateSettingsFromProfile(printProfile, false);
         if (printProfile.isStandardProfile()) 
         {
             state.set(State.ROBOX);
@@ -370,7 +371,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
      * 
      * @param roboxProfile the profile that has been selected
      */
-    private void updateSettingsFromProfile(RoboxProfile roboxProfile)
+    private void updateSettingsFromProfile(RoboxProfile roboxProfile, boolean recreateTabs)
     {
         PrintProfileSettings printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
                 .getPrintProfileSettingsForSlicer(getSlicerType());
@@ -382,7 +383,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         printProfileSettings.setHiddenSettings(defaultSettingsCopy.getHiddenSettings());
         
         overwriteSettingsFromProfle(printProfileSettings, roboxProfile);
-        regenerateSettings(getSlicerType(), false);
+        regenerateSettings(getSlicerType(), recreateTabs);
     }
     
     private void overwriteSettingsFromProfle(PrintProfileSettings settingsToOverwrite, RoboxProfile roboxProfile) {
