@@ -325,12 +325,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
 
             if (newValue != null) {
-                if (printerSettings != null && printerSettings.getPrintQuality() == PrintQualityEnumeration.CUSTOM) {
-                    whenCustomProfileChanges(newValue);
-                } else if (printerSettings != null) {
-                    steno.error("custom profile chosen but quality not CUSTOM");
-                }
-
+                whenCustomProfileChanges(newValue);
             }
         });
     }
@@ -379,14 +374,14 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void whenCustomProfileChanges(RoboxProfile newValue)
     {
-        if (getCustomSettings().isPresent()) {
+        //if (getCustomSettings().isPresent()) {
         //    getCustomSettings().removePropertyChangeListener(customSettingsListener);
-        }
+        //}
         printerSettings.setSettingsName(newValue.getName());
-        if (getCustomSettings().isPresent()) {
+        //if (getCustomSettings().isPresent()) {
         //    getCustomSettings().addPropertyChangeListener(customSettingsListener);
-        }
-        printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
+        //}
+        printQualityWidgetsUpdate(printerSettings != null ? printerSettings.getPrintQuality() : PrintQualityEnumeration.DRAFT);
     }
 
     private void setupOverrides()
