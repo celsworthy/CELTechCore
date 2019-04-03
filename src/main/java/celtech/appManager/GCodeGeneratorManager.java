@@ -74,7 +74,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private static final Stenographer STENO = StenographerFactory.getStenographer(GCodeGeneratorManager.class.getName());
     
     private final ExecutorService slicingExecutorService;
-    private final ExecutorService printOrSaveExecutorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService printOrSaveExecutorService;
     private final Project project;
     
     private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
@@ -122,6 +122,8 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             return thread;
         };
         slicingExecutorService = Executors.newFixedThreadPool(1, threadFactory);
+//       printOrSaveExecutorService = Executors.newSingleThreadExecutor(threadFactory);
+        printOrSaveExecutorService = Executors.newSingleThreadExecutor();
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
         
         initialiseListeners();
@@ -689,5 +691,11 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         {
             currentPrintQuality.set(printerSettings.getPrintQuality());
         }
+    }
+    
+    public void shutdown()
+    {
+        slicingExecutorService.shutdown();
+        printOrSaveExecutorService.shutdown(); 
     }
 }
