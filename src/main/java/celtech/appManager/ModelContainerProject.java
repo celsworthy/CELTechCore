@@ -12,6 +12,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
@@ -178,7 +179,7 @@ public class ModelContainerProject extends Project
                 printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
                 printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
                 printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
-
+                
                 loadModels(basePath);
 
                 recreateGroups(mcProjectFile.getGroupStructure(), mcProjectFile.getGroupState());
@@ -1042,10 +1043,16 @@ public class ModelContainerProject extends Project
 
         if (!usingDifferentExtruders)
         {
-            printerSettings.getPrintSupportTypeOverrideProperty().set(
-                    (useExtruder0 == true)
-                            ? SupportType.MATERIAL_1
-                            : SupportType.MATERIAL_2);
+            if (Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura4)
+            {
+                printerSettings.getPrintSupportTypeOverrideProperty().set(SupportType.AS_PROFILE);
+            } else
+            {
+                printerSettings.getPrintSupportTypeOverrideProperty().set(
+                        (useExtruder0 == true)
+                                ? SupportType.MATERIAL_1
+                                : SupportType.MATERIAL_2);
+            }
             fireWhenPrinterSettingsChanged(printerSettings);
         }
 

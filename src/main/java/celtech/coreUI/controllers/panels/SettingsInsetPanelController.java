@@ -349,24 +349,31 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void populateSupportChooser()
     {
         populatingForProject = true;
-        
         supportComboBox.getItems().clear();
         
+        SupportType typeToSelect;
+        
+        // Fill the combobox with the correct values for the slice engine and select default
         if (getSlicerType() == SlicerType.Cura4) 
         {
             supportComboBox.getItems().addAll(SupportType.values());
-            supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
+            typeToSelect = SupportType.AS_PROFILE;
         } else 
         {
             supportComboBox.getItems().addAll(SupportType.MATERIAL_1, SupportType.MATERIAL_2);
-            supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+            typeToSelect = SupportType.MATERIAL_2;
         }
         
-        if (printerSettings != null)
+        // If we have some saved settings use the support type selected unless we aren't using Dual material. Then we just stay with the defaults
+        if (printerSettings != null
+                && printerSettings.getPrintSupportTypeOverride() != null
+                && HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            supportComboBox.getSelectionModel().select(printerSettings.getPrintSupportTypeOverride());
+            typeToSelect = printerSettings.getPrintSupportTypeOverride();
         }
         
+        // Once populated then set
+        supportComboBox.getSelectionModel().select(typeToSelect);
         populatingForProject = false;
     }
 
@@ -532,6 +539,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             currentHeadType = headTypeCode;
 
             populateCustomProfileChooser();
+            populateSupportChooser();
             showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
             updateSupportCombo(currentPrinter);
 
