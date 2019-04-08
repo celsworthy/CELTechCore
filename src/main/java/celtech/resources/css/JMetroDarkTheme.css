@@ -2258,6 +2258,10 @@ modal-dialogue{
     -fx-text-fill: white;
 }
 
+.notification-bar .hyperlink {
+    -fx-text-fill: white;
+}
+
 .hyperlink-plaintext
 {
     -fx-fill: white;
