@@ -16,6 +16,7 @@ public class ModelContainerProjectFile extends ProjectFile
     private int subVersion = 1;
     private int brimOverride = 0;
     private float fillDensityOverride = 0;
+    private boolean fillDensityOverridenByUser = false;
     private boolean printSupportOverride = false;
     private SupportType printSupportTypeOverride = SupportType.MATERIAL_1;
     private boolean printRaft = false;
@@ -73,6 +74,15 @@ public class ModelContainerProjectFile extends ProjectFile
         this.fillDensityOverride = fillDensityOverride;
     }
 
+    public boolean isFillDensityOverridenByUser()
+    {
+        return fillDensityOverridenByUser;
+    }
+
+    public void setFillDensityOverridenByUser(boolean fillDensityOverridenByUser) 
+    {
+        this.fillDensityOverridenByUser = fillDensityOverridenByUser;
+    }
     public boolean getPrintSupportOverride()
     {
         return printSupportOverride;
@@ -179,6 +189,7 @@ public class ModelContainerProjectFile extends ProjectFile
             printQuality = mcp.getPrinterSettings().getPrintQuality();
             brimOverride = mcp.getPrinterSettings().getBrimOverride();
             fillDensityOverride = mcp.getPrinterSettings().getFillDensityOverride();
+            fillDensityOverridenByUser = mcp.getPrinterSettings().isFillDensityChangedByUser();
             printSupportOverride = mcp.getPrinterSettings().getPrintSupportOverride();
             printSupportTypeOverride = mcp.getPrinterSettings().getPrintSupportTypeOverride();
             printRaft = mcp.getPrinterSettings().getRaftOverride();

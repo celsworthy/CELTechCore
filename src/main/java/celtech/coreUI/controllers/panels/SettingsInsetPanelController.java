@@ -607,6 +607,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         boolean savePrintRaft = printerSettings.getRaftOverride();
         boolean saveSpiralPrint = printerSettings.getSpiralPrintOverride();
         boolean saveSupportGapEnabled = printerSettings.getPrintSupportGapEnabledOverride();
+        boolean saveOverrideFillDensity = printerSettings.isFillDensityChangedByUser();
 
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
@@ -665,7 +666,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         }
 
         spiralPrintCheckbox.setSelected(saveSpiralPrint);
-
+        overrideFillDensityCheckbox.setSelected(saveOverrideFillDensity);
         supportGapButton.setSelected(saveSupportGapEnabled);
 
         dealWithPrintOptimisation();

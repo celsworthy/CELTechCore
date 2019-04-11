@@ -175,6 +175,7 @@ public class ModelContainerProject extends Project
                 printerSettings.setPrintQuality(mcProjectFile.getPrintQuality());
                 printerSettings.setBrimOverride(mcProjectFile.getBrimOverride());
                 printerSettings.setFillDensityOverride(mcProjectFile.getFillDensityOverride());
+                printerSettings.setFillDensityChangedByUser(mcProjectFile.isFillDensityOverridenByUser());
                 printerSettings.setPrintSupportOverride(mcProjectFile.getPrintSupportOverride());
                 printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
                 printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
