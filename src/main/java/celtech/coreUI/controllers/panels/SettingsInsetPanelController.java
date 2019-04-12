@@ -617,7 +617,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             printQualityWidgetsUpdate(newValue);
         });
         
-        printQualityWidgetsUpdate(printQuality.get());
+        //printQualityWidgetsUpdate(printQuality.get());
 
         // just in case custom settings are changing through some other mechanism
 //        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
@@ -652,7 +652,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         {
             if (savePrinterSettingsName.length() > 0)
             {
-                
                 List<RoboxProfile> profiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType()).get(currentHeadType);
                 Optional<RoboxProfile> chosenProfile = profiles.stream()
                         .filter(profile -> profile.getName().equals(savePrinterSettingsName))
@@ -672,6 +671,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         dealWithPrintOptimisation();
 
         populatingForProject = false;
+        
+        printQualityWidgetsUpdate(printQuality.get());
     }
 
     private void dealWithPrintOptimisation()
@@ -803,14 +804,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     fillDensitySlider.setValue(fillDensity * 100.0);
                 }
             }
-
-//            if (printQuality.get() == PrintQualityEnumeration.CUSTOM) {
-//                if (!settings.isPresent()) {
-//                    customProfileChooser.setValue(null);
-//                } else  {
-//                    customProfileChooser.getSelectionModel().select(settings.get());
-//                }
-//            }
         }
     }
 
