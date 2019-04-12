@@ -616,13 +616,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
             printQualityWidgetsUpdate(newValue);
         });
-        
-        //printQualityWidgetsUpdate(printQuality.get());
-
-        // just in case custom settings are changing through some other mechanism
-//        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-//            selectCurrentCustomSettings();
-//        });
 
         brimSlider.setValue(saveBrim);
         
