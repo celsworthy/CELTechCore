@@ -345,26 +345,23 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     {
         populatingForProject = true;
         supportComboBox.getItems().clear();
+        supportComboBox.getItems().addAll(SupportType.values());
+        SupportType typeToSelect = SupportType.AS_PROFILE;
+
         
-        SupportType typeToSelect;
         
-        // Fill the combobox with the correct values for the slice engine and select default
-        if (getSlicerType() == SlicerType.Cura4) 
+        if (HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            supportComboBox.getItems().addAll(SupportType.values());
-            typeToSelect = SupportType.AS_PROFILE;
-        } else 
-        {
-            supportComboBox.getItems().addAll(SupportType.MATERIAL_1, SupportType.MATERIAL_2);
-            typeToSelect = SupportType.MATERIAL_2;
-        }
-        
-        // If we have some saved settings use the support type selected unless we aren't using Dual material. Then we just stay with the defaults
-        if (printerSettings != null
-                && printerSettings.getPrintSupportTypeOverride() != null
-                && HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
-        {
-            typeToSelect = printerSettings.getPrintSupportTypeOverride();
+            if (getSlicerType() == SlicerType.Cura)
+            {
+                // For a dual material head and old Cura default to Material 2, there is no as profile
+                supportComboBox.getItems().remove(SupportType.AS_PROFILE);
+                typeToSelect = SupportType.MATERIAL_2;
+            } else if (printerSettings != null && printerSettings.getPrintSupportTypeOverride() != null)
+            {
+                // If we have some saved settings use the support type selected unless we aren't using Dual material. Then we just stay with the defaults
+                typeToSelect = printerSettings.getPrintSupportTypeOverride();
+            }
         }
         
         // Once populated then set
@@ -629,7 +626,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         raftButton.setSelected(savePrintRaft);
 
-        supportComboBox.setValue(saveSupports);
+        //supportComboBox.setValue(saveSupports);
+        populateSupportChooser();
 
         printerSettings.getPrintSupportTypeOverrideProperty()
                 .addListener((ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue) -> {
