@@ -41,6 +41,7 @@
                 <ColourChooserButton displayColour="#00FFFF" toggleGroup="$colourButtonGroup" />
                 <ColourChooserButton displayColour="#7F7FFF" toggleGroup="$colourButtonGroup" />
                 <ColourChooserButton displayColour="#7F00FF" toggleGroup="$colourButtonGroup" />
+                <ColourChooserButton displayColour="#A3A3A3" toggleGroup="$colourButtonGroup" />
             </children>
         </FlowPane>
         <HBox alignment="CENTER" spacing="10.0">
