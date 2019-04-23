@@ -612,13 +612,15 @@ public class ProfileDetailsGenerator {
         return comboBox;
     }
     
-    private ComboBox setupComboBoxForNozzleSelection(PrintProfileSetting printProfileSetting, ComboBox comboBox) {
+    private ComboBox setupComboBoxForNozzleSelection(PrintProfileSetting printProfileSetting, ComboBox comboBox)
+    {
         List<String> nozzles = new ArrayList<>();
         nozzles.addAll(nozzleOptions);
         
         HeadFile currentHead = HeadContainer.getHeadByID(headType);
-        if(currentHead.getNozzleHeaters().size() == 2 && 
-                Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura4) {
+        if (currentHead.getNozzleHeaters().size() == 2 && 
+                Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura4) 
+        {
             nozzles.set(0, nozzleOptions.get(0) + " (Material 2)");
             nozzles.set(1, nozzleOptions.get(1) + " (Material 1)");
             
@@ -626,7 +628,14 @@ public class ProfileDetailsGenerator {
                 printProfileSetting.getNonOverrideAllowed().get()) {
                 nozzles.add("Model Material");
             }
-        } else if (currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) {
+        } else if (currentHead.getNozzleHeaters().size() == 2 || currentHead.getNozzles().size() == 1) 
+        {
+            comboBox.setDisable(true);
+        }
+        
+        if (Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura4
+                && printProfileSetting.getId().equals("firstLayerNozzle"))
+        {
             comboBox.setDisable(true);
         }
         
