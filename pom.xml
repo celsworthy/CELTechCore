@@ -146,6 +146,12 @@
             <version>0.1.2</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.fx.drift</groupId>
+            <artifactId>org.eclipse.fx.drift</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     
     <reporting>                                                                              

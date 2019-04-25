@@ -1,0 +1,36 @@
+/*******************************************************************************
+ * Copyright (c) 2019 BestSolution.at and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Christoph Caks <ccaks@bestsolution.at> - initial API and implementation
+ *******************************************************************************/
+package celtech.coreUI.controllers.panels;
+
+import org.eclipse.fx.drift.DriftFXSurface;
+
+public class AMTriangleRenderer extends AARenderer {
+
+    static {
+        System.loadLibrary("samples");
+    }
+
+    private DriftFXSurface surface;
+
+    public AMTriangleRenderer(DriftFXSurface surface) {
+        this.surface = surface;
+    }
+
+    public long getNativeSurfaceId() {
+        return surface.getNativeSurfaceHandle();
+    }
+
+    private native void nRun(AMTriangleRenderer renderer);
+
+    protected void run() {
+        nRun(this);
+    }
+}
