@@ -34,8 +34,16 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     private final UserPreferences userPreferences;
     private final ObservableList<SlicerType> slicerTypes = FXCollections.observableArrayList();
 
-    private final ChangeListener<SlicerType> slicerTypeChangeListener = (observable, oldValue, newValue) -> {
-        updateValueFromControl();
+    private boolean updating = false;
+    private final ChangeListener<SlicerType> slicerTypeCtrlChangeListener = (observable, oldValue, newValue) -> {
+        if (!updating) {
+            updateValueFromControl();
+        }
+    };
+    private final ChangeListener<SlicerType> slicerTypeUPChangeListener = (observable, oldValue, newValue) -> {
+        if (!updating) {
+            populateControlWithCurrentValue();
+        }
     };
     
     public SlicerTypePreference(UserPreferences userPreferences)
@@ -51,35 +59,36 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
         control.setCellFactory((ListView<SlicerType> param) -> new SlicerTypeCell());
-        control.valueProperty().addListener(slicerTypeChangeListener);
-        
+        control.valueProperty().addListener(slicerTypeCtrlChangeListener);
+        userPreferences.getSlicerTypeProperty().addListener(slicerTypeUPChangeListener);
         LicenceManager.getInstance().addLicenceChangeListener(this);
     }
 
     @Override
     public void updateValueFromControl()
     {
-        SlicerType slicerType = control.getValue();
-        if(slicerType == null) 
-        {
-            STENO.warning("SlicerType from Slicer setting is null. Setting to default Cura");
-            slicerType = SlicerType.Cura;
-        } 
-        else if (slicerType == SlicerType.Cura4)
-        {
-            if(!BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
+        if (!updating) {
+            updating = true; // Prevent recursive calls.
+            SlicerType slicerType = control.getValue();
+            if(slicerType == null) 
             {
-                BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
+                STENO.warning("SlicerType from Slicer setting is null. Setting to default Cura");
                 slicerType = SlicerType.Cura;
+            } 
+            else if (slicerType == SlicerType.Cura4)
+            {
+                if(!BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
+                {
+                    BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
+                    slicerType = SlicerType.Cura;
+                }
             }
+
+            control.setValue(slicerType);
+            userPreferences.setSlicerType(slicerType);
+
+            updating = false;
         }
-        
-        // Remove and re-add the listener around setting the value so this method is not called twice.
-        control.valueProperty().removeListener(slicerTypeChangeListener);
-        control.setValue(slicerType);
-        control.valueProperty().addListener(slicerTypeChangeListener);
-        
-        userPreferences.setSlicerType(slicerType);
     }
 
     @Override

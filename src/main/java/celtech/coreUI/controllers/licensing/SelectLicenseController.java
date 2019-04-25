@@ -3,7 +3,9 @@ package celtech.coreUI.controllers.licensing;
 import celtech.Lookup;
 import celtech.coreUI.components.HyperlinkedLabel;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.licence.Licence;
+import celtech.roboxbase.licence.LicenceType;
 import celtech.roboxbase.licence.LicenceUtilities;
 import celtech.roboxbase.licensing.LicenceManager;
 import java.io.File;
@@ -53,15 +55,22 @@ public class SelectLicenseController implements Initializable {
     
     private File licenseFile;
     
+    boolean modified = false;
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Optional<Licence> potentialLicense = LicenceManager.getInstance().readCachedLicenseFile();
-        if(potentialLicense.isPresent()) {
+        if (potentialLicense.isPresent()) {
             licence = potentialLicense.get();
             licenseInfo.setText(licence.toString());
         }
+        else {
+            licence = null;
+            licenseInfo.setText("");
+        }
         selectLicenceInfo.replaceText(Lookup.i18n("dialogs.selectLicenseInfo"));
         licenseFile = LicenceManager.getInstance().tryAndGetCachedLicenseFile();
+        modified = false;
     }
     
     public boolean isLicenseValid() {
@@ -75,26 +84,37 @@ public class SelectLicenseController implements Initializable {
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("License Files", "*.lic"));
         File selectedLicenseFile = fileChooser.showOpenDialog(rootVBox.getScene().getWindow());
         
-        if(selectedLicenseFile != null) {
+        if (selectedLicenseFile != null) {
             fileLabel.setText(selectedLicenseFile.getAbsolutePath());
             Optional<Licence> potentialLicense = LicenceUtilities.readEncryptedLicenceFile(selectedLicenseFile);
-            if(potentialLicense.isPresent()) {
-                licenseInfo.setText(potentialLicense.get().toString());
+            if (potentialLicense.isPresent()) {
+                licence = potentialLicense.get();
+                licenseInfo.setText(licence.toString());
+            }
+            else {
+                licence = null;
+                licenseInfo.setText("");
             }
             licenseFile = selectedLicenseFile;
+            modified = true;
         }
     }
     
     @FXML
     private void accept() 
     {
-        if(licenseFile.exists()) 
-        {
+        if (licenseFile.exists()) {
             licenseValid = LicenceManager.getInstance().checkEncryptedLicenseFileValid(licenseFile, true, true);
         }
         
-        if(licenseValid) 
-        {
+        if (licenseValid) {
+            if (modified &&
+                licence != null &&
+                licence.getLicenceType() == LicenceType.AUTOMAKER_PRO &&
+                Lookup.getUserPreferences().getSlicerTypeProperty().get() != SlicerType.Cura4) {
+                Lookup.getUserPreferences().setSlicerType(SlicerType.Cura4);
+            }
+            
             closeDialog();
         }
     }
