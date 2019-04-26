@@ -36,6 +36,7 @@ import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterConnection;
@@ -1443,7 +1444,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         boolean aModelIsOffTheBedWithHead = false;
         boolean aModelIsOffTheBedWithRaft = false;
         boolean aModelIsOffTheBedWithSpiral = false;
-        RoboxProfile profileSettings = null; // This is sometimes returned as null. Not sure why.
+        RoboxProfile profileSettings = null;
         if (selectedProject != null
                 && currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
@@ -1451,55 +1452,42 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             profileSettings = selectedProject.getPrinterSettings()
                     .getSettings(currentPrinter.headProperty().get().typeCodeProperty().get(), getSlicerType());
         }
-        if (profileSettings == null)
-        {
-            steno.debug("profileSettings == null!");
-        }
-        else
-        {
-            // Needed as heads differ in size and will need to adjust print volume for this
-            final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
 
-            //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-            double raftOffset = profileSettings.getSpecificFloatSetting("raftBaseThickness_mm")
-                    //Raft interface thickness
-                    + 0.28
-                    //Raft surface layer thickness * surface layers
-                    + (profileSettings.getSpecificIntSetting("interfaceLayers")* 0.27)
-                    + profileSettings.getSpecificFloatSetting("raftAirGapLayer0_mm")
-                    + zReduction;
+        // Needed as heads differ in size and will need to adjust print volume for this
+        final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
 
-            //TODO use settings derived offset values
-            final double spiralOffset = 0.5 + zReduction;
-            
-            for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
+        double raftOffset = profileSettings == null ? 0.0 : RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
+
+        //TODO use settings derived offset values
+        final double spiralOffset = 0.5 + zReduction;
+
+        for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
+        {
+            if (projectifiableThing instanceof ModelContainer)
             {
-                if (projectifiableThing instanceof ModelContainer)
+                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+
+                if (modelContainer.isOffBedProperty().get())
                 {
-                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-                    
-                    if (modelContainer.isOffBedProperty().get())
-                    {
-                        aModelIsOffTheBed = true;
-                    }
+                    aModelIsOffTheBed = true;
+                }
 
-                    if (zReduction > 0.0 
-                            && modelContainer.isModelTooHighWithOffset(zReduction))
-                    {
-                        aModelIsOffTheBedWithHead = true;
-                    }
+                if (zReduction > 0.0 
+                        && modelContainer.isModelTooHighWithOffset(zReduction))
+                {
+                    aModelIsOffTheBedWithHead = true;
+                }
 
-                    if (selectedProject.getPrinterSettings().getRaftOverride()
-                            && modelContainer.isModelTooHighWithOffset(raftOffset))
-                    {
-                        aModelIsOffTheBedWithRaft = true;
-                    }
+                if (selectedProject.getPrinterSettings().getRaftOverride()
+                        && modelContainer.isModelTooHighWithOffset(raftOffset))
+                {
+                    aModelIsOffTheBedWithRaft = true;
+                }
 
-                    if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
-                            && modelContainer.isModelTooHighWithOffset(spiralOffset))
-                    {
-                        aModelIsOffTheBedWithSpiral = true;
-                    }
+                if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
+                        && modelContainer.isModelTooHighWithOffset(spiralOffset))
+                {
+                    aModelIsOffTheBedWithSpiral = true;
                 }
             }
         }

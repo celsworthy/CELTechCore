@@ -16,6 +16,7 @@ import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
 import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.utils.settingsgeneration.ProfileDetailsGenerator;
 import celtech.utils.settingsgeneration.ProfileDetailsGenerator.ProfileDetailsGenerationException;
 import java.net.URL;
@@ -297,19 +298,27 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         selectPrintProfile();
     }
 
-    private void selectDefaultPrintProfile() {
-        if (cmbPrintProfile.getItems().size() > 0) {
+    private void selectDefaultPrintProfile() 
+    {
+        if (cmbPrintProfile.getItems().size() > 0)
+        {
             String headType = cmbHeadType.getValue();
 
             Project selectedProject = Lookup.getSelectedProjectProperty().get();
             Optional<RoboxProfile> profileOption = Optional.empty();
             if (selectedProject != null)
-                profileOption = selectedProject.getPrinterSettings().getBaseProfile(headType, getSlicerType());
+            {
+                PrintQualityEnumeration printQuality = selectedProject.getPrinterSettings().getPrintQuality();
+                profileOption = selectedProject.getPrinterSettings().getBaseProfile(headType, getSlicerType(), printQuality);
+            }
 
             if (profileOption.isPresent())
+            {
                 cmbPrintProfile.setValue(profileOption.get().getName());
-            else
+            } else
+            {
                 cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
+            }
             selectPrintProfile();
         }
     }
