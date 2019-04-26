@@ -639,19 +639,16 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         supportButton.setSelected(autoSupport);
 
-        if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+        if (savePrinterSettingsName.length() > 0)
         {
-            if (savePrinterSettingsName.length() > 0)
-            {
-                List<RoboxProfile> profiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType()).get(currentHeadType);
-                Optional<RoboxProfile> chosenProfile = profiles.stream()
-                        .filter(profile -> profile.getName().equals(savePrinterSettingsName))
-                        .findFirst();
-                if(chosenProfile.isPresent()) {
-                    customProfileChooser.getSelectionModel().select(chosenProfile.get());
-                } else {
-                    customProfileChooser.getSelectionModel().selectFirst();
-                }
+            List<RoboxProfile> profiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType()).get(currentHeadType);
+            Optional<RoboxProfile> chosenProfile = profiles.stream()
+                    .filter(profile -> profile.getName().equals(savePrinterSettingsName))
+                    .findFirst();
+            if(chosenProfile.isPresent()) {
+                customProfileChooser.getSelectionModel().select(chosenProfile.get());
+            } else {
+                customProfileChooser.getSelectionModel().clearSelection();
             }
         }
 
