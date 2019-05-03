@@ -149,6 +149,7 @@ public abstract class MenuPanelController implements Initializable
         insetNodeContainer.getChildren().clear();
         insetNodeContainer.getChildren().add(innerPanelDetails.node);
         innerPanelProperty.set(innerPanelDetails.innerPanel);
+        innerPanelDetails.innerPanel.panelSelected();
     }
 
     @FXML

@@ -164,6 +164,7 @@ public class ProjectManager implements Savable, Serializable
     
     public void projectClosed(Project project)
     {
+        project.close();
         openProjects.remove(project);
         Lookup.removeProjectReferences(project);
     }

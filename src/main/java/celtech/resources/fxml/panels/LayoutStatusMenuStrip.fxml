@@ -23,6 +23,7 @@
                                     </children>
                                 </StackPane>
                                 <GraphicButtonWithLabel fx:id="printButton" fxmlFileName="printButton" labelText="%buttonText.make" onAction="#printPressed" />
+                                <GraphicButtonWithLabel fx:id="saveButton" fxmlFileName="saveButton" labelText="%buttonText.save" onAction="#savePressed"/>
                             </children>
                         </StackPane>
                     </children>
@@ -87,6 +88,11 @@
                                             </children>
                                         </StackPane>
                                         <!--<GraphicButtonWithLabel fx:id="cutButton" fxmlFileName="cutButton" labelText="%buttonText.cut" onAction="#startCut" />-->
+                                    </children>
+                                </FlowPane>
+                                <FlowPane fx:id="settingsButtonHBox" alignment="CENTER" prefWrapLength="200">
+                                    <children>
+                                        <GraphicButtonWithLabel id="previewButton" fx:id="previewButton" fxmlFileName="previewButton" labelText="%buttonText.preview" onAction="#previewPressed" />
                                     </children>
                                 </FlowPane>
                             </children>

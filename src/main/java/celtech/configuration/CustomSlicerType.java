@@ -8,7 +8,9 @@ import celtech.roboxbase.configuration.SlicerType;
  */
 public enum CustomSlicerType
 {
-    Default(null), Cura(SlicerType.Cura);
+    Default(null), 
+    Cura(SlicerType.Cura),
+    Cura4(SlicerType.Cura4);
     
     private final SlicerType slicerType;
 

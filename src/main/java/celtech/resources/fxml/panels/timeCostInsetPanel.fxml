@@ -16,7 +16,7 @@
    <children>
       <VBox>
          <children>
-            <Label fx:id="headType" styleClass="sidePanelDivider" text="Label" />
+            <Label fx:id="headAndSlicerType" styleClass="sidePanelDivider" text="Label" />
             <GridPane>
               <columnConstraints>
                   <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="50.0" />
