@@ -42,6 +42,8 @@
     highlight_colour_orange: #ff661b;
     highlight_colour_orange_darker: #f0570c;
     highlight_colour_orange_lighter: #ff752a;
+    robox_blue_faint: #75b7d8;
+    robox_orange_faint: #ffa072;
     background_colour: rgb(0,0,0);
     unselected_colour: #1d1d1d;
     selected_colour: #ffffff;
@@ -2256,6 +2258,10 @@ modal-dialogue{
     -fx-text-fill: white;
 }
 
+.notification-bar .hyperlink {
+    -fx-text-fill: white;
+}
+
 .hyperlink-plaintext
 {
     -fx-fill: white;
@@ -2311,9 +2317,10 @@ modal-dialogue{
     -fx-background-color: mid_grey_solid;
     -fx-font-family: "Source Sans Pro";
     -fx-spacing: 5;
-    -fx-padding: 5;
+    -fx-padding: 30;
     -fx-max-width: 500;
     -fx-min-width: 100;
+    -fx-background-insets: 12;
 }
 
 .textflow .text
@@ -2371,6 +2378,13 @@ modal-dialogue{
     -fx-max-height: -1;
 }
 
+#dialogMessageLarge
+{
+    -fx-font-size: 16pt;
+    -fx-padding: 5 20 5 20;
+    -fx-max-height: 1000;
+    -fx-wrap-text: true;
+}
 
 /*
  * Splash screen settings
@@ -2379,7 +2393,7 @@ modal-dialogue{
 .splashCopyright
 {
     -fx-font-family: "Source Sans Pro";
-    -fx-font-size: 12pt;
+    -fx-font-size: 11pt;
     -fx-fill: white;
     -fx-text-alignment: left;
 }
@@ -2387,7 +2401,7 @@ modal-dialogue{
 .splashVersion
 {
     -fx-font-family: "Source Sans Pro";
-    -fx-font-size: 12pt;
+    -fx-font-size: 11pt;
     -fx-fill: white;
     -fx-text-alignment: right;
 }
@@ -2401,11 +2415,14 @@ modal-dialogue{
     -fx-background-color: light_grey;
     -fx-min-width: 10px;
     -fx-min-height: 10px;
+    -fx-background-insets: 12;
+    -fx-padding: 20;
+    -fx-spacing: 10;
 }
 
 .inset-panel-centre-redux
 {
-    -fx-padding: 60 60 60 60;
+    -fx-padding: 20 20 20 20;
     -fx-min-width: 10px;
     -fx-min-height: 10px;
     -fx-spacing: 10;
@@ -2530,7 +2547,11 @@ color-picker-label .text-field {
 */
 
 .cmbPrintProfile {
-    -fx-pref-width: 290;
+    -fx-pref-width: 280;
+}
+
+.cmbPrintProfile:error {
+    
 }
 
 .cmbPrintProfile .combo-box .list-cell {
@@ -2540,7 +2561,6 @@ color-picker-label .text-field {
 #printProfileInnerPanel {
     -fx-font-family: "Source Sans Pro";
     -fx-font-size: 10pt; 
-
 }
 
 #printProfileInnerPanel .tab-pane, .tab-header-background {
@@ -2575,13 +2595,8 @@ color-picker-label .text-field {
     -fx-min-width: 80;
 }
 
-#printProfileName {
-    -fx-padding: 2 2 2 2;
-}
-
-#printProfileName:error {
-    -fx-text-box-border: red ;
-    -fx-focus-color: red ;
+#headerSettings HBox {
+    -fx-alignment: CENTER;
 }
 
 .printProfileGrid {
@@ -2626,10 +2641,13 @@ color-picker-label .text-field {
 }
 
 #printProfileTabPane {
-    -fx-tab-min-height: 35px;
-    -fx-tab-max-height: 35px;
+    -fx-tab-min-height: 40px;
+    -fx-tab-max-height: 40px;
     -fx-tab-min-width: 50px;
-    -fx-tab-min-width: 50px;    
+}
+
+.tabTitle {
+    -fx-font-size: 14px;
 }
 
 /**
@@ -3002,4 +3020,26 @@ color-picker-label .text-field {
 .rootScannerTable .table-row-cell
 {
     -fx-cell-size: 40px;
+}
+
+/*
+* SelectLicense dialog
+*/
+
+#licenseSelection TextArea
+{
+    -fx-control-inner-background: dark_grey;
+    -fx-text-fill: white;
+}
+
+.dialog_drop_shadow
+{
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6), 10, 0, 6, 6);
+    -fx-background-insets: 12; 
+    -fx-background-color: black;
+}
+
+.transparent
+{
+    -fx-background-color: transparent;
 }

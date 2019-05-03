@@ -4,26 +4,19 @@ import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.DisplayManager;
-import celtech.coreUI.components.ProgressDialog;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
-import celtech.roboxbase.services.printing.GCodePrintResult;
-import celtech.roboxbase.services.printing.TransferGCodeToPrinterService;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -413,4 +406,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         return null;
     }
+    
+    @Override
+    public void panelSelected() {}
 }

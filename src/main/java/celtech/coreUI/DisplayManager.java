@@ -18,6 +18,7 @@ import celtech.coreUI.components.TopMenuStrip;
 import celtech.coreUI.controllers.InfoScreenIndicatorController;
 import celtech.coreUI.controllers.PrinterStatusPageController;
 import celtech.coreUI.controllers.panels.LibraryMenuPanelController;
+import celtech.coreUI.controllers.panels.PreviewManager;
 import celtech.coreUI.controllers.panels.PurgeInsetPanelController;
 import celtech.coreUI.keycommands.HiddenKey;
 import celtech.coreUI.keycommands.KeyCommandListener;
@@ -29,7 +30,7 @@ import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.comms.DummyPrinterCommandInterface;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.io.File;
@@ -50,6 +51,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
@@ -68,6 +70,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -127,6 +130,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     //Display scaling
     private BooleanProperty nodesMayHaveMoved;
+    
+    private final BooleanProperty libraryModeEntered = new SimpleBooleanProperty(false);
 
     public enum DisplayScalingMode
     {
@@ -139,6 +144,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private ObjectProperty<DisplayScalingMode> displayScalingModeProperty = new SimpleObjectProperty<>(DisplayScalingMode.NORMAL);
     private final int SHORT_SCALE_BELOW_HEIGHT = 890;
     private final int VERY_SHORT_SCALE_BELOW_HEIGHT = 700;
+
+    // This is here solely so it shutdown can be called on it when the application closes.
+    // If other things need to be added, it should be changed to a more generic callback mechanism.
+    private PreviewManager previewManager = null;
 
     private DisplayManager()
     {
@@ -156,6 +165,11 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         this.rhPanel = new AnchorPane();
         steno.debug("Starting AutoMaker - initialising display manager...");
         steno.debug("Starting AutoMaker - machine type is " + BaseConfiguration.getMachineType());
+    }
+    
+    // This is here solely so shutdown can be called on it when the application closes.
+    public void setPreviewManager(PreviewManager previewManager) {
+        this.previewManager = previewManager;
     }
 
     private void loadProjectsAtStartup()
@@ -175,16 +189,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         steno.debug("end load projects");
     }
 
-    public void showAndSelectPrintProfile(SlicerParametersFile printProfile)
+    public void showAndSelectPrintProfile(RoboxProfile roboxProfile)
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.LIBRARY);
         Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
         LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
-        controller.showAndSelectPrintProfile(printProfile);
+        controller.showAndSelectPrintProfile(roboxProfile);
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
     {
+        libraryModeEntered.set(false);
         infoScreenIndicatorController.setSelected(newMode == ApplicationMode.STATUS);
 
         // Remove the existing side panel
@@ -214,32 +229,37 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             interchangeablePanelAreaWithNotificationArea.getChildren().add(0, newInsetPanel);
         }
 
-        if (newMode == ApplicationMode.LAYOUT)
-        {
-            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
-
-            //Switch tabs if necessary
-            if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
-                    == false)
-            {
-                if (lastLayoutTab != null
-                        && tabDisplay.getTabs().contains(lastLayoutTab))
+        if (null != newMode)
+        switch (newMode) {
+            case LAYOUT:
+                interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
+                //Switch tabs if necessary
+                if (tabDisplaySelectionModel.getSelectedItem() instanceof ProjectTab
+                        == false)
                 {
-                    //Select the last project tab
-                    tabDisplaySelectionModel.select(lastLayoutTab);
-                } else
-                {
-                    //Select either the first tab or the the + tab (so that a new project is added)
-                    tabDisplaySelectionModel.select(1);
-                }
-            }
-        } else if (newMode == ApplicationMode.SETTINGS)
-        {
-            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
-        } else if (newMode == ApplicationMode.STATUS)
-        {
-            interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
-            tabDisplaySelectionModel.select(0);
+                    if (lastLayoutTab != null
+                            && tabDisplay.getTabs().contains(lastLayoutTab))
+                    {
+                        //Select the last project tab
+                        tabDisplaySelectionModel.select(lastLayoutTab);
+                    } else
+                    {
+                        //Select either the first tab or the the + tab (so that a new project is added)
+                        tabDisplaySelectionModel.select(1);
+                    }
+                }   break;
+            case SETTINGS:
+                interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
+                break;
+            case STATUS:
+                interchangeablePanelAreaWithNotificationArea.getChildren().add(0, projectTabPaneHolder);
+                tabDisplaySelectionModel.select(0);
+                break;
+            case LIBRARY:
+                libraryModeEntered.set(true);
+                break;
+            default:
+                break;
         }
     }
 
@@ -425,8 +445,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
                             if (lastTab != newTab)
                             {
-                                ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.
-                                getSelectedItem();
+                                ProjectTab projectTab = (ProjectTab) tabDisplaySelectionModel.getSelectedItem();
                                 projectTab.fireProjectSelected();
                             }
                         } else
@@ -598,6 +617,24 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         return projectTab;
     }
 
+    public Rectangle2D getNormalisedPreviewRectangle()
+    {
+        Rectangle2D nRectangle = null;
+        Tab currentTab = tabDisplaySelectionModel.getSelectedItem();
+
+        if (currentTab instanceof ProjectTab)
+        {
+            ProjectTab currentProjectTab = (ProjectTab)currentTab;
+            Rectangle2D previewBounds =  currentProjectTab.getPreviewRectangle();
+            Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+            nRectangle = new Rectangle2D(previewBounds.getMinX() / primaryScreenBounds.getWidth(), 
+                                         previewBounds.getMinY() / primaryScreenBounds.getHeight(),
+                                         previewBounds.getWidth() / primaryScreenBounds.getWidth(),
+                                         previewBounds.getHeight() / primaryScreenBounds.getHeight());
+        }
+        return nRectangle;
+    }
+        
     public static Stage getMainStage()
     {
         return mainStage;
@@ -605,6 +642,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
     public void shutdown()
     {
+        // This is here solely so it shutdown can be called on it when the application closes.
+        if (previewManager != null)
+        {
+            previewManager.shutdown();
+        }
+        
         if (projectManager != null)
         {
             projectManager.saveState();
@@ -803,7 +846,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
 
         switch (commandSequence)        {
             case addDummyPrinterCommand:
-                RoboxCommsManager.getInstance().addDummyPrinter();
+                RoboxCommsManager.getInstance().addDummyPrinter(false);
                 handled = true;
                 break;
             case dummyCommandPrefix:
@@ -997,7 +1040,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         if (Lookup.getUserPreferences().isFirstUse())
         {
             File firstUsePrintFile = new File(BaseConfiguration.
-                    getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
+                    getApplicationModelDirectory().concat("RBX_ROBOT_MM.stl"));
 
             Project newProject = new ModelContainerProject();
             newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));
@@ -1059,5 +1102,10 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     public void initialiseBlank2DProject()
     {
         ((ProjectTab) tabDisplay.getSelectionModel().getSelectedItem()).initialiseBlank2DProject();
+    }
+    
+    public BooleanProperty libraryModeEnteredProperty()
+    {
+        return libraryModeEntered;
     }
 }

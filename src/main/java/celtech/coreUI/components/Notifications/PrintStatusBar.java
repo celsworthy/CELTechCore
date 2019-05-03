@@ -5,8 +5,8 @@ package celtech.coreUI.components.Notifications;
 
 import celtech.Lookup;
 import celtech.roboxbase.comms.remote.BusyStatus;
-import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.comms.remote.PauseStatus;
+import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.printerControl.PrintQueueStatus;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -88,27 +88,9 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
 
     private final BooleanProperty buttonsAllowed = new SimpleBooleanProperty(false);
 
-    public PrintStatusBar(Printer printer)
+    public PrintStatusBar()
     {
         super();
-        this.printer = printer;
-
-        printer.printerStatusProperty().addListener(printerStatusChangeListener);
-        printer.pauseStatusProperty().addListener(pauseStatusChangeListener);
-        printer.busyStatusProperty().addListener(busyStatusChangeListener);
-        printer.getPrintEngine().printQueueStatusProperty().addListener(printQueueStatusChangeListener);
-        printer.getPrintEngine().progressETCProperty().addListener(printerNumberElementListener);
-        printer.getPrintEngine().progressProperty().addListener(printerNumberElementListener);
-        printer.getPrintEngine().progressNumLayersProperty().addListener(printerNumberElementListener);
-
-        pauseButton.visibleProperty().bind(printer.canPauseProperty().and(buttonsAllowed));
-        pauseButton.setOnAction(pauseEventHandler);
-        resumeButton.visibleProperty().bind(printer.canResumeProperty().and(buttonsAllowed));
-        resumeButton.setOnAction(resumeEventHandler);
-        cancelButton.visibleProperty().bind(printer.canCancelProperty().and(buttonsAllowed));
-        cancelButton.setOnAction(cancelEventHandler);
-
-        reassessStatus();
     }
 
     private void reassessStatus()
@@ -341,6 +323,27 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
         return String.format("%02d:%02d", hours, minutes);
     }
 
+    public void bindToPrinter(Printer printer) {
+        this.printer = printer;
+
+        printer.printerStatusProperty().addListener(printerStatusChangeListener);
+        printer.pauseStatusProperty().addListener(pauseStatusChangeListener);
+        printer.busyStatusProperty().addListener(busyStatusChangeListener);
+        printer.getPrintEngine().printQueueStatusProperty().addListener(printQueueStatusChangeListener);
+        printer.getPrintEngine().progressETCProperty().addListener(printerNumberElementListener);
+        printer.getPrintEngine().progressProperty().addListener(printerNumberElementListener);
+        printer.getPrintEngine().progressNumLayersProperty().addListener(printerNumberElementListener);
+
+        pauseButton.visibleProperty().bind(printer.canPauseProperty().and(buttonsAllowed));
+        pauseButton.setOnAction(pauseEventHandler);
+        resumeButton.visibleProperty().bind(printer.canResumeProperty().and(buttonsAllowed));
+        resumeButton.setOnAction(resumeEventHandler);
+        cancelButton.visibleProperty().bind(printer.canCancelProperty().and(buttonsAllowed));
+        cancelButton.setOnAction(cancelEventHandler);
+
+        reassessStatus();
+    }
+    
     public void unbindAll()
     {
         if (printer != null)

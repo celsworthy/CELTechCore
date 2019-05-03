@@ -28,29 +28,33 @@ import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterEdition;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
+import celtech.roboxbase.postprocessor.PrintJobStatistics;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Extruder;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.PrintEngine;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterAncillarySystems;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.printerControl.model.TemperatureAndPWMData;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
-import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.XAndYStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
+import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.printing.DatafileSendAlreadyInProgress;
 import celtech.roboxbase.services.printing.DatafileSendNotInitialised;
 import celtech.roboxbase.utils.AxisSpecifier;
 import celtech.roboxbase.utils.RectangularBounds;
-import celtech.roboxbase.utils.models.PrintableMeshes;
+import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.TaskResponder;
 import java.util.List;
+import java.util.Optional;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
@@ -1124,7 +1128,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void printMeshes(PrintableMeshes printableMeshes, boolean safetyFeaturesRequired) throws PrinterException
+    public void printProject(PrintableProject printableProject, Optional<GCodeGeneratorResult> potentialGCodeGenResult, boolean safetyFeaturesRequired) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1232,11 +1236,29 @@ public class TestPrinter implements Printer
     @Override
     public List<SuitablePrintJob> listJobsReprintableByMe()
     {
+        return createSuitablePrintJobsFromStatistics(listReprintableJobs());
+    }
+
+    @Override
+    public List<PrintJobStatistics> listReprintableJobs()
+    {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
+    public List<SuitablePrintJob> createSuitablePrintJobsFromStatistics(List<PrintJobStatistics> printJobStats)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public boolean reprintJob(String printJobID)
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public boolean printJobFromDirectory(String printJobName, String directoryPath)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -1278,7 +1300,24 @@ public class TestPrinter implements Printer
     }
 
     @Override
+    public ReadOnlyObjectProperty<PrinterConnection> printerConnectionProperty() 
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void setPrinterConnection(PrinterConnection printerConnection) 
+    {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public void tidyPrintJobDirectories() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ObservableList<FirmwareError> getCurrentErrors() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

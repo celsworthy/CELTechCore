@@ -19,6 +19,7 @@ import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.Version;
@@ -81,6 +82,10 @@ public abstract class Project
     protected ObservableList<ProjectifiableThing> topLevelThings;
 
     protected String lastPrintJobID = "";
+    
+    protected boolean projectNameModified = false;
+    
+    private GCodeGeneratorManager gCodeGenManager;
 
     public Project()
     {
@@ -100,11 +105,13 @@ public abstract class Project
                 + formatter.format(now));
         lastModifiedDate.set(now);
 
+        gCodeGenManager = new GCodeGeneratorManager(this);
+        
         customSettingsNotChosen.bind(
                 printerSettings.printQualityProperty().isEqualTo(PrintQualityEnumeration.CUSTOM)
                 .and(printerSettings.getSettingsNameProperty().isEmpty()));
         // Cannot print if quality is CUSTOM and no custom settings have been chosen
-        canPrint.bind(customSettingsNotChosen.not());
+        canPrint.bind(customSettingsNotChosen.not().and(gCodeGenManager.printOrSaveTaskRunningProperty().not()));
 
         printerSettings.getDataChanged().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
@@ -118,7 +125,6 @@ public abstract class Project
                 {
                     projectModified();
                 });
-
     }
 
     protected abstract void initialise();
@@ -140,7 +146,10 @@ public abstract class Project
 
     public final String getAbsolutePath()
     {
-        return ApplicationConfiguration.getProjectDirectory() + File.separator
+        return ApplicationConfiguration.getProjectDirectory() 
+                + File.separator
+                + getProjectName()
+                + File.separator
                 + projectNameProperty.get()
                 + ApplicationConfiguration.projectFileExtension;
     }
@@ -187,8 +196,15 @@ public abstract class Project
     {
         if (project != null)
         {
-            String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
-                    + project.getProjectName();
+            String basePath = ApplicationConfiguration.getProjectDirectory() 
+                    + File.separator
+                    + project.getProjectName()
+                    + File.separator;
+            File dirHandle = new File(basePath);
+            if (!dirHandle.exists()) {
+                dirHandle.mkdirs();
+            }
+            basePath = basePath + project.getProjectName();
             project.save(basePath);
         }
     }
@@ -245,6 +261,15 @@ public abstract class Project
     public final BooleanProperty customSettingsNotChosenProperty()
     {
         return customSettingsNotChosen;
+    }
+    
+    public ObservableList<Boolean> getUsedExtruders(Printer printer)
+    {
+        List<Boolean> localUsedExtruders = new ArrayList<>();
+        localUsedExtruders.add(false);
+        localUsedExtruders.add(false);
+        
+        return FXCollections.observableArrayList(localUsedExtruders);
     }
 
     /**
@@ -581,6 +606,16 @@ public abstract class Project
         return lastPrintJobID;
     }
 
+    public boolean isProjectNameModified()
+    {
+        return projectNameModified;
+    }
+
+    public void setProjectNameModified(boolean projectNameModified)
+    {
+        this.projectNameModified = projectNameModified;
+    }
+
     public ModelGroup group(Set<Groupable> modelContainers)
     {
         Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
@@ -674,5 +709,15 @@ public abstract class Project
     public void invalidate()
     {
         projectModified();
+    }
+    
+    public GCodeGeneratorManager getGCodeGenManager()
+    {
+        return gCodeGenManager;
+    }
+    
+    public void close()
+    {
+        gCodeGenManager.shutdown();
     }
 }

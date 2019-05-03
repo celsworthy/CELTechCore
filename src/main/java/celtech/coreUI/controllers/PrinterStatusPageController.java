@@ -43,6 +43,7 @@ import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import celtech.coreUI.DisplayManager;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 
 /**
  * FXML Controller class
@@ -137,6 +138,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private BooleanProperty selectedPrinterIsPrinting = new SimpleBooleanProperty(false);
     private BooleanProperty projectPanelShouldBeVisible = new SimpleBooleanProperty(true);
     private BooleanProperty projectPanelVisibility = new SimpleBooleanProperty(false);
+    
+    private final BooleanProperty printerConnectionOffline = new SimpleBooleanProperty(false);
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
     {
@@ -250,6 +253,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                             Printer t, Printer selectedPrinter)
                     {
                         printerToUse = selectedPrinter;
+                        printerConnectionOffline.set(printerToUse != null && printerToUse.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
                         unbindFromSelectedPrinter();
                         setupBaseDisplay();
                         setupAmbientLight();
@@ -630,7 +634,8 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         boolean visible = false;
 
         if (printerToUse != null
-                && Lookup.getUserPreferences().isAdvancedMode())
+                && Lookup.getUserPreferences().isAdvancedMode()
+                && printerConnectionOffline.get() == false)
         {
             switch (printerToUse.printerStatusProperty().get())
             {
@@ -859,11 +864,18 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
         vBoxLeft.setSpacing(20);
         diagnosticPanel = loadInsetPanel("DiagnosticPanel.fxml", "diagnosticPanel.title",
                 Lookup.getUserPreferences().showDiagnosticsProperty(),
-                Lookup.getUserPreferences().showDiagnosticsProperty(), vBoxLeft, 0);
+                Lookup.getUserPreferences().showDiagnosticsProperty()
+                        .and(printerConnectionOffline.not()), 
+                vBoxLeft, 
+                0);
 
         gcodePanel = loadInsetPanel("GCodePanel.fxml", "gcodeEntry.title",
                 Lookup.getUserPreferences().showGCodeProperty(),
-                Lookup.getUserPreferences().showGCodeProperty().and(Lookup.getUserPreferences().advancedModeProperty()), vBoxLeft, 1);
+                Lookup.getUserPreferences().showGCodeProperty()
+                        .and(Lookup.getUserPreferences().advancedModeProperty())
+                        .and(printerConnectionOffline.not()),
+                vBoxLeft, 
+                1);
         gcodePanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);

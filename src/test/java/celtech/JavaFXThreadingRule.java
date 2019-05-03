@@ -5,7 +5,6 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.postprocessor.TestGCodeOutputWriter;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.datafileaccessors.SlicerParametersContainer;
 import celtech.utils.tasks.TestTaskExecutor;
 import java.io.File;
 import java.net.URL;
@@ -143,8 +142,6 @@ public class JavaFXThreadingRule implements TestRule
                     "libertySystems.configFile", configURL.getFile());
             String installDir = BaseConfiguration.getApplicationInstallDirectory(
                     Lookup.class);
-
-            SlicerParametersContainer.getInstance();
 
             BaseLookup.setTaskExecutor(
                     new TestTaskExecutor());

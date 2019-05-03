@@ -4,11 +4,15 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
+import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.licence.Licence;
+import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,7 +39,13 @@ public class AboutPanelController implements Initializable
     private Label roboxSerialNumber;
 
     @FXML
+    private Label roboxElectronicsVersion;
+
+    @FXML
     private Label headSerialNumber;
+    
+    @FXML
+    private Label autoMakerLicense;
 
     @FXML
     private Label version;
@@ -79,6 +89,12 @@ public class AboutPanelController implements Initializable
     private void viewREADME(ActionEvent event)
     {
         ApplicationStatus.getInstance().setMode(ApplicationMode.WELCOME);
+    }
+    
+    @FXML
+    private void selectLicense(ActionEvent event) 
+    {
+        boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialog();
     }
 
     @FXML
@@ -157,6 +173,8 @@ public class AboutPanelController implements Initializable
             bindToPrinter(newValue);
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
+        updateLicenseData();
+        LicenceManager.getInstance().addLicenceChangeListener(licenceOption -> autoMakerLicense.setText(licenceOption.map(Licence::toShortString).orElse("")));
     }
 
     private void updateHeadData(Head head)
@@ -174,23 +192,24 @@ public class AboutPanelController implements Initializable
     {
         if (identity != null)
         {
-            StringBuilder idString = new StringBuilder();
-            idString.append(identity.printermodelProperty().get());
-            idString.append("-");
-            idString.append(identity.printereditionProperty().get());
-            idString.append("-");
-            idString.append(identity.printerweekOfManufactureProperty().get());
-            idString.append(identity.printeryearOfManufactureProperty().get());
-            idString.append("-");
-            idString.append(identity.printerpoNumberProperty().get());
-            idString.append("-");
-            idString.append(identity.printerserialNumberProperty().get());
-            idString.append("-");
-            idString.append(identity.printercheckByteProperty().get());
-            roboxSerialNumber.setText(idString.toString());
+            roboxSerialNumber.setText(identity.toString());
+            if (!identity.printerelectronicsVersionProperty().get().isEmpty())
+                roboxElectronicsVersion.setText("E" + identity.printerelectronicsVersionProperty().get());
+            else
+                roboxElectronicsVersion.setText("");
         } else
         {
             roboxSerialNumber.setText("");
+            roboxElectronicsVersion.setText("");
+        }
+    }
+    
+    private void updateLicenseData() {
+        Optional<Licence> potentiaLicense = LicenceManager.getInstance().readCachedLicenseFile();
+        if(potentiaLicense.isPresent()) {
+            autoMakerLicense.setText(potentiaLicense.get().toShortString());
+        } else {
+            autoMakerLicense.setText("");
         }
     }
 

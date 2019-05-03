@@ -63,6 +63,8 @@
                         <RestrictedTextField fx:id="printerSerialNumberField" editable="false" maxLength="4" prefWidth="40.0" restrict="[0-9]" />
                         <Text style="-fx-fill:WHITE;" text="-" />
                         <RestrictedTextField fx:id="printerChecksumField" editable="false" maxLength="1" prefWidth="15" restrict="[0-9]" />
+                        <Text style="-fx-fill:WHITE;" text="E" />
+                        <RestrictedTextField fx:id="printerElectronicsVersionField" editable="false" maxLength="1" prefWidth="15" restrict="[0-9]" />
                     </children>
                 </HBox>
             </children>

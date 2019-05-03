@@ -8,6 +8,7 @@ import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController.Preference;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -58,12 +59,16 @@ public class Preferences
         Preference loosePartSplitPref = new TickBoxPreference(userPreferences.loosePartSplitOnLoadProperty(),
                 "preferences.loosePartSplit");
 
+        Preference autoGCodePreviewPref = new TickBoxPreference(userPreferences.autoGCodePreviewProperty(),
+            "preferences.autoGCodePreview");
+
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
         preferences.add(currencySymbolPref);
         preferences.add(currencyGBPToLocalMultiplierPref);
         preferences.add(loosePartSplitPref);
+        preferences.add(autoGCodePreviewPref);
 
         return preferences;
     }
@@ -87,7 +92,7 @@ public class Preferences
         TickBoxPreference showAdjustmentsPref = new TickBoxPreference(userPreferences.showAdjustmentsProperty(),
                 "preferences.showAdjustments");
         showAdjustmentsPref.disableProperty(advancedModePref.getSelectedProperty().not());
-
+        
         advancedModePref.getSelectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -103,7 +108,7 @@ public class Preferences
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);
         preferences.add(showAdjustmentsPref);
-
+ 
         return preferences;
     }
 
@@ -141,6 +146,22 @@ public class Preferences
         preferences.add(timelapseDelayPref);
         preferences.add(timelapseDelayBeforeCapturePref);
 
+        return preferences;
+    }
+    
+    public static List<PreferencesInnerPanelController.Preference> createCustomPrinterPreferences(
+        UserPreferences userPreferences) {
+        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
+        
+        BooleanProperty customPrinterEnabled = userPreferences.customPrinterEnabledProperty();
+        Preference enableCustomPrinterPref = new TickBoxPreference(customPrinterEnabled, "preferences.customPrinterEnabled");
+        Preference customPrinterTypePref = new CustomPrinterTypePreference(userPreferences);
+        Preference customPrinterHeadPref = new CustomPrinterHeadPreference(userPreferences);
+        
+        preferences.add(enableCustomPrinterPref);
+        preferences.add(customPrinterTypePref);
+        preferences.add(customPrinterHeadPref);
+        
         return preferences;
     }
     

@@ -22,9 +22,9 @@ import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.utils.TimeUtils;
 import celtech.utils.threed.importers.obj.ObjImporter;
 import java.net.URL;
@@ -674,13 +674,16 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
-            if (event.getClickCount() == 2 && event.isPrimaryButtonDown())
+           if (applicationStatus.getMode() != ApplicationMode.SETTINGS)
             {
-                handleMouseDoubleClickedEvent(event);
-            } else if (event.isPrimaryButtonDown()
-                    || event.isSecondaryButtonDown())
-            {
-                handleMouseSingleClickedEvent(event);
+                if (event.getClickCount() == 2 && event.isPrimaryButtonDown())
+                {
+                    handleMouseDoubleClickedEvent(event);
+                } else if (event.isPrimaryButtonDown()
+                        || event.isSecondaryButtonDown())
+                {
+                    handleMouseSingleClickedEvent(event);
+                }
             }
 
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED && dragMode.get()
@@ -704,7 +707,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         } else
         {
             double z = bedTranslateXform.getTz() - event.getDeltaY();
-            double minimumZ = currentPrinterConfiguration.getPrinterType() == PrinterType.ROBOX_PRO ? -60.0 : 0.0;
+//            double minimumZ = currentPrinterConfiguration.getPrinterType() == PrinterType.ROBOX_PRO ? -60.0 : 0.0;
+            double minimumZ = -500;
             if (z >= minimumZ)
             {
                 cameraDistance.set(z);
@@ -1404,6 +1408,13 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
                         }
                     }
                 } else
+                {
+                    materialToUseForExtruder0 = extruder1Material;
+                    materialToUseForExtruder1 = extruder2Material;
+                }
+                
+                if(selectedPrinter != null && 
+                        selectedPrinter.printerConnectionProperty().isEqualTo(PrinterConnection.OFFLINE).get()) 
                 {
                     materialToUseForExtruder0 = extruder1Material;
                     materialToUseForExtruder1 = extruder2Material;

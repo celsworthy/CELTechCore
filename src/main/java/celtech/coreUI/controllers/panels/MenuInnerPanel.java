@@ -4,7 +4,6 @@
 package celtech.coreUI.controllers.panels;
 
 import java.util.List;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableBooleanValue;
 
 /**
@@ -57,4 +56,8 @@ public interface MenuInnerPanel
      */
     public List<OperationButton> getOperationButtons();
     
+    /**
+     * Used to notify the panel controlled that it has been selected and shown
+     */
+    public void panelSelected();
 }

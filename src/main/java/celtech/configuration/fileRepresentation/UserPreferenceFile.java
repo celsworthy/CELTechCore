@@ -1,8 +1,10 @@
 package celtech.configuration.fileRepresentation;
 
-import celtech.roboxbase.configuration.SlicerType;
 import celtech.configuration.UserPreferences;
 import celtech.configuration.units.CurrencySymbol;
+import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import libertysystems.stenographer.LogLevel;
 
@@ -28,6 +30,7 @@ public class UserPreferenceFile
     private boolean showDiagnostics = false;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
+    private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
     private String goProWifiPassword = "";
@@ -37,6 +40,9 @@ public class UserPreferenceFile
     private int timelapseDelay = 2;
     private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
+    private boolean customPrinterEnabled = false;
+    private PrinterType customPrinterType = PrinterType.ROBOX;
+    private String customPrinterHead = HeadContainer.defaultHeadID;
 
     public String getLanguageTag()
     {
@@ -153,6 +159,11 @@ public class UserPreferenceFile
         return showAdjustments;
     }
 
+    public boolean isAutoGCodePreview()
+    {
+        return autoGCodePreview;
+    }
+
     public void setShowDiagnostics(boolean showDiagnostics)
     {
         this.showDiagnostics = showDiagnostics;
@@ -166,6 +177,11 @@ public class UserPreferenceFile
     public void setShowAdjustments(boolean showAdjustments)
     {
         this.showAdjustments = showAdjustments;
+    }
+
+    public void setAutoGCodePreview(boolean autoGCodePreview)
+    {
+        this.autoGCodePreview = autoGCodePreview;
     }
 
     public boolean isShowMetricUnits()
@@ -258,6 +274,35 @@ public class UserPreferenceFile
         this.loosePartSplitOnLoad = loosePartSplitOnLoad;
     }
 
+    public boolean isCustomPrinterEnabled() 
+    {
+        return customPrinterEnabled;
+    }
+
+    public void setCustomPrinterEnabled(boolean customPrinterEnabled)
+    {
+        this.customPrinterEnabled = customPrinterEnabled;
+    }
+    
+    public PrinterType getCustomPrinterType() 
+    {
+        return customPrinterType;
+    }
+    
+    public void setCustomPrinterType(PrinterType customPrinterType) 
+    {
+        this.customPrinterType = customPrinterType;
+    }
+
+    public String getCustomPrinterHead() {
+        return customPrinterHead;
+    }
+
+    public void setCustomPrinterHead(String customPrinterHead) 
+    {
+        this.customPrinterHead = customPrinterHead;
+    }
+
     public void populateFromSettings(UserPreferences userPreferences)
     {
         setSlicerType(userPreferences.getSlicerType());
@@ -273,6 +318,7 @@ public class UserPreferenceFile
         setShowDiagnostics(userPreferences.getShowDiagnostics());
         setShowGCode(userPreferences.getShowGCode());
         setShowAdjustments(userPreferences.getShowAdjustments());
+        setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
         setGoProWifiPassword(userPreferences.getGoProWifiPassword());
@@ -282,5 +328,8 @@ public class UserPreferenceFile
         setTimelapseDelay(userPreferences.getTimelapseDelay());
         setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
+        setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
+        setCustomPrinterType(userPreferences.getCustomPrinterType());
+        setCustomPrinterHead(userPreferences.getCustomPrinterHead());
     }
 }

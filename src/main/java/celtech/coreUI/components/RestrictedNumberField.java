@@ -141,6 +141,7 @@ public class RestrictedNumberField extends TextField
     public void setMinValue(double minValue)
     {
         this.minValue.set(minValue);
+        this.minValueSet.set(true);
     }
 
     public DoubleProperty minValueProperty()
@@ -156,6 +157,7 @@ public class RestrictedNumberField extends TextField
     public void setMaxValue(double maxValue)
     {
         this.maxValue.set(maxValue);
+        this.maxValueSet.set(true);
     }
 
     public DoubleProperty maxValueProperty()
@@ -218,6 +220,15 @@ public class RestrictedNumberField extends TextField
             numberFormatter.setMinimumFractionDigits(allowedDecimalPlaces.get());
         }
         configureRestriction();
+    }
+    
+    /**
+     * Setter to allow more flexibility for restrictions. Restriction pattern will
+     * be overridden by {@link #configureRestriction()} so be careful.
+     * @param restrictionPattern 
+     */
+    public void setRestrictionPattern(Pattern restrictionPattern) {
+        this.restrictionPattern = restrictionPattern;
     }
 
     private void configureRestriction()
@@ -354,12 +365,13 @@ public class RestrictedNumberField extends TextField
                 lastValue = currentValue;
                 lastValueValid = true;
                 currentValue = boundedCandidateValue;
-                if (MathUtils.compareDouble(candidateValue, boundedCandidateValue, 0.000001) != MathUtils.EQUAL)
-                {
-                    //Update the text again to make sure any min/max issues are dealt with
-                    setText(getNumberFormatter().format(currentValue));
-                }
+                
                 valueChangedProperty.set(!valueChangedProperty.get());
+            }
+            if (MathUtils.compareDouble(candidateValue, boundedCandidateValue, 0.000001) != MathUtils.EQUAL)
+            {
+                //Update the text again to make sure any min/max issues are dealt with
+                setText(getNumberFormatter().format(currentValue));
             }
         } catch (ParseException ex)
         {

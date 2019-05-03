@@ -12,11 +12,12 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.fileRepresentation.SupportType;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.packing.core.Bin;
@@ -105,19 +106,14 @@ public class ModelContainerProject extends Project
             @Override
             protected boolean computeValue()
             {
-                if (getModelContainersWithInvalidMesh().isEmpty())
-                {
-                    return false;
-                } else
-                {
-                    return true;
-                }
+                return !getModelContainersWithInvalidMesh().isEmpty();
             }
         };
         extruder0Filament = new SimpleObjectProperty<>();
         extruder1Filament = new SimpleObjectProperty<>();
-        modelColourChanged = new SimpleBooleanProperty();
+        modelColourChanged = new SimpleBooleanProperty();        
         filamentContainer = FilamentContainer.getInstance();
+        
         DEFAULT_FILAMENT = filamentContainer.getFilamentByID("RBX-ABS-GR499");
 
         initialiseExtruderFilaments();
@@ -154,6 +150,7 @@ public class ModelContainerProject extends Project
                 projectNameProperty.set(projectFile.getProjectName());
                 lastModifiedDate.set(projectFile.getLastModifiedDate());
                 lastPrintJobID = projectFile.getLastPrintJobID();
+                projectNameModified = projectFile.isProjectNameModified();
 
                 String filamentID0 = mcProjectFile.getExtruder0FilamentID();
                 String filamentID1 = mcProjectFile.getExtruder1FilamentID();
@@ -178,11 +175,12 @@ public class ModelContainerProject extends Project
                 printerSettings.setPrintQuality(mcProjectFile.getPrintQuality());
                 printerSettings.setBrimOverride(mcProjectFile.getBrimOverride());
                 printerSettings.setFillDensityOverride(mcProjectFile.getFillDensityOverride());
+                printerSettings.setFillDensityChangedByUser(mcProjectFile.isFillDensityOverridenByUser());
                 printerSettings.setPrintSupportOverride(mcProjectFile.getPrintSupportOverride());
                 printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
                 printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
                 printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
-
+                
                 loadModels(basePath);
 
                 recreateGroups(mcProjectFile.getGroupStructure(), mcProjectFile.getGroupState());
@@ -226,6 +224,13 @@ public class ModelContainerProject extends Project
         String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
                 + project.getProjectName();
         project.save(basePath);
+    }
+    
+    public String getProjectLocation() {
+        return ApplicationConfiguration.getProjectDirectory() 
+                + File.separator
+                + projectNameProperty.get() 
+                + File.separator;
     }
 
     private void saveModels(String path) throws IOException
@@ -343,6 +348,7 @@ public class ModelContainerProject extends Project
      * @param printer
      * @return
      */
+    @Override
     public ObservableList<Boolean> getUsedExtruders(Printer printer)
     {
         List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
@@ -352,13 +358,13 @@ public class ModelContainerProject extends Project
                 || printerSettings.getRaftOverride()
                 || printerSettings.getBrimOverride() > 0)
         {
-            if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_1)
+            if (printerSettings.getPrintSupportTypeOverride() == SupportType.MATERIAL_1)
             {
                 if (!localUsedExtruders.get(0))
                 {
                     localUsedExtruders.set(0, true);
                 }
-            } else if (printerSettings.getPrintSupportTypeOverride() == SlicerParametersFile.SupportType.MATERIAL_2
+            } else if (printerSettings.getPrintSupportTypeOverride() == SupportType.MATERIAL_2
                     && printer != null
                     && printer.extrudersProperty().get(1).isFittedProperty().get())
             {
@@ -384,8 +390,11 @@ public class ModelContainerProject extends Project
         Set<ProjectifiableThing> allModelContainers = new HashSet<>();
         for (ProjectifiableThing loadedModel : topLevelThings)
         {
-            allModelContainers.add(loadedModel);
-            allModelContainers.addAll(((ModelContainer) loadedModel).getDescendentModelContainers());
+            if (loadedModel instanceof ModelContainer)
+            {
+                allModelContainers.add(loadedModel);
+                allModelContainers.addAll(((ModelContainer) loadedModel).getDescendentModelContainers());
+            }
         }
         return allModelContainers;
     }
@@ -1035,10 +1044,16 @@ public class ModelContainerProject extends Project
 
         if (!usingDifferentExtruders)
         {
-            printerSettings.getPrintSupportTypeOverrideProperty().set(
-                    (useExtruder0 == true)
-                            ? SlicerParametersFile.SupportType.MATERIAL_1
-                            : SlicerParametersFile.SupportType.MATERIAL_2);
+            if (Lookup.getUserPreferences().getSlicerType() == SlicerType.Cura4)
+            {
+                printerSettings.getPrintSupportTypeOverrideProperty().set(SupportType.AS_PROFILE);
+            } else
+            {
+                printerSettings.getPrintSupportTypeOverrideProperty().set(
+                        (useExtruder0 == true)
+                                ? SupportType.MATERIAL_1
+                                : SupportType.MATERIAL_2);
+            }
             fireWhenPrinterSettingsChanged(printerSettings);
         }
 
@@ -1078,5 +1093,4 @@ public class ModelContainerProject extends Project
         modelGroup.checkOffBed();
         return modelGroup;
     }
-
 }

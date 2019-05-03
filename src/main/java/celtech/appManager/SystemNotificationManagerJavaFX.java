@@ -1,29 +1,32 @@
 package celtech.appManager;
 
-import celtech.roboxbase.appManager.PurgeResponse;
-import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
-import celtech.roboxbase.SystemErrorHandlerOptions;
-import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.coreUI.components.ChoiceLinkButton;
 import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.ChoiceLinkDialogBox.PrinterDisconnectedException;
 import celtech.coreUI.components.PrinterIDDialog;
 import celtech.coreUI.components.ProgressDialog;
+import celtech.coreUI.controllers.licensing.PurchaseLicenseController;
+import celtech.coreUI.controllers.licensing.SelectLicenseController;
 import celtech.coreUI.controllers.popups.ResetPrinterIDController;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.SystemErrorHandlerOptions;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.appManager.PurgeResponse;
+import celtech.roboxbase.appManager.SystemNotificationManager;
 import celtech.roboxbase.comms.RoboxResetIDResult;
 import celtech.roboxbase.comms.rx.FirmwareError;
 import celtech.roboxbase.comms.rx.PrinterIDResponse;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.services.firmware.FirmwareLoadResult;
 import celtech.roboxbase.services.firmware.FirmwareLoadService;
 import celtech.roboxbase.utils.tasks.TaskResponder;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -37,7 +40,9 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -495,9 +500,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         }
     }
 
-    ////////////////////////////////////
     /**
-     * Returns 0 for failure, 1 for reset, 2 for temporary set.
+     * @param printerToUse
+     * @param printerID
+     * @return 0 for failure, 1 for reset, 2 for temporary set.
      */
     @Override
     public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
@@ -544,8 +550,108 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return RoboxResetIDResult.RESET_FAILED;
         }
     }
+    
+    @Override
+    public boolean showSelectLicenseDialog() 
+    {
+        Callable<Boolean> registerDialogue = () -> 
+        {
+            URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "SelectLicense.fxml");
+            FXMLLoader registerDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+            StackPane licensePane = (StackPane) registerDialogLoader.load();
+            SelectLicenseController controller = (SelectLicenseController) registerDialogLoader.getController();
+            Stage registerDialogueStage = new Stage(StageStyle.TRANSPARENT);
+            registerDialogueStage.initModality(Modality.APPLICATION_MODAL);
+            registerDialogueStage.setScene(new Scene(licensePane, Color.TRANSPARENT));
+            registerDialogueStage.initOwner(DisplayManager.getMainStage());
+            registerDialogueStage.showAndWait();
+            return controller.isLicenseValid();
+        };
+        
+        FutureTask<Boolean> registerTask = new FutureTask<>(registerDialogue);
+        BaseLookup.getTaskExecutor().runOnGUIThread(registerTask);
+        
+        try 
+        {
+            return registerTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) 
+        {
+            steno.exception("Error during license valication", ex);
+            return false;
+        }
+    }
+    
+    @Override
+    public void showPurchaseLicenseDialog() {
+        Callable<Boolean> purchaseLicenseDialog = () -> 
+        {
+            try 
+            {
+                URL fxmlFileName = getClass().getResource(ApplicationConfiguration.fxmlLicensingResourcePath + "PurchaseLicense.fxml");
+                FXMLLoader purchaseLicenseDialogLoader = new FXMLLoader(fxmlFileName, BaseLookup.getLanguageBundle());
+                StackPane licensePane = (StackPane) purchaseLicenseDialogLoader.load();
+                PurchaseLicenseController controller = (PurchaseLicenseController) purchaseLicenseDialogLoader.getController();
+                Stage purchaseLicenseDialogueStage = new Stage(StageStyle.TRANSPARENT);
+                purchaseLicenseDialogueStage.initModality(Modality.APPLICATION_MODAL);
+                purchaseLicenseDialogueStage.setScene(new Scene(licensePane, Color.TRANSPARENT));
+                purchaseLicenseDialogueStage.initOwner(DisplayManager.getMainStage());
+                purchaseLicenseDialogueStage.showAndWait();
+                return true;
+            } 
+            catch (IOException ex) 
+            {
+                steno.exception("Error during purchase license dialog", ex);
+                return false;
+            }
+        };
+        
+        FutureTask<Boolean> purchaseLicenseTask = new FutureTask<>(purchaseLicenseDialog);
+        BaseLookup.getTaskExecutor().runOnGUIThread(purchaseLicenseTask);
+        
+        try 
+        {
+            purchaseLicenseTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) 
+        {
+            steno.exception("Error during license valication", ex);
+        }
+    }
+    
+    @Override
+    public void showConnectLicensedPrinterDialog() {
+        Callable<Boolean> connectLicensedPrinterDialog = () -> 
+        {
+            ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false, true);
+            choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.connectLicensedPrinterTitle"));
+            choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.connectLicensedPrinterMessage"));
+            ChoiceLinkButton okButton = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("misc.OK"));
 
-    //////////////////////////////////////////////////////
+            try 
+            {
+                choiceLinkDialogBox.getUserInput();
+                return true;
+            }
+            catch (PrinterDisconnectedException ex) 
+            {
+                steno.exception("Printer disconnection exception", ex);
+                return false;
+            }
+        };
+        
+        FutureTask<Boolean> connectLicensedPrinterTask = new FutureTask<>(connectLicensedPrinterDialog);
+        BaseLookup.getTaskExecutor().runOnGUIThread(connectLicensedPrinterTask);
+        
+        try 
+        {
+            connectLicensedPrinterTask.get();
+        }
+        catch (InterruptedException | ExecutionException ex) 
+        {
+            steno.exception("Error during license valication", ex);
+        }
+    }
 
     @Override
     public void configureFirmwareProgressDialog(FirmwareLoadService firmwareLoadService)

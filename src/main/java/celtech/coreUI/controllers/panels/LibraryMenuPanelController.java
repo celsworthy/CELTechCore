@@ -2,7 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.configuration.fileRepresentation.SlicerParametersFile;
+import celtech.roboxbase.configuration.RoboxProfile;
 
 /**
  *
@@ -29,10 +29,10 @@ public class LibraryMenuPanelController extends MenuPanelController
                 profileDetailsController);
     }
     
-        public void showAndSelectPrintProfile(SlicerParametersFile printProfile)
+        public void showAndSelectPrintProfile(RoboxProfile roboxProfile)
     {
         String profileMenuItemName = Lookup.i18n(profileDetails.innerPanel.getMenuTitle());
         panelMenu.selectItemOfName(profileMenuItemName);
-        profileDetailsController.setAndSelectPrintProfile(printProfile);
+        profileDetailsController.setAndSelectPrintProfile(roboxProfile);
     }
 }

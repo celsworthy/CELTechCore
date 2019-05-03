@@ -2,10 +2,10 @@
  * Copyright 2014 CEL UK
  */
 package celtech.coreUI.visualisation;
-
+         
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
-import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.appManager.ProjectManager;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -13,9 +13,12 @@ import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
+import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.DoubleProperty;
@@ -40,6 +43,9 @@ public class ProjectSelection implements ProjectChangesListener
     private final IntegerProperty numModelsSelected = new SimpleIntegerProperty(0);
     private final IntegerProperty numGroupsSelected = new SimpleIntegerProperty(0);
     private final Set<SelectedModelContainersListener> selectedModelContainersListeners;
+    
+    private final Project project;
+    
     /**
      * If any of the current selection are a child of a group then value is
      * true.
@@ -52,7 +58,8 @@ public class ProjectSelection implements ProjectChangesListener
         primarySelectedModelDetails = new PrimarySelectedModelDetails();
         selectedModelContainersListeners = new HashSet<>();
         project.addProjectChangesListener(this);
-
+        this.project = project;
+              
         selectionHasChildOfGroup = new BooleanBinding()
         {
             {
@@ -233,6 +240,24 @@ public class ProjectSelection implements ProjectChangesListener
     @Override
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
+        if(!project.isProjectNameModified()) 
+        {
+            ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+            Optional<ModelContainer> childModel = modelContainer.getChildModelContainers().stream().findFirst();
+            String projectName;
+            if(childModel.isPresent()) {
+                // Regex looks for split on any period follwed by any number of non-periods and the end of input
+                projectName = childModel.get().getModelName().split("\\.(?=[^\\.]+$)")[0];
+            } else {
+                // Regex looks for split on any period follwed by any number of non-periods and the end of input
+                projectName = modelContainer.getModelName().split("\\.(?=[^\\.]+$)")[0];
+            }
+            
+            Set<String> currentProjectNames = ProjectManager.getInstance().getOpenAndAvailableProjectNames();
+            projectName = suggestNonDuplicateName(projectName, currentProjectNames);
+            project.setProjectName(projectName);
+            project.setProjectNameModified(true);
+        }
     }
 
     @Override

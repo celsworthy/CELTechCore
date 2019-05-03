@@ -47,6 +47,10 @@ public class Lookup
                 {
                     ChoiceLinkDialogBox.whenPrinterDisconnected();
                 }
+                else if (change.wasAdded())
+                {
+                    ChoiceLinkDialogBox.whenPrinterConnected();
+                }
             }
         });
     }
@@ -115,7 +119,8 @@ public class Lookup
         steno.debug("Application locale is \"" + appLocale + "\"");
         
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
-                appLocale, new SystemNotificationManagerJavaFX());
+				      BaseLookup.getDefaultApplicationLocale(),
+				      new SystemNotificationManagerJavaFX());
 
         setNotificationDisplay(new NotificationDisplay());
         setProgressDisplay(new ProgressDisplay());
