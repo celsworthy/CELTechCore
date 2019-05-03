@@ -14,6 +14,7 @@ import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
@@ -74,7 +75,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private static final Stenographer STENO = StenographerFactory.getStenographer(GCodeGeneratorManager.class.getName());
     
     private final ExecutorService slicingExecutorService;
-    private final ExecutorService printOrSaveExecutorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService printOrSaveExecutorService;
     private final Project project;
     
     private final BooleanProperty dataChanged = new SimpleBooleanProperty(false);
@@ -122,6 +123,8 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             return thread;
         };
         slicingExecutorService = Executors.newFixedThreadPool(1, threadFactory);
+//       printOrSaveExecutorService = Executors.newSingleThreadExecutor(threadFactory);
+        printOrSaveExecutorService = Executors.newSingleThreadExecutor();
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
         
         initialiseListeners();
@@ -307,93 +310,96 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             
             slicingOrder.forEach(printQuality ->
             {
-                String headType = HeadContainer.defaultHeadID;
-                SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-
-                if (currentPrinter != null && currentPrinter.headProperty().get() != null)
+                if (modelIsSuitable(printQuality))
                 {
-                    headType = currentPrinter.headProperty().get().typeCodeProperty().get();
-                }
-                
-                PrinterSettingsOverrides printerSettingsOverrides = project.getPrinterSettings().duplicate();
-                printerSettingsOverrides.setPrintQuality(printQuality);
-                RoboxProfile profileSettings = printerSettingsOverrides.getSettings(headType, slicerType);
-                if (profileSettings != null)
-                {
-                    GCodeGeneratorTask prepTask = new GCodeGeneratorTask();
-                    Supplier<PrintableMeshes> meshSupplier = () ->
+                    String headType = HeadContainer.defaultHeadID;
+                    SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
+
+                    if (currentPrinter != null && currentPrinter.headProperty().get() != null)
                     {
-                        List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
-                        List<Integer> extruderForModel = new ArrayList<>();
-
-                        // Only to be run on a ModelContainerProject
-                        if(project instanceof ModelContainerProject)
-                        {
-                            project.getTopLevelThings().forEach((modelContainer) -> 
-                            {
-                                ((ModelContainer)modelContainer).getModelsHoldingMeshViews().forEach((modelContainerWithMesh) ->
-                                {
-                                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
-                                    meshesForProcessing.add(meshForProcessing);
-                                    extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
-                                });
-                            });
-                        }
-
-                        // We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
-                        CentreCalculations centreCalc = new CentreCalculations();
-
-                        project.getTopLevelThings().forEach(model ->
-                        {
-                            Bounds modelBounds = model.getBoundsInParent();
-                            centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
-                            centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
-                        });
-
-                        Vector3D centreOfPrintedObject = centreCalc.getResult();
-
-                        CameraTriggerData cameraTriggerData = null;
-
-                        if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
-                        {
-                            cameraTriggerData = new CameraTriggerData(
-                                    Lookup.getUserPreferences().getGoProWifiPassword(),
-                                    Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
-                                    Lookup.getUserPreferences().getTimelapseXMove(),
-                                    Lookup.getUserPreferences().getTimelapseYMove(),
-                                    Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
-                                    Lookup.getUserPreferences().getTimelapseDelay());
-                        }
-                        
-                        return new PrintableMeshes(
-                                meshesForProcessing,
-                                project.getUsedExtruders(currentPrinter),
-                                extruderForModel,
-                                project.getProjectName(),
-                                project.getProjectName(),
-                                profileSettings,
-                                printerSettingsOverrides,
-                                printQuality,
-                                slicerType,
-                                centreOfPrintedObject,
-                                Lookup.getUserPreferences().isSafetyFeaturesOn(),
-                                Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
-                                cameraTriggerData);
-                    };
-
-                    if (cancellable.cancelled().get())
-                        return;
-                    observableTaskMap.put(printQuality, prepTask);
-                    tidyProjectDirectory(getGCodeDirectory(printQuality));
-                    prepTask.initialise(currentPrinter, meshSupplier, getGCodeDirectory(printQuality));
-                    slicingExecutorService.submit(prepTask);
-                    if (!selectedTaskReBound)
-                    {
-                        selectedTaskReBound = true;
-                        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {bindToSelectedTask(printQuality);});
+                        headType = currentPrinter.headProperty().get().typeCodeProperty().get();
                     }
+
+                    PrinterSettingsOverrides printerSettingsOverrides = project.getPrinterSettings().duplicate();
+                    printerSettingsOverrides.setPrintQuality(printQuality);
+                    RoboxProfile profileSettings = printerSettingsOverrides.getSettings(headType, slicerType);
+                    if (profileSettings != null)
+                    {
+                        GCodeGeneratorTask prepTask = new GCodeGeneratorTask();
+                        Supplier<PrintableMeshes> meshSupplier = () ->
+                        {
+                            List<MeshForProcessing> meshesForProcessing = new ArrayList<>();
+                            List<Integer> extruderForModel = new ArrayList<>();
+
+                            // Only to be run on a ModelContainerProject
+                            if(project instanceof ModelContainerProject)
+                            {
+                                project.getTopLevelThings().forEach((modelContainer) -> 
+                                {
+                                    ((ModelContainer)modelContainer).getModelsHoldingMeshViews().forEach((modelContainerWithMesh) ->
+                                    {
+                                        MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                                        meshesForProcessing.add(meshForProcessing);
+                                        extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
+                                    });
+                                });
+                            }
+
+                            // We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
+                            CentreCalculations centreCalc = new CentreCalculations();
+
+                            project.getTopLevelThings().forEach(model ->
+                            {
+                                Bounds modelBounds = model.getBoundsInParent();
+                                centreCalc.processPoint(modelBounds.getMinX(), modelBounds.getMinY(), modelBounds.getMinZ());
+                                centreCalc.processPoint(modelBounds.getMaxX(), modelBounds.getMaxY(), modelBounds.getMaxZ());
+                            });
+
+                            Vector3D centreOfPrintedObject = centreCalc.getResult();
+
+                            CameraTriggerData cameraTriggerData = null;
+
+                            if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
+                            {
+                                cameraTriggerData = new CameraTriggerData(
+                                        Lookup.getUserPreferences().getGoProWifiPassword(),
+                                        Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
+                                        Lookup.getUserPreferences().getTimelapseXMove(),
+                                        Lookup.getUserPreferences().getTimelapseYMove(),
+                                        Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
+                                        Lookup.getUserPreferences().getTimelapseDelay());
+                            }
+
+                            return new PrintableMeshes(
+                                    meshesForProcessing,
+                                    project.getUsedExtruders(currentPrinter),
+                                    extruderForModel,
+                                    project.getProjectName(),
+                                    project.getProjectName(),
+                                    profileSettings,
+                                    printerSettingsOverrides,
+                                    printQuality,
+                                    slicerType,
+                                    centreOfPrintedObject,
+                                    Lookup.getUserPreferences().isSafetyFeaturesOn(),
+                                    Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
+                                    cameraTriggerData);
+                        };
+
+                        if (cancellable.cancelled().get())
+                            return;
+                        observableTaskMap.put(printQuality, prepTask);
+                        tidyProjectDirectory(getGCodeDirectory(printQuality));
+                        prepTask.initialise(currentPrinter, meshSupplier, getGCodeDirectory(printQuality));
+                        slicingExecutorService.submit(prepTask);
+                        if (!selectedTaskReBound)
+                        {
+                            selectedTaskReBound = true;
+                            BaseLookup.getTaskExecutor().runOnGUIThread(() -> {bindToSelectedTask(printQuality);});
+                        }
+                    }
+                    toggleDataChanged();
                 }
-                toggleDataChanged();
             });
         };
 
@@ -434,8 +440,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     {
         if ((!suppressReaction && isCurrentProjectSelected()) || globalChange) 
         {
-            if ((ApplicationStatus.getInstance().modeProperty().get() == ApplicationMode.SETTINGS) 
-                    && modelIsSuitable()) 
+            if (ApplicationStatus.getInstance().modeProperty().get() == ApplicationMode.SETTINGS) 
             {
                 restartAllTasks();
                 projectNeedsSlicing = false;
@@ -449,9 +454,14 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     
     public boolean modelIsSuitable()
     {
+        return modelIsSuitable(currentPrintQuality.get());
+    }
+    
+    private boolean modelIsSuitable(PrintQualityEnumeration printQuality)
+    {
         if (project != null)
         {
-            RoboxProfile slicerParameters = null; // This is sometimes returned as null. Not sure why.
+            RoboxProfile slicerParameters = null; 
             if (project.getNumberOfProjectifiableElements() > 0)
             {
                 String headType = HeadContainer.defaultHeadID;
@@ -459,7 +469,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                 {
                     headType = currentPrinter.headProperty().get().typeCodeProperty().get();
                 }
-                slicerParameters = project.getPrinterSettings().getSettings(headType, Lookup.getUserPreferences().getSlicerType());
+                slicerParameters = project.getPrinterSettings().getSettings(headType, Lookup.getUserPreferences().getSlicerType(), printQuality);
             }
             if (slicerParameters != null)
             {
@@ -471,14 +481,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                     zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
                 }
             
-                //NOTE - this needs to change if raft settings in slicermapping.dat is changed
-                double raftOffset = slicerParameters.getSpecificFloatSetting("raftBaseThickness_mm")
-                    //Raft interface thickness
-                    + 0.28
-                    //Raft surface layer thickness * surface layers
-                    + 0.27 * slicerParameters.getSpecificIntSetting("interfaceLayers")
-                    + slicerParameters.getSpecificFloatSetting("raftAirGapLayer0_mm")
-                    + zReduction;
+                double raftOffset = RoboxProfileUtils.calculateRaftOffset(slicerParameters, getSlicerType());
 
                 for (ProjectifiableThing projectifiableThing : project.getTopLevelThings())
                 {
@@ -489,7 +492,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                         //TODO use settings derived offset values for spiral
                         if (modelContainer.isOffBedProperty().get()
                                 || (project.getPrinterSettings().getRaftOverride()
-                                && modelContainer.isModelTooHighWithOffset(raftOffset))
+                                && modelContainer.isModelTooHighWithOffset(raftOffset + zReduction))
                                 || (project.getPrinterSettings().getSpiralPrintOverride()
                                 && modelContainer.isModelTooHighWithOffset(0.5)))
                         {
@@ -689,5 +692,16 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         {
             currentPrintQuality.set(printerSettings.getPrintQuality());
         }
+    }
+    
+    public void shutdown()
+    {
+        slicingExecutorService.shutdown();
+        printOrSaveExecutorService.shutdown(); 
+    }
+    
+    private SlicerType getSlicerType() 
+    {
+        return Lookup.getUserPreferences().getSlicerType();
     }
 }

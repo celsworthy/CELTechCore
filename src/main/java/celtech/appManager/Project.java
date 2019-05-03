@@ -715,4 +715,9 @@ public abstract class Project
     {
         return gCodeGenManager;
     }
+    
+    public void close()
+    {
+        gCodeGenManager.shutdown();
+    }
 }

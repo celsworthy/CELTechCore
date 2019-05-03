@@ -14,6 +14,7 @@ import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.tasks.Cancellable;
@@ -269,7 +270,6 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
      */
     private void updateFields(Project project)
     {
-
         if (settingPrintQuality || ApplicationStatus.getInstance().modeProperty().get() != ApplicationMode.SETTINGS)
         {
             return;
@@ -293,127 +293,117 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
 
         Cancellable cancellable = new SimpleCancellable();
         
-        String headTypeToUse = HeadContainer.defaultHeadID;
-        if (currentPrinter != null
-                && currentPrinter.headProperty().get() != null)
+        Runnable runUpdateFields = () ->
         {
-            headTypeToUse = currentPrinter.headProperty().get().typeCodeProperty().get();
-        }
-        
-        RoboxProfile profileSettings = null; // This is sometimes returned as null. Not sure why.
-        if (currentProject != null && currentProject.getNumberOfProjectifiableElements() > 0)
-        {
-            profileSettings = currentProject.getPrinterSettings().getSettings(headTypeToUse, getSlicerType());
-        }
-        if (profileSettings == null)
-        {
-            steno.error("profileSettings == null!");
-        }
-        else
-        {
-            // NOTE - this needs to change if raft settings in slicermapping.dat is changed
-            // Needed as heads differ in size and will need to adjust print volume for this
-            double zReduction = 0.0;
-            if (currentPrinter != null
-                && currentPrinter.headProperty().get() != null)
+            for(PrintQualityEnumeration printQuality : sliceOrder) 
             {
-                zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
-            }
-            double raftOffset = profileSettings.getSpecificFloatSetting("raftBaseThickness_mm")
-                    //Raft interface thickness
-                    + 0.28
-                    //Raft surface layer thickness * surface layers
-                    + (profileSettings.getSpecificIntSetting("interfaceLayers")* 0.27)
-                    + profileSettings.getSpecificFloatSetting("raftAirGapLayer0_mm")
-                    + zReduction;
-
-            boolean aModelIsOffTheBed = false;
-            for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
-            {
-                if (projectifiableThing instanceof ModelContainer)
-                {
-                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-
-                    //TODO use settings derived offset values for spiral
-                    if (modelContainer.isOffBedProperty().get()
-                            || (currentProject.getPrinterSettings().getRaftOverride()
-                            && modelContainer.isModelTooHighWithOffset(raftOffset))
-                            || (currentProject.getPrinterSettings().getSpiralPrintOverride()
-                            && modelContainer.isModelTooHighWithOffset(0.5)))
-                    {
-                        aModelIsOffTheBed = true;
+                switch(printQuality) {
+                    case DRAFT:
+                        updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
+                        lblDraftWeight,
+                        lblDraftCost, cancellable);
                         break;
-                    }
+                    case NORMAL:
+                        updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
+                        lblNormalWeight,
+                        lblNormalCost, cancellable);
+                        break;
+                    case FINE:
+                        updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
+                        lblFineWeight,
+                        lblFineCost, cancellable);
+                        break;
+                    case CUSTOM:
+                        if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
+                        {
+                            updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
+                                    lblCustomWeight,
+                                    lblCustomCost, cancellable);
+                        }
+                        break;
+                }
+                if (cancellable.cancelled().get())
+                {
+                    return;
                 }
             }
+        };
 
-            if (!aModelIsOffTheBed)
-            {
-
-                Runnable runUpdateFields = () ->
-                {
-                    for(PrintQualityEnumeration printQuality : sliceOrder) {
-                        switch(printQuality) {
-                            case DRAFT:
-                                updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
-                                lblDraftWeight,
-                                lblDraftCost, cancellable);
-                                break;
-                            case NORMAL:
-                                updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
-                                lblNormalWeight,
-                                lblNormalCost, cancellable);
-                                break;
-                            case FINE:
-                                updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
-                                lblFineWeight,
-                                lblFineCost, cancellable);
-                                break;
-                            case CUSTOM:
-                                if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
-                                {
-                                    updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
-                                            lblCustomWeight,
-                                            lblCustomCost, cancellable);
-                                }
-                                break;
-                        }
-                        if (cancellable.cancelled().get())
-                        {
-                            return;
-                        }
-                    }
-                };
-                
-                slicedAlready = true;
-                timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
-            }
-        }
+        slicedAlready = true;
+        timeCostThreadManager.cancelRunningTimeCostTasksAndRun(runUpdateFields, cancellable);
     }
-
-/**
+    
+    /**
      * Update the time, cost and weight fields for the given print quality and fields.
      * Long running calculations must be performed in a background thread.
      */
     private void updateFieldsForQuality(Project project, PrintQualityEnumeration printQuality,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
-        if (project instanceof ModelContainerProject)
+        if (!modelOutOfBounds(printQuality))
         {
-            String working = Lookup.i18n("timeCost.working");
-            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+            if (project instanceof ModelContainerProject)
             {
-                lblTime.setText(working);
-                lblWeight.setText(working);
-                lblCost.setText(working);
-            });
+                String working = Lookup.i18n("timeCost.working");
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    lblTime.setText(working);
+                    lblWeight.setText(working);
+                    lblCost.setText(working);
+                });
 
-            GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project,
-                        lblTime, lblWeight,
-                        lblCost, cancellable);
+                GetTimeWeightCost updateDetails = new GetTimeWeightCost((ModelContainerProject) project,
+                            lblTime, lblWeight,
+                            lblCost, cancellable);
 
-            updateDetails.updateFromProject(printQuality);
+                updateDetails.updateFromProject(printQuality);
+            }
         }
+    }
+    
+    private boolean modelOutOfBounds(PrintQualityEnumeration printQuality) 
+    {
+        String headTypeToUse = HeadContainer.defaultHeadID;
+        if (currentPrinter != null && currentPrinter.headProperty().get() != null)
+        {
+            headTypeToUse = currentPrinter.headProperty().get().typeCodeProperty().get();
+        }
+        
+        RoboxProfile profileSettings = null;
+        if (currentProject != null && currentProject.getNumberOfProjectifiableElements() > 0)
+        {
+            profileSettings = currentProject.getPrinterSettings().getSettings(headTypeToUse, getSlicerType(), printQuality);
+        }
+
+        double zReduction = 0.0;
+        if (currentPrinter != null && currentPrinter.headProperty().get() != null)
+        {
+            zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+        }
+        
+        double raftOffset = profileSettings == null ? 0.0 : RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
+
+        boolean aModelIsOffTheBed = false;
+        for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
+        {
+            if (projectifiableThing instanceof ModelContainer)
+            {
+                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+
+                //TODO use settings derived offset values for spiral
+                if (modelContainer.isOffBedProperty().get()
+                        || (currentProject.getPrinterSettings().getRaftOverride()
+                        && modelContainer.isModelTooHighWithOffset(zReduction + raftOffset))
+                        || (currentProject.getPrinterSettings().getSpiralPrintOverride()
+                        && modelContainer.isModelTooHighWithOffset(0.5)))
+                {
+                    aModelIsOffTheBed = true;
+                    break;
+                }
+            }
+        }
+        
+        return aModelIsOffTheBed;
     }
 
     private void updatePrintQuality(PrinterSettingsOverrides printerSettings)

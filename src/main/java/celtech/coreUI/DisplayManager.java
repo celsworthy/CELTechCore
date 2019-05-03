@@ -1040,7 +1040,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         if (Lookup.getUserPreferences().isFirstUse())
         {
             File firstUsePrintFile = new File(BaseConfiguration.
-                    getApplicationModelDirectory().concat("Robox CEL RB robot.stl"));
+                    getApplicationModelDirectory().concat("RBX_ROBOT_MM.stl"));
 
             Project newProject = new ModelContainerProject();
             newProject.setProjectName(Lookup.i18n("myFirstPrintTitle"));

@@ -1,6 +1,7 @@
 package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
+import celtech.appManager.Project;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedComboBox;
 import celtech.roboxbase.BaseLookup;
@@ -15,13 +16,16 @@ import celtech.roboxbase.configuration.profilesettings.PrintProfileSetting;
 import celtech.roboxbase.configuration.profilesettings.PrintProfileSettings;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.utils.settingsgeneration.ProfileDetailsGenerator;
 import celtech.utils.settingsgeneration.ProfileDetailsGenerator.ProfileDetailsGenerationException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -59,8 +63,16 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private static final PrintProfileSettingsContainer PRINT_PROFILE_SETTINGS_CONTAINER = PrintProfileSettingsContainer.getInstance();
     private static final RoboxProfileSettingsContainer ROBOX_PROFILE_SETTINGS_CONTAINER = RoboxProfileSettingsContainer.getInstance();
+    private static final HashMap<String, Integer> standardProfileOrder = new HashMap<>();
+    static {
+        standardProfileOrder.put("DRAFT", 0);
+        standardProfileOrder.put("NORMAL", 1);
+        standardProfileOrder.put("FINE", 2);
+        standardProfileOrder.put("CUSTOM", 3);
+    }
     
     private final PseudoClass ERROR = PseudoClass.getPseudoClass("error");
+
 
     enum State {
         /**
@@ -169,7 +181,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         setupProfileNameChangeListeners();
         setupHeadType();
         setupPrintProfileCombo();
-        selectFirstPrintProfile();
+        selectDefaultPrintProfile();
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(slicerTypeChangeListener);
         
@@ -178,8 +190,12 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             {
                 regenerateSettings(getSlicerType(), true);
                 repopulateCmbPrintProfile();
-                selectFirstPrintProfile();
+                selectDefaultPrintProfile();
                 setupSlicerInUseLabel();
+            }
+            else
+            {
+
             }
         });
         
@@ -191,7 +207,8 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 PrintProfileSettingsContainer.loadPrintProfileSettingsFile();
                 SlicerMappingsContainer.getInstance().loadSlicerMappingsFile();
                 BaseLookup.setSlicerMappings(SlicerMappingsContainer.getInstance().getSlicerMappings());
-                regenerateSettings(getSlicerType(), true);
+                RoboxProfile printProfile = roboxProfilesMap.get(currentProfileName);
+                updateSettingsFromProfile(printProfile, true);
             }
         });
     }
@@ -262,7 +279,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             nozzleOptions.setAll(nozzleSizeStrings);
             
             repopulateCmbPrintProfile();
-            selectFirstPrintProfile();
+            selectDefaultPrintProfile();
         });
 
         cmbHeadType.setValue(HeadContainer.defaultHeadID);
@@ -281,9 +298,27 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         selectPrintProfile();
     }
 
-    private void selectFirstPrintProfile() {
-        if (cmbPrintProfile.getItems().size() > 0) {
-            cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
+    private void selectDefaultPrintProfile() 
+    {
+        if (cmbPrintProfile.getItems().size() > 0)
+        {
+            String headType = cmbHeadType.getValue();
+
+            Project selectedProject = Lookup.getSelectedProjectProperty().get();
+            Optional<RoboxProfile> profileOption = Optional.empty();
+            if (selectedProject != null)
+            {
+                PrintQualityEnumeration printQuality = selectedProject.getPrinterSettings().getPrintQuality();
+                profileOption = selectedProject.getPrinterSettings().getBaseProfile(headType, getSlicerType(), printQuality);
+            }
+
+            if (profileOption.isPresent())
+            {
+                cmbPrintProfile.setValue(profileOption.get().getName());
+            } else
+            {
+                cmbPrintProfile.setValue(cmbPrintProfile.getItems().get(0));
+            }
             selectPrintProfile();
         }
     }
@@ -313,7 +348,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         
         currentProfileName = selectedPrintProfileName;
         
-        updateSettingsFromProfile(printProfile);
+        updateSettingsFromProfile(printProfile, false);
         if (printProfile.isStandardProfile()) 
         {
             state.set(State.ROBOX);
@@ -336,7 +371,35 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         List<RoboxProfile> filesForHeadType = roboxProfiles.get(headType);
         roboxProfilesMap = filesForHeadType.stream()
                 .collect(Collectors.toMap(RoboxProfile::getName, Function.identity()));
-        cmbPrintProfile.setItems(FXCollections.observableArrayList(roboxProfilesMap.keySet()));
+        
+        // Order profiles alphabetically, but with standard profiles before custom profiles.
+        Collections.sort(filesForHeadType, (p1, p2) -> {
+            if (p1.isStandardProfile()) {
+                if (p2.isStandardProfile()) {
+                    // Standard profiles are ordered according to standardProfileOrder map.
+                    int p1Order = standardProfileOrder.getOrDefault(p1.getName().toUpperCase(), -1);
+                    int p2Order = standardProfileOrder.getOrDefault(p2.getName().toUpperCase(), -1);
+                    if (p1Order == p2Order)
+                        return 0;
+                    else if (p1Order < p2Order)
+                        return -1;
+                    else
+                        return 1;
+                }
+                else    
+                    return -1; // Standard profile is before custom profile.
+            }
+            else {
+                if (p2.isStandardProfile())
+                    return 1; // custom profile is after standard profile.
+            }
+            return p1.getName().compareToIgnoreCase(p2.getName()); // Custom profiles are ordered alphabetically.
+        });
+        
+        List<String> nameList  = filesForHeadType.stream()
+                                .map(RoboxProfile::getName)
+                                .collect(Collectors.toList());
+        cmbPrintProfile.setItems(FXCollections.observableArrayList(nameList));
     }
     
     private void setupSlicerInUseLabel() {
@@ -370,7 +433,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
      * 
      * @param roboxProfile the profile that has been selected
      */
-    private void updateSettingsFromProfile(RoboxProfile roboxProfile)
+    private void updateSettingsFromProfile(RoboxProfile roboxProfile, boolean recreateTabs)
     {
         PrintProfileSettings printProfileSettings = PRINT_PROFILE_SETTINGS_CONTAINER
                 .getPrintProfileSettingsForSlicer(getSlicerType());
@@ -381,11 +444,11 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         printProfileSettings.setTabs(defaultSettingsCopy.getTabs());
         printProfileSettings.setHiddenSettings(defaultSettingsCopy.getHiddenSettings());
         
-        overwriteSettingsFromProfle(printProfileSettings, roboxProfile);
-        regenerateSettings(getSlicerType(), false);
+        overwriteSettingsFromProfile(printProfileSettings, roboxProfile);
+        regenerateSettings(getSlicerType(), recreateTabs);
     }
     
-    private void overwriteSettingsFromProfle(PrintProfileSettings settingsToOverwrite, RoboxProfile roboxProfile) {
+    private void overwriteSettingsFromProfile(PrintProfileSettings settingsToOverwrite, RoboxProfile roboxProfile) {
         Map<String, PrintProfileSetting> printProfileSettingsMap = new HashMap<>();
         
         settingsToOverwrite.getAllSettings().forEach(setting -> printProfileSettingsMap.put(setting.getId(), setting));
@@ -414,8 +477,8 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             List<RoboxProfile> profilesForHead = existingProfileMapForSlicer.get(currentHeadType.get());
             for (RoboxProfile profile : profilesForHead) 
             {
-                if (!profile.getName().equals(currentProfileName)
-                        && profile.getName().equals(profileNameText)) 
+                if (!profile.getName().equalsIgnoreCase(currentProfileName)
+                        && profile.getName().equalsIgnoreCase(profileNameText)) 
                 {
                     valid = false;
                     break;
@@ -434,7 +497,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             PrintProfileSettings defaultSettings = PRINT_PROFILE_SETTINGS_CONTAINER.getDefaultPrintProfileSettingsForSlicer(getSlicerType());
             PrintProfileSettings settingsForHead = new PrintProfileSettings(defaultSettings);
             RoboxProfile headProfile = ROBOX_PROFILE_SETTINGS_CONTAINER.loadHeadProfileForSlicer(currentHeadType.get(), getSlicerType());
-            overwriteSettingsFromProfle(settingsForHead, headProfile);
+            overwriteSettingsFromProfile(settingsForHead, headProfile);
             
             PrintProfileSettings currentSettings = PRINT_PROFILE_SETTINGS_CONTAINER.getPrintProfileSettingsForSlicer(getSlicerType());
             Map<String, List<PrintProfileSetting>> settingsToWrite = 
@@ -479,7 +542,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
             ROBOX_PROFILE_SETTINGS_CONTAINER.deleteCustomProfile(currentProfileName, getSlicerType(), currentHeadType.get());
         }
         repopulateCmbPrintProfile();
-        selectFirstPrintProfile();
+        selectDefaultPrintProfile();
     }
     
     @Override

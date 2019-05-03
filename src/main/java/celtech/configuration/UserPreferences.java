@@ -113,9 +113,10 @@ public class UserPreferences
         }
         saveSettings();
     };
-
-    private final LicenceChangeListener autoGCodePreviewLicenceChangeListener = (licenceOption) -> {
-        if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) {
+    
+    private final LicenceChangeListener autoGCodePreviewLicenceChangeListener = licenceOption -> {
+        if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) 
+        {
             autoGCodePreview.set(false);
         }
         saveSettings();
@@ -159,7 +160,6 @@ public class UserPreferences
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
         autoGCodePreview.addListener(enableAutoGCodePreviewChangeListener);
-        LicenceManager.getInstance().addLicenceChangeListener(autoGCodePreviewLicenceChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
         timelapseTriggerEnabled.addListener(booleanChangeListener);
@@ -171,6 +171,8 @@ public class UserPreferences
         timelapseDelayBeforeCapture.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
+        
+        LicenceManager.addLicenceChangeListener(autoGCodePreviewLicenceChangeListener);
     }
 
     public String getLanguageTag()

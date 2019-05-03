@@ -325,12 +325,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             }
 
             if (newValue != null) {
-                if (printerSettings != null && printerSettings.getPrintQuality() == PrintQualityEnumeration.CUSTOM) {
-                    whenCustomProfileChanges(newValue);
-                } else if (printerSettings != null) {
-                    steno.error("custom profile chosen but quality not CUSTOM");
-                }
-
+                whenCustomProfileChanges(newValue);
             }
         });
     }
@@ -349,37 +344,41 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private void populateSupportChooser()
     {
         populatingForProject = true;
-        
         supportComboBox.getItems().clear();
+        supportComboBox.getItems().addAll(SupportType.values());
+        SupportType typeToSelect = SupportType.AS_PROFILE;
+
         
-        if (getSlicerType() == SlicerType.Cura4) 
+        
+        if (HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
-            supportComboBox.getItems().addAll(SupportType.values());
-            supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
-        } else 
-        {
-            supportComboBox.getItems().addAll(SupportType.MATERIAL_1, SupportType.MATERIAL_2);
-            supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+            if (getSlicerType() == SlicerType.Cura)
+            {
+                // For a dual material head and old Cura default to Material 2, there is no as profile
+                supportComboBox.getItems().remove(SupportType.AS_PROFILE);
+                typeToSelect = SupportType.MATERIAL_2;
+            } else if (printerSettings != null && printerSettings.getPrintSupportTypeOverride() != null)
+            {
+                // If we have some saved settings use the support type selected unless we aren't using Dual material. Then we just stay with the defaults
+                typeToSelect = printerSettings.getPrintSupportTypeOverride();
+            }
         }
         
-        if (printerSettings != null)
-        {
-            supportComboBox.getSelectionModel().select(printerSettings.getPrintSupportTypeOverride());
-        }
-        
+        // Once populated then set
+        supportComboBox.getSelectionModel().select(typeToSelect);
         populatingForProject = false;
     }
 
     private void whenCustomProfileChanges(RoboxProfile newValue)
     {
-        if (getCustomSettings().isPresent()) {
+        //if (getCustomSettings().isPresent()) {
         //    getCustomSettings().removePropertyChangeListener(customSettingsListener);
-        }
+        //}
         printerSettings.setSettingsName(newValue.getName());
-        if (getCustomSettings().isPresent()) {
+        //if (getCustomSettings().isPresent()) {
         //    getCustomSettings().addPropertyChangeListener(customSettingsListener);
-        }
-        printQualityWidgetsUpdate(PrintQualityEnumeration.CUSTOM);
+        //}
+        printQualityWidgetsUpdate(printerSettings != null ? printerSettings.getPrintQuality() : PrintQualityEnumeration.DRAFT);
     }
 
     private void setupOverrides()
@@ -532,6 +531,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
             currentHeadType = headTypeCode;
 
             populateCustomProfileChooser();
+            populateSupportChooser();
             showPleaseCreateProfile(customProfileChooser.getItems().isEmpty());
             updateSupportCombo(currentPrinter);
 
@@ -604,6 +604,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         boolean savePrintRaft = printerSettings.getRaftOverride();
         boolean saveSpiralPrint = printerSettings.getSpiralPrintOverride();
         boolean saveSupportGapEnabled = printerSettings.getPrintSupportGapEnabledOverride();
+        boolean saveOverrideFillDensity = printerSettings.isFillDensityChangedByUser();
 
         // printer settings name is cleared by combo population so must be saved
         String savePrinterSettingsName = project.getPrinterSettings().getSettingsName();
@@ -612,13 +613,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
             printQualityWidgetsUpdate(newValue);
         });
-        
-        printQualityWidgetsUpdate(printQuality.get());
-
-        // just in case custom settings are changing through some other mechanism
-//        printerSettings.getSettingsNameProperty().addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-//            selectCurrentCustomSettings();
-//        });
 
         brimSlider.setValue(saveBrim);
         
@@ -632,7 +626,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         raftButton.setSelected(savePrintRaft);
 
-        supportComboBox.setValue(saveSupports);
+        //supportComboBox.setValue(saveSupports);
+        populateSupportChooser();
 
         printerSettings.getPrintSupportTypeOverrideProperty()
                 .addListener((ObservableValue<? extends SupportType> observable, SupportType oldValue, SupportType newValue) -> {
@@ -644,30 +639,28 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
         supportButton.setSelected(autoSupport);
 
-        if (project.getPrintQuality() == PrintQualityEnumeration.CUSTOM)
+        if (savePrinterSettingsName.length() > 0)
         {
-            if (savePrinterSettingsName.length() > 0)
-            {
-                
-                List<RoboxProfile> profiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType()).get(currentHeadType);
-                Optional<RoboxProfile> chosenProfile = profiles.stream()
-                        .filter(profile -> profile.getName().equals(savePrinterSettingsName))
-                        .findFirst();
-                if(chosenProfile.isPresent()) {
-                    customProfileChooser.getSelectionModel().select(chosenProfile.get());
-                } else {
-                    customProfileChooser.getSelectionModel().selectFirst();
-                }
+            List<RoboxProfile> profiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType()).get(currentHeadType);
+            Optional<RoboxProfile> chosenProfile = profiles.stream()
+                    .filter(profile -> profile.getName().equals(savePrinterSettingsName))
+                    .findFirst();
+            if(chosenProfile.isPresent()) {
+                customProfileChooser.getSelectionModel().select(chosenProfile.get());
+            } else {
+                customProfileChooser.getSelectionModel().clearSelection();
             }
         }
 
         spiralPrintCheckbox.setSelected(saveSpiralPrint);
-
+        overrideFillDensityCheckbox.setSelected(saveOverrideFillDensity);
         supportGapButton.setSelected(saveSupportGapEnabled);
 
         dealWithPrintOptimisation();
 
         populatingForProject = false;
+        
+        printQualityWidgetsUpdate(printQuality.get());
     }
 
     private void dealWithPrintOptimisation()
@@ -799,14 +792,6 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                     fillDensitySlider.setValue(fillDensity * 100.0);
                 }
             }
-
-//            if (printQuality.get() == PrintQualityEnumeration.CUSTOM) {
-//                if (!settings.isPresent()) {
-//                    customProfileChooser.setValue(null);
-//                } else  {
-//                    customProfileChooser.getSelectionModel().select(settings.get());
-//                }
-//            }
         }
     }
 
