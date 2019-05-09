@@ -18,7 +18,7 @@ public class ModelContainerProjectFile extends ProjectFile
     private float fillDensityOverride = 0;
     private boolean fillDensityOverridenByUser = false;
     private boolean printSupportOverride = false;
-    private SupportType printSupportTypeOverride = SupportType.MATERIAL_1;
+    private SupportType printSupportTypeOverride = SupportType.MATERIAL_2;
     private boolean printRaft = false;
     private boolean spiralPrint = false;
     private String extruder0FilamentID;
