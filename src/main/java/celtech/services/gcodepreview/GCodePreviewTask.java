@@ -6,6 +6,7 @@
 package celtech.services.gcodepreview;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.MachineType;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -173,7 +174,9 @@ public class GCodePreviewTask extends Task<Boolean> {
         Boolean succeeded = false;
         ArrayList<String> commands = new ArrayList<>();
         
-        commands.add("java");
+
+        String jvmLocation = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        commands.add(jvmLocation);
         if (BaseConfiguration.getMachineType() == MachineType.MAC)
             commands.add("-XstartOnFirstThread");
         commands.add("-DlibertySystems.configFile=" + BaseConfiguration.getGCodeViewerDirectory() + "GCodeViewer.configFile.xml");
