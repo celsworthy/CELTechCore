@@ -1445,16 +1445,19 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         boolean aModelIsOffTheBedWithRaft = false;
         boolean aModelIsOffTheBedWithSpiral = false;
         RoboxProfile profileSettings = null;
+        float zReduction = 0.0f;
         if (selectedProject != null
                 && currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
         {
             profileSettings = selectedProject.getPrinterSettings()
                     .getSettings(currentPrinter.headProperty().get().typeCodeProperty().get(), getSlicerType());
+           
+            // Needed as heads differ in size and will need to adjust print volume for this
+            zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
         }
 
-        // Needed as heads differ in size and will need to adjust print volume for this
-        final float zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+        
 
         double raftOffset = profileSettings == null ? 0.0 : RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
 
