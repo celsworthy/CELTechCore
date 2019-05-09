@@ -35,6 +35,7 @@ public class ShapeContainerProject extends Project
     @Override
     protected void initialise()
     {
+        setMode(ProjectMode.SVG);
     }
 
     @Override

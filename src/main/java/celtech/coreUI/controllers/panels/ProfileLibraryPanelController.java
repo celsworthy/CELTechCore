@@ -369,37 +369,44 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
         Map<String, List<RoboxProfile>> roboxProfiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType());
         String headType = cmbHeadType.getValue();
         List<RoboxProfile> filesForHeadType = roboxProfiles.get(headType);
-        roboxProfilesMap = filesForHeadType.stream()
-                .collect(Collectors.toMap(RoboxProfile::getName, Function.identity()));
-        
-        // Order profiles alphabetically, but with standard profiles before custom profiles.
-        Collections.sort(filesForHeadType, (p1, p2) -> {
-            if (p1.isStandardProfile()) {
-                if (p2.isStandardProfile()) {
-                    // Standard profiles are ordered according to standardProfileOrder map.
-                    int p1Order = standardProfileOrder.getOrDefault(p1.getName().toUpperCase(), -1);
-                    int p2Order = standardProfileOrder.getOrDefault(p2.getName().toUpperCase(), -1);
-                    if (p1Order == p2Order)
-                        return 0;
-                    else if (p1Order < p2Order)
-                        return -1;
-                    else
-                        return 1;
+        if (filesForHeadType != null && !filesForHeadType.isEmpty())
+        {
+            roboxProfilesMap = filesForHeadType.stream()
+                    .collect(Collectors.toMap(RoboxProfile::getName, Function.identity()));
+            // Order profiles alphabetically, but with standard profiles before custom profiles.
+            Collections.sort(filesForHeadType, (p1, p2) -> {
+                if (p1.isStandardProfile()) {
+                    if (p2.isStandardProfile()) {
+                        // Standard profiles are ordered according to standardProfileOrder map.
+                        int p1Order = standardProfileOrder.getOrDefault(p1.getName().toUpperCase(), -1);
+                        int p2Order = standardProfileOrder.getOrDefault(p2.getName().toUpperCase(), -1);
+                        if (p1Order == p2Order)
+                            return 0;
+                        else if (p1Order < p2Order)
+                            return -1;
+                        else
+                            return 1;
+                    }
+                    else    
+                        return -1; // Standard profile is before custom profile.
                 }
-                else    
-                    return -1; // Standard profile is before custom profile.
-            }
-            else {
-                if (p2.isStandardProfile())
-                    return 1; // custom profile is after standard profile.
-            }
-            return p1.getName().compareToIgnoreCase(p2.getName()); // Custom profiles are ordered alphabetically.
-        });
+                else {
+                    if (p2.isStandardProfile())
+                        return 1; // custom profile is after standard profile.
+                }
+                return p1.getName().compareToIgnoreCase(p2.getName()); // Custom profiles are ordered alphabetically.
+            });
+
+            List<String> nameList  = filesForHeadType.stream()
+                                    .map(RoboxProfile::getName)
+                                    .collect(Collectors.toList());
+            cmbPrintProfile.setItems(FXCollections.observableArrayList(nameList));
+        }
+        else {
+            roboxProfilesMap = new HashMap<>();
+            cmbPrintProfile.setItems(FXCollections.observableArrayList(new ArrayList<String>()));
+        }
         
-        List<String> nameList  = filesForHeadType.stream()
-                                .map(RoboxProfile::getName)
-                                .collect(Collectors.toList());
-        cmbPrintProfile.setItems(FXCollections.observableArrayList(nameList));
     }
     
     private void setupSlicerInUseLabel() {

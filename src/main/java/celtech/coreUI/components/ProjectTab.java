@@ -133,6 +133,18 @@ public class ProjectTab extends Tab implements ProjectCallback
         coreInitialisation();
         initialiseWithProject();
     }
+    
+    public Project getProject() {
+        return project;
+    }
+
+    public ThreeDViewManager getThreeDViewManager() {
+        return viewManager;
+    }
+
+    public SVGViewManager getSVGViewManager() {
+        return svgViewManager;
+    }
 
     private void primeTabInsetPanels(boolean tabIsSelected)
     {

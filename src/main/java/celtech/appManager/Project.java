@@ -146,12 +146,13 @@ public abstract class Project
 
     public final String getAbsolutePath()
     {
-        return ApplicationConfiguration.getProjectDirectory() 
+            File f = new File(ApplicationConfiguration.getProjectDirectory() 
                 + File.separator
                 + getProjectName()
                 + File.separator
                 + projectNameProperty.get()
-                + ApplicationConfiguration.projectFileExtension;
+                + ApplicationConfiguration.projectFileExtension);
+            return f.getAbsolutePath();
     }
 
     protected abstract void load(ProjectFile projectFile, String basePath) throws ProjectLoadException;

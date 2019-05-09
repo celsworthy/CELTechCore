@@ -93,6 +93,7 @@ public class ModelContainerProject extends Project
     @Override
     protected void initialise()
     {
+        setMode(ProjectMode.MESH);
         lastCalculatedUsedExtruders = FXCollections.observableArrayList();
         lastCalculatedUsedExtruders.add(0, false);
         lastCalculatedUsedExtruders.add(1, false);

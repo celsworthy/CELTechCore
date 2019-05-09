@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -200,5 +201,14 @@ public class ProjectManager implements Savable, Serializable
         openAndAvailableProjectNames.addAll(getAvailableProjectNames());
         return openAndAvailableProjectNames;
     }
-    
+
+    public Optional<Project> getProjectIfOpen(String projectName)
+    {
+        return openProjects.stream()
+                           .filter((p)-> 
+                           {
+                               return p.getProjectName().equals(projectName);
+                           })
+                           .findAny();
+    }
 }
