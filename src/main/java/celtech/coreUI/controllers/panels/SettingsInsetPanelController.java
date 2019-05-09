@@ -246,7 +246,7 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 supportComboBox.getSelectionModel().select(SupportType.AS_PROFILE);
             } else 
             {
-                supportComboBox.getSelectionModel().select(SupportType.MATERIAL_1);
+                supportComboBox.getSelectionModel().select(SupportType.MATERIAL_2);
             }
 
             Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
