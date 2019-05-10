@@ -13,6 +13,7 @@ import celtech.coreUI.components.ChoiceLinkDialogBox;
 import celtech.coreUI.components.Notifications.NotificationDisplay;
 import celtech.coreUI.components.Notifications.ProgressDisplay;
 import celtech.roboxbase.BaseLookup;
+import static celtech.roboxbase.BaseLookup.getLocaleFromTag;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.util.HashMap;
 import java.util.Locale;
@@ -83,44 +84,17 @@ public class Lookup
         steno.debug("Starting AutoMaker - get user preferences...");
         userPreferences = new UserPreferences(UserPreferenceContainer.getUserPreferenceFile());
 
-        Locale appLocale;
-        String languageTag = userPreferences.getLanguageTag();
-        if (languageTag == null || languageTag.length() == 0)
-        {
-            steno.debug("Starting AutoMaker - language tag is null - using default locale.");
-            appLocale = Locale.getDefault();
-        } else
-        {
-            steno.debug("Starting AutoMaker - language tag is \"" + languageTag + "\"");
-            String[] languageElements = languageTag.split("-");
-            switch (languageElements.length)
-            {
-                case 1:
-                    appLocale = new Locale(languageElements[0]);
-                    break;
-                case 2:
-                    appLocale = new Locale(languageElements[0], languageElements[1]);
-                    break;
-                case 3:
-                    appLocale = new Locale(languageElements[0], languageElements[1],
-                            languageElements[2]);
-                    break;
-                default:
-                    appLocale = Locale.getDefault();
-                    break;
-            }
-        }
+        Locale appLocale = getLocaleFromTag(userPreferences.getLanguageTag());
 
         if (appLocale == null)
         {
-            steno.debug("Default language tag is null - using \"en\" locale.");
-            appLocale = Locale.ENGLISH;
+            appLocale = BaseLookup.getDefaultApplicationLocale();
         }
         steno.debug("Application locale is \"" + appLocale + "\"");
         
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
-				      BaseLookup.getDefaultApplicationLocale(),
-				      new SystemNotificationManagerJavaFX());
+                appLocale, 
+                new SystemNotificationManagerJavaFX());
 
         setNotificationDisplay(new NotificationDisplay());
         setProgressDisplay(new ProgressDisplay());
