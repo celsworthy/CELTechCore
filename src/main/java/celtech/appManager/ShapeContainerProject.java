@@ -1,17 +1,25 @@
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.ShapeContainerProjectFile;
 import celtech.modelcontrol.Groupable;
+import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.utils.threed.importers.svg.ShapeContainer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +49,28 @@ public class ShapeContainerProject extends Project
     @Override
     protected void save(String basePath)
     {
+        if (topLevelThings.size() > 0)
+        {
+            try
+            {
+                ProjectFile projectFile = new ShapeContainerProjectFile();
+                projectFile.populateFromProject(this);
+                File file = new File(basePath + ApplicationConfiguration.projectFileExtension);
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+                mapper.writeValue(file, projectFile);
+                saveModels(basePath + ApplicationConfiguration.projectModelsFileExtension);
+            } catch (FileNotFoundException ex)
+            {
+                steno.exception("Failed to save project state", ex);
+            } catch (IOException ex)
+            {
+                steno.exception(
+                        "Couldn't write project state to file for project "
+                        + projectNameProperty.get(), ex);
+            }
+        }
+
     }
 
     @Override
@@ -52,6 +82,43 @@ public class ShapeContainerProject extends Project
             topLevelThings.add(modelContainer);
             projectModified();
             fireWhenModelAdded(modelContainer);
+        }
+    }
+    
+    public static void saveProject(ModelContainerProject project)
+    {
+        String basePath = ApplicationConfiguration.getProjectDirectory() + File.separator
+                + project.getProjectName();
+        project.save(basePath);
+    }
+    
+    public String getProjectLocation() {
+        return ApplicationConfiguration.getProjectDirectory() 
+                + File.separator
+                + projectNameProperty.get() 
+                + File.separator;
+    }
+
+    private Set<ShapeContainer> getModelsHoldingShapes()
+    {
+        Set<ShapeContainer> modelsHoldingShapes = new HashSet<>();
+        for (ProjectifiableThing model : topLevelThings)
+        {
+            modelsHoldingShapes.add((ShapeContainer) model);
+        }
+        return modelsHoldingShapes;
+    }
+
+    private void saveModels(String path) throws IOException
+    {
+        ObjectOutputStream modelsOutput = new ObjectOutputStream(new FileOutputStream(path));
+
+        Set<ShapeContainer> modelsHoldingShapes = getModelsHoldingShapes();
+
+        modelsOutput.writeInt(modelsHoldingShapes.size());
+        for (ShapeContainer modelHoldingShape : modelsHoldingShapes)
+        {
+            //modelsOutput.writeObject(modelHoldingShape);
         }
     }
 
