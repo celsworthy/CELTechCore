@@ -368,7 +368,7 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
     private void repopulateCmbPrintProfile() {
         Map<String, List<RoboxProfile>> roboxProfiles = ROBOX_PROFILE_SETTINGS_CONTAINER.getRoboxProfilesForSlicer(getSlicerType());
         String headType = cmbHeadType.getValue();
-        List<RoboxProfile> filesForHeadType = roboxProfiles.get(headType);
+        List<RoboxProfile> filesForHeadType = roboxProfiles.getOrDefault(headType, new ArrayList<>());
         roboxProfilesMap = filesForHeadType.stream()
                 .collect(Collectors.toMap(RoboxProfile::getName, Function.identity()));
         

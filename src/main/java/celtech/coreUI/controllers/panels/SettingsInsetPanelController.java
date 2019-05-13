@@ -42,6 +42,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -332,8 +333,8 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void populateCustomProfileChooser() {
         SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-        List<RoboxProfile> filesForHeadType = ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(slicerType).get(currentHeadType);
-        customProfileChooser.setItems(FXCollections.observableArrayList(filesForHeadType));
+        ObservableList<RoboxProfile> filesForHeadType = ROBOX_PROFILE_SETTINGS_CONTAINER.getCustomRoboxProfilesForSlicer(slicerType).getOrDefault(currentHeadType, FXCollections.emptyObservableList());
+        customProfileChooser.setItems(filesForHeadType);
         if (currentProject != null
                 && currentProject.getPrinterSettings().getPrintQuality() == PrintQualityEnumeration.CUSTOM) {
             selectCurrentCustomSettings();
