@@ -46,13 +46,25 @@ public class CustomPrinterHeadPreference implements PreferencesInnerPanelControl
             @Override
             public String toString(String typeCode) 
             {
-                return headDisplayNameMap.get(typeCode);
+                if(headDisplayNameMap.containsKey(typeCode))
+                {
+                    return headDisplayNameMap.get(typeCode);
+                } else
+                {
+                    return typeCode;
+                }
             }
 
             @Override
             public String fromString(String displayName) 
             {
-                return headDisplayNameMap.inverse().get(displayName);
+                if(headDisplayNameMap.containsValue(displayName))
+                {
+                    return headDisplayNameMap.inverse().get(displayName);
+                } else
+                {
+                    return displayName;
+                }
             }
         });
     }
