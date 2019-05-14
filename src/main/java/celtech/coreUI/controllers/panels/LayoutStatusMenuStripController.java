@@ -1444,53 +1444,55 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         boolean aModelIsOffTheBedWithHead = false;
         boolean aModelIsOffTheBedWithRaft = false;
         boolean aModelIsOffTheBedWithSpiral = false;
-        RoboxProfile profileSettings = null;
-        float zReduction = 0.0f;
-        if (selectedProject != null
-                && currentPrinter != null
+
+        if (selectedProject != null)
+        {
+            float zReduction = 0.0f;
+            double raftOffset = 0.0;
+    
+            if (currentPrinter != null
                 && currentPrinter.headProperty().get() != null)
-        {
-            profileSettings = selectedProject.getPrinterSettings()
-                    .getSettings(currentPrinter.headProperty().get().typeCodeProperty().get(), getSlicerType());
-           
-            // Needed as heads differ in size and will need to adjust print volume for this
-            zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
-        }
-
-        
-
-        double raftOffset = profileSettings == null ? 0.0 : RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
-
-        //TODO use settings derived offset values
-        final double spiralOffset = 0.5 + zReduction;
-
-        for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
-        {
-            if (projectifiableThing instanceof ModelContainer)
             {
-                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+                RoboxProfile profileSettings = selectedProject.getPrinterSettings()
+                        .getSettings(currentPrinter.headProperty().get().typeCodeProperty().get(), getSlicerType());
+                if (profileSettings != null)
+                    raftOffset = RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
+           
+                // Needed as heads differ in size and will need to adjust print volume for this
+                zReduction = currentPrinter.headProperty().get().getZReductionProperty().get();
+            }
 
-                if (modelContainer.isOffBedProperty().get())
-                {
-                    aModelIsOffTheBed = true;
-                }
+            //TODO use settings derived offset values
+            final double spiralOffset = 0.5 + zReduction;
 
-                if (zReduction > 0.0 
-                        && modelContainer.isModelTooHighWithOffset(zReduction))
+            for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
+            {
+                if (projectifiableThing instanceof ModelContainer)
                 {
-                    aModelIsOffTheBedWithHead = true;
-                }
+                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
 
-                if (selectedProject.getPrinterSettings().getRaftOverride()
-                        && modelContainer.isModelTooHighWithOffset(raftOffset))
-                {
-                    aModelIsOffTheBedWithRaft = true;
-                }
+                    if (modelContainer.isOffBedProperty().get())
+                    {
+                        aModelIsOffTheBed = true;
+                    }
 
-                if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
-                        && modelContainer.isModelTooHighWithOffset(spiralOffset))
-                {
-                    aModelIsOffTheBedWithSpiral = true;
+                    if (zReduction > 0.0 
+                            && modelContainer.isModelTooHighWithOffset(zReduction))
+                    {
+                        aModelIsOffTheBedWithHead = true;
+                    }
+
+                    if (selectedProject.getPrinterSettings().getRaftOverride()
+                            && modelContainer.isModelTooHighWithOffset(raftOffset))
+                    {
+                        aModelIsOffTheBedWithRaft = true;
+                    }
+
+                    if (selectedProject.getPrinterSettings().getSpiralPrintOverride()
+                            && modelContainer.isModelTooHighWithOffset(spiralOffset))
+                    {
+                        aModelIsOffTheBedWithSpiral = true;
+                    }
                 }
             }
         }

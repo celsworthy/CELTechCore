@@ -556,13 +556,16 @@ public class ProjectTab extends Tab implements ProjectCallback
     public void saveAndCloseProject()
     {
         if (viewManager != null)
-        {
             viewManager.shutdown();
+        if (project != null)
+        {
+            Project.saveProject(project);
+            if (projectAwareController != null)
+                projectAwareController.setProject(null);
+            if (projectManager != null)
+                projectManager.projectClosed(project);
+            project = null;
         }
-        Project.saveProject(project);
-        projectAwareController.setProject(null);
-        projectManager.projectClosed(project);
-        project = null;
     }
 
     public void fireProjectSelected()

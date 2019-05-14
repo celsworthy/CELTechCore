@@ -10,6 +10,7 @@ import java.util.Optional;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
+import javafx.util.StringConverter;
 
 /**
  *
@@ -29,6 +30,20 @@ public class CustomPrinterTypePreference implements PreferencesInnerPanelControl
         control.getItems().setAll(PrinterType.values());
         control.getSelectionModel().selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> updateValueFromControl());
+        control.setConverter(new StringConverter<PrinterType>() 
+        {
+            @Override
+            public String toString(PrinterType printerType) 
+            {
+                return printerType.getDisplayName();
+            }
+
+            @Override
+            public PrinterType fromString(String displayName) 
+            {
+                return PrinterType.getPrinterTypeForDisplayName(displayName);
+            }
+        });
     }
     
     @Override
