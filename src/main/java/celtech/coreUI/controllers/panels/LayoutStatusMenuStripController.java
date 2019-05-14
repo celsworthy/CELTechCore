@@ -7,6 +7,7 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.ShapeContainerProject;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
@@ -17,11 +18,13 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
+import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.ReprintPanel;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
+import celtech.coreUI.visualisation.SVGViewManager;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
@@ -31,12 +34,17 @@ import celtech.roboxbase.PrinterColourMap;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
+import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
+import celtech.roboxbase.postprocessor.RoboxiserResult;
+import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
+import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterConnection;
@@ -45,15 +53,22 @@ import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
+import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
+import celtech.roboxbase.services.slicer.SliceResult;
 import celtech.roboxbase.utils.PrintJobUtils;
 import celtech.roboxbase.utils.PrinterUtils;
 import celtech.roboxbase.utils.SystemUtils;
 import celtech.roboxbase.utils.models.PrintableProject;
+import celtech.roboxbase.utils.models.PrintableShapes;
+import celtech.roboxbase.utils.models.ShapeForProcessing;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import static celtech.utils.StringMetrics.getWidthOfString;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.File;
 import java.io.IOException;
 import static java.lang.Double.max;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
@@ -334,93 +349,170 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     }
 
-    @FXML
-    void printPressed(ActionEvent event)
+    private void printModelContainerProject(ModelContainerProject currentProject)
     {
         Printer printer = Lookup.getSelectedPrinterProperty().get();
 
-        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                + currentProject.getProjectName();
+        PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
+                currentProject.getPrintQuality(), projectLocation);
 
-        if (currentProject instanceof ModelContainerProject)
+        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
+                currentProject.getUsedExtruders(printer));
+
+        CameraTriggerData cameraTriggerData = null;
+
+        if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
         {
-            String projectLocation = ApplicationConfiguration.getProjectDirectory()
-                    + currentProject.getProjectName();
-            PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
-                    currentProject.getPrintQuality(), projectLocation);
-            
-            PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
-                    ((ModelContainerProject) currentProject).getUsedExtruders(printer));
+            cameraTriggerData = new CameraTriggerData(
+                    Lookup.getUserPreferences().getGoProWifiPassword(),
+                    Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
+                    Lookup.getUserPreferences().getTimelapseXMove(),
+                    Lookup.getUserPreferences().getTimelapseYMove(),
+                    Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
+                    Lookup.getUserPreferences().getTimelapseDelay());
+        }
 
-            CameraTriggerData cameraTriggerData = null;
+        printableProject.setCameraTriggerData(cameraTriggerData);
+        printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
 
-            if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
+        if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
+        {
+            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, printer);
+        } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
+                || purgeConsent == PurgeResponse.NOT_NECESSARY)
+        {
+            ObservableList<Boolean> usedExtruders = currentProject.getUsedExtruders(printer);
+            printableProject.setUsedExtruders(usedExtruders);
+            for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
             {
-                cameraTriggerData = new CameraTriggerData(
-                        Lookup.getUserPreferences().getGoProWifiPassword(),
-                        Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
-                        Lookup.getUserPreferences().getTimelapseXMove(),
-                        Lookup.getUserPreferences().getTimelapseYMove(),
-                        Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
-                        Lookup.getUserPreferences().getTimelapseDelay());
-            }
-            
-            printableProject.setCameraTriggerData(cameraTriggerData);
-            printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
-
-            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
-            {
-                displayManager.getPurgeInsetPanelController().purgeAndPrint(
-                        (ModelContainerProject) currentProject, printer);
-            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
-                    || purgeConsent == PurgeResponse.NOT_NECESSARY)
-            {
-                ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
-                printableProject.setUsedExtruders(usedExtruders);
-                for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
+                if (usedExtruders.get(extruderNumber))
                 {
-                    if (usedExtruders.get(extruderNumber))
+                    if (extruderNumber == 0)
                     {
-                        if (extruderNumber == 0)
+                        if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
                         {
-                            if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                            {
-                                currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
-                            } else
-                            {
-                                currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
-                            }
+                            currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
                         } else
                         {
                             currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                         }
+                    } else
+                    {
+                        currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                     }
                 }
-                applicationStatus.setMode(ApplicationMode.STATUS);
-
-                Task<Boolean> fetchGCodeResultAndPrint = new Task<Boolean>() 
-                {
-                    @Override
-                    protected Boolean call() throws Exception 
-                    {
-                        try 
-                        {
-                            Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                                    .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
-                            if(potentialGCodeGenResult.isPresent())
-                            {
-                                printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
-                            }
-                            return true;
-                        } catch (PrinterException ex)
-                        {
-                            steno.error("Error during print project " + ex.getMessage());
-                            return false;
-                        }
-                    }
-                };
-                // Run the task from GCodeGenManager so it can be managed...
-                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndPrint);
             }
+            applicationStatus.setMode(ApplicationMode.STATUS);
+
+            Task<Boolean> fetchGCodeResultAndPrint = new Task<Boolean>() 
+            {
+                @Override
+                protected Boolean call() throws Exception 
+                {
+                    try 
+                    {
+                        Optional<GCodeGeneratorResult> potentialGCodeGenResult = currentProject.getGCodeGenManager()
+                                                                                               .getPrepResult(currentProject.getPrintQuality());
+                        if(potentialGCodeGenResult.isPresent())
+                        {
+                            printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                        }
+                        return true;
+                    } catch (PrinterException ex)
+                    {
+                        steno.error("Error during print project " + ex.getMessage());
+                        return false;
+                    }
+                }
+            };
+            // Run the task from GCodeGenManager so it can be managed...
+            currentProject.getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndPrint);
+        }
+    }
+
+    private void printShapeContainerProject(ShapeContainerProject currentProject)
+    {
+        Printer printer = Lookup.getSelectedPrinterProperty().get();
+        String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                + currentProject.getProjectName();
+        PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
+                PrintQualityEnumeration.NORMAL, projectLocation);
+
+        List<ShapeForProcessing> shapes = new ArrayList<>();
+        for (ProjectifiableThing projectifiableThing : currentProject.getAllModels())
+        {
+            if (projectifiableThing instanceof ShapeContainer)
+            {
+                ShapeContainer shapeContainer = (ShapeContainer) projectifiableThing;
+                shapeContainer.getShapes().forEach((shape) ->
+                {
+                    shapes.add(new ShapeForProcessing(shape, shapeContainer));
+                });
+            }
+        }
+
+        Task<Boolean> generateGCodeAndPrint = new Task<Boolean>() 
+        {
+            @Override
+            protected Boolean call() throws Exception 
+            {
+                try 
+                {
+                    PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
+                    List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
+                    DragKnifeCompensator dnc = new DragKnifeCompensator();
+                    List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2);
+                    PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestRaw.gcode", gcodeData);
+                    PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestCompensated.gcode", dragKnifeCompensatedGCodeNodes);
+                    // PrinterableShapesToGCode needs to be packaged up to generate GCode and statistics,
+                    // and return a GCodeGeneratorResult.
+                    // GCodeGeneratorResult and printer.printProject need
+                    // to be extended to support both MESH and SVG projects.
+                    //if(potentialGCodeGenResult.isPresent())
+                    //{
+                    //    printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                    //}
+                    Platform.runLater(() ->
+                    {
+                        ProjectTab pTab = DisplayManager.getInstance().getTabForProject(currentProject);
+                        if (pTab != null && pTab.getSVGViewManager() != null) {
+                            pTab.getSVGViewManager().renderGCode(dragKnifeCompensatedGCodeNodes);
+                        }
+                    });
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    steno.error("Error during print project " + ex.getMessage());
+                    return false;
+                }
+            }
+        };
+                
+        // Run the task from GCodeGenManager so it can be managed...
+        currentProject.getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(generateGCodeAndPrint);
+    }
+    
+    @FXML
+    void printPressed(ActionEvent event)
+    {
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+
+        switch (currentProject.getMode())
+        {
+            case MESH:
+                printModelContainerProject((ModelContainerProject)currentProject);
+                break;
+
+            case SVG:
+                printShapeContainerProject((ShapeContainerProject)currentProject);
+                break;
+                
+            default:
+                break;
         }
     }
     
@@ -581,15 +673,26 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             iterator.next();
             iterator.remove();
         }
-        String descriptionOfFile = Lookup.i18n("dialogs.meshFileChooserDescription");
 
         Project currentProject = Lookup.getSelectedProjectProperty().get();
         ProjectMode currentProjectMode = (currentProject == null) ? ProjectMode.NONE : currentProject.getMode();
-        modelFileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter(descriptionOfFile,
-                        ApplicationConfiguration.
-                                getSupportedFileExtensionWildcards(
-                                        currentProjectMode)));
+        if (currentProjectMode == ProjectMode.NONE) {
+            modelFileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter(Lookup.i18n("dialogs.meshFileChooserDescription"),
+                    ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                        ProjectMode.MESH)),
+                new FileChooser.ExtensionFilter(Lookup.i18n("dialogs.svgFileChooserDescription"),
+                    ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                        ProjectMode.SVG)));
+        }
+        else {
+            String descriptionKey = (currentProjectMode == ProjectMode.MESH ? "dialogs.meshFileChooserDescription"
+                                                                            : "dialogs.svgFileChooserDescription");
+            modelFileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter(Lookup.i18n(descriptionKey),
+                    ApplicationConfiguration.getSupportedFileExtensionWildcards(
+                        currentProjectMode)));
+        }
         modelFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
         List<File> files;
 
@@ -1658,6 +1761,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
                 printButton.disableProperty().bind(canPrintProject.not());
             }
+        }
+        else if (project instanceof ShapeContainerProject)
+        {
+            printButton.disableProperty().unbind();
+            canPrintProject.unbind();
+            printButton.disableProperty().bind(project.canPrintProperty().not());
         }
     }
 

@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ProjectMode;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -151,12 +152,13 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
         @Override
         public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
         {
-            if (newValue == ApplicationMode.SETTINGS)
+            if (newValue == ApplicationMode.SETTINGS &&
+                currentProject != null &&
+                currentProject.getMode() == ProjectMode.MESH)
             {
                 settingsInsetRoot.setVisible(true);
                 settingsInsetRoot.setMouseTransparent(false);
-                if (currentProject != null
-                        && currentPrinter != null)
+                if (currentPrinter != null)
                 {
                     dealWithPrintOptimisation();
                 }

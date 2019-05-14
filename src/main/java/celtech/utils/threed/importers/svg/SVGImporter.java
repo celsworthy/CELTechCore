@@ -82,40 +82,51 @@ public class SVGImporter
 
             SVGConverterConfiguration converterConfiguration = SVGConverterConfiguration.getInstance();
 
-            NodeList svgData = doc.getElementsByTagName("svg");
-            NamedNodeMap svgAttributes = svgData.item(0).getAttributes();
-            String widthString = svgAttributes.getNamedItem("width").getNodeValue();
-            Units fileUnits = Units.getUnitType(widthString);
-            float documentWidth = Float.valueOf(widthString.replaceAll("[a-zA-Z]+", ""));
-            String heightString = svgAttributes.getNamedItem("height").getNodeValue();
-            float documentHeight = Float.valueOf(heightString.replaceAll("[a-zA-Z]+", ""));
+            float viewBoxWidth = 0.0f;
+            float viewBoxHeight = 0.0f;
+            try {
+                NodeList svgData = doc.getElementsByTagName("svg");
+                NamedNodeMap svgAttributes = svgData.item(0).getAttributes();
+            
+                Node widthNode = svgAttributes.getNamedItem("width");
+                Node heightNode = svgAttributes.getNamedItem("height");
+                Node viewBoxNode = svgAttributes.getNamedItem("viewBox");
 
-            float viewBoxOriginX = 0;
-            float viewBoxOriginY = 0;
-            float viewBoxWidth = 0;
-            float viewBoxHeight = 0;
-
-            Node viewBoxNode = svgAttributes.getNamedItem("viewBox");
-            if (viewBoxNode != null
-                    && viewBoxNode.getNodeValue() != null)
-            {
-                String viewBoxString = viewBoxNode.getNodeValue();
-                String[] viewBoxParts = viewBoxString.split(" ");
-                if (viewBoxParts.length == 4)
+                if (widthNode != null &&
+                    heightNode != null &&
+                    viewBoxNode != null &&
+                    widthNode.getNodeValue() != null &&
+                    heightNode.getNodeValue() != null &&
+                    viewBoxNode.getNodeValue() != null)
                 {
-                    viewBoxOriginX = Float.valueOf(viewBoxParts[0]);
-                    viewBoxOriginY = Float.valueOf(viewBoxParts[1]);
-                    viewBoxWidth = Float.valueOf(viewBoxParts[2]);
-                    viewBoxHeight = Float.valueOf(viewBoxParts[3]);
+                    String widthString = widthNode.getNodeValue();
+                    Units fileUnits = Units.getUnitType(widthString);
+                    float documentWidth = Float.valueOf(widthString.replaceAll("[a-zA-Z]+", ""));
+                    String heightString = heightNode.getNodeValue();
+                    float documentHeight = Float.valueOf(heightString.replaceAll("[a-zA-Z]+", ""));
 
-                    converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
-                    converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
-                } else
-                {
-                    steno.warning("Got viewBox directive but had wrong number of parts");
+                    String viewBoxString = viewBoxNode.getNodeValue();
+                    String[] viewBoxParts = viewBoxString.split(" ");
+                    if (viewBoxParts.length == 4)
+                    {
+                        //float viewBoxOriginX = Float.valueOf(viewBoxParts[0]);
+                        //float viewBoxOriginY = Float.valueOf(viewBoxParts[1]);
+                        viewBoxWidth = Float.valueOf(viewBoxParts[2]);
+                        viewBoxHeight = Float.valueOf(viewBoxParts[3]);
+
+                        converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
+                        converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
+                    } else
+                    {
+                        steno.warning("Got viewBox directive but had wrong number of parts");
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                steno.exception("Failed to process svg attributes in SVG file " + modelFile.getAbsolutePath(), ex);
+            }
+            
             NodeList paths = doc.getElementsByTagName("path");
             NodeList rects = doc.getElementsByTagName("rect");
             NodeList polygons = doc.getElementsByTagName("polygon");

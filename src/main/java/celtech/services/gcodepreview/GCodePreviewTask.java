@@ -173,8 +173,6 @@ public class GCodePreviewTask extends Task<Boolean> {
     protected Boolean call() throws Exception {
         Boolean succeeded = false;
         ArrayList<String> commands = new ArrayList<>();
-        
-
         String jvmLocation = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         commands.add(jvmLocation);
         if (BaseConfiguration.getMachineType() == MachineType.MAC)

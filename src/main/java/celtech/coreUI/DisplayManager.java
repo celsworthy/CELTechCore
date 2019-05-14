@@ -7,9 +7,11 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectCallback;
 import celtech.appManager.ProjectManager;
+import celtech.appManager.ProjectMode;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
+import celtech.configuration.DirectoryMemoryProperty;
 import celtech.coreUI.components.Notifications.NotificationArea;
 import celtech.coreUI.components.ProgressDialog;
 import celtech.coreUI.components.ProjectTab;
@@ -39,6 +41,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -48,6 +51,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.transformation.FilteredList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -55,6 +60,8 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -70,10 +77,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -110,6 +119,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private static Tab printerStatusTab;
     private static Tab addPageTab;
     private Tab lastLayoutTab;
+    private FileChooser projectChooser;
 
     /*
      * Project loading
@@ -570,7 +580,22 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         addPageTab.setText("+");
         addPageTab.setClosable(false);
         tabDisplay.getTabs().add(addPageTab);
+        
+        // Create ContextMenu for addPageTab.
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem item1 = new MenuItem("Open Project ...");
+        item1.setOnAction((ActionEvent event) -> {
+            openProject();
+        });
+        // Add MenuItem to ContextMenu
+        contextMenu.getItems().add(item1);
+        addPageTab.contextMenuProperty().set(contextMenu);
 
+        projectChooser = new FileChooser();
+        ListIterator extensionIterator = projectChooser.getExtensionFilters().listIterator();
+        projectChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Robox Project", "*.robox"));
+        
         steno.debug("load projects");
         loadProjectsAtStartup();
         loadModelsIntoNewProject(modelsToLoadAtStartup_projectName,
@@ -580,6 +605,23 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         rootAnchorPane.layout();
 
         steno.debug("end configure display manager");
+    }
+    
+    private void openProject()
+    {
+        FileChooser projectChooser = new FileChooser();
+    
+        ListIterator extensionIterator = projectChooser.getExtensionFilters().listIterator();
+        projectChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Robox Project", "*.robox"));
+        projectChooser.setInitialDirectory(new File(ApplicationConfiguration.getProjectDirectory()));
+        List<File> files =  projectChooser.showOpenMultipleDialog(getMainStage());
+        if (files != null && !files.isEmpty()) {
+            files.forEach(projectFile ->
+                {
+                    loadProject(projectFile);
+                });
+        }
     }
 
     private void setupPanelsForMode(ApplicationMode mode)
@@ -638,6 +680,17 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     public static Stage getMainStage()
     {
         return mainStage;
+    }
+
+    public ProjectTab getTabForProject(Project project)
+    {
+        ProjectTab pTab = null;
+        if (tabDisplay != null) {
+            pTab = tabDisplay.getTabs()
+                             .filtered((t) -> ((t instanceof ProjectTab) && ((ProjectTab)t).getProject() == project))
+                             .stream().map((t) -> ((ProjectTab)t)).findAny().orElse(null);
+        }
+        return pTab;
     }
 
     public void shutdown()
@@ -870,6 +923,37 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         //Try sending the keyEvent to the in-focus project
         handle(keyEvent);
     }
+    
+    private void loadProject(File projectFile) {
+        try {
+            Project p = projectManager.getProjectIfOpen(FilenameUtils.getBaseName(projectFile.getName()))
+                .orElseGet(() ->
+                {
+                    Project newProject = ProjectManager.loadProject(projectFile.getAbsolutePath());
+                    if (newProject != null)
+                    {
+                        ProjectTab newProjectTab = new ProjectTab(newProject,
+                                                                  tabDisplay.widthProperty(),
+                                                                  tabDisplay.heightProperty());
+
+                        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
+                    }
+                    return newProject;
+                });
+            if (p != null)
+            {
+                ProjectTab pt = getTabForProject(p);
+                tabDisplaySelectionModel.select(pt);
+                if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
+                {
+                    applicationStatus.setMode(ApplicationMode.LAYOUT);
+                }
+            }
+        }
+        catch (Exception ex) {
+            steno.exception("Failed to open project", ex);
+        }
+    }
 
     private void configureProjectDragNDrop(Node basePane)
     {
@@ -972,21 +1056,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             {
                 db.getFiles().forEach(file ->
                 {
-                    Project newProject = ProjectManager.loadProject(file.getAbsolutePath());
-                    if (newProject != null)
-                    {
-                        ProjectTab newProjectTab = new ProjectTab(newProject,
-                                tabDisplay.widthProperty(),
-                                tabDisplay.heightProperty());
-
-                        tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
-                        tabDisplaySelectionModel.select(newProjectTab);
-
-                        if (applicationStatus.getMode() != ApplicationMode.LAYOUT)
-                        {
-                            applicationStatus.setMode(ApplicationMode.LAYOUT);
-                        }
-                    }
+                    loadProject(file);
                 });
 
             } else

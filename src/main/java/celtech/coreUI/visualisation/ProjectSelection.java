@@ -6,6 +6,7 @@ package celtech.coreUI.visualisation;
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectManager;
+import celtech.appManager.ProjectMode;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -15,6 +16,7 @@ import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -242,17 +244,27 @@ public class ProjectSelection implements ProjectChangesListener
     {
         if(!project.isProjectNameModified()) 
         {
-            ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-            Optional<ModelContainer> childModel = modelContainer.getChildModelContainers().stream().findFirst();
-            String projectName;
-            if(childModel.isPresent()) {
-                // Regex looks for split on any period follwed by any number of non-periods and the end of input
-                projectName = childModel.get().getModelName().split("\\.(?=[^\\.]+$)")[0];
-            } else {
-                // Regex looks for split on any period follwed by any number of non-periods and the end of input
-                projectName = modelContainer.getModelName().split("\\.(?=[^\\.]+$)")[0];
+            String projectName = "Project";
+                
+            if (project.getMode() == ProjectMode.MESH)
+            {
+                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+                Optional<ModelContainer> childModel = modelContainer.getChildModelContainers().stream().findFirst();
+                if(childModel.isPresent()) {
+                    // Regex looks for split on any period follwed by any number of non-periods and the end of input
+                    projectName = childModel.get().getModelName().split("\\.(?=[^\\.]+$)")[0];
+                } else {
+                    // Regex looks for split on any period follwed by any number of non-periods and the end of input
+                    projectName = modelContainer.getModelName().split("\\.(?=[^\\.]+$)")[0];
+                }
+
             }
-            
+            else if (project.getMode() == ProjectMode.SVG)
+            {
+                ShapeContainer shapeContainer = (ShapeContainer) projectifiableThing;
+                projectName = shapeContainer.getModelName().split("\\.(?=[^\\.]+$)")[0];
+            }
+
             Set<String> currentProjectNames = ProjectManager.getInstance().getOpenAndAvailableProjectNames();
             projectName = suggestNonDuplicateName(projectName, currentProjectNames);
             project.setProjectName(projectName);

@@ -216,6 +216,10 @@ public class ModelLoader
             }
             offerShrinkAndAddToProject(projectToUse, relayout, callMeBack, dontGroupModelsOverride, Lookup.getSelectedPrinterProperty().get());
         });
+        modelLoaderService.setOnFailed((WorkerStateEvent t) ->
+        {
+            System.out.println("Load failed: " + t.toString());
+        });
         modelLoaderService.start();
     }
 
