@@ -95,12 +95,17 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     @FXML
     void ejectStuckMaterial1(ActionEvent event)
     {
-        if (connectedPrinter != null)
+        if (connectedPrinter != null && connectedPrinter.headProperty().get() != null)
         {
             try
             {
-                connectedPrinter.ejectStuckMaterial(1, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
-            } catch (PrinterException ex)
+                int nozzleNumber = 0;
+                if (connectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                    nozzleNumber = 1;
+                
+                connectedPrinter.ejectStuckMaterial(nozzleNumber, false, null, Lookup.getUserPreferences().isSafetyFeaturesOn());
+            }
+            catch (PrinterException ex)
             {
                 steno.info("Error attempting to run eject stuck material E");
             }
@@ -110,7 +115,9 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     @FXML
     void ejectStuckMaterial2(ActionEvent event)
     {
-        if (connectedPrinter != null)
+        if (connectedPrinter != null &&
+            connectedPrinter.headProperty().get() != null &&
+            connectedPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
         {
             try
             {
