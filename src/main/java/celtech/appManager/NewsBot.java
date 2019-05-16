@@ -25,7 +25,7 @@ public class NewsBot
 
     private static Stenographer steno = StenographerFactory.getStenographer(NewsBot.class.getName());
     private static NewsBot instance = null;
-    private static final String baseURL = "http://www.cel-robox.com/wp-json/wp/v2/posts/?categories=871";
+    private static final String baseURL = "http://www.cel-uk.com/wp-json/wp/v2/posts/?categories=871";
     private Timer newsCheckTimer = new Timer(true);
     private final ObjectMapper jsonMapper = new ObjectMapper();
     private final List<NewsListener> newsListeners = new ArrayList<>();
