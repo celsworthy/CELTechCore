@@ -344,30 +344,39 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     
     private void populateSupportChooser()
     {
+        boolean populationForProjectState = populatingForProject;
         populatingForProject = true;
+        
         supportComboBox.getItems().clear();
         supportComboBox.getItems().addAll(SupportType.values());
         SupportType typeToSelect = SupportType.AS_PROFILE;
-
+        boolean allowSaveSupportType = false;
         
         
-        if (HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.DUAL_MATERIAL_HEAD)
+        if (HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.DUAL_MATERIAL_HEAD 
+                && printerSettings != null)
         {
             if (getSlicerType() == SlicerType.Cura)
             {
                 // For a dual material head and old Cura default to Material 2, there is no as profile
                 supportComboBox.getItems().remove(SupportType.AS_PROFILE);
                 typeToSelect = SupportType.MATERIAL_2;
-            } else if (printerSettings != null && printerSettings.getPrintSupportTypeOverride() != null)
+                allowSaveSupportType = true;
+            }
+            
+            if (printerSettings.getPrintSupportTypeOverride() != null
+                    && printerSettings.getPrintSupportTypeOverride() != SupportType.AS_PROFILE)
             {
                 // If we have some saved settings use the support type selected unless we aren't using Dual material. Then we just stay with the defaults
                 typeToSelect = printerSettings.getPrintSupportTypeOverride();
+                allowSaveSupportType = true;
             }
         }
-        
+
+        populatingForProject = !allowSaveSupportType;
         // Once populated then set
         supportComboBox.getSelectionModel().select(typeToSelect);
-        populatingForProject = false;
+        populatingForProject = populationForProjectState;
     }
 
     private void whenCustomProfileChanges(RoboxProfile newValue)
