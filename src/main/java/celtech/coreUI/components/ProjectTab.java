@@ -256,7 +256,6 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setLeftAnchor(modelActionsInsetPanelData.getNode(), 30.0);
         basePane.getChildren().add(modelActionsInsetPanelData.getNode());
 
-        dimensionLineManager = new DimensionLineManager(basePane, project, hideDimensions);
 
         layoutSubmode = Lookup.getProjectGUIState(project).getLayoutSubmodeProperty();
 
@@ -306,6 +305,8 @@ public class ProjectTab extends Tab implements ProjectCallback
 
     private void setup3DView()
     {
+        dimensionLineManager = new DimensionLineManager(basePane, project, hideDimensions);
+
         nonSpecificModelIndicator.setVisible(false);
         viewManager = new ThreeDViewManager((ModelContainerProject) project,
                 tabDisplayWidthProperty,
@@ -328,8 +329,8 @@ public class ProjectTab extends Tab implements ProjectCallback
     {
         nonSpecificModelIndicator.setVisible(false);
         svgViewManager = new SVGViewManager(project);
-        svgViewManager.setMaxWidth(basePane.getWidth());
-        svgViewManager.setMaxHeight(basePane.getHeight());
+        //svgViewManager.setMaxWidth(basePane.getWidth());
+        //svgViewManager.setMaxHeight(basePane.getHeight());
 
         AnchorPane.setBottomAnchor(svgViewManager, 0.0);
         AnchorPane.setTopAnchor(svgViewManager, 0.0);
@@ -337,6 +338,14 @@ public class ProjectTab extends Tab implements ProjectCallback
         AnchorPane.setRightAnchor(svgViewManager, 0.0);
 
         basePane.getChildren().add(0, svgViewManager);
+        
+        // Not sure why, but if the base pane is passed to the dimension line manager as the
+        // parent to which dimensions are added/removed, if a dimension is moved outside the base pane,
+        // it resizes to fit. This triggers the svgViewManager to resize, which then causes the bed
+        // to resize. This behaviour does not happen if the svgViewManager is passed as the parent
+        // pane to which dimensions are added/removed.
+        dimensionLineManager = new DimensionLineManager(svgViewManager, project, hideDimensions);
+        hideDimensions.bind(svgViewManager.getDragModeProperty().isNotEqualTo(DragMode.IDLE));
     }
 
     private LoadedPanelData loadInsetPanel(String innerPanelFXMLName, Project project)
@@ -352,7 +361,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             projectAwareController.setProject(project);
         } catch (IOException ex)
         {
-            steno.error("Unable to load inset panel: " + innerPanelFXMLName + "  " + ex);
+            steno.exception("Unable to load inset panel: " + innerPanelFXMLName, ex);
         }
         return new LoadedPanelData(insetPanel, projectAwareController);
     }

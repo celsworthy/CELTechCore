@@ -148,7 +148,7 @@ public class ModelLoader
                 allProjectifiableThings.addAll(result.getProjectifiableThings());
             }
 
-            addToProject(project, allProjectifiableThings, false, dontGroupModelsOverride, printer);
+            addToProject(project, allProjectifiableThings, true, dontGroupModelsOverride, printer);
 
         }
 

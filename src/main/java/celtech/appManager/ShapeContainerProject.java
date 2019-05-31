@@ -8,6 +8,7 @@ import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
+import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.utils.threed.importers.svg.ShapeContainer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +35,7 @@ public class ShapeContainerProject extends Project
 {
 
     private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainerProject.class.getName());
+    private int version = -1;
 
     public ShapeContainerProject()
     {
@@ -118,7 +120,7 @@ public class ShapeContainerProject extends Project
         modelsOutput.writeInt(modelsHoldingShapes.size());
         for (ShapeContainer modelHoldingShape : modelsHoldingShapes)
         {
-            //modelsOutput.writeObject(modelHoldingShape);
+            modelsOutput.writeObject(modelHoldingShape);
         }
     }
 
@@ -142,17 +144,18 @@ public class ShapeContainerProject extends Project
 
         topLevelThings.removeAll(modelContainers);
 
-//        for (RenderableSVG modelContainer : modelContainers)
-//        {
-//            removeModelListeners(modelContainer);
-//            for (RenderableSVG childModelContainer : modelContainer.getChildModelContainers())
-//            {
-//                removeModelListeners(childModelContainer);
-//            }
-//        }
         projectModified();
-//        fireWhenModelsRemoved(projectifiableThings);
+        fireWhenModelsRemoved(projectifiableThings);
     }
+    
+    private void fireWhenModelsRemoved(Set<ProjectifiableThing> modelContainers)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenModelsRemoved(modelContainers);
+        }
+    }
+
 
     @Override
     public void autoLayout()
@@ -193,9 +196,11 @@ public class ShapeContainerProject extends Project
         {
             try
             {
+                version = projectFile.getVersion();
                 projectNameProperty.set(projectFile.getProjectName());
                 lastModifiedDate.set(projectFile.getLastModifiedDate());
                 lastPrintJobID = projectFile.getLastPrintJobID();
+                projectNameModified = projectFile.isProjectNameModified();
 
                 loadModels(basePath);
 
@@ -242,5 +247,16 @@ public class ShapeContainerProject extends Project
     public void autoLayout(List<ProjectifiableThing> thingsToLayout)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
+    {
+        for (RotatableTwoD model : modelContainers)
+        {
+            model.setRotationTurn(rotation);
+        }
+        projectModified();
+
+        fireWhenModelsTransformed((Set) modelContainers);
     }
 }

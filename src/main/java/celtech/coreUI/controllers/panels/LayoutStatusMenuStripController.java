@@ -474,13 +474,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     //{
                     //    printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
                     //}
-                    Platform.runLater(() ->
-                    {
-                        ProjectTab pTab = DisplayManager.getInstance().getTabForProject(currentProject);
-                        if (pTab != null && pTab.getSVGViewManager() != null) {
-                            pTab.getSVGViewManager().renderGCode(dragKnifeCompensatedGCodeNodes);
-                        }
-                    });
+                    //Platform.runLater(() ->
+                    //{
+                    //    ProjectTab pTab = DisplayManager.getInstance().getTabForProject(currentProject);
+                    //    if (pTab != null && pTab.getSVGViewManager() != null) {
+                    //        pTab.getSVGViewManager().renderGCode(dragKnifeCompensatedGCodeNodes);
+                    //    }
+                    //});
 
                     return true;
                 }

@@ -243,6 +243,7 @@ public class AutoUpdate extends Thread
     private void startUpdate()
     {
         String osName = System.getProperty("os.name");
+        boolean isArch64 = System.getProperty("os.arch").endsWith("64");
 
         MachineType machineType = BaseConfiguration.getMachineType();
 
@@ -260,7 +261,10 @@ public class AutoUpdate extends Thread
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                if (isArch64)
+                    commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows-x64.exe\"\"");
+                else
+                    commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
                 break;
             case MAC:
                 commands.add(BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");

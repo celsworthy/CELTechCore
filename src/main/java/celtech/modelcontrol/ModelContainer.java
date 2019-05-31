@@ -15,6 +15,7 @@ import celtech.roboxbase.utils.RectangularBounds;
 import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -40,6 +41,7 @@ import javafx.geometry.Point3D;
 import javafx.scene.Camera;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.CullFace;
 import javafx.scene.shape.MeshView;
@@ -79,10 +81,9 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         ScreenExtentsProviderThreeD,
         ShapeProviderThreeD
 {
-
+    private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainer.class.getName());
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
-    private Stenographer steno;
     private boolean isInvalidMesh = false;
 
     protected Translate transformDropToBedYAdjust;
@@ -266,8 +267,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         setModelFile(modelFile);
         modelId = nextModelId;
         nextModelId += 1;
-
-        steno = StenographerFactory.getStenographer(ModelContainer.class.getName());
 
         if (modelFile != null)
         {
@@ -1356,7 +1355,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
                 float zPos = originalPoints.get(pointOffset + 2);
 
                 Point3D pointInScene = meshView.localToScene(xPos, yPos, zPos);
-
+                
                 Point3D pointInBed = rootModelContainer.localToParent(
                         rootModelContainer.sceneToLocal(pointInScene));
 //                System.out.println("point is " + xPos + " " + yPos + " " + zPos + " in bed is "

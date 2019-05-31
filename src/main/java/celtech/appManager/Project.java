@@ -15,7 +15,6 @@ import celtech.modelcontrol.ResizeableThreeD;
 import celtech.modelcontrol.ResizeableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
-import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
@@ -484,9 +483,9 @@ public abstract class Project
         fireWhenModelsTransformed((Set) modelContainers);
     }
 
-    public void translateModelsDepthPositionTo(Set<Translateable> modelContainers, double z)
+    public void translateModelsDepthPositionTo(Set<TranslateableTwoD> modelContainers, double z)
     {
-        for (Translateable model : modelContainers)
+        for (TranslateableTwoD model : modelContainers)
         {
             model.translateDepthPositionTo(z);
         }

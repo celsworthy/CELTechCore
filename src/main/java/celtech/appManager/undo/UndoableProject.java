@@ -6,6 +6,7 @@ package celtech.appManager.undo;
 import celtech.Lookup;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ShapeContainerProject;
 import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.configuration.Filament;
 import celtech.modelcontrol.ModelContainer;
@@ -16,7 +17,6 @@ import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
-import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableThreeD;
 import celtech.modelcontrol.TranslateableTwoD;
 import java.util.Set;
@@ -74,7 +74,7 @@ public class UndoableProject
         });
     }
 
-    public void translateModelsDepthPositionTo(Set<Translateable> modelContainers, double position)
+    public void translateModelsDepthPositionTo(Set<TranslateableTwoD> modelContainers, double position)
     {
         doTransformCommand(() ->
         {
@@ -178,6 +178,13 @@ public class UndoableProject
             doTransformCommand(() ->
             {
                 ((ModelContainerProject) project).rotateTurnModels(modelContainers, rotation);
+            });
+        }
+        else if (project instanceof ShapeContainerProject)
+        {
+            doTransformCommand(() ->
+            {
+                ((ShapeContainerProject) project).rotateTurnModels(modelContainers, rotation);
             });
         }
     }

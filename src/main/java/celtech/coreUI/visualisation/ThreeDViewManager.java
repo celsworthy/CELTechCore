@@ -813,22 +813,12 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
         widthPropertyToFollow = widthProperty;
         heightPropertyToFollow = heightProperty;
 
-        widthPropertyToFollow.addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                notifyListenersOfCameraViewChange();
-            }
+        widthPropertyToFollow.addListener((ObservableValue<? extends Number> ov, Number t, Number t1) -> {
+            notifyModelsOfCameraViewChange();
         });
 
-        heightPropertyToFollow.addListener(new ChangeListener<Number>()
-        {
-            @Override
-            public void changed(ObservableValue<? extends Number> ov, Number t, Number t1)
-            {
-                notifyListenersOfCameraViewChange();
-            }
+        heightPropertyToFollow.addListener((ObservableValue<? extends Number> ov, Number t, Number t1) -> {
+            notifyModelsOfCameraViewChange();
         });
 
         root3D.setId("Root");

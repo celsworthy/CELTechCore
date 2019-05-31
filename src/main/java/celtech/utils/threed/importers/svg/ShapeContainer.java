@@ -5,12 +5,16 @@ import celtech.coreUI.visualisation.ScreenExtents;
 import celtech.modelcontrol.ItemState;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.ResizeableTwoD;
+import celtech.modelcontrol.RotatableTwoD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.TranslateableTwoD;
 import celtech.modelcontrol.TwoDItemState;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.roboxbase.utils.twod.ShapeToWorldTransformer;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +23,22 @@ import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.shape.Arc;
+import javafx.scene.shape.ArcType;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.CubicCurve;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.FillRule;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
+import javafx.scene.shape.QuadCurve;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.shape.SVGPath;
+import javafx.scene.text.Text;
+import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -34,14 +53,28 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         ScaleableTwoD,
         TranslateableTwoD,
         ResizeableTwoD,
+        RotatableTwoD,
         ShapeToWorldTransformer
 {
 
-    private final Stenographer steno = StenographerFactory.getStenographer(ShapeContainer.class.getName());
+    private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainer.class.getName());
     private static final long serialVersionUID = 1L;
+    protected static int nextModelId = 1;
 
     private List<Shape> shapes = new ArrayList<>();
+    private Scale transformMirror = null;
+    private boolean notifyEnabled = true;
 
+    public void debugPrintTransforms(String message)
+    {
+        System.out.println(message +
+                           "TMP: " +
+                           transformMoveToPreferred);
+        System.out.println(message +
+                           "TBC: " + 
+                           transformBedCentre);
+    }
+    
     public ShapeContainer()
     {
         super();
@@ -77,6 +110,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     public ShapeContainer(String name, Shape shape)
     {
         super();
+        modelId = nextModelId;
+        nextModelId += 1;
+        
         setModelName(name);
 
         this.getChildren().add(shape);
@@ -88,9 +124,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     private void initialise()
     {
-        preferredXScale = new SimpleDoubleProperty(1);
-        preferredYScale = new SimpleDoubleProperty(1);
-        preferredRotationTurn = new SimpleDoubleProperty(0);
+        preferredXScale = new SimpleDoubleProperty(1.0);
+        preferredYScale = new SimpleDoubleProperty(1.0);
+        preferredRotationTurn = new SimpleDoubleProperty(0.0);
         rotationTransforms = new ArrayList<>();
     }
 
@@ -112,7 +148,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         {
             TwoDItemState convertedState = (TwoDItemState) state;
             transformMoveToPreferred.setX(convertedState.x);
-            transformMoveToPreferred.setZ(convertedState.y);
+            transformMoveToPreferred.setY(convertedState.y);
 
             preferredXScale.set(convertedState.preferredXScale);
             transformScalePreferred.setX(convertedState.preferredXScale);
@@ -122,21 +158,154 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             preferredRotationTurn.set(convertedState.preferredRotationTurn);
 
             lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-            notifyScreenExtentsChange();
-            notifyShapeChange();
+            notifyShapeHasChanged();
         }
     }
 
     @Override
     public ProjectifiableThing makeCopy()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Shape> newShapes = new ArrayList<>();
+        for (Shape originalShape : shapes)
+        {
+            if (originalShape instanceof Arc)
+            {
+                Arc originalArc = (Arc)(originalShape);
+                Arc newArc = new Arc();
+                newArc.setCenterX(originalArc.getCenterX());
+                newArc.setCenterY(originalArc.getCenterY());
+                newArc.setLength(originalArc.getLength());
+                newArc.setRadiusX(originalArc.getRadiusX());
+                newArc.setRadiusY(originalArc.getRadiusY());
+                newArc.setStartAngle(originalArc.getStartAngle());
+                newArc.setType(originalArc.getType());
+                newShapes.add(newArc);
+            }
+            else if (originalShape instanceof Circle)
+            {
+                Circle originalCircle = (Circle)(originalShape);
+                Circle newCircle = new Circle();
+                newCircle.setCenterX(originalCircle.getCenterX());
+                newCircle.setCenterY(originalCircle.getCenterY());
+                newCircle.setRadius(originalCircle.getRadius());
+                newShapes.add(newCircle);
+            }
+            else if (originalShape instanceof CubicCurve)
+            {
+                CubicCurve originalCubic = (CubicCurve)(originalShape);
+                CubicCurve newCubic = new CubicCurve();
+                newCubic.setStartX(originalCubic.getStartX());
+                newCubic.setStartY(originalCubic.getStartY());
+                newCubic.setControlX1(originalCubic.getControlX1());
+                newCubic.setControlY1(originalCubic.getControlY1());
+                newCubic.setControlX2(originalCubic.getControlX2());
+                newCubic.setControlY2(originalCubic.getControlY2());
+                newCubic.setEndX(originalCubic.getEndX());
+                newCubic.setEndY(originalCubic.getEndY());
+                newShapes.add(newCubic);
+            }
+            else if (originalShape instanceof Ellipse)
+            {
+                Ellipse originalEllipse = (Ellipse)(originalShape);
+                Ellipse newEllipse = new Ellipse();
+                newEllipse.setCenterX(originalEllipse.getCenterX());
+                newEllipse.setCenterY(originalEllipse.getCenterY());
+                newEllipse.setRadiusX(originalEllipse.getRadiusX());
+                newEllipse.setRadiusY(originalEllipse.getRadiusY());
+                newShapes.add(newEllipse);
+            }
+            else if (originalShape instanceof Line)
+            {
+                Line originalLine = (Line)(originalShape);
+                Line newLine = new Line();
+                newLine.setStartX(originalLine.getStartX());
+                newLine.setStartY(originalLine.getStartY());
+                newLine.setEndX(originalLine.getEndX());
+                newLine.setEndY(originalLine.getEndY());
+                newShapes.add(newLine);
+            }
+            else if (originalShape instanceof Polygon)
+            {
+                Polygon originalPolygon = (Polygon)(originalShape);
+                List<Double> originalPoints = originalPolygon.getPoints();
+                double[] newPoints = new double[originalPoints.size()];
+                for (int i = 0; i < originalPoints.size(); ++i)
+                    newPoints[i] = originalPoints.get(i);
+                Polygon newPolygon = new Polygon(newPoints);
+                newShapes.add(newPolygon);
+            }
+            else if (originalShape instanceof Polyline)
+            {
+                Polyline originalPolyline = (Polyline)(originalShape);
+                List<Double> originalPoints = originalPolyline.getPoints();
+                double[] points = new double[originalPoints.size()];
+                for (int i = 0; i < originalPoints.size(); ++i)
+                    points[i] = originalPoints.get(i);
+                Polygon newPolygon = new Polygon(points);
+                newShapes.add(newPolygon);
+            }
+            else if (originalShape instanceof QuadCurve)
+            {
+                QuadCurve originalQuad = (QuadCurve)(originalShape);
+                QuadCurve newQuad = new QuadCurve();
+                newQuad.setStartX(originalQuad.getStartX());
+                newQuad.setStartY(originalQuad.getStartY());
+                newQuad.setControlX(originalQuad.getControlX());
+                newQuad.setControlY(originalQuad.getControlY());
+                newQuad.setEndX(originalQuad.getEndX());
+                newQuad.setEndY(originalQuad.getEndY());
+                newShapes.add(newQuad);
+            }
+            else if (originalShape instanceof Rectangle)
+            {
+                Rectangle originalRectangle = (Rectangle)(originalShape);
+                Rectangle newRectangle = new Rectangle();
+                newRectangle.setX(originalRectangle.getX());
+                newRectangle.setY(originalRectangle.getY());
+                newRectangle.setWidth(originalRectangle.getWidth());
+                newRectangle.setHeight(originalRectangle.getHeight());
+                newRectangle.setArcWidth(originalRectangle.getArcWidth());
+                newRectangle.setArcHeight(originalRectangle.getArcHeight());
+                newShapes.add(newRectangle);
+            }
+            else if (originalShape instanceof SVGPath)
+            {
+                SVGPath originalPath = (SVGPath)(originalShape);
+                SVGPath newPath = new SVGPath();
+                newPath.setContent(originalPath.getContent());
+                newPath.setFillRule(originalPath.getFillRule());
+                newShapes.add(newPath);
+            }
+            else if (originalShape instanceof Text)
+            {
+                Text originalText = (Text)(originalShape);
+                Text newText = new Text();
+                newText.setX(originalText.getX());
+                newText.setY(originalText.getY());
+                newText.setText(originalText.getText());
+                newShapes.add(newText);
+            }
+        }
+        ShapeContainer copy = new ShapeContainer(getModelName(), newShapes);        
+        copy.setState(this.getState());
+        copy.recalculateScreenExtents();
+        return copy;
     }
 
     @Override
     public void clearElements()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        shapes.clear();
+        transformMoveToPreferred.setX(0.0);
+        transformMoveToPreferred.setY(0.0);
+
+        preferredXScale.set(1.0);
+        transformScalePreferred.setX(1.0);
+        preferredYScale.set(1.0);
+        transformScalePreferred.setY(1.0);
+
+        preferredRotationTurn.set(0.0);
+        lastTransformedBoundsInParent = new RectangularBounds();
     }
 
     @Override
@@ -145,28 +314,32 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + xMove);
         transformMoveToPreferred.setY(transformMoveToPreferred.getY() + yMove);
 
+        notifyEnabled = false;
         updateLastTransformedBoundsInParentForTranslateByX(xMove);
         updateLastTransformedBoundsInParentForTranslateByY(yMove);
-
-        checkOffBed();
+        notifyEnabled = true;
+        notifyShapeHasChanged();
     }
 
     @Override
     public void translateTo(double xPosition, double yPosition)
     {
+        notifyEnabled = false;
         translateXTo(xPosition);
         translateDepthPositionTo(yPosition);
+        notifyEnabled = true;
+        notifyShapeHasChanged();
     }
 
     @Override
     public void translateXTo(double xPosition)
     {
+        double finalXPosition = xPosition;
+/*
         RectangularBounds bounds = lastTransformedBoundsInParent;
 
         double newMaxX = xPosition + bounds.getWidth() / 2;
         double newMinX = xPosition - bounds.getWidth() / 2;
-
-        double finalXPosition = xPosition;
 
         if (newMinX < 0)
         {
@@ -175,43 +348,24 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         {
             finalXPosition -= (newMaxX - printVolumeWidth);
         }
-
+*/
+        RectangularBounds b = calculateBoundsInParentCoordinateSystem();
         double currentXPosition = lastTransformedBoundsInParent.getCentreX();
         double requiredTranslation = finalXPosition - currentXPosition;
         transformMoveToPreferred.setX(transformMoveToPreferred.getX() + requiredTranslation);
 
         updateLastTransformedBoundsInParentForTranslateByX(requiredTranslation);
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
     }
 
     @Override
     public void translateDepthPositionTo(double yPosition)
     {
-        RectangularBounds bounds = lastTransformedBoundsInParent;
-
-        double newMaxY = yPosition + bounds.getDepth() / 2;
-        double newMinY = yPosition - bounds.getDepth() / 2;
-
         double finalYPosition = yPosition;
-
-        if (newMinY < 0)
-        {
-            finalYPosition += -newMinY;
-        } else if (newMaxY > printVolumeDepth)
-        {
-            finalYPosition -= (newMaxY - printVolumeDepth);
-        }
-
         double currentYPosition = lastTransformedBoundsInParent.getCentreY();
         double requiredTranslation = finalYPosition - currentYPosition;
         transformMoveToPreferred.setY(transformMoveToPreferred.getY() + requiredTranslation);
 
         updateLastTransformedBoundsInParentForTranslateByY(requiredTranslation);
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
     }
 
     @Override
@@ -222,10 +376,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         double currentHeight = bounds.getHeight();
 
         double newScale = height / currentHeight;
-        transformScalePreferred.setY(newScale);
-
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        setYScale(newScale, false);
     }
 
     @Override
@@ -236,10 +387,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         double originalWidth = bounds.getWidth();
 
         double newScale = width / originalWidth;
-        transformScalePreferred.setX(newScale);
-
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        setXScale(newScale, false);
     }
 
     @Override
@@ -304,25 +452,30 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public double getTransformedHeight()
     {
-        return getBoundsInParent().getHeight();
+        return  getScaledHeight();
     }
 
     @Override
     public double getTransformedWidth()
     {
-        return lastTransformedBoundsInParent.getWidth();
+        return getScaledWidth();
     }
+    
 
     @Override
     public double getScaledWidth()
     {
-        return getTransformedWidth();
+        if (originalModelBounds == null)
+            updateOriginalModelBounds(); 
+        return originalModelBounds.getWidth() * preferredXScale.doubleValue();
     }
 
     @Override
     public double getScaledHeight()
     {
-        return getTransformedHeight();
+        if (originalModelBounds == null)
+            updateOriginalModelBounds(); 
+        return originalModelBounds.getHeight() * preferredYScale.doubleValue();
     }
 
     @Override
@@ -340,6 +493,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     protected void printVolumeBoundsUpdated()
     {
+        setBedCentreOffsetTransform();
+        checkOffBed();
     }
 
     @Override
@@ -386,7 +541,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
         if (scaling != 1.0f)
         {
+            preferredXScale.set(scaling);
             transformScalePreferred.setX(scaling);
+            preferredYScale.set(scaling);
             transformScalePreferred.setY(scaling);
         }
 
@@ -396,14 +553,25 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setBedCentreOffsetTransform()
     {
-        BoundingBox printableBoundingBox = (BoundingBox) getBoundsInLocal();
-
-        bedCentreOffsetX = -printableBoundingBox.getMinX();
-        bedCentreOffsetY = -printableBoundingBox.getMinY();
-        transformBedCentre.setX(bedCentreOffsetX);
-        transformBedCentre.setY(bedCentreOffsetY);
-        updateLastTransformedBoundsInParentForTranslateByX(bedCentreOffsetX);
-        updateLastTransformedBoundsInParentForTranslateByY(bedCentreOffsetY);
+        // The BedCentreOffsetTransform moves the shape to the center of the bed.
+        // The transformMoveToPreferred then moves the shape to the preferred position,
+        // relative to the centre of the bed.
+        //
+        // When the printer is changed, the bed centre offset transform is updated,
+        // so the shape remains in the same place relative to the centre of the bed,
+        // not relative to the origin of the bed (usually the front left corner.
+        //
+        // Note that this means the coordinates of the shape on the bed (as shown
+        // in the ModelEditInsetPanel) may change when the printer is changed.
+        //
+        if (transformBedCentre != null)
+        {
+            bedCentreOffsetX = printVolumeWidth / 2;
+            bedCentreOffsetY = printVolumeDepth / 2;
+            transformBedCentre.setX(bedCentreOffsetX);
+            transformBedCentre.setY(bedCentreOffsetY);
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        }
     }
 
     protected final void initialiseTransforms()
@@ -411,10 +579,21 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         transformScalePreferred = new Scale(1, 1, 1);
         transformMoveToPreferred = new Translate(0, 0, 0);
         transformBedCentre = new Translate(0, 0, 0);
+        bedCentreOffsetX = 0.0;
+        bedCentreOffsetY = 0.0;
+        
+
+        // Mirror about Y through the centre of the model to
+        // mirror the model so the coordinates match the bed,
+        // but leave the bounds unchanged.
+        Bounds localBounds = getBoundsInLocal();
+        transformMirror = new Scale(1, -1, 1);
+        transformMirror.setPivotX(localBounds.getCenterX());
+        transformMirror.setPivotY(localBounds.getCenterY());
+        transformMirror.setPivotZ(0.0);
 
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
         rotationTransforms.add(transformRotateTurnPreferred);
-
         setBedCentreOffsetTransform();
 
         /**
@@ -424,15 +603,24 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         getTransforms().addAll(transformMoveToPreferred,
                 transformBedCentre,
                 transformRotateTurnPreferred,
-                transformScalePreferred
-        );
-
+                transformScalePreferred,
+                transformMirror);
+        
         updateOriginalModelBounds();
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
 
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        notifyShapeHasChanged();
+    }
+
+    @Override
+    public void setBedReference(Group bed)
+    {
+        super.setBedReference(bed);
+        setBedCentreOffsetTransform();
+        updateOriginalModelBounds();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        notifyShapeHasChanged();
     }
 
     @Override
@@ -473,27 +661,68 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
     {
+        RectangularBounds rb = null;
+        if (getScene() != null)
+        {
+            rb = calculateBoundsInBedCoordinateSystem();
+        }
+        else
+        {
+            double minX = Double.MAX_VALUE;
+            double minY = Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE;
+            double maxY = -Double.MAX_VALUE;
+
+            for (Shape shape : shapes)
+            {
+                Bounds localBounds = shape.getBoundsInLocal();
+                Bounds parentBounds = localToParent(shape.getBoundsInParent());
+                // steno.info("Started with local bounds: " + localBounds);
+                // steno.info("Finished with bed bounds: " + parentBounds);
+                minX = Math.min(parentBounds.getMinX(), minX);
+                minY = Math.min(parentBounds.getMinY(), minY);
+
+                maxX = Math.max(parentBounds.getMaxX(), maxX);
+                maxY = Math.max(parentBounds.getMaxY(), maxY);
+            }
+
+            double newwidth = maxX - minX;
+            double newheight = maxY - minY;
+
+            double newcentreX = minX + (newwidth / 2);
+            double newcentreY = minY + (newheight / 2);
+
+            rb = new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
+                    newheight, 0, newcentreX, newcentreY,
+                    0);
+        }
+        steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
+        return rb;
+    }
+
+    @Override
+    public RectangularBounds calculateBoundsInBedCoordinateSystem()
+    {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE;
         double maxY = -Double.MAX_VALUE;
 
-        if (bed != null)
+        for (Shape shape : shapes)
         {
-            for (Shape shape : shapes)
-            {
-                Bounds boundsInLocal = shape.getBoundsInLocal();
-                Bounds worldBounds = bed.sceneToLocal(localToScene(boundsInLocal));
+            Bounds boundsInLocal = shape.getBoundsInLocal();
+            Bounds bedBounds = null;
+            if (bed != null)
+                bedBounds = bed.sceneToLocal(shape.localToScene(boundsInLocal));
+            else
+                bedBounds = localToParent(shape.getBoundsInParent());
+            // steno.info("Started with local bounds: " + boundsInLocal);
+            // steno.info("Finished with bed bounds: " + bedBounds);
+            minX = Math.min(bedBounds.getMinX(), minX);
+            minY = Math.min(bedBounds.getMinY(), minY);
 
-                steno.info("Started with local bounds: " + boundsInLocal);
-                steno.info("Finished with bed bounds: " + worldBounds);
-
-                minX = Math.min(worldBounds.getMinX(), minX);
-                minY = Math.min(worldBounds.getMinY(), minY);
-
-                maxX = Math.max(worldBounds.getMaxX(), maxX);
-                maxY = Math.max(worldBounds.getMaxY(), maxY);
-            }
+            maxX = Math.max(bedBounds.getMaxX(), maxX);
+            maxY = Math.max(bedBounds.getMaxY(), maxY);
         }
 
         double newwidth = maxX - minX;
@@ -502,50 +731,484 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         double newcentreX = minX + (newwidth / 2);
         double newcentreY = minY + (newheight / 2);
 
-        return new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
+        RectangularBounds rb = new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
                 newheight, 0, newcentreX, newcentreY,
                 0);
-    }
 
-    @Override
-    public RectangularBounds calculateBoundsInBedCoordinateSystem()
-    {
-        return calculateBoundsInParentCoordinateSystem();
+        steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
+        
+        return rb;
     }
 
     @Override
     protected void updateScaleTransform(boolean dropToBed)
     {
-        checkOffBed();
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        notifyShapeHasChanged();
+    }
+    
+    @Override
+    protected void setScalePivotToCentreOfModel()
+    {
+        transformScalePreferred.setPivotX(originalModelBounds.getCentreX());
+        transformScalePreferred.setPivotY(originalModelBounds.getCentreY());
+    }
+
+    @Override
+    protected void setRotationPivotsToCentreOfModel()
+    {
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+    }
+    
+    private void notifyShapeHasChanged()
+    {
+        if (notifyEnabled)
+        {
+            steno.info("notifyShapeHasChanged: lastTransformedBoundsInParent = " + lastTransformedBoundsInParent);
+            checkOffBed();
+            notifyShapeChange();
+            notifyScreenExtentsChange();
+        }
     }
 
     private void updateLastTransformedBoundsInParentForTranslateByX(double deltaCentreX)
     {
-        if (lastTransformedBoundsInParent != null)
-        {
+        if (lastTransformedBoundsInParent == null)
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        else
             lastTransformedBoundsInParent.translateX(deltaCentreX);
-        }
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        notifyShapeHasChanged();
     }
 
     private void updateLastTransformedBoundsInParentForTranslateByY(double deltaCentreY)
     {
-        if (lastTransformedBoundsInParent != null)
-        {
+        if (lastTransformedBoundsInParent == null)
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        else
             lastTransformedBoundsInParent.translateY(deltaCentreY);
-        }
-        notifyShapeChange();
-        notifyScreenExtentsChange();
+        notifyShapeHasChanged();
     }
 
     @Override
     public void moveToCentre()
     {
-        translateTo(bedCentreOffsetX, bedCentreOffsetY);
-
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        translateTo(0.5 * printVolumeWidth, 0.5 * printVolumeDepth);
+    }
+    
+    public static void writeShape(final ObjectOutputStream out,
+                                  final Shape shape)
+        throws IOException
+    {
+        if (shape != null)
+        {
+            out.writeBoolean(false);
+            if (shape instanceof Arc)
+            {
+                final Arc arc = (Arc) shape;
+                out.writeObject(Arc.class);
+                out.writeDouble(arc.getCenterX());
+                out.writeDouble(arc.getCenterY());
+                out.writeDouble(arc.getLength());
+                out.writeDouble(arc.getRadiusX());
+                out.writeDouble(arc.getRadiusY());
+                out.writeDouble(arc.getStartAngle());
+                int t = 0;
+                switch (arc.getType()) 
+                {
+                    case CHORD:
+                        t = 1;
+                        break;
+
+                    case ROUND:
+                        t = 2;
+                        break;
+                        
+                    case OPEN:
+                    default:
+                        t = 0;
+                        break;
+                }
+                out.writeInt(t);
+            }
+            else if (shape instanceof Circle)
+            {
+                final Circle circle = (Circle) shape;
+                out.writeObject(Circle.class);
+                out.writeDouble(circle.getCenterX());
+                out.writeDouble(circle.getCenterY());
+                out.writeDouble(circle.getRadius());
+            }
+            else if (shape instanceof CubicCurve)
+            {
+                final CubicCurve cubic = (CubicCurve) shape;
+                out.writeObject(CubicCurve.class);
+                out.writeDouble(cubic.getStartX());
+                out.writeDouble(cubic.getStartY());
+                out.writeDouble(cubic.getControlX1());
+                out.writeDouble(cubic.getControlY1());
+                out.writeDouble(cubic.getControlX2());
+                out.writeDouble(cubic.getControlY2());
+                out.writeDouble(cubic.getEndX());
+                out.writeDouble(cubic.getEndY());
+            }
+            else if (shape instanceof Ellipse)
+            {
+                final Ellipse ellipse = (Ellipse) shape;
+                out.writeObject(Ellipse.class);
+                out.writeDouble(ellipse.getCenterX());
+                out.writeDouble(ellipse.getCenterY());
+                out.writeDouble(ellipse.getRadiusX());
+                out.writeDouble(ellipse.getRadiusY());
+            }
+            else if (shape instanceof Line)
+            {
+                final Line line = (Line) shape;
+                out.writeObject(Line.class);
+                out.writeDouble(line.getStartX());
+                out.writeDouble(line.getStartY());
+                out.writeDouble(line.getEndX());
+                out.writeDouble(line.getEndY());
+            }
+            else if (shape instanceof Polygon)
+            {
+                final Polygon polygon = (Polygon) shape;
+                out.writeObject(Polygon.class);
+                List<Double> pointList = polygon.getPoints();
+                double pointArray[] = new double[pointList.size()];
+                for (int i = 0; i < pointList.size(); ++i)
+                    pointArray[i] = pointList.get(i);
+                out.writeObject(pointArray);
+            }
+            else if (shape instanceof Polyline)
+            {
+                final Polyline polyline = (Polyline) shape;
+                out.writeObject(Polyline.class);
+                List<Double> pointList = polyline.getPoints();
+                double pointArray[] = new double[pointList.size()];
+                for (int i = 0; i < pointList.size(); ++i)
+                    pointArray[i] = pointList.get(i);
+                out.writeObject(pointArray);
+            }
+            else if (shape instanceof QuadCurve)
+            {
+                final QuadCurve quad = (QuadCurve) shape;
+                out.writeObject(QuadCurve.class);
+                out.writeDouble(quad.getStartX());
+                out.writeDouble(quad.getStartY());
+                out.writeDouble(quad.getControlX());
+                out.writeDouble(quad.getControlY());
+                out.writeDouble(quad.getEndX());
+                out.writeDouble(quad.getEndY());
+            }
+            else if (shape instanceof Rectangle)
+            {
+                final Rectangle rectangle = (Rectangle) shape;
+                out.writeObject(Rectangle.class);
+                out.writeDouble(rectangle.getX());
+                out.writeDouble(rectangle.getY());
+                out.writeDouble(rectangle.getWidth());
+                out.writeDouble(rectangle.getHeight());
+                out.writeDouble(rectangle.getArcWidth());
+                out.writeDouble(rectangle.getArcHeight());
+            }
+            else if (shape instanceof SVGPath)
+            {
+                final SVGPath svgPath = (SVGPath) shape;
+                out.writeObject(SVGPath.class);
+                out.writeUTF(svgPath.getContent());
+                out.writeObject(svgPath.getFillRule());
+            }
+            else if (shape instanceof Text)
+            {
+                final Text text = (Text) shape;
+                out.writeObject(Text.class);
+                out.writeDouble(text.getX());
+                out.writeDouble(text.getY());
+                out.writeUTF(text.getText());
+            }
+            else
+            {
+                throw new IOException();
+            }
+        }
+        else
+        {
+            out.writeBoolean(true);
+        }
+    }
+
+    
+    private void writeObject(ObjectOutputStream out)
+            throws IOException
+    {
+        out.writeUTF(getModelName());
+        out.writeInt(modelId);
+        out.writeInt(shapes.size());
+
+        for (Shape shape : shapes)
+        {
+            writeShape(out, shape);
+        }
+
+        out.writeDouble(transformMoveToPreferred.getX());
+        out.writeDouble(transformMoveToPreferred.getY());
+        out.writeDouble(preferredXScale.get());
+        out.writeDouble(preferredYScale.get());
+        out.writeDouble(preferredRotationTurn.get());
+    }
+
+    private Shape readShape(final ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        Shape result = null;
+        final boolean isNull = in.readBoolean();
+        if (!isNull)
+        {
+            final Class c = (Class) in.readObject();
+            if (c.equals(Arc.class))
+            {
+                final double centreX = in.readDouble();
+                final double centreY = in.readDouble();
+                final double length = in.readDouble();
+                final double radiusX = in.readDouble();
+                final double radiusY = in.readDouble();
+                final double startAngle = in.readDouble();
+                final int t = in.readInt();
+                ArcType at;
+                switch (t) 
+                {
+                    case 1:
+                        at = ArcType.CHORD;
+                        break;
+
+                    case 2:
+                        at = ArcType.ROUND;
+                        break;
+                    case 0:
+                    default:
+                        at = ArcType.OPEN;
+                        break;
+                }
+                
+                Arc arc = new Arc();
+                arc.setCenterX(centreX);
+                arc.setCenterY(centreY);
+                arc.setLength(length);
+                arc.setRadiusX(radiusX);
+                arc.setRadiusY(radiusY);
+                arc.setStartAngle(startAngle);
+                arc.setType(at);
+                        
+                result = arc;
+            }
+            else if (c.equals(Circle.class))
+            {
+                final double centerX = in.readDouble();
+                final double centerY = in.readDouble();
+                final double radius = in.readDouble();
+                Circle circle = new Circle();
+                circle.setCenterX(centerX);
+                circle.setCenterY(centerY);
+                circle.setRadius(radius);
+                
+                result = circle;
+            }
+            else if (c.equals(CubicCurve.class))
+            {
+                final double startX = in.readDouble();
+                final double startY = in.readDouble();
+                final double controlX1 = in.readDouble();
+                final double controlY1 = in.readDouble();
+                final double controlX2 = in.readDouble();
+                final double controlY2 = in.readDouble();
+                final double endX = in.readDouble();
+                final double endY = in.readDouble();
+                CubicCurve cubic = new CubicCurve();
+                cubic.setStartX(startX);
+                cubic.setStartY(startY);
+                cubic.setControlX1(controlX1);
+                cubic.setControlY1(controlY1);
+                cubic.setControlX2(controlX2);
+                cubic.setControlY2(controlY2);
+                cubic.setEndX(endX);
+                cubic.setEndY(endY);
+                result = cubic;
+            }
+            else if (c.equals(Ellipse.class))
+            {
+                final double centerX = in.readDouble();
+                final double centerY = in.readDouble();
+                final double radiusX = in.readDouble();
+                final double radiusY = in.readDouble();
+                Ellipse ellipse = new Ellipse();
+                ellipse.setCenterX(centerX);
+                ellipse.setCenterY(centerY);
+                ellipse.setRadiusX(radiusX);
+                ellipse.setRadiusY(radiusY);
+                result = ellipse;
+            }
+            else if (c.equals(Line.class))
+            {
+                final double startX = in.readDouble();
+                final double startY = in.readDouble();
+                final double endX = in.readDouble();
+                final double endY = in.readDouble();
+                Line line = new Line();
+                line.setStartX(startX);
+                line.setStartY(startY);
+                line.setEndX(endX);
+                line.setEndY(endY);
+                result = line;
+            }
+            else if (c.equals(Polygon.class))
+            {
+                double[] points = (double[]) in.readObject();
+                result = new Polygon(points);
+            }
+            else if (c.equals(Polyline.class))
+            {
+                double[] points = (double[]) in.readObject();
+                result = new Polyline(points);
+            }
+            else if (c.equals(QuadCurve.class))
+            {
+                final double startX = in.readDouble();
+                final double startY = in.readDouble();
+                final double controlX = in.readDouble();
+                final double controlY = in.readDouble();
+                final double endX = in.readDouble();
+                final double endY = in.readDouble();
+                QuadCurve quad = new QuadCurve();
+                quad.setStartX(startX);
+                quad.setStartY(startY);
+                quad.setControlX(controlX);
+                quad.setControlY(controlY);
+                quad.setEndX(endX);
+                quad.setEndY(endY);
+                result = quad;
+            }
+            else if (c.equals(Rectangle.class))
+            {
+                final double x = in.readDouble();
+                final double y = in.readDouble();
+                final double width = in.readDouble();
+                final double height = in.readDouble();
+                final double arcWidth = in.readDouble();
+                final double arcHeight = in.readDouble();
+                Rectangle rect = new Rectangle();
+                rect.setX(x);
+                rect.setY(y);
+                rect.setWidth(width);
+                rect.setHeight(height);
+                rect.setArcWidth(arcWidth);
+                rect.setArcHeight(arcHeight);
+                result = rect;
+            }
+            else if (c.equals(SVGPath.class))
+            {
+                final String content = in.readUTF();
+                final FillRule fillRule = (FillRule)in.readObject();
+                SVGPath path = new SVGPath();
+                path.setContent(content);
+                path.setFillRule(fillRule);
+                result = path;
+            }
+            else if (c.equals(Text.class))
+            {
+                final double x = in.readDouble();
+                final double y = in.readDouble();
+                final String content = in.readUTF();
+                Text text = new Text();
+                text.setX(x);
+                text.setY(y);
+                text.setText(content);
+                result = text;
+            }
+            else
+            {
+              throw new ClassNotFoundException();
+            }
+        }
+        return result;
+    }
+
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        try
+        {
+            initialise();
+            shapes = new ArrayList<>();
+            
+            setModelName(in.readUTF().trim());
+            int storedModelId = in.readInt();
+            if (storedModelId > 0)
+                modelId = storedModelId;
+            else
+                modelId = 0;
+
+            int nShapes = in.readInt();
+            if (nShapes > 0)
+            {
+                for (int i = 0; i < nShapes; ++i)
+                {
+                    shapes.add(readShape(in));
+                }
+            }
+
+            double storedMoveX = in.readDouble();
+            double storedMoveY = in.readDouble();
+            double storedXScale = in.readDouble();
+            double storedYScale = in.readDouble();
+            double storedRotationTurn = in.readDouble();
+
+            if (shapes.size() > 1)
+            {
+                Group shapeGroup = new Group();
+                shapeGroup.getChildren().addAll(shapes);
+                this.getChildren().add(shapeGroup);
+            } else
+            {
+                this.getChildren().add(shapes.get(0));
+            }
+            initialise();
+            initialiseTransforms();
+            transformMoveToPreferred.setX(storedMoveX);
+            transformMoveToPreferred.setY(storedMoveY);
+            preferredXScale.set(storedXScale);
+            transformScalePreferred.setX(storedXScale);
+            preferredYScale.set(storedYScale);
+            transformScalePreferred.setY(storedYScale);
+            preferredRotationTurn.set(storedRotationTurn);
+            updateTransformsFromTurnAngle();
+        }
+        catch (Exception ex)
+        {
+            steno.exception("Oops", ex);
+        }
+    }
+
+    @Override
+    public void setRotationTurn(double value) {
+        preferredRotationTurn.set(value);
+        updateTransformsFromTurnAngle();
+        notifyShapeHasChanged();
+    }
+
+    @Override
+    public double getRotationTurn() {
+        return preferredRotationTurn.get();
+    }
+    
+    private void updateTransformsFromTurnAngle()
+    {
+        // Turn - around Z axis
+        transformRotateTurnPreferred.setPivotX(originalModelBounds.getCentreX());
+        transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
+        transformRotateTurnPreferred.setPivotZ(0);
+        transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
+        transformRotateTurnPreferred.setAxis(Z_AXIS);
     }
 }
