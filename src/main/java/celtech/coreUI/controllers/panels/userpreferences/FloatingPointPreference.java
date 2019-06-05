@@ -29,7 +29,6 @@ public class FloatingPointPreference implements PreferencesInnerPanelController.
 
         control = new RestrictedNumberField();
         control.setPrefWidth(150);
-        control.setMaxWidth(control.getPrefWidth());
         control.setMinWidth(control.getPrefWidth());
         control.setAllowedDecimalPlaces(decimalPlaces);
         control.setAllowNegative(negativeAllowed);
