@@ -52,12 +52,9 @@ public class UserPreferences
     private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
     private final BooleanProperty timelapseTurnOffHeadLights = new SimpleBooleanProperty(true);
     private final BooleanProperty timelapseTurnOffLED = new SimpleBooleanProperty(false);
-    private final StringProperty goProWifiPassword = new SimpleStringProperty("");
     private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(true);
     private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
     private final IntegerProperty timelapseYMove = new SimpleIntegerProperty(0);
-    private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);
-    private final IntegerProperty timelapseDelayBeforeCapture = new SimpleIntegerProperty(0);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
     private final BooleanProperty autoGCodePreview = new SimpleBooleanProperty(true);
     private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
@@ -144,12 +141,9 @@ public class UserPreferences
         timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
         timelapseTurnOffHeadLights.set(userPreferenceFile.isTimelapseTurnOffHeadLights());
         timelapseTurnOffLED.set(userPreferenceFile.isTimelapseTurnOffLED());
-        goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
         timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
         timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
         timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
-        timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
-        timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
         loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
         customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
         customPrinterType.set(userPreferenceFile.getCustomPrinterType());
@@ -169,12 +163,9 @@ public class UserPreferences
         timelapseTriggerEnabled.addListener(booleanChangeListener);
         timelapseTurnOffHeadLights.addListener(booleanChangeListener);
         timelapseTurnOffLED.addListener(booleanChangeListener);
-        goProWifiPassword.addListener(stringChangeListener);
         timelapseMoveBeforeCapture.addListener(booleanChangeListener);
         timelapseXMove.addListener(numberChangeListener);
         timelapseYMove.addListener(numberChangeListener);
-        timelapseDelay.addListener(numberChangeListener);
-        timelapseDelayBeforeCapture.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
         
@@ -370,21 +361,6 @@ public class UserPreferences
         return timelapseTurnOffLED.get();
     }
 
-    public StringProperty getGoProWifiProperty()
-    {
-        return goProWifiPassword;
-    }
-
-    public void setGoProWifiPassword(String goProWifiPassword)
-    {
-        this.goProWifiPassword.set(goProWifiPassword);
-    }
-
-    public String getGoProWifiPassword()
-    {
-        return goProWifiPassword.get();
-    }
-
     private void saveSettings()
     {
         UserPreferenceContainer.savePreferences(this);
@@ -510,36 +486,6 @@ public class UserPreferences
     public IntegerProperty getTimelapseYMoveProperty()
     {
         return timelapseYMove;
-    }
-
-    public int getTimelapseDelay()
-    {
-        return timelapseDelay.get();
-    }
-
-    public void setTimelapseDelay(int value)
-    {
-        timelapseDelay.set(value);
-    }
-
-    public IntegerProperty getTimelapseDelayProperty()
-    {
-        return timelapseDelay;
-    }
-
-    public int getTimelapseDelayBeforeCapture()
-    {
-        return timelapseDelayBeforeCapture.get();
-    }
-
-    public void setTimelapseDelayBeforeCapture(int value)
-    {
-        timelapseDelayBeforeCapture.set(value);
-    }
-
-    public IntegerProperty getTimelapseDelayBeforeCaptureProperty()
-    {
-        return timelapseDelayBeforeCapture;
     }
 
     public boolean isLoosePartSplitOnLoad()
