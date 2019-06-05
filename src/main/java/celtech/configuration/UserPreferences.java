@@ -50,6 +50,8 @@ public class UserPreferences
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
     private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
+    private final BooleanProperty timelapseTurnOffHeadLights = new SimpleBooleanProperty(true);
+    private final BooleanProperty timelapseTurnOffLED = new SimpleBooleanProperty(false);
     private final StringProperty goProWifiPassword = new SimpleStringProperty("");
     private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(true);
     private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
@@ -140,6 +142,8 @@ public class UserPreferences
         currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
         timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
+        timelapseTurnOffHeadLights.set(userPreferenceFile.isTimelapseTurnOffHeadLights());
+        timelapseTurnOffLED.set(userPreferenceFile.isTimelapseTurnOffLED());
         goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
         timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
         timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
@@ -163,6 +167,8 @@ public class UserPreferences
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
         timelapseTriggerEnabled.addListener(booleanChangeListener);
+        timelapseTurnOffHeadLights.addListener(booleanChangeListener);
+        timelapseTurnOffLED.addListener(booleanChangeListener);
         goProWifiPassword.addListener(stringChangeListener);
         timelapseMoveBeforeCapture.addListener(booleanChangeListener);
         timelapseXMove.addListener(numberChangeListener);
@@ -332,6 +338,36 @@ public class UserPreferences
     public boolean isTimelapseTriggerEnabled()
     {
         return timelapseTriggerEnabled.get();
+    }
+    
+    public BooleanProperty getTimelapseTurnOffHeadLightsProperty()
+    {
+        return timelapseTurnOffHeadLights;
+    }
+
+    public void setTimelapseTurnOffHeadLightsEnabled(boolean timelapseTurnOffHeadLights)
+    {
+        this.timelapseTurnOffHeadLights.set(timelapseTurnOffHeadLights);
+    }
+
+    public boolean isTimelapseTurnOffHeadLights()
+    {
+        return timelapseTurnOffHeadLights.get();
+    }
+    
+    public BooleanProperty getTimelapseTurnOffLEDProperty()
+    {
+        return timelapseTurnOffLED;
+    }
+
+    public void setTimelapseTurnOffLED(boolean timelapseTurnOffLED)
+    {
+        this.timelapseTurnOffLED.set(timelapseTurnOffLED);
+    }
+
+    public boolean isTimelapseTurnOffLED()
+    {
+        return timelapseTurnOffLED.get();
     }
 
     public StringProperty getGoProWifiProperty()
