@@ -51,7 +51,7 @@ public class LanguagePreference implements PreferencesInnerPanelController.Prefe
             return ((Locale) o1).getDisplayName().compareTo(((Locale) o2).getDisplayName());
         });
         control.setItems(FXCollections.observableArrayList(localesList));
-        control.setPrefWidth(300);
+        control.setPrefWidth(200);
         control.setMinWidth(control.getPrefWidth());
         control.valueProperty().addListener(
                 (ObservableValue<? extends Object> observable, Object oldValue, Object newValue) ->
