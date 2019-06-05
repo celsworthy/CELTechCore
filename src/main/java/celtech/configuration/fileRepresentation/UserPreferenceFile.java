@@ -33,6 +33,8 @@ public class UserPreferenceFile
     private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
+    private boolean timelapseTurnOffHeadLights = true;
+    private boolean timelapseTurnOffLED = false;
     private String goProWifiPassword = "";
     private boolean timelapseMoveBeforeCapture = true;
     private int timelapseXMove = 0;
@@ -204,6 +206,26 @@ public class UserPreferenceFile
         this.timelapseTriggerEnabled = timelapseTriggerEnabled;
     }
 
+    public boolean isTimelapseTurnOffHeadLights()
+    {
+        return timelapseTurnOffHeadLights;
+    }
+
+    public void setTimelapseTurnOffHeadLights(boolean timelapseTurnOffHeadLights)
+    {
+        this.timelapseTurnOffHeadLights = timelapseTurnOffHeadLights;
+    }
+    
+    public boolean isTimelapseTurnOffLED()
+    {
+        return timelapseTurnOffLED;
+    }
+
+    public void setTimelapseTurnOffLED(boolean timelapseTurnOffLED)
+    {
+        this.timelapseTurnOffLED = timelapseTurnOffLED;
+    }
+    
     public String getGoProWifiPassword()
     {
         return goProWifiPassword;
