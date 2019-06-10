@@ -141,7 +141,6 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         projectSelection = Lookup.getProjectGUIState(project).getProjectSelection();
         loadedModels = project.getTopLevelThings();
-
         applicationStatus.modeProperty().addListener(applicationModeListener);
 
         addEventHandler(MouseEvent.ANY, mouseEventHandler);

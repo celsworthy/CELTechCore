@@ -8,25 +8,35 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
+import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
+import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
+import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
+import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.services.CameraTriggerData;
+import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.models.MeshForProcessing;
 import celtech.roboxbase.utils.models.PrintableMeshes;
+import celtech.roboxbase.utils.models.PrintableShapes;
+import celtech.roboxbase.utils.models.ShapeForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
+import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +53,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -70,11 +83,11 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
  *
  * @author Tony and George
  */
-public class GCodeGeneratorManager implements ModelContainerProject.ProjectChangesListener
+public class GCodeGeneratorManager implements Project.ProjectChangesListener
 {
     private static final Stenographer STENO = StenographerFactory.getStenographer(GCodeGeneratorManager.class.getName());
     
-    private final ExecutorService slicingExecutorService;
+    private final ExecutorService preparationExecutorService;
     private final ExecutorService printOrSaveExecutorService;
     private final Project project;
     
@@ -89,9 +102,10 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     
     private ListChangeListener<RoboxProfile> roboxProfileChangeListener;
     
-    private Future restartTask = null;
-    private Map<PrintQualityEnumeration, Future> taskMap = new HashMap<>();
-    private ObservableMap<PrintQualityEnumeration, Future> observableTaskMap = FXCollections.observableMap(taskMap);
+    private Future<Boolean> restartFuture = null;
+    private Future<StylusGCodeGeneratorResult> stylusFuture = null;
+    private Map<PrintQualityEnumeration, Future<GCodeGeneratorResult>> taskMap = new HashMap<>();
+    private ObservableMap<PrintQualityEnumeration, Future<GCodeGeneratorResult>> observableTaskMap = FXCollections.observableMap(taskMap);
     
     private Future printOrSaveFuture = null;
     private BooleanProperty printOrSaveTaskRunning = new SimpleBooleanProperty(false);
@@ -122,7 +136,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             thread.setDaemon(true);
             return thread;
         };
-        slicingExecutorService = Executors.newFixedThreadPool(1, threadFactory);
+        preparationExecutorService = Executors.newFixedThreadPool(1, threadFactory);
 //       printOrSaveExecutorService = Executors.newSingleThreadExecutor(threadFactory);
         printOrSaveExecutorService = Executors.newSingleThreadExecutor();
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
@@ -233,10 +247,34 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         RoboxProfileSettingsContainer.getInstance().addProfileChangeListener(roboxProfileChangeListener);
     }
     
-    public Optional<GCodeGeneratorResult> getPrepResult(PrintQualityEnumeration quality)
+    public Optional<StylusGCodeGeneratorResult> getStylusGCodeGenResult()
+    {
+        if (stylusFuture != null)
+        {
+            try 
+            {
+                StylusGCodeGeneratorResult result = stylusFuture.get();
+                return Optional.ofNullable(result);
+            }
+            catch (InterruptedException ex)
+            {
+                STENO.debug("Thread interrupted");
+            }
+            catch (CancellationException ex) 
+            {
+                STENO.debug("Thread cancelled");
+            }
+            catch (ExecutionException ex)
+            {
+                STENO.exception("Unexpected error when fetching StylusGCodeGeneratorResult", ex);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<GCodeGeneratorResult> getModelPrepResult(PrintQualityEnumeration quality)
     {
         Future<GCodeGeneratorResult> resultFuture = taskMap.get(quality);
-        
         if (resultFuture != null)
         {
             try 
@@ -279,31 +317,34 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             cancellable.cancelled().set(true);
         }
 
-        if (restartTask != null)
+        if (restartFuture != null)
         {
-            restartTask.cancel(true);
-            restartTask = null;
+            restartFuture.cancel(true);
+            restartFuture = null;
         }
 
         cancelPrintOrSaveTask();
 
         observableTaskMap.forEach((q, t) -> t.cancel(true));
         observableTaskMap.clear();
+        if (stylusFuture != null)
+        {
+            stylusFuture.cancel(true);
+            stylusFuture = null;
+        }
 
         projectNeedsSlicing = true;
     }
-
-    private void restartAllTasks()
-    {
-        purgeAllTasks();
-        Runnable restartAfterDelay = () ->
+    
+    private void restartSlicerTasks() {
+        Callable<Boolean> restartAfterDelay = () ->
         {
             try
             {
                 Thread.sleep(500);
             } catch (InterruptedException ex)
             {
-                return;
+                return false;
             }
             
             selectedTaskReBound = false;
@@ -332,18 +373,15 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                             List<Integer> extruderForModel = new ArrayList<>();
 
                             // Only to be run on a ModelContainerProject
-                            if(project instanceof ModelContainerProject)
+                            project.getTopLevelThings().forEach((modelContainer) -> 
                             {
-                                project.getTopLevelThings().forEach((modelContainer) -> 
+                                ((ModelContainer)modelContainer).getModelsHoldingMeshViews().forEach((modelContainerWithMesh) ->
                                 {
-                                    ((ModelContainer)modelContainer).getModelsHoldingMeshViews().forEach((modelContainerWithMesh) ->
-                                    {
-                                        MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
-                                        meshesForProcessing.add(meshForProcessing);
-                                        extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
-                                    });
+                                    MeshForProcessing meshForProcessing = new MeshForProcessing(modelContainerWithMesh.getMeshView(), modelContainerWithMesh);
+                                    meshesForProcessing.add(meshForProcessing);
+                                    extruderForModel.add(modelContainerWithMesh.getAssociateWithExtruderNumberProperty().get());
                                 });
-                            }
+                            });
 
                             // We need to tell the slicers where the centre of the printed objects is - otherwise everything is put in the centre of the bed...
                             CentreCalculations centreCalc = new CentreCalculations();
@@ -391,7 +429,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                         observableTaskMap.put(printQuality, prepTask);
                         tidyProjectDirectory(getGCodeDirectory(printQuality));
                         prepTask.initialise(currentPrinter, meshSupplier, getGCodeDirectory(printQuality));
-                        slicingExecutorService.submit(prepTask);
+                        preparationExecutorService.submit(prepTask);
                         if (!selectedTaskReBound)
                         {
                             selectedTaskReBound = true;
@@ -401,10 +439,89 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                     toggleDataChanged();
                 }
             });
+            return true;
         };
 
         cancellable = new SimpleCancellable();
-        restartTask = slicingExecutorService.submit(restartAfterDelay);
+        restartFuture = preparationExecutorService.submit(restartAfterDelay);
+    }
+
+    private void restartStylusTasks() {
+        Callable<Boolean> restartAfterDelay = () ->
+        {
+            try
+            {
+                Thread.sleep(500);
+            }
+            catch (InterruptedException ex)
+            {
+                return false;
+            }
+            
+            boolean taskComplete = false;
+            List<ShapeForProcessing> shapes = new ArrayList<>();
+            for (ProjectifiableThing projectifiableThing : project.getAllModels())
+            {
+                if (projectifiableThing instanceof ShapeContainer)
+                {
+                    ShapeContainer shapeContainer = (ShapeContainer) projectifiableThing;
+                    shapeContainer.getShapes().forEach((shape) ->
+                    {
+                        shapes.add(new ShapeForProcessing(shape, shapeContainer));
+                    });
+                }
+            }
+            
+            Callable<StylusGCodeGeneratorResult> prepareShapesForStylusCallable = () ->
+            {
+                StylusGCodeGeneratorResult result = new StylusGCodeGeneratorResult();
+                try 
+                {
+                    Printer printer = Lookup.getSelectedPrinterProperty().get();
+                    String headTypeCode = HeadContainer.defaultHeadID;
+                    Optional<PrinterType> printerTypeOpt = Optional.empty();
+                    if (printer != null)
+                    {
+                        printerTypeOpt = Optional.of(printer.findPrinterType());
+                        if (printer.headProperty().get() != null)
+                            headTypeCode = printer.headProperty().get().typeCodeProperty().get();
+                    }
+
+                    String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                        + project.getProjectName();
+
+                    PrintableShapes ps = new PrintableShapes(shapes, project.getProjectName(), "printjob");
+                    List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
+                    DragKnifeCompensator dnc = new DragKnifeCompensator();
+                    List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2);
+                    result.setRawOutputFileName(projectLocation + File.separator + "stylusRaw.gcode");
+                    result.setCompensatedOutputFileName(projectLocation + File.separator + "stylusCompensated.gcode");
+                    PrintableShapesToGCode.writeGCodeToFile(result.getRawOutputFileName(), gcodeData, headTypeCode, printerTypeOpt);
+                    PrintableShapesToGCode.writeGCodeToFile(result.getCompensatedOutputFileName(), dragKnifeCompensatedGCodeNodes, headTypeCode, printerTypeOpt);
+                    result.setResultOK(true);
+                }
+                catch (Exception ex)
+                {
+                    STENO.error("Error during print project " + ex.getMessage());
+                }
+                return result;
+            };
+            stylusFuture = preparationExecutorService.submit(prepareShapesForStylusCallable);
+            toggleDataChanged();
+            return taskComplete;
+        };
+
+        cancellable = new SimpleCancellable();
+        restartFuture = preparationExecutorService.submit(restartAfterDelay);
+    }
+
+    private void restartAllTasks()
+    {
+        purgeAllTasks();
+        if (project instanceof ModelContainerProject)
+            restartSlicerTasks();
+        else if (project instanceof ShapeContainerProject)
+            restartStylusTasks();
     }
     
     public String getGCodeDirectory(PrintQualityEnumeration printQuality)
@@ -452,9 +569,12 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         }
     }
     
-    public boolean modelIsSuitable()
+    public boolean projectIsSuitable()
     {
-        return modelIsSuitable(currentPrintQuality.get());
+        return (project instanceof ModelContainerProject &&
+                modelIsSuitable(currentPrintQuality.get())) ||
+                (project instanceof ShapeContainerProject &&
+                 shapeIsSuitable(currentPrintQuality.get()));
     }
     
     private boolean modelIsSuitable(PrintQualityEnumeration printQuality)
@@ -507,6 +627,20 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         return false;
     }
     
+    private boolean shapeIsSuitable(PrintQualityEnumeration printQuality)
+    {
+        if (project != null)
+        {
+            if (project.getNumberOfProjectifiableElements() > 0)
+            {
+                // TODO Check that shapes are on the bed.
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
     private boolean isCurrentProjectSelected()
     {
         return Lookup.getSelectedProjectProperty().get() == project;
@@ -604,7 +738,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         return project;
     }
     
-    public ObservableMap<PrintQualityEnumeration, Future> getObservableTaskMap() 
+    public ObservableMap<PrintQualityEnumeration, Future<GCodeGeneratorResult>> getObservableTaskMap() 
     {
         return observableTaskMap;
     }
@@ -696,7 +830,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     
     public void shutdown()
     {
-        slicingExecutorService.shutdown();
+        preparationExecutorService.shutdown();
         printOrSaveExecutorService.shutdown(); 
     }
     

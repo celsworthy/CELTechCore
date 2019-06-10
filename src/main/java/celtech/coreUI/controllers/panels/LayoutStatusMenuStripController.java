@@ -39,7 +39,9 @@ import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
 import celtech.roboxbase.postprocessor.RoboxiserResult;
@@ -52,6 +54,7 @@ import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
+import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -414,7 +417,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     try 
                     {
                         Optional<GCodeGeneratorResult> potentialGCodeGenResult = currentProject.getGCodeGenManager()
-                                                                                               .getPrepResult(currentProject.getPrintQuality());
+                                                                                               .getModelPrepResult(currentProject.getPrintQuality());
                         if(potentialGCodeGenResult.isPresent())
                         {
                             printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
@@ -435,65 +438,48 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private void printShapeContainerProject(ShapeContainerProject currentProject)
     {
         Printer printer = Lookup.getSelectedPrinterProperty().get();
-        String projectLocation = ApplicationConfiguration.getProjectDirectory()
-                + currentProject.getProjectName();
-        PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
-                PrintQualityEnumeration.NORMAL, projectLocation);
-
-        List<ShapeForProcessing> shapes = new ArrayList<>();
-        for (ProjectifiableThing projectifiableThing : currentProject.getAllModels())
+        // Check the head is the stylus head.
+        Head.HeadType headType = HeadContainer.defaultHeadType;
+        if (printer != null && printer.headProperty().get() != null)
+            headType = printer.headProperty().get().headTypeProperty().get();
+        if (headType == Head.HeadType.STYLUS_HEAD)
         {
-            if (projectifiableThing instanceof ShapeContainer)
+            Task<Boolean> generateGCodeAndPrint = new Task<Boolean>() 
             {
-                ShapeContainer shapeContainer = (ShapeContainer) projectifiableThing;
-                shapeContainer.getShapes().forEach((shape) ->
+                @Override
+                protected Boolean call() throws Exception 
                 {
-                    shapes.add(new ShapeForProcessing(shape, shapeContainer));
-                });
-            }
-        }
+                    try 
+                    {
+                        Optional<StylusGCodeGeneratorResult> prepResultOpt = currentProject.getGCodeGenManager().getStylusGCodeGenResult();
 
-        Task<Boolean> generateGCodeAndPrint = new Task<Boolean>() 
-        {
-            @Override
-            protected Boolean call() throws Exception 
-            {
-                try 
-                {
-                    PrintableShapes ps = new PrintableShapes(shapes, Lookup.getSelectedProjectProperty().get().getProjectName(), "test2D");
-                    List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
-                    DragKnifeCompensator dnc = new DragKnifeCompensator();
-                    List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2);
-                    PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestRaw.gcode", gcodeData);
-                    PrintableShapesToGCode.writeGCodeToFile(BaseConfiguration.getPrintSpoolDirectory() + "stylusTestCompensated.gcode", dragKnifeCompensatedGCodeNodes);
-                    // PrinterableShapesToGCode needs to be packaged up to generate GCode and statistics,
-                    // and return a GCodeGeneratorResult.
-                    // GCodeGeneratorResult and printer.printProject need
-                    // to be extended to support both MESH and SVG projects.
-                    //if(potentialGCodeGenResult.isPresent())
-                    //{
-                    //    printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
-                    //}
-                    //Platform.runLater(() ->
-                    //{
-                    //    ProjectTab pTab = DisplayManager.getInstance().getTabForProject(currentProject);
-                    //    if (pTab != null && pTab.getSVGViewManager() != null) {
-                    //        pTab.getSVGViewManager().renderGCode(dragKnifeCompensatedGCodeNodes);
-                    //    }
-                    //});
+                        if (prepResultOpt.isPresent() &&  prepResultOpt.get().getResultOK())
+                        {
+                            Printer printer = Lookup.getSelectedPrinterProperty().get();
+                            StylusGCodeGeneratorResult prepResult = prepResultOpt.get();
+                            String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                                + currentProject.getProjectName();
+                            PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
+                                                                                     currentProject.getPrintQuality(),
+                                                                                     projectLocation);
+                            printer.printStylusProject(printableProject, prepResultOpt, Lookup.getUserPreferences().isSafetyFeaturesOn());
 
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    steno.error("Error during print project " + ex.getMessage());
+                            //printer.executeGCodeFile(prepResult.getCompensatedOutputFileName(), false);
+                            return true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        steno.error("Error during print project " + ex.getMessage());
+
+                    }
                     return false;
                 }
-            }
-        };
-                
-        // Run the task from GCodeGenManager so it can be managed...
-        currentProject.getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(generateGCodeAndPrint);
+            };
+
+            // Run the task from GCodeGenManager so it can be managed...
+            currentProject.getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(generateGCodeAndPrint);
+        }
     }
     
     @FXML
@@ -532,7 +518,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     String projectLocation = ApplicationConfiguration.getProjectDirectory()
                             + currentProject.getProjectName();
                     Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
-                            .getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
+                            .getGCodeGenManager().getModelPrepResult(currentProject.getPrintQuality());
                     if(potentialGCodeGenResult.isPresent() 
                             && potentialGCodeGenResult.get().isSuccess())
                     {

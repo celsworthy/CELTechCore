@@ -5,6 +5,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.ShapeContainerProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
@@ -21,10 +22,12 @@ import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsCon
 import celtech.roboxbase.configuration.slicer.NozzleParameters;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
+import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.services.gcodepreview.GCodePreviewExecutorService;
 import celtech.services.gcodepreview.GCodePreviewTask;
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import javafx.beans.value.ChangeListener;
@@ -120,14 +123,31 @@ public class PreviewManager
                 {
                     updatePreview();
                 }
+                else
+                {
+                    // FIXME! Race condition here - can enable button
+                    // when it should be disabled while waiting for gCode generator.
+                    setPreviewButtonEnabledState(modelIsSuitable());
+                }
             }
             else
             {
+                setPreviewButtonEnabledState(false);
                 clearPreview();
             }
         }
     }
 
+    private void setPreviewButtonEnabledState(final boolean modelSuitable)
+    {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            // Enable/Disable preview button.
+            if (!modelSuitable)
+                previewButton.setFxmlFileName("previewButton");
+            previewButton.disableProperty().set(modelSuitable);
+        });
+    }
     public void shutdown()
     {
         removePreview();
@@ -142,8 +162,7 @@ public class PreviewManager
     private boolean modelIsSuitable()
     {
         return (currentProject != null &&
-                currentProject instanceof ModelContainerProject &&
-                ((ModelContainerProject)currentProject).getGCodeGenManager().modelIsSuitable());
+                currentProject.getGCodeGenManager().projectIsSuitable());
     }
    
     private void clearPreview()
@@ -201,7 +220,7 @@ public class PreviewManager
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 // Disable preview button.
-                previewButton.setFxmlFileName("previewLoadingButton");
+                previewButton.setFxmlFileName("previewButton");
                 previewButton.disableProperty().set(true);
             });
             clearPreview();
@@ -223,63 +242,104 @@ public class PreviewManager
                     startPreview();
                 else
                     clearPreview();
-                ModelContainerProject mProject = (ModelContainerProject)currentProject;
                 steno.debug("Waiting for prep result");
-                Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
-                steno.debug("Got prep result - ifPresent() = " + Boolean.toString(resultOpt.isPresent()) + "isSuccess() = " + (resultOpt.isPresent() ? Boolean.toString(resultOpt.get().isSuccess()) : "---"));
-                if (resultOpt.isPresent() && resultOpt.get().isSuccess())
+                boolean prepSuccessful = false;
+                
+                if (currentProject instanceof ModelContainerProject)
                 {
-                    steno.debug("GCodePrepResult = " + resultOpt.get().getPostProcOutputFileName());
-
-                    // Get tool colours.
-                    Color t0Colour = StandardColours.ROBOX_BLUE;
-                    Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
-                    String printerType = null;
-                    String headTypeCode = HeadContainer.defaultHeadID;
-                    Printer printer = Lookup.getSelectedPrinterProperty().get();
-                    if (printer != null)
+                    Optional<GCodeGeneratorResult> resultOpt = currentProject.getGCodeGenManager().getModelPrepResult(currentProject.getPrintQuality());
+                    steno.debug("Got prep result - ifPresent() = " + Boolean.toString(resultOpt.isPresent()) + "isSuccess() = " + (resultOpt.isPresent() ? Boolean.toString(resultOpt.get().isSuccess()) : "---"));
+                    if (resultOpt.isPresent() && resultOpt.get().isSuccess())
                     {
-                        printerType = printer.printerConfigurationProperty().get().getTypeCode();
-
-                        Head head = printer.headProperty().get();
-                        if (head != null)
+                        steno.debug("GCodePrepResult = " + resultOpt.get().getPostProcOutputFileName());
+                    
+                        // Get tool colours.
+                        Color t0Colour = StandardColours.ROBOX_BLUE;
+                        Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
+                        String printerType = null;
+                        String headTypeCode = HeadContainer.defaultHeadID;
+                        Printer printer = Lookup.getSelectedPrinterProperty().get();
+                        if (printer != null)
                         {
-                            headTypeCode = head.typeCodeProperty().get();
-                            
-                            // Assume we have at least one extruder.
-                            Filament filamentInUse;
-                            filamentInUse = printer.effectiveFilamentsProperty().get(0);
-                            if (filamentInUse != null && filamentInUse != FilamentContainer.UNKNOWN_FILAMENT)
+                            printerType = printer.printerConfigurationProperty().get().getTypeCode();
+
+                            Head head = printer.headProperty().get();
+                            if (head != null)
                             {
-                                Color colour = filamentInUse.getDisplayColour();
-                                if (colour != null)
-                                    t0Colour = colour;
-                            }
-                            if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
-                            {
-                                t1Colour = t0Colour;
-                                t0Colour = Color.ORANGE;
-                                filamentInUse = printer.effectiveFilamentsProperty().get(1);
+                                headTypeCode = head.typeCodeProperty().get();
+
+                                // Assume we have at least one extruder.
+                                Filament filamentInUse;
+                                filamentInUse = printer.effectiveFilamentsProperty().get(0);
                                 if (filamentInUse != null && filamentInUse != FilamentContainer.UNKNOWN_FILAMENT)
                                 {
                                     Color colour = filamentInUse.getDisplayColour();
                                     if (colour != null)
                                         t0Colour = colour;
                                 }
+                                if (head.headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                                {
+                                    t1Colour = t0Colour;
+                                    t0Colour = Color.ORANGE;
+                                    filamentInUse = printer.effectiveFilamentsProperty().get(1);
+                                    if (filamentInUse != null && filamentInUse != FilamentContainer.UNKNOWN_FILAMENT)
+                                    {
+                                        Color colour = filamentInUse.getDisplayColour();
+                                        if (colour != null)
+                                            t0Colour = colour;
+                                    }
+                                }
+                                else
+                                    t1Colour = t0Colour;
                             }
-                            else
-                                t1Colour = t0Colour;
                         }
-                    }
 
-                    if (previewTask == null)
-                        startPreview();
-                    else
-                        previewTask.setPrinterType(printerType);
-                    steno.debug("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
-                    previewTask.setToolColour(0, t0Colour);
-                    previewTask.setToolColour(1, t1Colour);
-                    previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
+                        if (previewTask == null)
+                            startPreview();
+                        else
+                            previewTask.setPrinterType(printerType);
+                        steno.debug("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
+                        previewTask.setToolColour(0, t0Colour);
+                        previewTask.setToolColour(1, t1Colour);
+                        previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
+                        prepSuccessful = true;
+                    }
+                }
+                else if (currentProject instanceof ShapeContainerProject)
+                {
+                    Optional<StylusGCodeGeneratorResult> prepResult = currentProject.getGCodeGenManager().getStylusGCodeGenResult();
+                    if (prepResult.isPresent() &&  prepResult.get().getResultOK())
+                    {
+                        // Get tool colours.
+                        Color t0Colour = StandardColours.ROBOX_BLUE;
+                        Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
+                        String printerType = null;
+                        String headTypeCode = HeadContainer.defaultHeadID;
+                        Printer printer = Lookup.getSelectedPrinterProperty().get();
+                        if (printer != null)
+                        {
+                            printerType = printer.printerConfigurationProperty().get().getTypeCode();
+
+                            Head head = printer.headProperty().get();
+                            if (head != null)
+                                headTypeCode = head.typeCodeProperty().get();
+                        }
+
+                        if (previewTask == null)
+                            startPreview();
+                        else
+                            previewTask.setPrinterType(printerType);
+
+                        previewTask.setToolColour(0, t0Colour);
+                        previewTask.setToolColour(1, t1Colour);
+                        previewTask.loadGCodeFile( prepResult.get().getCompensatedOutputFileName());
+
+                        prepSuccessful = true;
+                    }
+                }
+                    
+                if (prepSuccessful)
+                {    
                     if (Lookup.getUserPreferences().isAutoGCodePreview())
                         previewTask.giveFocus();
                     
@@ -296,7 +356,7 @@ public class PreviewManager
                     {
                         steno.info("Setting button state to failed");
                         previewButton.disableProperty().set(true);
-                        previewButton.setFxmlFileName("previewLoadingButton");
+                        previewButton.setFxmlFileName("previewButton");
                     });
                 }
             };

@@ -18,6 +18,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -41,6 +42,7 @@ import javafx.scene.text.Text;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.Translate;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -804,6 +806,13 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         if (shape != null)
         {
             out.writeBoolean(false);
+            Transform tl = shape.getLocalToParentTransform();
+            out.writeDouble(tl.getMxx());
+            out.writeDouble(tl.getMxy());
+            out.writeDouble(tl.getMyx());
+            out.writeDouble(tl.getMyy());
+            out.writeDouble(tl.getTx());
+            out.writeDouble(tl.getTy());
             if (shape instanceof Arc)
             {
                 final Arc arc = (Arc) shape;
@@ -966,6 +975,14 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         final boolean isNull = in.readBoolean();
         if (!isNull)
         {
+            final double mxx = in.readDouble();
+            final double mxy = in.readDouble();
+            final double myx = in.readDouble();
+            final double myy = in.readDouble();
+            final double tx = in.readDouble();
+            final double ty = in.readDouble();
+            Affine a  = new Affine();
+            a.append(mxx, mxy, tx, myx, myy, ty);
             final Class c = (Class) in.readObject();
             if (c.equals(Arc.class))
             {
@@ -1130,6 +1147,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             {
               throw new ClassNotFoundException();
             }
+            result.getTransforms().add(a);
         }
         return result;
     }

@@ -627,7 +627,11 @@ public class ProjectTab extends Tab implements ProjectCallback
     public Rectangle2D getPreviewRectangle()
     {
         Rectangle2D nRectangle = null;
-        Node ss = viewManager.getSubScene();
+        Node ss = null;
+        if (viewManager != null)
+            ss = viewManager.getSubScene();
+        else if (svgViewManager != null)
+            ss = svgViewManager;
         Bounds ssBounds = ss.localToScreen(ss.getBoundsInLocal());
         Bounds rhBounds = rhInsetContainer.localToScreen(rhInsetContainer.getBoundsInLocal());
 
