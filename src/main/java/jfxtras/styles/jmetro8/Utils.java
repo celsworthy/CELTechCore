@@ -1,5 +1,6 @@
 package jfxtras.styles.jmetro8;
 
+import com.sun.javafx.scene.text.FontHelper;
 import com.sun.javafx.scene.text.TextLayout;
 import com.sun.javafx.tk.Toolkit;
 import javafx.scene.text.Font;
@@ -22,13 +23,13 @@ public class Utils {
     private static final TextLayout layout = Toolkit.getToolkit().getTextLayoutFactory().createLayout();
 
     public static double computeTextWidth(Font font, String text, double wrappingWidth) {
-        layout.setContent(text != null ? text : "", font.impl_getNativeFont());
+        layout.setContent(text != null ? text : "", FontHelper.getNativeFont(font));
         layout.setWrapWidth((float)wrappingWidth);
         return layout.getBounds().getWidth();
     }
 
     public static double computeTextHeight(Font font, String text, double wrappingWidth, double lineSpacing, TextBoundsType boundsType) {
-        layout.setContent(text != null ? text : "", font.impl_getNativeFont());
+        layout.setContent(text != null ? text : "", FontHelper.getNativeFont(font));
         layout.setWrapWidth((float)wrappingWidth);
         layout.setLineSpacing((float)lineSpacing);
         if (boundsType == TextBoundsType.LOGICAL_VERTICAL_CENTER) {

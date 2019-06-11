@@ -1,13 +1,13 @@
 package jfxtras.styles.jmetro8;
 
 import com.sun.javafx.scene.control.behavior.*;
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
 import javafx.animation.Transition;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.geometry.Point2D;
 import javafx.geometry.Side;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
@@ -18,9 +18,9 @@ import javafx.util.StringConverter;
 /**
  * Created by pedro_000 on 3/30/2014.
  */
-public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
+public class FilledSliderSkin extends SkinBase<Slider>
 {
-
+    private final SliderBehavior sliderBehavior;
     /**
      * Track if slider is vertical/horizontal and cause re layout
      */
@@ -47,21 +47,94 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
 
     public FilledSliderSkin(Slider slider)
     {
-        super(slider, new SliderBehavior(slider));
-
+        super(slider);
+        sliderBehavior = new SliderBehavior(slider);
         initialize();
         slider.requestLayout();
-        registerChangeListener(slider.minProperty(), "MIN");
-        registerChangeListener(slider.maxProperty(), "MAX");
-        registerChangeListener(slider.valueProperty(), "VALUE");
-        registerChangeListener(slider.orientationProperty(), "ORIENTATION");
-        registerChangeListener(slider.showTickMarksProperty(), "SHOW_TICK_MARKS");
-        registerChangeListener(slider.showTickLabelsProperty(), "SHOW_TICK_LABELS");
-        registerChangeListener(slider.majorTickUnitProperty(), "MAJOR_TICK_UNIT");
-        registerChangeListener(slider.minorTickCountProperty(), "MINOR_TICK_COUNT");
-        registerChangeListener(slider.labelFormatterProperty(), "TICK_LABEL_FORMATTER");
+        
+        registerChangeListener(slider.minProperty(), e -> updateMin());
+        registerChangeListener(slider.maxProperty(),  e -> updateMax());
+        registerChangeListener(slider.valueProperty(),  e -> updateValue());
+        registerChangeListener(slider.orientationProperty(),  e ->  updateOrientation());
+        registerChangeListener(slider.showTickMarksProperty(),  e -> updateTickMarksAndLabels());
+        registerChangeListener(slider.showTickLabelsProperty(),  e -> updateTickMarksAndLabels());
+        registerChangeListener(slider.majorTickUnitProperty(),  e -> updateMajorTickUnit());
+        registerChangeListener(slider.minorTickCountProperty(),  e -> updateMinorTickCount());
+        registerChangeListener(slider.labelFormatterProperty(),  e -> updateTickLabelFormatter());
     }
 
+    private void updateOrientation()
+    {
+        Slider slider = getSkinnable();
+        if (showTickMarks && tickLine != null)
+        {
+            tickLine.setSide(slider.getOrientation() == Orientation.VERTICAL ? Side.RIGHT : (slider.getOrientation() == null) ? Side.RIGHT : Side.BOTTOM);
+        }
+        slider.requestLayout();
+    }
+    
+    private void updateValue()
+    {
+        positionThumb(trackClicked);
+    }
+
+    private void updateMin()
+    {
+        if (showTickMarks && tickLine != null)
+        {
+            tickLine.setLowerBound(getSkinnable().getMin());
+        }
+        getSkinnable().requestLayout();
+    }
+    
+    private void updateMax()
+    {
+        if (showTickMarks && tickLine != null)
+        {
+            tickLine.setUpperBound(getSkinnable().getMax());
+        }
+        getSkinnable().requestLayout();
+    }
+
+    private void updateTickMarksAndLabels()
+    {
+        setShowTickMarks(getSkinnable().isShowTickMarks(), getSkinnable().isShowTickLabels());
+        getSkinnable().requestLayout();
+    }
+
+    private void updateMajorTickUnit()
+    {
+        if (tickLine != null)
+        {
+            tickLine.setTickUnit(getSkinnable().getMajorTickUnit());
+            getSkinnable().requestLayout();
+        }
+    }
+
+    private void updateMinorTickCount()
+    {
+        if (tickLine != null)
+        {
+            tickLine.setMinorTickCount(Math.max(getSkinnable().getMinorTickCount(), 0) + 1);
+            getSkinnable().requestLayout();
+        }
+    }
+
+    private void updateTickLabelFormatter()
+    {
+        if (tickLine != null)
+        {
+            if (getSkinnable().getLabelFormatter() == null)
+            {
+                tickLine.setTickLabelFormatter(null);
+            } else
+            {
+                tickLine.setTickLabelFormatter(stringConverterWrapper);
+                tickLine.requestAxisLayout();
+            }
+        }
+    }
+         
     private void initialize()
     {
         thumb = new StackPane();
@@ -113,7 +186,7 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
             @Override
             public void handle(MouseEvent me)
             {
-                getBehavior().thumbPressed(me, 0.0f);
+                sliderBehavior.thumbPressed(me, 0.0f);
                 dragStart = thumb.localToParent(me.getX(), me.getY());
                 preDragThumbPos = (getSkinnable().getValue() - getSkinnable().getMin()) / (getSkinnable().getMax() - getSkinnable().getMin());
             }
@@ -124,7 +197,7 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
             @Override
             public void handle(MouseEvent me)
             {
-                getBehavior().thumbReleased(me);
+                sliderBehavior.thumbReleased(me);
             }
         });
 
@@ -136,7 +209,7 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
                 Point2D cur = thumb.localToParent(me.getX(), me.getY());
                 double dragPos = (getSkinnable().getOrientation() == Orientation.HORIZONTAL)
                     ? cur.getX() - dragStart.getX() : -(cur.getY() - dragStart.getY());
-                getBehavior().thumbDragged(me, preDragThumbPos + dragPos / trackLength);
+                sliderBehavior.thumbDragged(me, preDragThumbPos + dragPos / trackLength);
             }
         });
     }
@@ -147,10 +220,10 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
         {
             if (getSkinnable().getOrientation() == Orientation.HORIZONTAL)
             {
-                getBehavior().trackPress(mouseEvent, (mouseEvent.getX() / trackLength));
+                sliderBehavior.trackPress(mouseEvent, (mouseEvent.getX() / trackLength));
             } else
             {
-                getBehavior().trackPress(mouseEvent, (mouseEvent.getY() / trackLength));
+                sliderBehavior.trackPress(mouseEvent, (mouseEvent.getY() / trackLength));
             }
         }
     }
@@ -161,10 +234,10 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
         {
             if (getSkinnable().getOrientation() == Orientation.HORIZONTAL)
             {
-                getBehavior().trackPress(mouseEvent, (mouseEvent.getX() / trackLength));
+                sliderBehavior.trackPress(mouseEvent, (mouseEvent.getX() / trackLength));
             } else
             {
-                getBehavior().trackPress(mouseEvent, (mouseEvent.getY() / trackLength));
+                sliderBehavior.trackPress(mouseEvent, (mouseEvent.getY() / trackLength));
             }
         }
     }
@@ -226,69 +299,6 @@ public class FilledSliderSkin extends BehaviorSkinBase<Slider, SliderBehavior>
         }
 
         getSkinnable().requestLayout();
-    }
-
-    @Override
-    protected void handleControlPropertyChanged(String p)
-    {
-        super.handleControlPropertyChanged(p);
-        Slider slider = getSkinnable();
-        if ("ORIENTATION".equals(p))
-        {
-            if (showTickMarks && tickLine != null)
-            {
-                tickLine.setSide(slider.getOrientation() == Orientation.VERTICAL ? Side.RIGHT : (slider.getOrientation() == null) ? Side.RIGHT : Side.BOTTOM);
-            }
-            getSkinnable().requestLayout();
-        } else if ("VALUE".equals(p))
-        {
-            // only animate thumb if the track was clicked - not if the thumb is dragged
-            positionThumb(trackClicked);
-        } else if ("MIN".equals(p))
-        {
-            if (showTickMarks && tickLine != null)
-            {
-                tickLine.setLowerBound(slider.getMin());
-            }
-            getSkinnable().requestLayout();
-        } else if ("MAX".equals(p))
-        {
-            if (showTickMarks && tickLine != null)
-            {
-                tickLine.setUpperBound(slider.getMax());
-            }
-            getSkinnable().requestLayout();
-        } else if ("SHOW_TICK_MARKS".equals(p) || "SHOW_TICK_LABELS".equals(p))
-        {
-            setShowTickMarks(slider.isShowTickMarks(), slider.isShowTickLabels());
-        } else if ("MAJOR_TICK_UNIT".equals(p))
-        {
-            if (tickLine != null)
-            {
-                tickLine.setTickUnit(slider.getMajorTickUnit());
-                getSkinnable().requestLayout();
-            }
-        } else if ("MINOR_TICK_COUNT".equals(p))
-        {
-            if (tickLine != null)
-            {
-                tickLine.setMinorTickCount(Math.max(slider.getMinorTickCount(), 0) + 1);
-                getSkinnable().requestLayout();
-            }
-        } else if ("TICK_LABEL_FORMATTER".equals(p))
-        {
-            if (tickLine != null)
-            {
-                if (slider.getLabelFormatter() == null)
-                {
-                    tickLine.setTickLabelFormatter(null);
-                } else
-                {
-                    tickLine.setTickLabelFormatter(stringConverterWrapper);
-                    tickLine.requestAxisLayout();
-                }
-            }
-        }
     }
 
     /**

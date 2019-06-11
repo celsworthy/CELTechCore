@@ -41,7 +41,6 @@ import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import netscape.javascript.JSObject;
 import org.apache.commons.io.FilenameUtils;
-import org.codehaus.plexus.util.FileUtils;
 
 /**
  *
@@ -191,7 +190,7 @@ public class LoadModelInsetPanelController implements Initializable
                 {
                     steno.debug("Got stl file from My Mini Factory");
                     final String targetname = BaseConfiguration.getUserStorageDirectory()
-                        + File.separator + FileUtils.basename(fileURL);
+                        + File.separator + FilenameUtils.getBaseName(fileURL);
                     writeStreamToFile(webInputStream, targetname);
                 } else if (extension.equalsIgnoreCase("zip"))
                 {

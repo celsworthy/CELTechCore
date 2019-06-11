@@ -4,19 +4,19 @@
 package celtech.utils.threed.exporters;
 
 import celtech.JavaFXConfiguredTest;
-import celtech.appManager.ModelContainerProject;
+//import celtech.appManager.ModelContainerProject;
 import celtech.modelcontrol.ModelContainer;
-import com.fasterxml.jackson.core.JsonProcessingException;
+//import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
-import java.io.StringWriter;
+//import java.io.StringWriter;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import static org.codehaus.plexus.util.SelectorUtils.removeWhitespace;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+//import javax.xml.stream.XMLOutputFactory;
+//import javax.xml.stream.XMLStreamException;
+//import javax.xml.stream.XMLStreamWriter;
+//import static org.codehaus.plexus.util.SelectorUtils.removeWhitespace;
+//import static org.junit.Assert.assertEquals;
+//import org.junit.Test;
 
 /**
  *
