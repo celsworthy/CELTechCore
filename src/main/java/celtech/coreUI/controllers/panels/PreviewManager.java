@@ -145,7 +145,7 @@ public class PreviewManager
             // Enable/Disable preview button.
             if (!modelSuitable)
                 previewButton.setFxmlFileName("previewButton");
-            previewButton.disableProperty().set(modelSuitable);
+            previewButton.disableProperty().set(!modelSuitable);
         });
     }
     public void shutdown()
