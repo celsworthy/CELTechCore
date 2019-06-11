@@ -119,9 +119,12 @@ public class Preferences
 
         Preference timelapseTriggerEnabledPref = new TickBoxPreference(userPreferences.getTimelapseTriggerEnabledProperty(),
                 "preferences.timelapseTriggerEnabled");
-
-        Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
-                "preferences.goProWifiPassword");
+        
+        Preference timelapseTurnOffHeadLightsPref = new TickBoxPreference(userPreferences.getTimelapseTurnOffHeadLightsProperty(),
+                "preferences.timelapseTurnOffHeadLights");
+        
+        Preference timelapseTurnOffLEDPref = new TickBoxPreference(userPreferences.getTimelapseTurnOffLEDProperty(),
+                "preferences.timelapseTurnOffLED");
 
         Preference timelapseMoveBeforeCapturePref = new TickBoxPreference(userPreferences.getTimelapseMoveBeforeCaptureProperty(),
                 "preferences.timelapseMoveBeforeCapture");
@@ -132,19 +135,12 @@ public class Preferences
         Preference timelapseYMovePref = new IntegerPreference(userPreferences.getTimelapseYMoveProperty(),
                 "preferences.timelapseYMove");
 
-        Preference timelapseDelayPref = new IntegerPreference(userPreferences.getTimelapseDelayProperty(),
-                "preferences.timelapseDelay");
-
-        Preference timelapseDelayBeforeCapturePref = new IntegerPreference(userPreferences.getTimelapseDelayBeforeCaptureProperty(),
-                "preferences.timelapseDelayBeforeCapture");
-
         preferences.add(timelapseTriggerEnabledPref);
-        preferences.add(goProWifiPasswordPref);
+        preferences.add(timelapseTurnOffHeadLightsPref);
+        preferences.add(timelapseTurnOffLEDPref);
         preferences.add(timelapseMoveBeforeCapturePref);
         preferences.add(timelapseXMovePref);
         preferences.add(timelapseYMovePref);
-        preferences.add(timelapseDelayPref);
-        preferences.add(timelapseDelayBeforeCapturePref);
 
         return preferences;
     }

@@ -26,7 +26,7 @@ public class NewsButton extends GraphicButton implements NewsListener
     private static final String fxmlFileName = "newsButton";
     private NewsBot newsBot = null;
     private final Tooltip tooltip = new Tooltip();
-    private static final String allAutoMakerNewsFlashesURL = "http://www.cel-robox.com/category/AutoMakerNewsflash";
+    private static final String allAutoMakerNewsFlashesURL = "https://www.cel-uk.com/category/automakernewsflash";
 
     @FXML
     private Text newsCounter;
