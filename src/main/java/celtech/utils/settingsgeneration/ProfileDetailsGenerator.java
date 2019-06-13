@@ -225,6 +225,7 @@ public class ProfileDetailsGenerator {
         scrollableSettingsPane.setFitToWidth(true);
         scrollableSettingsPane.setFitToHeight(true);
         scrollableSettingsPane.setContent(settingGridPane);
+        scrollableSettingsPane.getStyleClass().add("edge-to-edge");
         createBindingToWindowHeight(scrollableSettingsPane);
         
         VBox tabContent = new VBox();
