@@ -27,6 +27,10 @@ public class LibraryMenuPanelController extends MenuPanelController
         profileDetails = loadInnerPanel(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml",
                 profileDetailsController);
+        
+        loadInnerPanel(
+                ApplicationConfiguration.fxmlPanelResourcePath + "cameraProfilesPanel.fxml",
+                new CameraProfilesPanelController());
     }
     
         public void showAndSelectPrintProfile(RoboxProfile roboxProfile)
