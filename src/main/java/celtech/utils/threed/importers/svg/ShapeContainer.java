@@ -170,6 +170,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         List<Shape> newShapes = new ArrayList<>();
         for (Shape originalShape : shapes)
         {
+            Shape newShape = null;
             if (originalShape instanceof Arc)
             {
                 Arc originalArc = (Arc)(originalShape);
@@ -181,7 +182,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newArc.setRadiusY(originalArc.getRadiusY());
                 newArc.setStartAngle(originalArc.getStartAngle());
                 newArc.setType(originalArc.getType());
-                newShapes.add(newArc);
+                newShape = newArc;
             }
             else if (originalShape instanceof Circle)
             {
@@ -190,7 +191,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newCircle.setCenterX(originalCircle.getCenterX());
                 newCircle.setCenterY(originalCircle.getCenterY());
                 newCircle.setRadius(originalCircle.getRadius());
-                newShapes.add(newCircle);
+                newShape = newCircle;
             }
             else if (originalShape instanceof CubicCurve)
             {
@@ -204,7 +205,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newCubic.setControlY2(originalCubic.getControlY2());
                 newCubic.setEndX(originalCubic.getEndX());
                 newCubic.setEndY(originalCubic.getEndY());
-                newShapes.add(newCubic);
+                newShape = newCubic;
             }
             else if (originalShape instanceof Ellipse)
             {
@@ -214,7 +215,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newEllipse.setCenterY(originalEllipse.getCenterY());
                 newEllipse.setRadiusX(originalEllipse.getRadiusX());
                 newEllipse.setRadiusY(originalEllipse.getRadiusY());
-                newShapes.add(newEllipse);
+                newShape = newEllipse;
             }
             else if (originalShape instanceof Line)
             {
@@ -224,7 +225,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newLine.setStartY(originalLine.getStartY());
                 newLine.setEndX(originalLine.getEndX());
                 newLine.setEndY(originalLine.getEndY());
-                newShapes.add(newLine);
+                newShape = newLine;
             }
             else if (originalShape instanceof Polygon)
             {
@@ -234,7 +235,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 for (int i = 0; i < originalPoints.size(); ++i)
                     newPoints[i] = originalPoints.get(i);
                 Polygon newPolygon = new Polygon(newPoints);
-                newShapes.add(newPolygon);
+                newShape = newPolygon;
             }
             else if (originalShape instanceof Polyline)
             {
@@ -243,8 +244,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 double[] points = new double[originalPoints.size()];
                 for (int i = 0; i < originalPoints.size(); ++i)
                     points[i] = originalPoints.get(i);
-                Polygon newPolygon = new Polygon(points);
-                newShapes.add(newPolygon);
+                Polyline newPolyline = new Polyline(points);
+                newShape = newPolyline;
             }
             else if (originalShape instanceof QuadCurve)
             {
@@ -256,7 +257,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newQuad.setControlY(originalQuad.getControlY());
                 newQuad.setEndX(originalQuad.getEndX());
                 newQuad.setEndY(originalQuad.getEndY());
-                newShapes.add(newQuad);
+                newShape = newQuad;
             }
             else if (originalShape instanceof Rectangle)
             {
@@ -268,7 +269,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newRectangle.setHeight(originalRectangle.getHeight());
                 newRectangle.setArcWidth(originalRectangle.getArcWidth());
                 newRectangle.setArcHeight(originalRectangle.getArcHeight());
-                newShapes.add(newRectangle);
+                newShape = newRectangle;
             }
             else if (originalShape instanceof SVGPath)
             {
@@ -276,7 +277,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 SVGPath newPath = new SVGPath();
                 newPath.setContent(originalPath.getContent());
                 newPath.setFillRule(originalPath.getFillRule());
-                newShapes.add(newPath);
+                newShape = newPath;
             }
             else if (originalShape instanceof Text)
             {
@@ -285,8 +286,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newText.setX(originalText.getX());
                 newText.setY(originalText.getY());
                 newText.setText(originalText.getText());
-                newShapes.add(newText);
+                newShape = newText;
             }
+            for (Transform originalTransform : originalShape.getTransforms())
+                newShape.getTransforms().add(originalTransform.clone());
+            
+            newShapes.add(newShape);
         }
         ShapeContainer copy = new ShapeContainer(getModelName(), newShapes);        
         copy.setState(this.getState());
@@ -477,7 +482,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         if (originalModelBounds == null)
             updateOriginalModelBounds(); 
-        return originalModelBounds.getHeight() * preferredYScale.doubleValue();
+        return originalModelBounds.getHeight() * preferredXScale.doubleValue();
     }
 
     @Override
@@ -524,7 +529,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
         double relativeXSize = printableBoundingBox.getWidth() / printVolumeWidth;
         double relativeYSize = printableBoundingBox.getHeight() / printVolumeDepth;
-        steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize);
+        //steno.info("Relative sizes of model: X " + relativeXSize + " Y " + relativeYSize);
 
         if (relativeXSize > relativeYSize)
         {
@@ -637,14 +642,14 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
         for (Shape shape : shapes)
         {
-            Bounds localBounds = shape.getBoundsInLocal();
-            minX = Math.min(localBounds.getMinX(), minX);
-            minY = Math.min(localBounds.getMinY(), minY);
-            minZ = Math.min(localBounds.getMinZ(), minZ);
+            Bounds shapeBounds = shape.getBoundsInParent();
+            minX = Math.min(shapeBounds.getMinX(), minX);
+            minY = Math.min(shapeBounds.getMinY(), minY);
+            minZ = Math.min(shapeBounds.getMinZ(), minZ);
 
-            maxX = Math.max(localBounds.getMaxX(), maxX);
-            maxY = Math.max(localBounds.getMaxY(), maxY);
-            maxZ = Math.max(localBounds.getMaxZ(), maxZ);
+            maxX = Math.max(shapeBounds.getMaxX(), maxX);
+            maxY = Math.max(shapeBounds.getMaxY(), maxY);
+            maxZ = Math.max(shapeBounds.getMaxZ(), maxZ);
         }
 
         double newwidth = maxX - minX;
@@ -677,9 +682,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
             for (Shape shape : shapes)
             {
-                Bounds localBounds = shape.getBoundsInLocal();
+                //Bounds shapeBounds = shape.getBoundsInLocal();
                 Bounds parentBounds = localToParent(shape.getBoundsInParent());
-                // steno.info("Started with local bounds: " + localBounds);
+                // steno.info("Started with shape bounds: " + shapeBounds);
                 // steno.info("Finished with bed bounds: " + parentBounds);
                 minX = Math.min(parentBounds.getMinX(), minX);
                 minY = Math.min(parentBounds.getMinY(), minY);
@@ -698,7 +703,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                     newheight, 0, newcentreX, newcentreY,
                     0);
         }
-        steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
+        //steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
         return rb;
     }
 
@@ -737,7 +742,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 newheight, 0, newcentreX, newcentreY,
                 0);
 
-        steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
+        //steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
         
         return rb;
     }
@@ -767,7 +772,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         if (notifyEnabled)
         {
-            steno.info("notifyShapeHasChanged: lastTransformedBoundsInParent = " + lastTransformedBoundsInParent);
+            //steno.info("notifyShapeHasChanged: lastTransformedBoundsInParent = " + lastTransformedBoundsInParent);
             checkOffBed();
             notifyShapeChange();
             notifyScreenExtentsChange();

@@ -89,6 +89,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private VBox rhInsetContainer = null;
     private LoadedPanelData settingsInsetPanelData = null;
     private LoadedPanelData timeCostInsetPanelData = null;
+    private LoadedPanelData stylusSettingsInsetPanelData = null;
     private LoadedPanelData modelActionsInsetPanelData = null;
     
     private class LoadedPanelData
@@ -164,19 +165,42 @@ public class ProjectTab extends Tab implements ProjectCallback
                     rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
                     timeCostInsetPanelData = null;
                 }
+                if (stylusSettingsInsetPanelData != null)
+                {
+                    stylusSettingsInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(stylusSettingsInsetPanelData.getNode());
+                    stylusSettingsInsetPanelData = null;
+                }
             } else
             {
-                if (settingsInsetPanelData == null)
+                switch (project.getMode())
                 {
-                    settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
-                    settingsInsetPanelData.getNode().setVisible(false);
-                    rhInsetContainer.getChildren().add(settingsInsetPanelData.getNode());
-                }
-                if (timeCostInsetPanelData == null)
-                {
-                    timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
-                    timeCostInsetPanelData.getNode().setVisible(false);
-                    rhInsetContainer.getChildren().add(0, timeCostInsetPanelData.getNode());
+                    case SVG:
+                        if (stylusSettingsInsetPanelData == null)
+                        {
+                            stylusSettingsInsetPanelData = loadInsetPanel("stylusSettingsInsetPanel.fxml", project);
+                            stylusSettingsInsetPanelData.getNode().setVisible(false);
+                            rhInsetContainer.getChildren().add(0, stylusSettingsInsetPanelData.getNode());
+                        }
+                        break;
+                    
+                    case MESH:
+                        if (settingsInsetPanelData == null)
+                        {
+                            settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
+                            settingsInsetPanelData.getNode().setVisible(false);
+                            rhInsetContainer.getChildren().add(settingsInsetPanelData.getNode());
+                        }
+                        if (timeCostInsetPanelData == null)
+                        {
+                            timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+                            timeCostInsetPanelData.getNode().setVisible(false);
+                            rhInsetContainer.getChildren().add(0, timeCostInsetPanelData.getNode());
+                        }
+                        break;
+                    
+                    default:
+                        break;
                 }
             }
         }

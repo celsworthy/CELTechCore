@@ -24,6 +24,10 @@ import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -37,9 +41,18 @@ public class ShapeContainerProject extends Project
     private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainerProject.class.getName());
     private int version = -1;
 
+    private final StylusSettings stylusSettings = new StylusSettings();
+
     public ShapeContainerProject()
     {
         super();
+        stylusSettings.getDataChanged().addListener(
+        (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            steno.info("Stylus settings changed");
+            projectModified();
+            fireWhenPrinterSettingsChanged(printerSettings);
+        });
     }
 
     @Override
@@ -185,6 +198,10 @@ public class ShapeContainerProject extends Project
     @Override
     protected void fireWhenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
     {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenPrinterSettingsChanged(printerSettings);
+        }
     }
 
     @Override
@@ -258,5 +275,11 @@ public class ShapeContainerProject extends Project
         projectModified();
 
         fireWhenModelsTransformed((Set) modelContainers);
+    }
+    
+    
+    public StylusSettings getStylusSettings()
+    {
+        return stylusSettings;
     }
 }

@@ -48,6 +48,7 @@ import celtech.roboxbase.postprocessor.RoboxiserResult;
 import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
 import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
 import celtech.roboxbase.printerControl.model.Head;
+import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterException;
@@ -256,6 +257,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     private final BooleanProperty modelsOffBedWithRaft = new SimpleBooleanProperty(false);
     private final BooleanProperty modelOffBedWithSpiral = new SimpleBooleanProperty(false);
     private final BooleanProperty headIsSingleX = new SimpleBooleanProperty(false);
+    private final BooleanProperty headTypeIsStylus = new SimpleBooleanProperty(false);
     private ConditionalNotificationBar modelsOffBedNotificationBar;
     private ConditionalNotificationBar modelsOffBedWithHeadNotificationBar;
     private ConditionalNotificationBar modelsOffBedWithRaftNotificationBar;
@@ -463,7 +465,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                                                      projectLocation);
                             printer.printStylusProject(printableProject, prepResultOpt, Lookup.getUserPreferences().isSafetyFeaturesOn());
 
-                            //printer.executeGCodeFile(prepResult.getCompensatedOutputFileName(), false);
                             return true;
                         }
                     }
@@ -1251,9 +1252,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             dmHeadOnSingleExtruderMachineNotificationBar.setAppearanceCondition(printer.headProperty().get().headTypeProperty().isEqualTo(Head.HeadType.DUAL_MATERIAL_HEAD)
                     .and(printer.extrudersProperty().get(0).isFittedProperty().not().or(printer.extrudersProperty().get(1).isFittedProperty().not())));
             headIsSingleX.set(printer.headProperty().get().typeCodeProperty().get().equalsIgnoreCase("RBXDV-S1"));
+            headTypeIsStylus.set(printer.headProperty().get().headTypeProperty().get() == HeadType.STYLUS_HEAD);
         }
         else
+        {
             headIsSingleX.set(false);
+            headTypeIsStylus.set(false);
+        }
  
         if (project instanceof ModelContainerProject)
         {
@@ -1325,6 +1330,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                   printer.effectiveFilamentsProperty()));
             singleXHeadRequiredForFilledMaterialNotificationBar.setAppearanceCondition(filledMaterialAndNotSingleXHead
                                                                                            .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.SETTINGS)));
+        }
+        else
+        {
+            clearConditionalNotificationBarConditions();
         }
     }
 
@@ -1751,7 +1760,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             printButton.disableProperty().unbind();
             canPrintProject.unbind();
-            printButton.disableProperty().bind(project.canPrintProperty().not());
+            canPrintProject.bind(
+                    Bindings.isNotEmpty(project.getTopLevelThings())
+                            .and(printer.canPrintProperty())
+                            .and(project.canPrintProperty())
+                            .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
+                                    .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
+                            .and(headTypeIsStylus)
+                            .and(printerConnectionOffline.not()));
+            printButton.disableProperty().bind(canPrintProject.not());
         }
     }
 

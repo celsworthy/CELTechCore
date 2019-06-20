@@ -150,6 +150,18 @@ public class GCodePreviewTask extends Task<Boolean> {
         writeCommand(command.toString());
     }
     
+    public void setStylusMovesVisible(boolean flag)
+    {
+        StringBuilder command = new StringBuilder();
+        if (flag)
+            command.append("show stylus");
+        else
+            command.append("hide stylus");
+        command.trimToSize();
+
+        writeCommand(command.toString());
+    }
+    
     public void clearGCode()
     {
         writeCommand("clear");

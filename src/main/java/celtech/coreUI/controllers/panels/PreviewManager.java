@@ -108,17 +108,19 @@ public class PreviewManager
     {
         if (currentProject != project)
         {
-            if (currentProject != null && currentProject instanceof ModelContainerProject)
+            if (currentProject != null)
             {
-                ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().removeListener(this.gCodePrepChangeListener);
-                ((ModelContainerProject)currentProject).getGCodeGenManager().getPrintQualityProperty().removeListener(this.printQualityChangeListener);
+                currentProject.getGCodeGenManager().getDataChangedProperty().removeListener(this.gCodePrepChangeListener);
+                if (currentProject instanceof ModelContainerProject)
+                    currentProject.getGCodeGenManager().getPrintQualityProperty().removeListener(this.printQualityChangeListener);
             }
 
             currentProject = project;
-            if (currentProject != null && currentProject instanceof ModelContainerProject)
+            if (currentProject != null)
             {
-                ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
-                ((ModelContainerProject)currentProject).getGCodeGenManager().getPrintQualityProperty().addListener(this.printQualityChangeListener);
+                currentProject.getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
+                if (currentProject instanceof ModelContainerProject)
+                    currentProject.getGCodeGenManager().getPrintQualityProperty().addListener(this.printQualityChangeListener);
                 if (previewTask != null)
                 {
                     updatePreview();
@@ -143,8 +145,14 @@ public class PreviewManager
         BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
             // Enable/Disable preview button.
-            if (!modelSuitable)
+            if (!modelSuitable) {
                 previewButton.setFxmlFileName("previewButton");
+                System.out.println("setPreviewButtonEnabledState - disabling preview button with preview icon");
+            }
+            else
+            {
+                System.out.println("setPreviewButtonEnabledState - enabling preview button without changing icon");
+            }
             previewButton.disableProperty().set(!modelSuitable);
         });
     }
@@ -152,8 +160,11 @@ public class PreviewManager
     {
         removePreview();
 
-        if (currentProject != null && currentProject instanceof ModelContainerProject)
-            ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().removeListener(this.gCodePrepChangeListener);
+        if (currentProject != null )
+        {
+            currentProject.getGCodeGenManager().getDataChangedProperty().removeListener(this.gCodePrepChangeListener);
+            currentProject.getGCodeGenManager().getPrintQualityProperty().removeListener(this.printQualityChangeListener);
+        }
         currentProject = null;
 
         ApplicationStatus.getInstance().modeProperty().removeListener(applicationModeChangeListener);
@@ -202,17 +213,22 @@ public class PreviewManager
 
     private void autoStartAndUpdatePreview()
     {
-            if (previewTask != null ||
-                (Lookup.getUserPreferences().isAutoGCodePreview() &&
-                BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
+        steno.info("autoStartAndUpdatePreview");
+        if (previewTask != null ||
+            (Lookup.getUserPreferences().isAutoGCodePreview() &&
+            BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
         {
             updatePreview();
+        }
+        else
+        {
+            setPreviewButtonEnabledState(modelIsSuitable());
         }
     }
 
     private void updatePreview()
     {
-        steno.debug("Updating preview");
+        steno.info("Updating preview");
         
         boolean modelUnsuitable = !modelIsSuitable();
         if (modelUnsuitable)
@@ -220,6 +236,7 @@ public class PreviewManager
             BaseLookup.getTaskExecutor().runOnGUIThread(() ->
             {
                 // Disable preview button.
+                System.out.println("Model unsuitable - disabling preview button");
                 previewButton.setFxmlFileName("previewButton");
                 previewButton.disableProperty().set(true);
             });
@@ -234,6 +251,7 @@ public class PreviewManager
                 BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                 {
                     // Enable preview button.
+                    System.out.println("Waiting for gcode prep - enabling preview button with loading icon");
                     previewButton.setFxmlFileName("previewLoadingButton");
                     previewButton.disableProperty().set(false);
                 });
@@ -301,6 +319,7 @@ public class PreviewManager
                         steno.debug("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
                         previewTask.setToolColour(0, t0Colour);
                         previewTask.setToolColour(1, t1Colour);
+                        previewTask.setStylusMovesVisible(false);
                         previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
                         prepSuccessful = true;
                     }
@@ -332,6 +351,7 @@ public class PreviewManager
 
                         previewTask.setToolColour(0, t0Colour);
                         previewTask.setToolColour(1, t1Colour);
+                        previewTask.setStylusMovesVisible(true);
                         previewTask.loadGCodeFile( prepResult.get().getCompensatedOutputFileName());
 
                         prepSuccessful = true;
@@ -346,6 +366,8 @@ public class PreviewManager
                     BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                     {
                         // Enable preview button.
+                        System.out.println("GCode ready - enabling preview button with preview icon");
+                        previewButton.disableProperty().set(false);
                         previewButton.setFxmlFileName("previewButton");
                     });
                 }
@@ -355,6 +377,7 @@ public class PreviewManager
                      BaseLookup.getTaskExecutor().runOnGUIThread(() ->
                     {
                         steno.info("Setting button state to failed");
+                        System.out.println("GCode prep failed - disabling preview button with preview icon");
                         previewButton.disableProperty().set(true);
                         previewButton.setFxmlFileName("previewButton");
                     });

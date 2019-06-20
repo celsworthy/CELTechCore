@@ -106,7 +106,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     public SVGViewManager(Project project)
     {
-        steno.info("SVGViewManager");
+        //steno.info("SVGViewManager");
         this.project = project;
         this.undoableProject = new UndoableProject(project);
 
@@ -178,7 +178,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             if (projectifiableThing instanceof ShapeContainer)
             {
                 ShapeContainer shape = (ShapeContainer)projectifiableThing;
-                steno.info("SVGViewManager::SVGViewManager - Bounds are " + shape.getBoundsInLocal());
+                //steno.info("SVGViewManager::SVGViewManager - Bounds are " + shape.getBoundsInLocal());
                 parts.getChildren().add(shape);
                 shape.setBedReference(partsAndBed);
             }
@@ -187,14 +187,14 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void createBed()
     {
-        steno.info("createBed");
+        //steno.info("createBed");
         bed.setFill(Color.ANTIQUEWHITE);
         // The bed is in mm units
     }
 
     private void calculateBedFitScale()
     {
-        steno.info("calculateBedFitScale");
+        //steno.info("calculateBedFitScale");
         
         double viewAreaWidth = widthProperty().get();
         if (viewAreaWidth < 70)
@@ -227,28 +227,28 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         xOffsetAtFitScale = ((viewAreaWidth - newWidth) / 2) + bedBorder;
         yOffsetAtFitScale = ((viewAreaHeight - newHeight) / 2) + bedBorder;
 
-        System.out.println("calculateBedFitScale");
-        System.out.println("  widthProperty = " +
-                           Double.toString(widthProperty().get()) + 
-                           ", heightProperty = " + 
-                           Double.toString(heightProperty().get()));
-        System.out.println("  bed = (" +
-                           Double.toString(bedWidth) + 
-                           ", " + 
-                           Double.toString(bedHeight) +
-                           ")");
-        System.out.println("  viewArea = (" +
-                           Double.toString(viewAreaWidth) + 
-                           ", " + 
-                           Double.toString(viewAreaHeight) + 
-                           ")");
-        System.out.println("  fitScale = " +
-                           Double.toString(fitScale));
-        System.out.println("  offsetAtFitScale = (" +
-                           Double.toString(xOffsetAtFitScale) + 
-                           ", " + 
-                           Double.toString(yOffsetAtFitScale) + 
-                           ")");
+        //System.out.println("calculateBedFitScale");
+        //System.out.println("  widthProperty = " +
+        //                   Double.toString(widthProperty().get()) + 
+        //                   ", heightProperty = " + 
+        //                   Double.toString(heightProperty().get()));
+        //System.out.println("  bed = (" +
+        //                   Double.toString(bedWidth) + 
+        //                   ", " + 
+        //                   Double.toString(bedHeight) +
+        //                   ")");
+        //System.out.println("  viewArea = (" +
+        //                   Double.toString(viewAreaWidth) + 
+        //                   ", " + 
+        //                   Double.toString(viewAreaHeight) + 
+        //                   ")");
+        //System.out.println("  fitScale = " +
+        //                   Double.toString(fitScale));
+        //System.out.println("  offsetAtFitScale = (" +
+        //                   Double.toString(xOffsetAtFitScale) + 
+        //                   ", " + 
+        //                   Double.toString(yOffsetAtFitScale) + 
+        //                   ")");
     }
 
     private void resizeBed()
@@ -262,10 +262,10 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         bedTranslate.setX(xOffsetAtFitScale);
         bedTranslate.setY(yOffsetAtFitScale);
 
-        System.out.println("  originOnScreen = " + localToScreen(0,0));
-        System.out.println("  cornerOnScreen = " + localToScreen(widthProperty().get(),heightProperty().get()));
-        System.out.println("  bedOriginOnScreen = " + bed.localToScreen(0,0));
-        System.out.println("  bedCornerOnScreen = " + bed.localToScreen(bedWidth, bedHeight));
+        //System.out.println("  originOnScreen = " + localToScreen(0,0));
+        //System.out.println("  cornerOnScreen = " + localToScreen(widthProperty().get(),heightProperty().get()));
+        //System.out.println("  bedOriginOnScreen = " + bed.localToScreen(0,0));
+        //System.out.println("  bedCornerOnScreen = " + bed.localToScreen(bedWidth, bedHeight));
 
         notifyScreenExtentsChange();
     }
@@ -286,35 +286,35 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     @Override
     public void whenModelsRemoved(Set<ProjectifiableThing> projectifiableThing)
     {
-        steno.info("whenModelsRemoved");
+        //steno.info("whenModelsRemoved");
         parts.getChildren().removeAll(projectifiableThing);
     }
 
     @Override
     public void whenAutoLaidOut()
     {
-        steno.info("whenAutoLaidOut");
+        //steno.info("whenAutoLaidOut");
     }
 
     @Override
     public void whenModelsTransformed(Set<ProjectifiableThing> projectifiableThing
     )
     {
-        steno.info("whenModelsTransformed");
+        //steno.info("whenModelsTransformed");
     }
 
     @Override
     public void whenModelChanged(ProjectifiableThing modelContainer, String propertyName
     )
     {
-        steno.info("whenModelChanged");
+        //steno.info("whenModelChanged");
     }
 
     @Override
     public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings
     )
     {
-        steno.info("whenPrinterSettingsChanged");
+        //steno.info("whenPrinterSettingsChanged");
     }
 
     private void debugPrintBounds(String message, Bounds b)
@@ -367,7 +367,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         //debugPrintAllBounds("mouseEvent");
         if (event.getEventType() == MouseEvent.MOUSE_PRESSED)
         {
-            steno.info("MouseEvent.MOUSE_PRESSED");
+            //steno.info("MouseEvent.MOUSE_PRESSED");
             if (event.isPrimaryButtonDown()
                     || event.isSecondaryButtonDown())
             {
@@ -376,14 +376,14 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
         } else if (event.getEventType() == MouseEvent.MOUSE_DRAGGED)
         {
-            steno.info("MouseEvent.MOUSE_DRAGGED");
+            //steno.info("MouseEvent.MOUSE_DRAGGED");
             dragShape(shapeBeingDragged, event);
 
         } else if (event.getEventType() == MouseEvent.MOUSE_RELEASED)
         {
-            steno.info("MouseEvent.MOUSE_RELEASED");
+            //steno.info("MouseEvent.MOUSE_RELEASED");
             shapeBeingDragged = null;
-            steno.info("Setting DragMode to IDLE");
+            //steno.info("Setting DragMode to IDLE");
             dragMode.set(DragMode.IDLE);
         }
     };
@@ -485,7 +485,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     
     private ShapeContainer findShapeContainerParent(Node shape)
     {
-        steno.info("findShapeContainerParent");
+        //steno.info("findShapeContainerParent");
         ShapeContainer sc = null;
         Node currentNode = shape;
 
@@ -503,20 +503,20 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void handleMouseSingleClickedEvent(MouseEvent event)
     {
-        steno.info("handleMouseSingleClickedEvent");
+        //steno.info("handleMouseSingleClickedEvent");
         boolean handleThisEvent = true;
-        steno.info("    source: " + event.getSource());
-        steno.info("    target: " + event.getTarget());
+        //steno.info("    source: " + event.getSource());
+        //steno.info("    target: " + event.getTarget());
         PickResult pickResult = event.getPickResult();
         Point3D pickedPoint = pickResult.getIntersectedPoint();
         Node intersectedNode = pickResult.getIntersectedNode();
-        steno.info("   picked: " + intersectedNode + " @ " + pickedPoint);
+        //steno.info("   picked: " + intersectedNode + " @ " + pickedPoint);
                 
         boolean shortcut = event.isShortcutDown();
 
         if (event.isPrimaryButtonDown())
         {
-            steno.info("    event.isPrimaryButtonDown");
+            //steno.info("    event.isPrimaryButtonDown");
             if (intersectedNode != bed
                     && intersectedNode instanceof Shape)
             {
@@ -532,7 +532,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                         projectSelection.addSelectedItem(sc);
                     }
                 }
-                steno.info("    Setting drag mode to TRANSLATING");
+                //steno.info("    Setting drag mode to TRANSLATING");
                 dragMode.set(DragMode.TRANSLATING);
                 justEnteredDragMode = true;
                 dragShape((Shape) intersectedNode, event);
@@ -553,13 +553,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void dragShape(Shape shapeToDrag, MouseEvent event)
     {
-        steno.info("dragShape");
+        //steno.info("dragShape");
         Point2D newPosition = new Point2D(event.getSceneX(), event.getSceneY());
         if (shapeBeingDragged != null)
         {
-            steno.info("New position = " + newPosition);
+            //steno.info("New position = " + newPosition);
             Point2D resultantPosition = partsAndBed.sceneToLocal(newPosition).subtract(partsAndBed.sceneToLocal(lastDragPosition));
-            steno.info("Resultant " + resultantPosition);
+            //steno.info("Resultant " + resultantPosition);
 //            if (shapeBeingDragged == bed)
 //            {
 //                bedTranslate.setX(bedTranslate.getX() + resultantPosition.getX());
@@ -580,7 +580,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
     private final ChangeListener<ApplicationMode> applicationModeListener
             = (ObservableValue<? extends ApplicationMode> ov, ApplicationMode oldMode, ApplicationMode newMode) ->
             {
-                steno.info("applicationModeListener");
+                //steno.info("applicationModeListener");
                 if (oldMode != newMode)
                 {
                     switch (newMode)
@@ -603,7 +603,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void selectModel(ShapeContainer selectedNode, boolean multiSelect)
     {
-        steno.info("selectModel");
+        //steno.info("selectModel");
         if (selectedNode == null)
         {
             projectSelection.deselectAllModels();
@@ -619,7 +619,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     private void deselectAllModels()
     {
-        steno.info("deselectAllModels");
+        //steno.info("deselectAllModels");
         for (ProjectifiableThing modelContainer : loadedModels)
         {
             deselectModel((ShapeContainer) modelContainer);
@@ -628,7 +628,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
 
     public void deselectModel(ShapeContainer pickedModel)
     {
-        steno.info("deselectModel");
+        //steno.info("deselectModel");
         if (pickedModel.isSelected())
         {
             projectSelection.removeModelContainer(pickedModel);

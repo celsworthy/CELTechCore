@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import celtech.coreUI.components.RestrictedNumberField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<HBox id="stylusSettingsInsetRoot" fx:id="stylusSettingsInsetRoot" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.StylusSettingsInsetPanelController">
+    <children>
+        <VBox HBox.hgrow="SOMETIMES">
+            <children>
+                <Label fx:id="headTypeLabel" styleClass="sidePanelDivider" text="Stylus Head">
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding></Label>
+                <GridPane fx:id="stylusSettingsGridPane" hgap="5.0">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="LEFT" hgrow="NEVER" />
+                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="35.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="35.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="35.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="35.0" valignment="CENTER" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="35.0" valignment="CENTER" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                    <children>
+                        <Label fx:id="dragKnifeLabel" text="Drag Knife" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <CheckBox fx:id="dragKnifeCheckbox" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <Label fx:id="dragKnifeRadiusLabel" text="Drag Knife Radius" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <RestrictedNumberField maxLength="8" maxValue="5.0" maxValueSet="true" minValue="0.001" minValueSet="true" allowedDecimalPlaces="3" prefColumnCount="3" prefWidth="28.0" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="dragKnifeRadiusEntry" />
+                        <Label fx:id="xOffsetLabel" text="X Offset" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <RestrictedNumberField  fx:id="xOffsetEntry" maxLength="8" maxValue="50.0" maxValueSet="true" minValue="-50.0" minValueSet="true" allowNegative="true" allowedDecimalPlaces="2" prefColumnCount="3" prefWidth="28.0" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label fx:id="yOffsetLabel" text="Y Offset" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <RestrictedNumberField fx:id="yOffsetEntry" maxLength="8" maxValue="50.0" maxValueSet="true" minValue="-50.0" minValueSet="true"  allowNegative="true" allowedDecimalPlaces="2" prefColumnCount="3" prefWidth="28.0" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label fx:id="zOffsetLabel" text="Z Offset" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <RestrictedNumberField fx:id="zOffsetEntry" maxLength="8" maxValue="50.0" maxValueSet="true" minValue="-10.0" minValueSet="true"  allowNegative="true" allowedDecimalPlaces="2" prefColumnCount="3" prefWidth="28.0" text="0.0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                    </children>
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+                </GridPane>
+            </children>
+        </VBox>
+        <Group>
+         <children>
+           <Rectangle fill="#A8A8A8" height="0" width="0" x="0" y="0" />
+         </children>
+      </Group>
+    </children>
+</HBox>

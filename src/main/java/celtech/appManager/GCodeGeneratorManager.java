@@ -18,6 +18,7 @@ import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrid
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
+import celtech.roboxbase.importers.twod.svg.DragKnifeCompensatorAlt;
 import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
 import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
 import celtech.roboxbase.printerControl.model.Head;
@@ -347,6 +348,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                 return false;
             }
             
+            STENO.info("Restarting Slicer tasks");
             selectedTaskReBound = false;
             
             slicingOrder.forEach(printQuality ->
@@ -456,7 +458,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
             {
                 return false;
             }
-            
+            STENO.info("Restarting Stylus tasks");
             boolean taskComplete = false;
             List<ShapeForProcessing> shapes = new ArrayList<>();
             for (ProjectifiableThing projectifiableThing : project.getAllModels())
@@ -489,19 +491,27 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                     String projectLocation = ApplicationConfiguration.getProjectDirectory()
                         + project.getProjectName();
 
+                    StylusSettings stylusSettings = ((ShapeContainerProject)project).getStylusSettings();
                     PrintableShapes ps = new PrintableShapes(shapes, project.getProjectName(), "printjob");
                     List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
-                    DragKnifeCompensator dnc = new DragKnifeCompensator();
-                    List<GCodeEventNode> dragKnifeCompensatedGCodeNodes = dnc.doCompensation(gcodeData, 0.2);
+                    PrintableShapesToGCode.offsetGCode(gcodeData, stylusSettings.getXOffset(), stylusSettings.getYOffset(), stylusSettings.getZOffset());                    
                     result.setRawOutputFileName(projectLocation + File.separator + "stylusRaw.gcode");
-                    result.setCompensatedOutputFileName(projectLocation + File.separator + "stylusCompensated.gcode");
                     PrintableShapesToGCode.writeGCodeToFile(result.getRawOutputFileName(), gcodeData, headTypeCode, printerTypeOpt);
-                    PrintableShapesToGCode.writeGCodeToFile(result.getCompensatedOutputFileName(), dragKnifeCompensatedGCodeNodes, headTypeCode, printerTypeOpt);
+                    result.setHasDragKnife(stylusSettings.getHasDragKnife());
+                    DragKnifeCompensatorAlt dnc = new DragKnifeCompensatorAlt();
+                    List<GCodeEventNode> compensatedGCodeNodes = null;
+                    if (stylusSettings.getHasDragKnife())
+                        compensatedGCodeNodes = dnc.doCompensation(gcodeData, stylusSettings.getDragKnifeRadius(), Optional.empty());
+                    else
+                        compensatedGCodeNodes = gcodeData;
+                    compensatedGCodeNodes = dnc.addZMoves(compensatedGCodeNodes, stylusSettings.getZOffset());
+                    result.setCompensatedOutputFileName(projectLocation + File.separator + "stylusCompensated.gcode");
+                    PrintableShapesToGCode.writeGCodeToFile(result.getCompensatedOutputFileName(), compensatedGCodeNodes, headTypeCode, printerTypeOpt);
                     result.setResultOK(true);
                 }
                 catch (Exception ex)
                 {
-                    STENO.error("Error during print project " + ex.getMessage());
+                    STENO.exception("Error generating GCode " + ex.getMessage(), ex);
                 }
                 return result;
             };
@@ -516,6 +526,8 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
 
     private void restartAllTasks()
     {
+        STENO.info("Restarting all tasks");
+
         purgeAllTasks();
         if (project instanceof ModelContainerProject)
             restartSlicerTasks();
