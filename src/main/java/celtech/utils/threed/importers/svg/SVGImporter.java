@@ -59,8 +59,12 @@ public class SVGImporter
     private ModelLoaderTask parentTask = null;
     private DoubleProperty percentProgressProperty = null;
     private final SVGConverterConfiguration converterConfiguration;
-    private float viewBoxWidth = 0.0f;
-    private float viewBoxHeight = 0.0f;
+    private double viewBoxOriginX = 0.0;
+    private double viewBoxOriginY = 0.0;
+    private double viewBoxWidth = 0.0;
+    private double viewBoxHeight = 0.0;
+    private double documentWidth = 0.0;
+    private double documentHeight = 0.0;
     private File modelFile = null;
     private SVGOMDocument svgDocument = null;
 
@@ -118,6 +122,9 @@ public class SVGImporter
         }
 
         ShapeContainer renderableSVG = new ShapeContainer(modelFile.getName(), shapes);
+        renderableSVG.setViewBoxTransform(viewBoxOriginX, viewBoxOriginY,
+                                          viewBoxWidth, viewBoxHeight,
+                                          documentWidth, documentHeight);
 
 //        renderableSVG.setMetaparts(metaparts);
         Set<ProjectifiableThing> renderableSVGs = new HashSet<>();
@@ -133,8 +140,12 @@ public class SVGImporter
         this.percentProgressProperty = null;
         this.modelFile = null;
         this.svgDocument = null;
+        this.documentWidth = 0.0f;
+        this.documentHeight = 0.0f;
         this.viewBoxWidth = 0.0f;
         this.viewBoxHeight = 0.0f;
+        this.viewBoxOriginX = 0.0f;
+        this.viewBoxOriginY = 0.0f;
         
         return result;
     }
@@ -158,23 +169,30 @@ public class SVGImporter
                 heightNode.getNodeValue() != null &&
                 viewBoxNode.getNodeValue() != null)
             {
+                // Get the document dimensions in mm.
+                // Not sure what to do if units are percentages!
                 String widthString = widthNode.getNodeValue();
-                Units fileUnits = Units.getUnitType(widthString);
-                float documentWidth = Float.valueOf(widthString.replaceAll("[a-zA-Z]+", ""));
+                Units widthUnits = Units.getUnitType(widthString);
+                documentWidth = Double.valueOf(widthString.replaceAll("[a-zA-Z]+", "")) * widthUnits.getConversionFactor(); 
                 String heightString = heightNode.getNodeValue();
-                float documentHeight = Float.valueOf(heightString.replaceAll("[a-zA-Z]+", ""));
+                Units heightUnits = Units.getUnitType(heightString);
+                documentHeight = Double.valueOf(heightString.replaceAll("[a-zA-Z]+", "")) * heightUnits.getConversionFactor();
 
                 String viewBoxString = viewBoxNode.getNodeValue();
                 String[] viewBoxParts = viewBoxString.split(" ");
                 if (viewBoxParts.length == 4)
                 {
-                    //float viewBoxOriginX = Float.valueOf(viewBoxParts[0]);
-                    //float viewBoxOriginY = Float.valueOf(viewBoxParts[1]);
-                    viewBoxWidth = Float.valueOf(viewBoxParts[2]);
-                    viewBoxHeight = Float.valueOf(viewBoxParts[3]);
+                    // For the moment, ignore viewbox offset.
+                    viewBoxOriginX = Double.valueOf(viewBoxParts[0]);
+                    viewBoxOriginY = Double.valueOf(viewBoxParts[1]);
+                    viewBoxWidth = Double.valueOf(viewBoxParts[2]);
+                    viewBoxHeight = Double.valueOf(viewBoxParts[3]);
 
-                    converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
-                    converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
+                    // Scale between "user coordinates - the viewbox" and "displayed coordinates - the document width and height".
+                    // I don't think this is correct if a transform is applied to a path. The final scaling and offset
+                    // should be applied as a transform of the parent shape.
+                    //converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
+                    //converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
                 } else
                 {
                     steno.warning("Got viewBox directive but had wrong number of parts");
@@ -227,7 +245,7 @@ public class SVGImporter
             Node hNode = nodeMap.getNamedItem("height");
 
             float xValue = Float.valueOf(xNode.getNodeValue()) * converterConfiguration.getxPointCoefficient();
-            float yValue = (viewBoxHeight - Float.valueOf(yNode.getNodeValue())) * converterConfiguration.getyPointCoefficient();
+            float yValue = ((float)viewBoxHeight - Float.valueOf(yNode.getNodeValue())) * converterConfiguration.getyPointCoefficient();
             float wValue = Float.valueOf(wNode.getNodeValue()) * converterConfiguration.getxPointCoefficient();
             float hValue = Float.valueOf(hNode.getNodeValue()) * converterConfiguration.getyPointCoefficient();
 

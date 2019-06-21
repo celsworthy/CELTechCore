@@ -47,7 +47,6 @@ public class DimensionLineManager
                     @Override
                     public void whenAdded(ProjectifiableThing projectifiableThing)
                     {
-                        System.out.println("DimensionLineManager::whenAdded");
                         ArrayList<DimensionLine> lineList = new ArrayList<>();
 
                         if (projectifiableThing instanceof ScreenExtentsProviderTwoD)
@@ -98,8 +97,6 @@ public class DimensionLineManager
 
                     public void whenRemoved(ProjectifiableThing projectifiableThing)
                     {
-                        System.out.println("DimensionLineManager::whenRemoved");
-                        
                         List<DimensionLine> dimensionLinesToRemove = dimensionLines.get(projectifiableThing);
                         dimensionLinesToRemove.forEach(line ->
                         {

@@ -63,6 +63,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
 
+    private Group shapeGroup = new Group();
     private List<Shape> shapes = new ArrayList<>();
     private Scale transformMirror = null;
     private boolean notifyEnabled = true;
@@ -95,20 +96,13 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         super();
         setModelName(name);
 
-        if (shapes.size() > 1)
-        {
-            Group shapeGroup = new Group();
-            shapeGroup.getChildren().addAll(shapes);
-            this.getChildren().add(shapeGroup);
-        } else
-        {
-            this.getChildren().add(shapes.get(0));
-        }
+        shapeGroup.getChildren().addAll(shapes);
+        this.getChildren().add(shapeGroup);
         this.shapes.addAll(shapes);
         initialise();
         initialiseTransforms();
     }
-
+    
     public ShapeContainer(String name, Shape shape)
     {
         super();
@@ -117,11 +111,27 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         
         setModelName(name);
 
-        this.getChildren().add(shape);
+        shapeGroup.getChildren().add(shape);
+        this.getChildren().add(shapeGroup);
         this.shapes.add(shape);
 
         initialise();
         initialiseTransforms();
+    }
+
+    public void setViewBoxTransform(double viewBoxOriginX, double viewBoxOriginY,
+                                    double viewBoxWidth, double viewBoxHeight,
+                                    double documentWidth, double documentHeight)
+    {
+        // Apply viewbox -> display scaling and offset.
+        double scaleX = documentWidth / viewBoxWidth;
+        double scaleY = documentHeight / viewBoxHeight;
+        shapeGroup.scaleXProperty().set(scaleX);
+        shapeGroup.scaleYProperty().set(scaleY);
+        shapeGroup.translateXProperty().set(viewBoxOriginX * scaleX);
+        shapeGroup.translateYProperty().set(viewBoxOriginY * scaleY);
+        updateOriginalModelBounds();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     private void initialise()
@@ -131,6 +141,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         preferredRotationTurn = new SimpleDoubleProperty(0.0);
         rotationTransforms = new ArrayList<>();
     }
+    
+    
 
     @Override
     public ItemState getState()
@@ -158,6 +170,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             transformScalePreferred.setY(convertedState.preferredYScale);
 
             preferredRotationTurn.set(convertedState.preferredRotationTurn);
+            updateTransformsFromTurnAngle();
 
             lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
             notifyShapeHasChanged();
@@ -293,7 +306,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             
             newShapes.add(newShape);
         }
-        ShapeContainer copy = new ShapeContainer(getModelName(), newShapes);        
+        ShapeContainer copy = new ShapeContainer(getModelName(), newShapes);
+        copy.shapeGroup.scaleXProperty().set(this.shapeGroup.scaleXProperty().get());
+        copy.shapeGroup.scaleYProperty().set(this.shapeGroup.scaleYProperty().get());
+        copy.shapeGroup.translateXProperty().set(this.shapeGroup.translateXProperty().get());
+        copy.shapeGroup.translateYProperty().set(this.shapeGroup.translateYProperty().get());
+
         copy.setState(this.getState());
         copy.recalculateScreenExtents();
         return copy;
@@ -312,6 +330,10 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         transformScalePreferred.setY(1.0);
 
         preferredRotationTurn.set(0.0);
+        transformRotateTurnPreferred.setPivotX(0.0);
+        transformRotateTurnPreferred.setPivotY(0.0);
+        transformRotateTurnPreferred.setAngle(0.0);
+
         lastTransformedBoundsInParent = new RectangularBounds();
     }
 
@@ -512,7 +534,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public Point2D transformShapeToRealWorldCoordinates(float vertexX, float vertexY)
     {
-        return bed.sceneToLocal(localToScene(vertexX, vertexY));
+        return bed.sceneToLocal(shapeGroup.localToScene(vertexX, vertexY));
     }
 
     public List<Shape> getShapes()
@@ -633,41 +655,19 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     protected RectangularBounds calculateBoundsInLocal()
     {
-        double minX = Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
-        double minZ = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE;
-        double maxY = -Double.MAX_VALUE;
-        double maxZ = -Double.MAX_VALUE;
-
-        for (Shape shape : shapes)
-        {
-            Bounds shapeBounds = shape.getBoundsInParent();
-            minX = Math.min(shapeBounds.getMinX(), minX);
-            minY = Math.min(shapeBounds.getMinY(), minY);
-            minZ = Math.min(shapeBounds.getMinZ(), minZ);
-
-            maxX = Math.max(shapeBounds.getMaxX(), maxX);
-            maxY = Math.max(shapeBounds.getMaxY(), maxY);
-            maxZ = Math.max(shapeBounds.getMaxZ(), maxZ);
-        }
-
-        double newwidth = maxX - minX;
-        double newdepth = maxZ - minZ;
-        double newheight = maxY - minY;
-
-        double newcentreX = minX + (newwidth / 2);
-        double newcentreY = minY + (newheight / 2);
-        double newcentreZ = minZ + (newdepth / 2);
-
-        return new RectangularBounds(minX, maxX, minY, maxY, minZ, maxZ, newwidth,
-                newheight, newdepth, newcentreX, newcentreY,
-                newcentreZ);
+        
+        Bounds groupBounds = shapeGroup.getBoundsInParent();
+        return new RectangularBounds(groupBounds.getMinX(), groupBounds.getMaxX(),
+                                     groupBounds.getMinY(), groupBounds.getMaxY(),
+                                     groupBounds.getMinZ(), groupBounds.getMaxZ(),
+                                     groupBounds.getWidth(), groupBounds.getHeight(), groupBounds.getDepth(),
+                                     groupBounds.getCenterX(), groupBounds.getCenterY(), groupBounds.getCenterZ());
     }
 
     @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
     {
+        Bounds localGroupBounds = shapeGroup.getBoundsInParent();
         RectangularBounds rb = null;
         if (getScene() != null)
         {
@@ -675,33 +675,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         }
         else
         {
-            double minX = Double.MAX_VALUE;
-            double minY = Double.MAX_VALUE;
-            double maxX = -Double.MAX_VALUE;
-            double maxY = -Double.MAX_VALUE;
-
-            for (Shape shape : shapes)
-            {
-                //Bounds shapeBounds = shape.getBoundsInLocal();
-                Bounds parentBounds = localToParent(shape.getBoundsInParent());
-                // steno.info("Started with shape bounds: " + shapeBounds);
-                // steno.info("Finished with bed bounds: " + parentBounds);
-                minX = Math.min(parentBounds.getMinX(), minX);
-                minY = Math.min(parentBounds.getMinY(), minY);
-
-                maxX = Math.max(parentBounds.getMaxX(), maxX);
-                maxY = Math.max(parentBounds.getMaxY(), maxY);
-            }
-
-            double newwidth = maxX - minX;
-            double newheight = maxY - minY;
-
-            double newcentreX = minX + (newwidth / 2);
-            double newcentreY = minY + (newheight / 2);
-
-            rb = new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
-                    newheight, 0, newcentreX, newcentreY,
-                    0);
+            Bounds groupBounds = localToParent(shapeGroup.getBoundsInParent());
+            rb = new RectangularBounds(groupBounds.getMinX(), groupBounds.getMaxX(),
+                                       groupBounds.getMinY(), groupBounds.getMaxY(),
+                                       groupBounds.getMinZ(), groupBounds.getMaxZ(),
+                                       groupBounds.getWidth(), groupBounds.getHeight(), groupBounds.getDepth(),
+                                       groupBounds.getCenterX(), groupBounds.getCenterY(), groupBounds.getCenterZ());
         }
         //steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
         return rb;
@@ -710,37 +689,17 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public RectangularBounds calculateBoundsInBedCoordinateSystem()
     {
-        double minX = Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE;
-        double maxY = -Double.MAX_VALUE;
-
-        for (Shape shape : shapes)
-        {
-            Bounds boundsInLocal = shape.getBoundsInLocal();
-            Bounds bedBounds = null;
-            if (bed != null)
-                bedBounds = bed.sceneToLocal(shape.localToScene(boundsInLocal));
-            else
-                bedBounds = localToParent(shape.getBoundsInParent());
-            // steno.info("Started with local bounds: " + boundsInLocal);
-            // steno.info("Finished with bed bounds: " + bedBounds);
-            minX = Math.min(bedBounds.getMinX(), minX);
-            minY = Math.min(bedBounds.getMinY(), minY);
-
-            maxX = Math.max(bedBounds.getMaxX(), maxX);
-            maxY = Math.max(bedBounds.getMaxY(), maxY);
-        }
-
-        double newwidth = maxX - minX;
-        double newheight = maxY - minY;
-
-        double newcentreX = minX + (newwidth / 2);
-        double newcentreY = minY + (newheight / 2);
-
-        RectangularBounds rb = new RectangularBounds(minX, maxX, minY, maxY, 0, 0, newwidth,
-                newheight, 0, newcentreX, newcentreY,
-                0);
+        Bounds bedBounds = null;
+        if (bed != null)
+            bedBounds = bed.sceneToLocal(shapeGroup.localToScene(shapeGroup.getBoundsInLocal()));
+        else
+            bedBounds = localToParent(shapeGroup.getBoundsInParent());
+   
+        RectangularBounds rb = new RectangularBounds(bedBounds.getMinX(), bedBounds.getMaxX(),
+                                        bedBounds.getMinY(), bedBounds.getMaxY(),
+                                        bedBounds.getMinZ(), bedBounds.getMaxZ(),
+                                        bedBounds.getWidth(), bedBounds.getHeight(), bedBounds.getDepth(),
+                                        bedBounds.getCenterX(), bedBounds.getCenterY(), bedBounds.getCenterZ());
 
         //steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
         
@@ -966,6 +925,11 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             writeShape(out, shape);
         }
 
+        out.writeDouble(this.shapeGroup.scaleXProperty().get());
+        out.writeDouble(this.shapeGroup.scaleYProperty().get());
+        out.writeDouble(this.shapeGroup.translateXProperty().get());
+        out.writeDouble(this.shapeGroup.translateYProperty().get());
+
         out.writeDouble(transformMoveToPreferred.getX());
         out.writeDouble(transformMoveToPreferred.getY());
         out.writeDouble(preferredXScale.get());
@@ -1181,23 +1145,28 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 }
             }
 
+            double groupScaleX = in.readDouble();
+            double groupScaleY = in.readDouble();
+            double groupTranslateX = in.readDouble();
+            double groupTranslateY = in.readDouble();
+            
             double storedMoveX = in.readDouble();
             double storedMoveY = in.readDouble();
             double storedXScale = in.readDouble();
             double storedYScale = in.readDouble();
             double storedRotationTurn = in.readDouble();
 
-            if (shapes.size() > 1)
-            {
-                Group shapeGroup = new Group();
-                shapeGroup.getChildren().addAll(shapes);
-                this.getChildren().add(shapeGroup);
-            } else
-            {
-                this.getChildren().add(shapes.get(0));
-            }
+            shapeGroup = new Group();
+            shapeGroup.getChildren().addAll(shapes);
+            this.getChildren().add(shapeGroup);
             initialise();
             initialiseTransforms();
+
+            shapeGroup.scaleXProperty().set(groupScaleX);
+            shapeGroup.scaleYProperty().set(groupScaleY);
+            shapeGroup.translateXProperty().set(groupTranslateX);
+            shapeGroup.translateYProperty().set(groupTranslateY);
+
             transformMoveToPreferred.setX(storedMoveX);
             transformMoveToPreferred.setY(storedMoveY);
             preferredXScale.set(storedXScale);

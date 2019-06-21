@@ -1,11 +1,9 @@
 package celtech.appManager;
 
 import celtech.configuration.ApplicationConfiguration;
-import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.ShapeContainerProjectFile;
 import celtech.modelcontrol.Groupable;
-import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.RotatableTwoD;

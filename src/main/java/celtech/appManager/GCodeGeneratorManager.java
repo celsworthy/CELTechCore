@@ -490,6 +490,11 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
 
                     String projectLocation = ApplicationConfiguration.getProjectDirectory()
                         + project.getProjectName();
+                    
+                    File projectDirectory = new File(projectLocation);
+                    if (!projectDirectory.exists()) {
+                        projectDirectory.mkdirs();
+                    }
 
                     StylusSettings stylusSettings = ((ShapeContainerProject)project).getStylusSettings();
                     PrintableShapes ps = new PrintableShapes(shapes, project.getProjectName(), "printjob");
