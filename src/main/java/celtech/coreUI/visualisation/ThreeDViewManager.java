@@ -117,7 +117,7 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     private final ReadOnlyDoubleProperty widthPropertyToFollow;
     private final ReadOnlyDoubleProperty heightPropertyToFollow;
-    private final Set<ModelContainer> inSelectedGroupButNotSelected;
+    private final Set<ProjectifiableThing> inSelectedGroupButNotSelected;
 
     private final Xform bedTranslateXform = new Xform(Xform.RotateOrder.YXZ, "BedXForm");
     private final Group bed = new Group();

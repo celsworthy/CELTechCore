@@ -17,7 +17,7 @@ import celtech.roboxbase.postprocessor.nouveau.nodes.StylusScribeNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.StylusSwivelNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.TravelNode;
 import celtech.roboxbase.printerControl.model.Printer;
-import celtech.utils.threed.importers.svg.ShapeContainer;
+import celtech.modelcontrol.ShapeContainer;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;

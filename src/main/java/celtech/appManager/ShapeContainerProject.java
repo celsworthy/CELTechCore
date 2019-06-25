@@ -8,7 +8,7 @@ import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.utils.threed.importers.svg.ShapeContainer;
+import celtech.modelcontrol.ShapeContainer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.BufferedInputStream;
@@ -167,12 +167,6 @@ public class ShapeContainerProject extends Project
         }
     }
 
-
-    @Override
-    public void autoLayout()
-    {
-    }
-
     @Override
     public Set<ProjectifiableThing> getAllModels()
     {
@@ -257,12 +251,6 @@ public class ShapeContainerProject extends Project
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public void autoLayout(List<ProjectifiableThing> thingsToLayout)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
     public void rotateTurnModels(Set<RotatableTwoD> modelContainers, double rotation)
     {
@@ -274,7 +262,6 @@ public class ShapeContainerProject extends Project
 
         fireWhenModelsTransformed((Set) modelContainers);
     }
-    
     
     public StylusSettings getStylusSettings()
     {

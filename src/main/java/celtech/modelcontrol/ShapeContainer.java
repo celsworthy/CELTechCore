@@ -1,14 +1,9 @@
-package celtech.utils.threed.importers.svg;
+package celtech.modelcontrol;
 
+import celtech.coreUI.StandardColours;
 import celtech.coreUI.visualisation.Edge;
 import celtech.coreUI.visualisation.ScreenExtents;
-import celtech.modelcontrol.ItemState;
-import celtech.modelcontrol.ProjectifiableThing;
-import celtech.modelcontrol.ResizeableTwoD;
-import celtech.modelcontrol.RotatableTwoD;
-import celtech.modelcontrol.ScaleableTwoD;
-import celtech.modelcontrol.TranslateableTwoD;
-import celtech.modelcontrol.TwoDItemState;
+import celtech.roboxbase.utils.Math.MathUtils;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.roboxbase.utils.twod.ShapeToWorldTransformer;
 import java.io.File;
@@ -24,6 +19,7 @@ import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Circle;
@@ -63,7 +59,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     private static final long serialVersionUID = 1L;
     protected static int nextModelId = 1;
 
-    private Group shapeGroup = new Group();
+    protected Group shapeGroup = new Group();
     private List<Shape> shapes = new ArrayList<>();
     private Scale transformMirror = null;
     private boolean notifyEnabled = true;
@@ -89,7 +85,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         super(modelFile);
         initialise();
         initialiseTransforms();
-    }
+   }
 
     public ShapeContainer(String name, List<Shape> shapes)
     {
@@ -106,9 +102,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     public ShapeContainer(String name, Shape shape)
     {
         super();
-        modelId = nextModelId;
-        nextModelId += 1;
-        
         setModelName(name);
 
         shapeGroup.getChildren().add(shape);
@@ -136,14 +129,15 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     private void initialise()
     {
+        modelId = nextModelId;
+        nextModelId += 1;
         preferredXScale = new SimpleDoubleProperty(1.0);
         preferredYScale = new SimpleDoubleProperty(1.0);
         preferredRotationTurn = new SimpleDoubleProperty(0.0);
         rotationTransforms = new ArrayList<>();
+        notifyEnabled = true;
     }
     
-    
-
     @Override
     public ItemState getState()
     {
@@ -422,15 +416,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void selectedAction()
     {
-        if (isSelected())
-        {
-            //Set outline
-            setStyle("-fx-border-color: blue; -fx-border-size: 1px;");
-        } else
-        {
-            //Set outline
-            setStyle("-fx-border-color: black;");
-        }
+        setColourFromState();
     }
 
     @Override
@@ -527,11 +513,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     }
 
     @Override
-    public void checkOffBed()
-    {
-    }
-
-    @Override
     public Point2D transformShapeToRealWorldCoordinates(float vertexX, float vertexY)
     {
         return bed.sceneToLocal(shapeGroup.localToScene(vertexX, vertexY));
@@ -610,7 +591,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         transformBedCentre = new Translate(0, 0, 0);
         bedCentreOffsetX = 0.0;
         bedCentreOffsetY = 0.0;
-        
 
         // Mirror about Y through the centre of the model to
         // mirror the model so the coordinates match the bed,
@@ -638,8 +618,35 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         updateOriginalModelBounds();
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-
         notifyShapeHasChanged();
+    }
+    
+    private void setColourFromState()
+    {
+        Color fillColour = null;
+        Color strokeColour = null;
+        
+        if (isSelected())
+            strokeColour = StandardColours.SELECTION_HIGHLIGHTER_GREEN;
+        if (isOffBed.get())
+            fillColour = Color.CRIMSON;
+        else
+            fillColour = StandardColours.ROBOX_BLUE;
+            
+        for (Shape shape : shapes)
+        {
+            if (strokeColour == null)
+            {
+                shape.setStrokeWidth(0.0); 
+                shape.setStroke(Color.TRANSPARENT);
+            }
+            else
+            {
+                shape.setStrokeWidth(0.2); 
+                shape.setStroke(Color.GREEN);
+            }
+            shape.setFill(fillColour); 
+        }
     }
 
     @Override
@@ -656,7 +663,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     protected RectangularBounds calculateBoundsInLocal()
     {
         
-        Bounds groupBounds = shapeGroup.getBoundsInParent();
+        Bounds groupBounds = getBoundsInLocal();
+        
         return new RectangularBounds(groupBounds.getMinX(), groupBounds.getMaxX(),
                                      groupBounds.getMinY(), groupBounds.getMaxY(),
                                      groupBounds.getMinZ(), groupBounds.getMaxZ(),
@@ -667,7 +675,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
     {
-        Bounds localGroupBounds = shapeGroup.getBoundsInParent();
         RectangularBounds rb = null;
         if (getScene() != null)
         {
@@ -675,7 +682,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         }
         else
         {
-            Bounds groupBounds = localToParent(shapeGroup.getBoundsInParent());
+            Bounds groupBounds = getBoundsInParent();
             rb = new RectangularBounds(groupBounds.getMinX(), groupBounds.getMaxX(),
                                        groupBounds.getMinY(), groupBounds.getMaxY(),
                                        groupBounds.getMinZ(), groupBounds.getMaxZ(),
@@ -691,9 +698,9 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         Bounds bedBounds = null;
         if (bed != null)
-            bedBounds = bed.sceneToLocal(shapeGroup.localToScene(shapeGroup.getBoundsInLocal()));
+            bedBounds = bed.sceneToLocal(localToScene(getBoundsInLocal()));
         else
-            bedBounds = localToParent(shapeGroup.getBoundsInParent());
+            bedBounds = getBoundsInParent();
    
         RectangularBounds rb = new RectangularBounds(bedBounds.getMinX(), bedBounds.getMaxX(),
                                         bedBounds.getMinY(), bedBounds.getMaxY(),
@@ -733,8 +740,36 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         {
             //steno.info("notifyShapeHasChanged: lastTransformedBoundsInParent = " + lastTransformedBoundsInParent);
             checkOffBed();
+            setColourFromState();
             notifyShapeChange();
             notifyScreenExtentsChange();
+        }
+    }
+    
+    @Override
+    public void checkOffBed()
+    {
+        Bounds bounds = getBoundsInParent();
+
+        if (bounds != null)
+        {
+            double epsilon = 0.001;
+            // For 2D shapes, X is width, Y is depth.
+
+            if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
+                    || MathUtils.compareDouble(bounds.getMaxX(), printVolumeWidth,
+                            epsilon) == MathUtils.MORE_THAN
+                    || MathUtils.compareDouble(bounds.getMinY(), 0, epsilon) == MathUtils.LESS_THAN
+                    || MathUtils.compareDouble(bounds.getMaxY(), printVolumeDepth,
+                            epsilon) == MathUtils.MORE_THAN)
+            {
+                //System.out.println("ShapeContainer.checkOffBed() set to TRUE");
+                isOffBed.set(true);
+            } else
+            {
+                //System.out.println("ShapeContainer.checkOffBed() set to FALSE");
+                isOffBed.set(false);
+            }
         }
     }
 
@@ -1131,10 +1166,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             
             setModelName(in.readUTF().trim());
             int storedModelId = in.readInt();
-            if (storedModelId > 0)
-                modelId = storedModelId;
-            else
-                modelId = 0;
 
             int nShapes = in.readInt();
             if (nShapes > 0)
@@ -1175,6 +1206,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             transformScalePreferred.setY(storedYScale);
             preferredRotationTurn.set(storedRotationTurn);
             updateTransformsFromTurnAngle();
+            notifyShapeHasChanged();
         }
         catch (Exception ex)
         {

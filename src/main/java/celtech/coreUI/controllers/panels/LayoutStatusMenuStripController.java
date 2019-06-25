@@ -18,13 +18,11 @@ import celtech.coreUI.LayoutSubmode;
 import celtech.coreUI.ProjectGUIRules;
 import celtech.coreUI.ProjectGUIState;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
-import celtech.coreUI.components.ProjectTab;
 import celtech.coreUI.components.ReprintPanel;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.coreUI.components.buttons.GraphicToggleButtonWithLabel;
 import celtech.coreUI.visualisation.ModelLoader;
 import celtech.coreUI.visualisation.ProjectSelection;
-import celtech.coreUI.visualisation.SVGViewManager;
 import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
@@ -34,19 +32,13 @@ import celtech.roboxbase.PrinterColourMap;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.comms.RoboxCommsManager;
-import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
-import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
-import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
-import celtech.roboxbase.postprocessor.RoboxiserResult;
-import celtech.roboxbase.postprocessor.nouveau.nodes.GCodeEventNode;
-import celtech.roboxbase.postprocessor.stylus.PrintableShapesToGCode;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
@@ -57,22 +49,15 @@ import celtech.roboxbase.printerControl.model.Reel;
 import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
-import celtech.roboxbase.services.postProcessor.GCodePostProcessingResult;
-import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
-import celtech.roboxbase.services.slicer.SliceResult;
 import celtech.roboxbase.utils.PrintJobUtils;
 import celtech.roboxbase.utils.PrinterUtils;
 import celtech.roboxbase.utils.SystemUtils;
 import celtech.roboxbase.utils.models.PrintableProject;
-import celtech.roboxbase.utils.models.PrintableShapes;
-import celtech.roboxbase.utils.models.ShapeForProcessing;
 import celtech.roboxbase.utils.tasks.TaskResponse;
 import static celtech.utils.StringMetrics.getWidthOfString;
-import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.File;
 import java.io.IOException;
 import static java.lang.Double.max;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
@@ -314,6 +299,9 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 Lookup.getProjectGUIState(currentProject).getProjectSelection().addSelectedItem(
                         changedModelGroups.iterator().next());
             }
+        }
+        else if (currentProject instanceof ShapeContainerProject)
+        {
         }
     }
 
@@ -1564,14 +1552,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
             for (ProjectifiableThing projectifiableThing : selectedProject.getTopLevelThings())
             {
+                if (projectifiableThing.isOffBedProperty().get())
+                {
+                    aModelIsOffTheBed = true;
+                }
+
                 if (projectifiableThing instanceof ModelContainer)
                 {
                     ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-
-                    if (modelContainer.isOffBedProperty().get())
-                    {
-                        aModelIsOffTheBed = true;
-                    }
 
                     if (zReduction > 0.0 
                             && modelContainer.isModelTooHighWithOffset(zReduction))
@@ -1594,8 +1582,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             }
         }
 
+        //if (aModelIsOffTheBed)
+        //    System.out.println("dealWithOutOfBoundsModels - aModelIsOffTheBed = TRUE");
+        //else
+        //    System.out.println("dealWithOutOfBoundsModels - aModelIsOffTheBed = FALSE");
         if (aModelIsOffTheBed != modelsOffBed.get())
         {
+            //System.out.println("    setting modelsOffBed to " + Boolean.toString(aModelIsOffTheBed));
             modelsOffBed.set(aModelIsOffTheBed);
         }
 
@@ -1767,6 +1760,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                             .and(printer.getPrinterAncillarySystems().doorOpenProperty().not()
                                     .or(Lookup.getUserPreferences().safetyFeaturesOnProperty().not()))
                             .and(headTypeIsStylus)
+                            .and(modelsOffBed.not())
                             .and(printerConnectionOffline.not()));
             printButton.disableProperty().bind(canPrintProject.not());
         }
@@ -1788,6 +1782,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();
         snapToGroundButton.disableProperty().unbind();
+        addCloudModelButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
         groupButton.disableProperty().unbind();
         groupButton.visibleProperty().unbind();
@@ -1812,13 +1807,22 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         addModelButton.disableProperty().bind(
                 snapToGround.or(projectGUIRules.canAddModel().not()));
-        addCloudModelButton.disableProperty().bind(snapToGround.or(projectGUIRules.canAddModel().not()));
 
         distributeModelsButton.disableProperty().bind(
                 notSelectModeOrNoLoadedModels.or(projectGUIRules.canAddModel().not()));
-        snapToGroundButton.disableProperty().bind(
-                noLoadedModels.or(projectGUIRules.canSnapToGroundSelection().not()));
 
+        if (project instanceof ShapeContainerProject)
+        {
+            addCloudModelButton.disableProperty().set(true);
+            snapToGroundButton.disableProperty().set(true);
+        }
+        else
+        {
+            addCloudModelButton.disableProperty().bind(snapToGround.or(projectGUIRules.canAddModel().not()));
+            snapToGroundButton.disableProperty().bind(
+                noLoadedModels.or(projectGUIRules.canSnapToGroundSelection().not()));
+        }
+        
         groupButton.disableProperty().bind(
                 noLoadedModels.or(projectGUIRules.canGroupSelection().not()));
         groupButton.visibleProperty().bind(ungroupButton.visibleProperty().not());

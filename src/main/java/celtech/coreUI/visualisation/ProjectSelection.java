@@ -16,7 +16,7 @@ import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import static celtech.roboxbase.utils.DeDuplicator.suggestNonDuplicateName;
-import celtech.utils.threed.importers.svg.ShapeContainer;
+import celtech.modelcontrol.ShapeContainer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

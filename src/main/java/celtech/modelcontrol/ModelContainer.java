@@ -15,7 +15,6 @@ import celtech.roboxbase.utils.RectangularBounds;
 import celtech.roboxbase.utils.threed.MeshToWorldTransformer;
 import celtech.utils.threed.MeshCutter2;
 import celtech.utils.threed.MeshSeparator;
-import celtech.utils.threed.importers.svg.ShapeContainer;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -1177,7 +1176,8 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         {
             double epsilon = 0.001;
 
-            //We have to negate the print volume height for this test as up = -ve Y in jfx!
+            // For 3D models. X is width, Z is depth, Y is -Height.
+            // We have to negate the print volume height for this test as up = -ve Y in jfx!
             if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
                     || MathUtils.compareDouble(bounds.getMaxX(), printVolumeWidth,
                             epsilon) == MathUtils.MORE_THAN
@@ -1194,11 +1194,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
                 isOffBed.set(false);
             }
         }
-    }
-
-    public BooleanProperty isOffBedProperty()
-    {
-        return isOffBed;
     }
 
     /**

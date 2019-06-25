@@ -37,7 +37,7 @@ import celtech.roboxbase.utils.models.ShapeForProcessing;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
-import celtech.utils.threed.importers.svg.ShapeContainer;
+import celtech.modelcontrol.ShapeContainer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;

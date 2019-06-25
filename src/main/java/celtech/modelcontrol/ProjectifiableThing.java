@@ -259,6 +259,11 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
 
     public abstract void checkOffBed();
 
+    public BooleanProperty isOffBedProperty()
+    {
+        return isOffBed;
+    }
+
     public abstract void moveToCentre();
 
     public void setBedReference(Group bed)

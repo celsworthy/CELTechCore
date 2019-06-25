@@ -1,5 +1,6 @@
 package celtech.utils.threed.importers.svg;
 
+import celtech.modelcontrol.ShapeContainer;
 import celtech.roboxbase.importers.twod.svg.SVGConverterConfiguration;
 import celtech.roboxbase.importers.twod.svg.PointParserThing;
 import celtech.roboxbase.importers.twod.svg.PathParserThing;
@@ -158,26 +159,11 @@ public class SVGImporter
             Node svgRoot = svgData.item(0);
             NamedNodeMap svgAttributes = svgRoot.getAttributes();
 
-            Node widthNode = svgAttributes.getNamedItem("width");
-            Node heightNode = svgAttributes.getNamedItem("height");
             Node viewBoxNode = svgAttributes.getNamedItem("viewBox");
 
-            if (widthNode != null &&
-                heightNode != null &&
-                viewBoxNode != null &&
-                widthNode.getNodeValue() != null &&
-                heightNode.getNodeValue() != null &&
+            if (viewBoxNode != null &&
                 viewBoxNode.getNodeValue() != null)
             {
-                // Get the document dimensions in mm.
-                // Not sure what to do if units are percentages!
-                String widthString = widthNode.getNodeValue();
-                Units widthUnits = Units.getUnitType(widthString);
-                documentWidth = Double.valueOf(widthString.replaceAll("[a-zA-Z]+", "")) * widthUnits.getConversionFactor(); 
-                String heightString = heightNode.getNodeValue();
-                Units heightUnits = Units.getUnitType(heightString);
-                documentHeight = Double.valueOf(heightString.replaceAll("[a-zA-Z]+", "")) * heightUnits.getConversionFactor();
-
                 String viewBoxString = viewBoxNode.getNodeValue();
                 String[] viewBoxParts = viewBoxString.split(" ");
                 if (viewBoxParts.length == 4)
@@ -187,17 +173,42 @@ public class SVGImporter
                     viewBoxOriginY = Double.valueOf(viewBoxParts[1]);
                     viewBoxWidth = Double.valueOf(viewBoxParts[2]);
                     viewBoxHeight = Double.valueOf(viewBoxParts[3]);
-
-                    // Scale between "user coordinates - the viewbox" and "displayed coordinates - the document width and height".
-                    // I don't think this is correct if a transform is applied to a path. The final scaling and offset
-                    // should be applied as a transform of the parent shape.
-                    //converterConfiguration.setxPointCoefficient(documentWidth / viewBoxWidth);
-                    //converterConfiguration.setyPointCoefficient(documentHeight / viewBoxHeight);
                 } else
                 {
                     steno.warning("Got viewBox directive but had wrong number of parts");
                 }
             }
+
+            Node widthNode = svgAttributes.getNamedItem("width");
+            if (widthNode != null &&
+                widthNode.getNodeValue() != null)
+            {
+                // Get the document dimensions in mm.
+                // Not sure what to do if units are percentages!
+                String widthString = widthNode.getNodeValue();
+                Units widthUnits = Units.getUnitType(widthString);
+                documentWidth = Double.valueOf(widthString.replaceAll("[a-zA-Z]+", "")) * widthUnits.getConversionFactor(); 
+            }
+            
+            Node heightNode = svgAttributes.getNamedItem("height");
+            if (heightNode != null &&
+                heightNode.getNodeValue() != null)
+            {
+                // Get the document dimensions in mm.
+                // Not sure what to do if units are percentages!
+                String heightString = heightNode.getNodeValue();
+                Units heightUnits = Units.getUnitType(heightString);
+                documentHeight = Double.valueOf(heightString.replaceAll("[a-zA-Z]+", "")) * heightUnits.getConversionFactor();
+            }
+            
+            if (documentWidth <= 0.0 && viewBoxWidth > 0.0)
+                documentWidth = viewBoxWidth;
+            else if (viewBoxWidth <= 0.0 && documentWidth > 0.0)
+                viewBoxWidth = documentWidth;
+            if (documentHeight <= 0.0 && viewBoxHeight > 0.0)
+                documentHeight = viewBoxHeight;
+            else if (viewBoxHeight <= 0.0 && documentHeight > 0.0)
+                viewBoxHeight = documentHeight;
         }
         catch (Exception ex)
         {
