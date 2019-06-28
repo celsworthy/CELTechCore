@@ -72,9 +72,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         System.out.println(message +
                            "TMP: " +
                            transformMoveToPreferred);
-        System.out.println(message +
-                           "TBC: " + 
-                           transformBedCentre);
     }
     
     public ShapeContainer()
@@ -528,8 +525,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     protected void printVolumeBoundsUpdated()
     {
-        setBedCentreOffsetTransform();
-        checkOffBed();
+        //setBedCentreOffsetTransform();
+        //checkOffBed();
     }
 
     @Override
@@ -583,44 +580,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void setBedCentreOffsetTransform()
     {
-        // The BedCentreOffsetTransform moves the shape to the center of the bed.
-        // The transformMoveToPreferred then moves the shape to the preferred position,
-        // relative to the centre of the bed.
-        //
-        // When the printer is changed, the bed centre offset transform is updated,
-        // so the shape remains in the same place relative to the centre of the bed,
-        // not relative to the origin of the bed (usually the front left corner.
-        //
-        // Note that this means the coordinates of the shape on the bed (as shown
-        // in the ModelEditInsetPanel) may change when the printer is changed.
-        //
-        if (transformBedCentre != null)
-        {
-            bedCentreOffsetX = printVolumeWidth / 2;
-            bedCentreOffsetY = printVolumeDepth / 2;
-            transformBedCentre.setX(bedCentreOffsetX);
-            transformBedCentre.setY(bedCentreOffsetY);
-            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        }
     }
     
-    public void clearBedTransform()
-    {
-        if (transformBedCentre != null)
-        {
-            transformBedCentre.setX(0);
-            transformBedCentre.setY(0);
-            transformBedCentre.setZ(0);
-            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        }
-    }
-
-
     protected void initialiseTransforms(boolean withMirror)
     {
         transformScalePreferred = new Scale(1, 1, 1);
         transformMoveToPreferred = new Translate(0, 0, 0);
-        transformBedCentre = new Translate(0, 0, 0);
         bedCentreOffsetX = 0.0;
         bedCentreOffsetY = 0.0;
 
@@ -630,14 +595,13 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         Bounds localBounds = getBoundsInLocal();
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
         rotationTransforms.add(transformRotateTurnPreferred);
-        setBedCentreOffsetTransform();
+        //setBedCentreOffsetTransform();
 
         /**
          * Rotations (which are all around the centre of the model) must be
          * applied before any translations.
          */        
         getTransforms().addAll(transformMoveToPreferred,
-                transformBedCentre,
                 transformRotateTurnPreferred,
                 transformScalePreferred);
         
@@ -684,19 +648,10 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         }
     }
 
-    public void setBedRefWithoutOffset(Group bed)
-    {
-        super.setBedReference(bed);
-        updateOriginalModelBounds();
-        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
-        notifyShapeHasChanged();
-    }
-    
     @Override
     public void setBedReference(Group bed)
     {
         super.setBedReference(bed);
-        setBedCentreOffsetTransform();
         updateOriginalModelBounds();
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         notifyShapeHasChanged();

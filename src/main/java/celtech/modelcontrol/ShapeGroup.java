@@ -58,7 +58,6 @@ public class ShapeGroup extends ShapeContainer implements ScreenExtentsProvider.
         initialiseTransforms(false);
         for (ShapeContainer sContainer : shapeContainers)
         {
-            sContainer.clearBedTransform();
             sContainer.addScreenExtentsChangeListener(this);
         }
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
@@ -136,8 +135,17 @@ public class ShapeGroup extends ShapeContainer implements ScreenExtentsProvider.
         }
     }
     
+    @Override
+    public void setBedReference(Group bed)
+    {
+        super.setBedReference(bed);
+        if (childShapeContainers != null)
+            childShapeContainers.forEach((s) -> s.setBedReference(bed));
+    }
+    
     public void traverseAllChildren(Consumer<ShapeContainer> c)
     {
+        // Non-recursive version of getDescendentShapeContainers. 
         if (childShapeContainers != null)
         {
             List<ShapeContainer> shapesToProcess = new ArrayList<>();
@@ -154,13 +162,6 @@ public class ShapeGroup extends ShapeContainer implements ScreenExtentsProvider.
         }
     }
 
-    @Override
-    public void setBedReference(Group bed)
-    {
-        super.setBedReference(bed);
-        traverseAllChildren((s) -> s.setBedRefWithoutOffset(bed));
-    }
-    
     @Override
     public void checkOffBed()
     {

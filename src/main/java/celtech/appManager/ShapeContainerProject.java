@@ -413,7 +413,6 @@ public class ShapeContainerProject extends Project
                 for (ShapeContainer childShapeContainer : sGroup.getChildShapeContainers())
                 {
                     addModel(childShapeContainer);
-                    childShapeContainer.setBedCentreOffsetTransform();
                     childShapeContainer.applyGroupTransformToThis(sGroup);
                     childShapeContainer.updateLastTransformedBoundsInParent();
                     ungroupedModels.add(childShapeContainer);

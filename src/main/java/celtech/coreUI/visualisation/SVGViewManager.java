@@ -135,6 +135,13 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         bedMirror.setTy(bedHeight);
 
         getChildren().add(partsAndBed);
+        // The bed rectangle represents the printer bed.
+        // The parts group holds all the ShapeContainers. It has the origin
+        // at the centre of the workspace and is translated by half the
+        // bed width and height to bring it into printer space, with 
+        // the origin at the front left of the bed (looking from the front
+        // of the printer to the back).
+        
         partsAndBed.getChildren().addAll(bed, parts);
         partsAndBed.getTransforms().addAll(bedTranslate, bedScale, bedMirror);
         // getTransforms().addAll(t, s, a) are applied in the order (x') = t s a (x)
@@ -280,7 +287,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
             ShapeContainer shape = (ShapeContainer)projectifiableThing;
             parts.getChildren().add(shape);
             shape.setBedReference(partsAndBed);
-            shape.setBedCentreOffsetTransform();
+            //shape.setBedCentreOffsetTransform();
     //        projectifiableThing.shrinkToFitBed();
         }
     }
@@ -693,5 +700,19 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         // the bottom left after the mirror.
         bedMirror.setTy(bedHeight);
         resizeBed();
+        
+        // The parts group holds all the ShapeContainers in the project and has the origin
+        // at the centre of the workspace.
+        //
+        // The bed has the origin at front left corner (looking from the front of the printer to the back).
+        // The parts group is translated by half the bed width and height to place
+        // the origin of the group at the centre of the bed.
+        //
+        if (parts != null)
+        {
+            parts.setTranslateX(0.5 * bedWidth);
+            parts.setTranslateY(0.5 * bedHeight);
+        }
+        loadedModels.forEach(ProjectifiableThing::checkOffBed);
     }
 }
