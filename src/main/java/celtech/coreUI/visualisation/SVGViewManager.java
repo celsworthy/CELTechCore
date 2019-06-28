@@ -18,6 +18,8 @@ import celtech.roboxbase.postprocessor.nouveau.nodes.StylusSwivelNode;
 import celtech.roboxbase.postprocessor.nouveau.nodes.TravelNode;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.modelcontrol.ShapeContainer;
+import celtech.modelcontrol.ShapeGroup;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javafx.beans.property.ObjectProperty;
@@ -173,7 +175,7 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
          */
         project.addProjectChangesListener(this);
 
-        for (ProjectifiableThing projectifiableThing : project.getAllModels())
+        for (ProjectifiableThing projectifiableThing : loadedModels)
         {
             if (projectifiableThing instanceof ShapeContainer)
             {
@@ -335,6 +337,33 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
                            "]");
     }
     
+    private void debugPrintNode(String padding, Node n)
+    {
+        ShapeContainer sc = null;
+        if (n instanceof ShapeContainer)
+        {
+            sc = (ShapeContainer)n;
+            System.out.println(padding + sc.getClass().getSimpleName() +
+                               "[" + Integer.toString(sc.getModelId()) + "]");
+        }
+        else
+            System.out.println(padding + n.getClass().getSimpleName() +
+                    "[" + Integer.toString(n.hashCode()) + "]");
+        Node p = n.getParent();
+        if (p instanceof ProjectifiableThing)
+        {
+            System.out.println(padding + "  P = " + p.getClass().getSimpleName() +
+                               "[" + Integer.toString(((ProjectifiableThing)p).getModelId()) + "]");
+        }
+        else
+            System.out.println(padding + "  P = " + p.getClass().getSimpleName() +
+                    "[" + Integer.toString(p.hashCode()) + "]");
+        debugPrintBounds(padding + "  S L: ", n.getBoundsInLocal());
+        debugPrintBounds(padding + "  S P: ", n.getBoundsInParent());
+        if (sc != null)
+            sc.debugPrintTransforms(padding + "  S: ");
+    }
+    
     private void debugPrintAllBounds(String message)
     {
         System.out.println(message);
@@ -345,16 +374,17 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         debugPrintBounds("  bed L: ", bed.getBoundsInLocal());
         debugPrintBounds("  bed P: ", bed.getBoundsInParent());
         System.out.println("  bed O: " + sceneToLocal(bed.localToScene(0.0, 0.0)));
-        parts.getChildren().forEach(s ->
+        List<Node> nodesToPrint = new ArrayList<>();
+        int index = 0;
+        nodesToPrint.addAll(parts.getChildren());
+        while (index < nodesToPrint.size())
         {
-            debugPrintBounds("    S L: ", s.getBoundsInLocal());
-            debugPrintBounds("    S P: ", s.getBoundsInParent());
-            if (s instanceof ShapeContainer)
-            {
-                ShapeContainer sc = (ShapeContainer)s;
-                sc.debugPrintTransforms("    S: ");
-            }
-        });
+            Node n = nodesToPrint.get(index);
+            index++;
+            debugPrintNode("  ", n);
+            if (n instanceof Group)
+                nodesToPrint.addAll(((Group)n).getChildren());
+        }
     }
     
     private final EventHandler<MouseEvent> mouseEventHandler = event ->

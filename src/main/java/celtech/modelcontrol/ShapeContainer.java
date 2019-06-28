@@ -12,13 +12,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import javafx.beans.property.DoubleProperty;
+import java.util.Map;
+import java.util.Set;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
@@ -62,7 +65,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     protected Group shapeGroup = new Group();
     private List<Shape> shapes = new ArrayList<>();
     private Scale transformMirror = null;
-    private boolean notifyEnabled = true;
+    protected boolean notifyEnabled = true;
 
     public void debugPrintTransforms(String message)
     {
@@ -77,14 +80,25 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     public ShapeContainer()
     {
         super();
+        this.getChildren().add(shapeGroup);
         initialise();
     }
 
+    public ShapeContainer(String name, int modelId)
+    {
+        super();
+        this.modelId = modelId;
+        setModelName(name);
+        this.getChildren().add(shapeGroup);
+        initialise();
+    }
+    
     public ShapeContainer(File modelFile)
     {
         super(modelFile);
+        this.getChildren().add(shapeGroup);
         initialise();
-        initialiseTransforms();
+        initialiseTransforms(true);
    }
 
     public ShapeContainer(String name, List<Shape> shapes)
@@ -96,7 +110,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         this.getChildren().add(shapeGroup);
         this.shapes.addAll(shapes);
         initialise();
-        initialiseTransforms();
+        initialiseTransforms(true);
     }
     
     public ShapeContainer(String name, Shape shape)
@@ -109,7 +123,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         this.shapes.add(shape);
 
         initialise();
-        initialiseTransforms();
+        initialiseTransforms(true);
     }
 
     public void setViewBoxTransform(double viewBoxOriginX, double viewBoxOriginY,
@@ -127,10 +141,16 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
-    private void initialise()
+    protected void initialise()
     {
-        modelId = nextModelId;
-        nextModelId += 1;
+        if (modelId < 0)
+        {
+            modelId = nextModelId;
+            nextModelId += 1;
+        }
+        else if (nextModelId < modelId)
+            nextModelId = modelId + 1;
+
         preferredXScale = new SimpleDoubleProperty(1.0);
         preferredYScale = new SimpleDoubleProperty(1.0);
         preferredRotationTurn = new SimpleDoubleProperty(0.0);
@@ -583,8 +603,20 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         }
     }
+    
+    public void clearBedTransform()
+    {
+        if (transformBedCentre != null)
+        {
+            transformBedCentre.setX(0);
+            transformBedCentre.setY(0);
+            transformBedCentre.setZ(0);
+            lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        }
+    }
 
-    protected final void initialiseTransforms()
+
+    protected void initialiseTransforms(boolean withMirror)
     {
         transformScalePreferred = new Scale(1, 1, 1);
         transformMoveToPreferred = new Translate(0, 0, 0);
@@ -596,11 +628,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         // mirror the model so the coordinates match the bed,
         // but leave the bounds unchanged.
         Bounds localBounds = getBoundsInLocal();
-        transformMirror = new Scale(1, -1, 1);
-        transformMirror.setPivotX(localBounds.getCenterX());
-        transformMirror.setPivotY(localBounds.getCenterY());
-        transformMirror.setPivotZ(0.0);
-
         transformRotateTurnPreferred = new Rotate(0, 0, 0, 0, Z_AXIS);
         rotationTransforms.add(transformRotateTurnPreferred);
         setBedCentreOffsetTransform();
@@ -608,20 +635,28 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         /**
          * Rotations (which are all around the centre of the model) must be
          * applied before any translations.
-         */
+         */        
         getTransforms().addAll(transformMoveToPreferred,
                 transformBedCentre,
                 transformRotateTurnPreferred,
-                transformScalePreferred,
-                transformMirror);
+                transformScalePreferred);
         
+        if (withMirror)
+        {
+            transformMirror = new Scale(1, -1, 1);
+            transformMirror.setPivotX(localBounds.getCenterX());
+            transformMirror.setPivotY(localBounds.getCenterY());
+            transformMirror.setPivotZ(0.0);
+            getTransforms().add(transformMirror);
+        }
+
         updateOriginalModelBounds();
 
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
         notifyShapeHasChanged();
     }
     
-    private void setColourFromState()
+    protected void setColourFromState()
     {
         Color fillColour = null;
         Color strokeColour = null;
@@ -649,6 +684,14 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         }
     }
 
+    public void setBedRefWithoutOffset(Group bed)
+    {
+        super.setBedReference(bed);
+        updateOriginalModelBounds();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
+        notifyShapeHasChanged();
+    }
+    
     @Override
     public void setBedReference(Group bed)
     {
@@ -692,15 +735,24 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         //steno.info("ShapeContainer::calculateBoundsInParentCoordinateSystem() returns " + rb);
         return rb;
     }
+    
+    private Bounds getBoundsInBedCoordinateSystem()
+    {
+        // Get the bounds in the parent so that we get an axis-aligned bounding
+        // box around the scaled/rotated/translated shape.
+        Bounds b = getBoundsInParent();
+        Node p = getParent();
+        if (bed != null && p != null)
+            b = bed.sceneToLocal(p.localToScene(b));
+        
+        return b;
+    }
+    
 
     @Override
     public RectangularBounds calculateBoundsInBedCoordinateSystem()
     {
-        Bounds bedBounds = null;
-        if (bed != null)
-            bedBounds = bed.sceneToLocal(localToScene(getBoundsInLocal()));
-        else
-            bedBounds = getBoundsInParent();
+        Bounds bedBounds = getBoundsInBedCoordinateSystem();
    
         RectangularBounds rb = new RectangularBounds(bedBounds.getMinX(), bedBounds.getMaxX(),
                                         bedBounds.getMinY(), bedBounds.getMaxY(),
@@ -734,7 +786,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         transformRotateTurnPreferred.setPivotY(originalModelBounds.getCentreY());
     }
     
-    private void notifyShapeHasChanged()
+    protected void notifyShapeHasChanged()
     {
         if (notifyEnabled)
         {
@@ -749,8 +801,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void checkOffBed()
     {
-        Bounds bounds = getBoundsInParent();
-
+        Bounds bounds = getBoundsInBedCoordinateSystem();
         if (bounds != null)
         {
             double epsilon = 0.001;
@@ -763,11 +814,11 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                     || MathUtils.compareDouble(bounds.getMaxY(), printVolumeDepth,
                             epsilon) == MathUtils.MORE_THAN)
             {
-                //System.out.println("ShapeContainer.checkOffBed() set to TRUE");
+//                System.out.println("ShapeContainer.checkOffBed() set to TRUE");
                 isOffBed.set(true);
             } else
             {
-                //System.out.println("ShapeContainer.checkOffBed() set to FALSE");
+//                System.out.println("ShapeContainer.checkOffBed() set to FALSE");
                 isOffBed.set(false);
             }
         }
@@ -789,6 +840,11 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         else
             lastTransformedBoundsInParent.translateY(deltaCentreY);
         notifyShapeHasChanged();
+    }
+    
+    public void updateLastTransformedBoundsInParent()
+    {
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 
     @Override
@@ -947,7 +1003,6 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         }
     }
 
-    
     private void writeObject(ObjectOutputStream out)
             throws IOException
     {
@@ -1161,11 +1216,12 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         try
         {
+            String modelName = in.readUTF().trim();
+            modelId = in.readInt();
+
             initialise();
             shapes = new ArrayList<>();
-            
-            setModelName(in.readUTF().trim());
-            int storedModelId = in.readInt();
+            setModelName(modelName);
 
             int nShapes = in.readInt();
             if (nShapes > 0)
@@ -1191,7 +1247,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
             shapeGroup.getChildren().addAll(shapes);
             this.getChildren().add(shapeGroup);
             initialise();
-            initialiseTransforms();
+            initialiseTransforms(true);
 
             shapeGroup.scaleXProperty().set(groupScaleX);
             shapeGroup.scaleYProperty().set(groupScaleY);
@@ -1234,5 +1290,39 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         transformRotateTurnPreferred.setPivotZ(0);
         transformRotateTurnPreferred.setAngle(preferredRotationTurn.get());
         transformRotateTurnPreferred.setAxis(Z_AXIS);
+    }
+    
+   /**
+     * This method is used during an ungroup to blend the group's transform into
+     * this one, thereby keeping this model in the same place.
+     */
+    public void applyGroupTransformToThis(ShapeGroup sGroup)
+    {
+        double xScaleFactor = getXScale() * sGroup.getXScale();
+        double yScaleFactor = getYScale() * sGroup.getYScale();
+
+        //Calculate the centre of the group in world co-ords
+        Point2D groupCentre = new Point2D(sGroup.getTransformedCentreX(),
+                                          sGroup.getTransformedCentreDepth());
+
+        Point2D shapeCentre = new Point2D(getTransformedCentreX() + sGroup.transformMoveToPreferred.getX(),
+                getTransformedCentreDepth() + sGroup.transformMoveToPreferred.getY());
+
+        Point2D groupCentreToModelCentre = shapeCentre.subtract(groupCentre);
+
+        Point2D scaledGroupCentreToModelCentre = new Point2D(groupCentreToModelCentre.getX() * xScaleFactor,
+                                                             groupCentreToModelCentre.getY() * yScaleFactor);
+
+        Point2D turnedModelCentrePoint = sGroup.rotationTransforms.get(0).transform(scaledGroupCentreToModelCentre);
+
+        Point2D newShapeCentre = new Point2D(groupCentre.getX() + turnedModelCentrePoint.getX(),
+                                             groupCentre.getY() + turnedModelCentrePoint.getY());
+
+        translateTo(newShapeCentre.getX(), newShapeCentre.getY());
+        preferredRotationTurn.set(preferredRotationTurn.get() + sGroup.preferredRotationTurn.get());
+        setXScale(xScaleFactor, false);
+        setYScale(yScaleFactor, false);
+        RectangularBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
+        lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 }

@@ -147,11 +147,11 @@ public class PreviewManager
             // Enable/Disable preview button.
             if (!modelSuitable) {
                 previewButton.setFxmlFileName("previewButton");
-                System.out.println("setPreviewButtonEnabledState - disabling preview button with preview icon");
+                //System.out.println("setPreviewButtonEnabledState - disabling preview button with preview icon");
             }
             else
             {
-                System.out.println("setPreviewButtonEnabledState - enabling preview button without changing icon");
+                //System.out.println("setPreviewButtonEnabledState - enabling preview button without changing icon");
             }
             previewButton.disableProperty().set(!modelSuitable);
         });

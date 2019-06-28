@@ -50,7 +50,7 @@ public abstract class ProjectifiableThing extends Group implements ScreenExtents
      * could be reloaded with duplicate values from saved models into other
      * projects.
      */
-    protected int modelId;
+    protected int modelId = -1;
     private SimpleStringProperty modelName;
     protected Translate transformBedCentre;
     protected Scale transformScalePreferred;

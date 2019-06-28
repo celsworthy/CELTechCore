@@ -76,7 +76,6 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         TranslateableThreeD,
         ResizeableThreeD,
         RotatableThreeD,
-        Groupable,
         ScreenExtentsProviderThreeD,
         ShapeProviderThreeD
 {

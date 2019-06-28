@@ -6,10 +6,7 @@ import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFile;
 import celtech.configuration.fileRepresentation.ProjectFileDeserialiser;
 import celtech.configuration.fileRepresentation.ShapeContainerProjectFile;
-import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ItemState;
-import celtech.modelcontrol.ModelContainer;
-import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.ResizeableThreeD;
 import celtech.modelcontrol.ResizeableTwoD;
@@ -790,95 +787,6 @@ public abstract class Project
     {
         this.projectNameModified = projectNameModified;
     }
-
-    public ModelGroup group(Set<Groupable> modelContainers)
-    {
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-
-        removeModels(projectifiableThings);
-        ModelGroup modelGroup = createNewGroup(modelContainers);
-        addModel(modelGroup);
-        return modelGroup;
-    }
-
-    public ModelGroup group(Set<Groupable> modelContainers, int groupModelId)
-    {
-        Set<ProjectifiableThing> projectifiableThings = (Set) modelContainers;
-
-        removeModels(projectifiableThings);
-        ModelGroup modelGroup = createNewGroup(modelContainers, groupModelId);
-        addModel(modelGroup);
-        return modelGroup;
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project.
-     *
-     * @param modelContainers
-     * @param groupModelId
-     * @return
-     */
-    public ModelGroup createNewGroup(Set<Groupable> modelContainers, int groupModelId)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-        ModelGroup modelGroup = new ModelGroup((Set) modelContainers, groupModelId);
-        modelGroup.checkOffBed();
-        modelGroup.notifyScreenExtentsChange();
-        return modelGroup;
-    }
-
-    /**
-     * Create a new group from models that are not yet in the project.
-     *
-     * @param modelContainers
-     * @return
-     */
-    public ModelGroup createNewGroup(Set<Groupable> modelContainers)
-    {
-        checkNotAlreadyInGroup(modelContainers);
-
-        ModelGroup modelGroup = new ModelGroup((Set) modelContainers);
-        modelGroup.checkOffBed();
-        modelGroup.notifyScreenExtentsChange();
-        return modelGroup;
-    }
-
-    public void ungroup(Set<? extends ModelContainer> modelContainers)
-    {
-        List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
-
-        for (ModelContainer modelContainer : modelContainers)
-        {
-            if (modelContainer instanceof ModelGroup)
-            {
-                ModelGroup modelGroup = (ModelGroup) modelContainer;
-                Set<ProjectifiableThing> modelGroups = new HashSet<>();
-                modelGroups.add(modelGroup);
-                removeModels(modelGroups);
-                for (ModelContainer childModelContainer : modelGroup.getChildModelContainers())
-                {
-                    addModel(childModelContainer);
-                    childModelContainer.setBedCentreOffsetTransform();
-                    childModelContainer.applyGroupTransformToThis(modelGroup);
-                    childModelContainer.updateLastTransformedBoundsInParent();
-                    ungroupedModels.add(childModelContainer);
-                }
-                Set<ProjectifiableThing> changedModels = new HashSet<>(modelGroup.getChildModelContainers());
-                fireWhenModelsTransformed(changedModels);
-            }
-        }
-    }
-
-    protected abstract void checkNotAlreadyInGroup(Set<Groupable> modelContainers);
-
-    /**
-     * Create a new group from models that are not yet in the project, and add
-     * model listeners to all descendent children.
-     *
-     * @param modelContainers
-     * @return
-     */
-    public abstract ModelGroup createNewGroupAndAddModelListeners(Set<Groupable> modelContainers);
 
     @JsonIgnore
     public void invalidate()

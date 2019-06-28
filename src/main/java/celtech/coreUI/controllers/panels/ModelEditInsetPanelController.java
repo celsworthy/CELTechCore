@@ -21,7 +21,6 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ResizeableTwoD;
-import celtech.modelcontrol.Groupable;
 import celtech.modelcontrol.ResizeableThreeD;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
@@ -594,7 +593,7 @@ public class ModelEditInsetPanelController implements Initializable, ProjectAwar
     {
         Set<ModelContainer> modelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());
-        Set<Groupable> modelContainers = (Set) Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
+        Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableProject.group(modelContainers);
         Set<ModelContainer> changedModelGroups = currentProject.getAllModels().stream().map(ModelContainer.class::cast).filter(
                 mc -> mc instanceof ModelGroup).collect(Collectors.toSet());

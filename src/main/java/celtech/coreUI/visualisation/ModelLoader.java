@@ -12,7 +12,6 @@ import celtech.appManager.ShapeContainerProject;
 import celtech.appManager.undo.UndoableProject;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResult;
 import celtech.coreUI.visualisation.metaparts.ModelLoadResultType;
-import celtech.modelcontrol.Groupable;
 import celtech.roboxbase.utils.RectangularBounds;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
@@ -245,8 +244,7 @@ public class ModelLoader
                 addModelSequence(undoableProject, modelContainer, shouldCentre, printer);
             } else if (!dontGroupModelsOverride)
             {
-                Set<Groupable> thingsToGroup = (Set) modelContainers;
-                modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(thingsToGroup);
+                modelContainer = ((ModelContainerProject) project).createNewGroupAndAddModelListeners(modelContainers);
                 addModelSequence(undoableProject, modelContainer, shouldCentre, printer);
             } else
             {
