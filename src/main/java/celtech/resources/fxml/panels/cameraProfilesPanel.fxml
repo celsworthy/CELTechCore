@@ -5,7 +5,86 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import celtech.coreUI.components.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
-    
-</AnchorPane>
+<GridPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
+    <columnConstraints>
+        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+    </rowConstraints>
+    <children>
+        <!-- General camera settings section -->
+        <RestrictedComboBox fx:id="cmbCameraProfile" directorySafeName="true" maxLength="24" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" prefWidth="150.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <styleClass>
+               <String fx:value="cmbPrintProfile" />
+               <String fx:value="cmbCleanCombo" />
+            </styleClass>
+        </RestrictedComboBox>
+        <Label alignment="CENTER" text="%cameraProfiles.general" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1">
+            <styleClass>
+                <String fx:value="filamentLibTitle" />
+                <String fx:value="preferenceControl" />
+            </styleClass>
+        </Label>
+        <Label text="%cameraProfiles.captureHeight" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <RestrictedNumberField fx:id="captureHeight" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+            <styleClass>
+                <String fx:value="preferenceControl" />
+            </styleClass>
+            <tooltip>
+                <HideableTooltip text="%cameraProfilesHelp.captureHeight" />
+            </tooltip>
+        </RestrictedNumberField>
+        <Label text="%cameraProfiles.captureWidth" styleClass="colon, preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+        <RestrictedNumberField fx:id="captureWidth" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+            <styleClass>
+                <String fx:value="preferenceControl" />
+            </styleClass>
+            <tooltip>
+                <HideableTooltip text="%cameraProfilesHelp.captureWidth" />
+            </tooltip>
+        </RestrictedNumberField>
+        <Label text="%cameraProfiles.lockFocus" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <CheckBox fx:id="lockFocus" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <tooltip>
+               <HideableTooltip text="%cameraProfilesHelp.lockFocus" />
+           </tooltip>
+        </CheckBox>
+        <Label text="%cameraProfiles.focusValue" styleClass="colon, preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+        <RestrictedNumberField fx:id="focusValue" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+           <styleClass>
+               <String fx:value="preferenceControl" />
+           </styleClass>
+           <tooltip>
+               <HideableTooltip text="%cameraProfilesHelp.focusValue" />
+           </tooltip>
+        </RestrictedNumberField>
+        <!-- Time-lapse specific settings section -->
+        <Label alignment="CENTER" text="%cameraProfiles.timelapse" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="4">
+            <styleClass>
+                <String fx:value="filamentLibTitle" />
+                <String fx:value="preferenceControl" />
+            </styleClass>
+        </Label>
+        <Label text="%cameraProfiles.headLight" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <CheckBox fx:id="headLight" GridPane.columnIndex="1" GridPane.rowIndex="5">
+            <tooltip>
+               <HideableTooltip text="%cameraProfilesHelp.headLight" />
+           </tooltip>
+        </CheckBox>
+        <Label text="%cameraProfiles.ambientLight" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+        <CheckBox fx:id="ambientLight" GridPane.columnIndex="1" GridPane.rowIndex="6">
+            <tooltip>
+               <HideableTooltip text="%cameraProfilesHelp.ambientLight" />
+           </tooltip>
+        </CheckBox>
+    </children>
+</GridPane>

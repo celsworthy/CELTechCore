@@ -91,7 +91,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
 
     private final ObjectProperty<ProfileLibraryPanelController.State> state = new SimpleObjectProperty<>();
     private final BooleanProperty isDirty = new SimpleBooleanProperty(false);
-
     private final BooleanProperty isEditable = new SimpleBooleanProperty(false);
     private final BooleanProperty canSave = new SimpleBooleanProperty(false);
     private final BooleanProperty canSaveAs = new SimpleBooleanProperty(false);
@@ -192,10 +191,6 @@ public class ProfileLibraryPanelController implements Initializable, MenuInnerPa
                 repopulateCmbPrintProfile();
                 selectDefaultPrintProfile();
                 setupSlicerInUseLabel();
-            }
-            else
-            {
-
             }
         });
         
