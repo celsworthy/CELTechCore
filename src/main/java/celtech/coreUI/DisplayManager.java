@@ -603,6 +603,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                 dontGroupStartupModels);
 
         rootAnchorPane.layout();
+        
 
         steno.debug("end configure display manager");
     }

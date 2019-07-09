@@ -12,10 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -30,7 +27,6 @@ import javafx.scene.shape.CubicCurve;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.FillRule;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Path;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.QuadCurve;
@@ -60,6 +56,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
 
     private static final Stenographer steno = StenographerFactory.getStenographer(ShapeContainer.class.getName());
     private static final long serialVersionUID = 1L;
+    private static final double NOMINAL_STROKE_WIDTH = 0.3;
+    
     protected static int nextModelId = 1;
 
     protected Group shapeGroup = new Group();
@@ -476,6 +474,7 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                 && !extents.equals(lastExtents))
         {
             extentsChanged = true;
+            setShapeStrokeWidth(NOMINAL_STROKE_WIDTH);
         }
 
         return extentsChanged;
@@ -624,30 +623,66 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     {
         Color fillColour = null;
         Color strokeColour = null;
-        
+
         if (isSelected())
-            strokeColour = StandardColours.SELECTION_HIGHLIGHTER_GREEN;
+        {
+            if (isOffBed.get())
+                strokeColour = Color.CORAL;
+            else
+                strokeColour = StandardColours.HIGHLIGHT_ORANGE;
+        }
+        else if (isOffBed.get())
+            strokeColour = Color.CRIMSON;
+        else
+            strokeColour = StandardColours.ROBOX_BLUE;
+
         if (isOffBed.get())
             fillColour = Color.CRIMSON;
         else
             fillColour = StandardColours.ROBOX_BLUE;
-            
+
+        fillColour = Color.color(fillColour.getRed(), fillColour.getGreen(), fillColour.getBlue(), 0.3);
+
+        setShapeColours(fillColour, strokeColour);
+    }
+
+    protected void setShapeColours(Color fillColour, Color strokeColour)
+    {
         for (Shape shape : shapes)
         {
-            if (strokeColour == null)
+            if (strokeColour != null)
             {
-                shape.setStrokeWidth(0.0); 
-                shape.setStroke(Color.TRANSPARENT);
+                shape.setStroke(strokeColour);
             }
             else
             {
-                shape.setStrokeWidth(0.2); 
-                shape.setStroke(Color.GREEN);
+                shape.setStroke(Color.TRANSPARENT);
             }
-            shape.setFill(fillColour); 
+            if (fillColour != null)
+                shape.setFill(fillColour);
+            else
+                shape.setFill(Color.TRANSPARENT);
         }
     }
 
+    protected void setShapeStrokeWidth(double strokeWidth)
+    {
+        boolean adjustForScene = (bed != null && getScene() != null);
+        
+        for (Shape shape : shapes)
+        {
+            double w = strokeWidth;
+            if (adjustForScene)
+            {
+                // Keep border width a constant size relative to the bed.
+                Point2D sz = shape.sceneToLocal(bed.localToScene(0.0, 0.0));
+                Point2D sw = shape.sceneToLocal(bed.localToScene(strokeWidth, 0.0));
+                w = sw.subtract(sz).magnitude();
+            }
+            shape.setStrokeWidth(w);
+        }
+    }
+    
     @Override
     public void setBedReference(Group bed)
     {
@@ -669,13 +704,34 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
                                      groupBounds.getWidth(), groupBounds.getHeight(), groupBounds.getDepth(),
                                      groupBounds.getCenterX(), groupBounds.getCenterY(), groupBounds.getCenterZ());
     }
+    
+    /**
+     * Return the parent ShapeGroup else return null.
+     */
+    public ShapeGroup getParentShapeContainer()
+    {
+        if (getParent() instanceof ShapeGroup)
+        {
+            return (ShapeGroup) getParent();
+        }
+        else if (getParent() != null && getParent().getParent() instanceof ShapeGroup)
+        {
+            return (ShapeGroup) getParent().getParent();
+        } 
+        else
+        {
+            return null;
+        }
+    }
 
     @Override
     public RectangularBounds calculateBoundsInParentCoordinateSystem()
     {
         RectangularBounds rb = null;
-        if (getScene() != null)
+        if (getParentShapeContainer() == null)
         {
+            // If not in a group, the parent is "the bed". The calculation
+            // currently only works if the scene has been instantiated.
             rb = calculateBoundsInBedCoordinateSystem();
         }
         else
@@ -698,11 +754,23 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         Bounds b = getBoundsInParent();
         Node p = getParent();
         if (bed != null && p != null)
-            b = bed.sceneToLocal(p.localToScene(b));
-        
+        {
+            if (getScene() != null)
+                b = bed.sceneToLocal(p.localToScene(b));
+            else
+                // Assume parent is bed reference
+                b = p.localToParent(b); 
+        }
+        else
+        {
+            // Assume bed origin is at corner.
+            b = new BoundingBox(b.getMinX() + 0.5 * printVolumeWidth, 
+                                b.getMinY() + 0.5 * printVolumeDepth,
+                                b.getWidth(),
+                                b.getHeight()); // Confusingly, in 2D project, height direction in box is the printer depth direction.
+        }
         return b;
-    }
-    
+    }    
 
     @Override
     public RectangularBounds calculateBoundsInBedCoordinateSystem()
@@ -756,27 +824,30 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
     @Override
     public void checkOffBed()
     {
-        Bounds bounds = getBoundsInBedCoordinateSystem();
-        if (bounds != null)
+        // Only check if not in a ShapeGroup.
+        if (getParent() != null && !(getParent().getParent() instanceof ShapeGroup))
         {
-            double epsilon = 0.001;
-            // For 2D shapes, X is width, Y is depth.
+            Bounds bounds = getBoundsInBedCoordinateSystem();
+            if (bounds != null)
+            {
+                double epsilon = 0.001;
+                // For 2D shapes, X is width, Y is depth.
 
-            if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
-                    || MathUtils.compareDouble(bounds.getMaxX(), printVolumeWidth,
-                            epsilon) == MathUtils.MORE_THAN
-                    || MathUtils.compareDouble(bounds.getMinY(), 0, epsilon) == MathUtils.LESS_THAN
-                    || MathUtils.compareDouble(bounds.getMaxY(), printVolumeDepth,
-                            epsilon) == MathUtils.MORE_THAN)
-            {
-//                System.out.println("ShapeContainer.checkOffBed() set to TRUE");
-                isOffBed.set(true);
-            } else
-            {
-//                System.out.println("ShapeContainer.checkOffBed() set to FALSE");
-                isOffBed.set(false);
+                if (MathUtils.compareDouble(bounds.getMinX(), 0, epsilon) == MathUtils.LESS_THAN
+                        || MathUtils.compareDouble(bounds.getMaxX(), printVolumeWidth,
+                                epsilon) == MathUtils.MORE_THAN
+                        || MathUtils.compareDouble(bounds.getMinY(), 0, epsilon) == MathUtils.LESS_THAN
+                        || MathUtils.compareDouble(bounds.getMaxY(), printVolumeDepth,
+                                epsilon) == MathUtils.MORE_THAN)
+                {
+                    isOffBed.set(true);
+                } else
+                {
+                    isOffBed.set(false);
+                }
             }
         }
+        // System.out.println("ShapeContainer.checkOffBed() set to " + Boolean.toString(isOffBed.get()));
     }
 
     private void updateLastTransformedBoundsInParentForTranslateByX(double deltaCentreX)
@@ -1231,6 +1302,8 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
         updateTransformsFromTurnAngle();
         notifyShapeHasChanged();
     }
+    
+    
 
     @Override
     public double getRotationTurn() {
@@ -1251,33 +1324,33 @@ public class ShapeContainer extends ProjectifiableThing implements Serializable,
      * This method is used during an ungroup to blend the group's transform into
      * this one, thereby keeping this model in the same place.
      */
-    public void applyGroupTransformToThis(ShapeGroup sGroup)
+    public void applyGroupTransformToThis(ShapeGroup sGroup, double centreX, double centreY)
     {
         double xScaleFactor = getXScale() * sGroup.getXScale();
         double yScaleFactor = getYScale() * sGroup.getYScale();
 
         //Calculate the centre of the group in world co-ords
-        Point2D groupCentre = new Point2D(sGroup.getTransformedCentreX(),
-                                          sGroup.getTransformedCentreDepth());
+        //Point2D groupCentre = new Point2D(sGroup.getTransformedCentreX(),
+        //                                  sGroup.getTransformedCentreDepth());
 
-        Point2D shapeCentre = new Point2D(getTransformedCentreX() + sGroup.transformMoveToPreferred.getX(),
-                getTransformedCentreDepth() + sGroup.transformMoveToPreferred.getY());
+        //Point2D shapeCentre = new Point2D(getTransformedCentreX() + sGroup.transformMoveToPreferred.getX(),
+        //        getTransformedCentreDepth() + sGroup.transformMoveToPreferred.getY());
 
-        Point2D groupCentreToModelCentre = shapeCentre.subtract(groupCentre);
+        //Point2D groupCentreToModelCentre = shapeCentre.subtract(groupCentre);
 
-        Point2D scaledGroupCentreToModelCentre = new Point2D(groupCentreToModelCentre.getX() * xScaleFactor,
-                                                             groupCentreToModelCentre.getY() * yScaleFactor);
+        //Point2D scaledGroupCentreToModelCentre = new Point2D(groupCentreToModelCentre.getX() * xScaleFactor,
+        //                                                     groupCentreToModelCentre.getY() * yScaleFactor);
 
-        Point2D turnedModelCentrePoint = sGroup.rotationTransforms.get(0).transform(scaledGroupCentreToModelCentre);
+        //Point2D turnedModelCentrePoint = sGroup.rotationTransforms.get(0).transform(scaledGroupCentreToModelCentre);
 
-        Point2D newShapeCentre = new Point2D(groupCentre.getX() + turnedModelCentrePoint.getX(),
-                                             groupCentre.getY() + turnedModelCentrePoint.getY());
+        //Point2D newShapeCentre = new Point2D(groupCentre.getX() + turnedModelCentrePoint.getX(),
+        //                                     groupCentre.getY() + turnedModelCentrePoint.getY());
 
-        translateTo(newShapeCentre.getX(), newShapeCentre.getY());
+        translateTo(centreX, centreY);
         preferredRotationTurn.set(preferredRotationTurn.get() + sGroup.preferredRotationTurn.get());
+        updateTransformsFromTurnAngle();
         setXScale(xScaleFactor, false);
         setYScale(yScaleFactor, false);
-        RectangularBounds modelBoundsParent = calculateBoundsInBedCoordinateSystem();
         lastTransformedBoundsInParent = calculateBoundsInParentCoordinateSystem();
     }
 }

@@ -499,9 +499,9 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                     StylusSettings stylusSettings = ((ShapeContainerProject)project).getStylusSettings();
                     PrintableShapes ps = new PrintableShapes(shapes, project.getProjectName(), "printjob");
                     List<GCodeEventNode> gcodeData = PrintableShapesToGCode.parsePrintableShapes(ps);
-                    PrintableShapesToGCode.offsetGCode(gcodeData, stylusSettings.getXOffset(), stylusSettings.getYOffset(), stylusSettings.getZOffset());                    
+                    //PrintableShapesToGCode.offsetGCode(gcodeData, stylusSettings.getXOffset(), stylusSettings.getYOffset(), stylusSettings.getZOffset());                    
                     result.setRawOutputFileName(projectLocation + File.separator + "stylusRaw.gcode");
-                    PrintableShapesToGCode.writeGCodeToFile(result.getRawOutputFileName(), gcodeData, headTypeCode, printerTypeOpt);
+                    PrintableShapesToGCode.writeGCodeToFile(result.getRawOutputFileName(), gcodeData, headTypeCode, stylusSettings.getXOffset(), stylusSettings.getYOffset(), stylusSettings.getZOffset(), printerTypeOpt);
                     result.setHasDragKnife(stylusSettings.getHasDragKnife());
                     DragKnifeCompensatorAlt dnc = new DragKnifeCompensatorAlt();
                     List<GCodeEventNode> compensatedGCodeNodes = null;
@@ -509,9 +509,9 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                         compensatedGCodeNodes = dnc.doCompensation(gcodeData, stylusSettings.getDragKnifeRadius(), Optional.empty());
                     else
                         compensatedGCodeNodes = gcodeData;
-                    compensatedGCodeNodes = dnc.addZMoves(compensatedGCodeNodes, stylusSettings.getZOffset());
+                    compensatedGCodeNodes = dnc.addZMoves(compensatedGCodeNodes, 0.0);
                     result.setCompensatedOutputFileName(projectLocation + File.separator + "stylusCompensated.gcode");
-                    PrintableShapesToGCode.writeGCodeToFile(result.getCompensatedOutputFileName(), compensatedGCodeNodes, headTypeCode, printerTypeOpt);
+                    PrintableShapesToGCode.writeGCodeToFile(result.getCompensatedOutputFileName(), compensatedGCodeNodes, headTypeCode, stylusSettings.getXOffset(), stylusSettings.getYOffset(), stylusSettings.getZOffset(), printerTypeOpt);
                     result.setResultOK(true);
                 }
                 catch (Exception ex)

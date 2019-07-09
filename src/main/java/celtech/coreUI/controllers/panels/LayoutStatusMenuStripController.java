@@ -338,9 +338,18 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void ungroup(ActionEvent event)
     {
         Project currentProject = Lookup.getSelectedProjectProperty().get();
+        Set<ProjectifiableThing> existingContainers = currentProject.getTopLevelThings()
+                                                                    .stream()
+                                                                    .collect(Collectors.toSet());
         Set<ProjectifiableThing> modelContainers = Lookup.getProjectGUIState(currentProject).getProjectSelection().getSelectedModelsSnapshot();
         undoableSelectedProject.ungroup(modelContainers);
         Lookup.getProjectGUIState(currentProject).getProjectSelection().deselectAllModels();
+        currentProject.getTopLevelThings()
+                      .stream()
+                      .filter(sc -> !existingContainers.contains(sc))
+                      .forEach((nc) -> Lookup.getProjectGUIState(currentProject)
+                                             .getProjectSelection()
+                                             .addSelectedItem(nc));
     }
 
     @FXML

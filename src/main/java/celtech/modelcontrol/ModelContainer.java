@@ -1396,6 +1396,7 @@ public class ModelContainer extends ProjectifiableThing implements Serializable,
         ModelContainer parentModelContainer = getParentModelContainer();
         if (parentModelContainer == null)
         {
+            // If not in a group, the parent is "the bed".
             return calculateBoundsInBedCoordinateSystem();
         }
 

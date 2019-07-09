@@ -9,6 +9,7 @@ import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ShapeContainer;
 import celtech.modelcontrol.ShapeGroup;
+import celtech.roboxbase.utils.RectangularBounds;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.BufferedInputStream;
@@ -353,6 +354,7 @@ public class ShapeContainerProject extends Project
 
     public ShapeGroup group(Set<ProjectifiableThing> shapeContainers, int groupModelId)
     {
+        checkNotAlreadyInGroup(shapeContainers);
         removeModels(shapeContainers);
         ShapeGroup modelGroup = createNewGroup(shapeContainers, groupModelId);
         addModel(modelGroup);
@@ -400,23 +402,22 @@ public class ShapeContainerProject extends Project
 
     public void ungroup(Set<? extends ShapeContainer> shapeContainers)
     {
-        List<ProjectifiableThing> ungroupedModels = new ArrayList<>();
-
         for (ShapeContainer sContainer : shapeContainers)
         {
             if (sContainer instanceof ShapeGroup)
             {
                 ShapeGroup sGroup = (ShapeGroup) sContainer;
+                for (ShapeContainer childShapeContainer : sGroup.getChildShapeContainers())
+                {
+                    RectangularBounds b = childShapeContainer.calculateBoundsInBedCoordinateSystem();
+                    addModel(childShapeContainer);
+                    childShapeContainer.applyGroupTransformToThis(sGroup, b.getCentreX(), b.getCentreY());
+                    //childShapeContainer.translateTo(b.getCentreX(), b.getCentreY());
+                    //childShapeContainer.updateLastTransformedBoundsInParent();
+                }
                 Set<ProjectifiableThing> shapeGroups = new HashSet<>();
                 shapeGroups.add(sGroup);
                 removeModels(shapeGroups);
-                for (ShapeContainer childShapeContainer : sGroup.getChildShapeContainers())
-                {
-                    addModel(childShapeContainer);
-                    childShapeContainer.applyGroupTransformToThis(sGroup);
-                    childShapeContainer.updateLastTransformedBoundsInParent();
-                    ungroupedModels.add(childShapeContainer);
-                }
                 Set<ProjectifiableThing> changedModels = new HashSet<>(sGroup.getChildShapeContainers());
                 fireWhenModelsTransformed(changedModels);
             }

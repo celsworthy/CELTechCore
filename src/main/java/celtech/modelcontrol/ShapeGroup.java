@@ -120,6 +120,14 @@ public class ShapeGroup extends ShapeContainer implements ScreenExtentsProvider.
         notifyShapeChange();
     }
     
+    @Override
+    protected boolean recalculateScreenExtents()
+    {
+       if (childShapeContainers != null)
+            childShapeContainers.forEach((s) -> s.recalculateScreenExtents()); 
+       return super.recalculateScreenExtents();
+    }
+    
     /**
      * Update the given group structure with the details of this group.
      */
@@ -170,6 +178,16 @@ public class ShapeGroup extends ShapeContainer implements ScreenExtentsProvider.
         traverseAllChildren((s) ->
         {
             s.isOffBedProperty().set(offBed);
+            s.setColourFromState();
+        });
+    }
+    
+    public void setSelected(boolean selected)
+    {
+        super.setSelected(selected);
+        traverseAllChildren((s) ->
+        {
+            s.setSelected(selected);
             s.setColourFromState();
         });
     }
