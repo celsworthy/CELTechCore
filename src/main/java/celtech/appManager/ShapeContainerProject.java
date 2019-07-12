@@ -9,6 +9,8 @@ import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.modelcontrol.ShapeContainer;
 import celtech.modelcontrol.ShapeGroup;
+import celtech.roboxbase.configuration.datafileaccessors.StylusSettingsContainer;
+import celtech.roboxbase.configuration.fileRepresentation.StylusSettings;
 import celtech.roboxbase.utils.RectangularBounds;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -20,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,10 +53,12 @@ public class ShapeContainerProject extends Project
     public ShapeContainerProject()
     {
         super();
+        List<StylusSettings> settingsList = StylusSettingsContainer.getCompleteSettingsList();
+        if (!settingsList.isEmpty())
+            stylusSettings.setFrom(settingsList.get(0));
         stylusSettings.getDataChanged().addListener(
         (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
-            steno.info("Stylus settings changed");
             projectModified();
             fireWhenPrinterSettingsChanged(printerSettings);
         });

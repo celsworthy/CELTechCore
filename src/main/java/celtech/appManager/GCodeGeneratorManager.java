@@ -38,6 +38,7 @@ import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.SimpleCancellable;
 import celtech.roboxbase.utils.threed.CentreCalculations;
 import celtech.modelcontrol.ShapeContainer;
+import celtech.roboxbase.configuration.fileRepresentation.StylusSettings;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
