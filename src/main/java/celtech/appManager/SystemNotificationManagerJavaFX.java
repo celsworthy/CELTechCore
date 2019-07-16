@@ -458,15 +458,16 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * @return True if the user has agreed to update, otherwise false
      */
     @Override
-    public boolean askUserToUpdateFirmware()
+    public boolean askUserToUpdateFirmware(Printer printerToUpdate)
     {
         Callable<Boolean> askUserToUpgradeDialog = new Callable()
         {
             @Override
             public Boolean call() throws Exception
             {
+                String printerName = printerToUpdate.getPrinterIdentity().printerFriendlyNameProperty().get();
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
-                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle"));
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle") + printerName);
                 choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.firmwareUpdateError"));
                 ChoiceLinkButton updateFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("dialogs.firmwareUpdateOKTitle"),

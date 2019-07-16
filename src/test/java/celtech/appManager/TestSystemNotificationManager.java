@@ -22,7 +22,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
 {
 
     @Override
-    public boolean askUserToUpdateFirmware()
+    public boolean askUserToUpdateFirmware(Printer printerToUpdate)
     {
         return false;
     }
