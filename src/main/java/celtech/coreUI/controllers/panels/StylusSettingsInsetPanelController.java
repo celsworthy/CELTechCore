@@ -97,8 +97,21 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
     private final SimpleBooleanProperty headTypeIsStylus = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty settingsModified = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty settingsResettable = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty settingsReadOnly = new SimpleBooleanProperty(false);
     private boolean suppressUpdates = false;
     
+    private final Runnable stylusSettingsListener = () -> 
+    {
+        ObservableList<String> settingsNameList = StylusSettingsContainer.getInstance().getCompleteSettingsList()
+                                                                                       .stream()
+                                                                                       .map(StylusSettings::getName)
+                                                                                       .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        String name = stylusSettingsCBox.getEditor().getText();
+        stylusSettingsCBox.setItems(settingsNameList);
+        stylusSettingsCBox.getEditor().setText(name);
+        checkIfSettingsModified();
+    };
+
     private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
         updateHeadType(currentPrinter);
@@ -129,15 +142,27 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
     void resetStylusSettings(ActionEvent event)
     {
         String name = stylusSettingsCBox.getEditor().getText();
-        StylusSettingsContainer.getSettingsByName(name)
+        StylusSettingsContainer.getInstance()
+                               .getSettingsByName(name)
                                .ifPresentOrElse(ss -> updateSettingsFromData(ss), () -> checkIfSettingsModified());
     }
     
     @FXML
     void saveStylusSettings(ActionEvent event)
     {
-        settingsModified.set(false);
-        steno.info("saveStylusSettings -  settingsModified set to false.");
+        if (currentProject != null && settingsModified.get())
+        {
+            String name = stylusSettingsCBox.getEditor().getText();
+            Optional<StylusSettings> ssOpt = StylusSettingsContainer.getInstance().getSettingsByName(name);
+            if (ssOpt.isEmpty() || !ssOpt.get().isReadOnly())
+            {
+                StylusSettingsContainer.getInstance().saveSettings(((ShapeContainerProject)currentProject).getStylusSettings());
+            }
+            else
+            {
+                steno.warning("Setttings not save - \"" + name + "\" are read only");
+            }
+        }
     }
 
     /**
@@ -207,40 +232,47 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
                 doActionSuppressedUpdates(() -> ((ShapeContainerProject)currentProject).getStylusSettings().setZOffset(newValue));
         });
         
-        // Populate combo box.
+        // Initiliase stylus settings combo box.
         stylusSettingsCBox.setEditable(true);
-        ObservableList<String> settingsNameList = StylusSettingsContainer.getCompleteSettingsList().stream()
-                                                                                         .map(StylusSettings::getName)
-                                                                                         .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        ObservableList<String> settingsNameList = StylusSettingsContainer.getInstance()
+                                                                         .getCompleteSettingsList()
+                                                                         .stream()
+                                                                         .map(StylusSettings::getName)
+                                                                         .collect(Collectors.toCollection(FXCollections::observableArrayList));
         stylusSettingsCBox.setItems(settingsNameList);
         stylusSettingsCBox.getSelectionModel().selectedItemProperty().addListener(
             (o, ov, nv) ->
             {
-                Optional<StylusSettings> ssOpt = StylusSettingsContainer.getSettingsByName(nv);
-                ssOpt.ifPresentOrElse(ss -> updateSettingsFromData(ss), () -> 
+                if (!suppressUpdates)
                 {
-                    // Update the name.
-                    if (currentProject != null && !nv.isBlank())
+                    Optional<StylusSettings> ssOpt = StylusSettingsContainer.getInstance().getSettingsByName(nv.trim());
+                    ssOpt.ifPresentOrElse(ss -> updateSettingsFromData(ss), () -> 
                     {
-                        ((ShapeContainerProject)currentProject).getStylusSettings()
-                                                               .setName(nv);
-                        settingsModified.set(true);
-                        settingsResettable.set(false);
-                        steno.info("stylusSettingsCBox listener -  settingsResettable set to false");
-                    }
-                });
+                        // Update the name.
+                        if (currentProject != null && nv != null && !nv.isBlank())
+                        {
+                            ((ShapeContainerProject)currentProject).getStylusSettings()
+                                                                   .setName(nv);
+                            settingsModified.set(true);
+                            settingsResettable.set(false);
+                            settingsReadOnly.set(false);
+                            //steno.info("stylusSettingsCBox listener -  settingsResettable set to false");
+                        }
+                    });
+                }
             });
         if (!settingsNameList.isEmpty())
         {
-            Optional<StylusSettings> ssOpt = StylusSettingsContainer.getSettingsByName(settingsNameList.get(0));
+            Optional<StylusSettings> ssOpt = StylusSettingsContainer.getInstance().getSettingsByName(settingsNameList.get(0));
             ssOpt.ifPresent(ss ->
             {
                 stylusSettingsCBox.setValue(settingsNameList.get(0)); 
                 updateSettingsFromData(ss);
             });
         }
+        StylusSettingsContainer.getInstance().addListener(stylusSettingsListener);
         resetStylusSettingsButton.disableProperty().bind(settingsResettable.and(settingsModified).not());
-        saveStylusSettingsButton.disableProperty().bind(settingsModified.not());
+        saveStylusSettingsButton.disableProperty().bind(settingsModified.not().or(settingsReadOnly));
     }
 
     private void updateSettingsFromData(StylusSettings settingsData)
@@ -308,7 +340,8 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
         if (!suppressUpdates)
         {
             String name = stylusSettings.getName();
-            Optional<StylusSettings> settingsOpt = StylusSettingsContainer.getSettingsByName(name);
+            suppressUpdates = true;
+            Optional<StylusSettings> settingsOpt = StylusSettingsContainer.getInstance().getSettingsByName(name);
             settingsOpt.ifPresentOrElse(ss -> stylusSettingsCBox.setValue(ss.getName()),
                                         () -> stylusSettingsCBox.getEditor().setText(name));
             dragKnifeCheckbox.selectedProperty().set(stylusSettings.getHasDragKnife());
@@ -318,6 +351,7 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
             xOffsetEntry.setValue(stylusSettings.getXOffset());
             yOffsetEntry.setValue(stylusSettings.getYOffset());
             zOffsetEntry.setValue(stylusSettings.getZOffset());
+            suppressUpdates = false;
         }
     }
     
@@ -340,18 +374,22 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
     private void checkIfSettingsModified()
     {
         String name = stylusSettingsCBox.getEditor().getText();
-        StylusSettingsContainer.getSettingsByName(name)
+        StylusSettingsContainer.getInstance()
+                               .getSettingsByName(name)
                                .ifPresentOrElse(ss -> 
                                                 {
                                                     settingsResettable.set(true);
+                                                    settingsReadOnly.set(ss.isReadOnly());
                                                     settingsModified.set(!settingsMatch(ss));
                                                 },
                                                 () ->
                                                 {
                                                     settingsResettable.set(false);
+                                                    settingsReadOnly.set(false);
                                                     settingsModified.set(true);
                                                 });
         steno.info("checkIfSettingsModified -  settingsResettable set to " + settingsResettable.get());
+        steno.info("checkIfSettingsModified -  settingsReadOnly set to " + settingsReadOnly.get());
         steno.info("checkIfSettingsModified -  settingsModified set to " + settingsModified.get());
     }
     
@@ -377,5 +415,7 @@ public class StylusSettingsInsetPanelController implements Initializable, Projec
 
         ApplicationStatus.getInstance()
                 .modeProperty().removeListener(applicationModeChangeListener);
+        
+        StylusSettingsContainer.getInstance().removeListener(stylusSettingsListener);
     }
 }

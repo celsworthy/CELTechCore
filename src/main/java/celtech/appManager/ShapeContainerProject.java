@@ -53,7 +53,8 @@ public class ShapeContainerProject extends Project
     public ShapeContainerProject()
     {
         super();
-        List<StylusSettings> settingsList = StylusSettingsContainer.getCompleteSettingsList();
+        List<StylusSettings> settingsList = StylusSettingsContainer.getInstance()
+                                                                   .getCompleteSettingsList();
         if (!settingsList.isEmpty())
             stylusSettings.setFrom(settingsList.get(0));
         stylusSettings.getDataChanged().addListener(
