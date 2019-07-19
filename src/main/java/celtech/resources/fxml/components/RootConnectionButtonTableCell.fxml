@@ -23,5 +23,6 @@
          </children>
       </HBox>
       <Button fx:id="updateButton" layoutX="177.0" layoutY="10.0" mnemonicParsing="false" onAction="#updateRoot" text="%rootScanner.updateRoot" />
+      <Button fx:id="downgradeButton" layoutX="177.0" layoutY="10.0" mnemonicParsing="false" onAction="#downgradeRoot" text="%rootScanner.downgradeRoot" />
    </children>
 </StackPane>
