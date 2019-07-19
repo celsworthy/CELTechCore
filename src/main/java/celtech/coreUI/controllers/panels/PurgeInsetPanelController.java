@@ -4,17 +4,22 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
-import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.RestrictedNumberField;
 import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.appManager.NotificationType;
+import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.printerControl.PrinterStatus;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterException;
+import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
+import celtech.roboxbase.printerControl.model.Reel;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransition;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
+import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager.GUIName;
 import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState;
 import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.CONFIRM_TEMPERATURE;
 import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.FAILED;
@@ -24,11 +29,6 @@ import static celtech.roboxbase.printerControl.model.statetransitions.purge.Purg
 import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.INITIALISING;
 import static celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeState.RUNNING_PURGE;
 import celtech.roboxbase.printerControl.model.statetransitions.purge.PurgeStateTransitionManager;
-import celtech.roboxbase.printerControl.model.Reel;
-import celtech.roboxbase.printerControl.model.statetransitions.StateTransition;
-import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager;
-import celtech.roboxbase.printerControl.model.statetransitions.StateTransitionManager.GUIName;
-import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.utils.PrinterUtils;
 import java.net.URL;
 import java.util.HashMap;
@@ -641,7 +641,7 @@ public class PurgeInsetPanelController implements Initializable
         selectMaterial0(printer.effectiveFilamentsProperty().get(0));
         selectMaterial1(printer.effectiveFilamentsProperty().get(1));
 
-        setPurgeForRequiredNozzles(project);
+        setPurgeForRequiredNozzles();
 
         startPurge();
     }
@@ -649,7 +649,7 @@ public class PurgeInsetPanelController implements Initializable
     /**
      * If a nozzle needs purging then set the appropriate flag to true.
      */
-    private void setPurgeForRequiredNozzles(ModelContainerProject project)
+    private void setPurgeForRequiredNozzles()
     {
         if (!headHasTwoNozzleHeaters(printer))
         {
@@ -721,6 +721,8 @@ public class PurgeInsetPanelController implements Initializable
                         }
                     });
 
+            setPurgeForRequiredNozzles();
+            
             if (purgeTwoNozzleHeaters.get())
             {
                 currentMaterialTemperature1.textProperty().unbind();
@@ -756,10 +758,13 @@ public class PurgeInsetPanelController implements Initializable
 
             transitionManager.start();
 
-            transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
-            if (purgeTwoNozzleHeaters.get())
+            
+            if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
             {
-                transitionManager.setPurgeNozzleHeater1(purgeMaterial1.isSelected());
+                transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
+            } else
+            {
+                transitionManager.setPurgeNozzleHeater1(purgeMaterial0.isSelected());
             }
 
             installTagAndDisabledStatusForButton(transitionManager, printer, startPurgeButton);

@@ -218,7 +218,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     {
         firmwareFileChooser.setInitialFileName("Untitled");
 
-        firmwareFileChooser.setInitialDirectory(new File(ApplicationConfiguration.getLastDirectory(DirectoryMemoryProperty.LAST_FIRMWARE_DIRECTORY)));
+        firmwareFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_FIRMWARE_DIRECTORY));
 
         final File file = firmwareFileChooser.showOpenDialog(DisplayManager.getMainStage());
         if (file != null)
@@ -233,7 +233,7 @@ public class MaintenanceInsetPanelController implements Initializable, MenuInner
     void sendGCodeSD(ActionEvent event)
     {
         gcodeFileChooser.setInitialFileName("Untitled");
-        gcodeFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY));
+        gcodeFileChooser.setInitialDirectory(ApplicationConfiguration.getLastDirectoryFile(DirectoryMemoryProperty.LAST_GCODE_DIRECTORY));
 
         final File file = gcodeFileChooser.showOpenDialog(container.getScene().getWindow());
 
