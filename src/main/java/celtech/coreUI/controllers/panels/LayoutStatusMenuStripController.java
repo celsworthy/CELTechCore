@@ -356,11 +356,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
             {
                 cameraTriggerData = new CameraTriggerData(
-                        Lookup.getUserPreferences().isTimelapseTurnOffHeadLights(),
-                        Lookup.getUserPreferences().isTimelapseTurnOffLED(),
+                        Lookup.getUserPreferences().getGoProWifiPassword(),
                         Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
                         Lookup.getUserPreferences().getTimelapseXMove(),
-                        Lookup.getUserPreferences().getTimelapseYMove());
+                        Lookup.getUserPreferences().getTimelapseYMove(),
+                        Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
+                        Lookup.getUserPreferences().getTimelapseDelay());
             }
             
             printableProject.setCameraTriggerData(cameraTriggerData);

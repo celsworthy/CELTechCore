@@ -25,9 +25,8 @@ public class PasswordPreference implements PreferencesInnerPanelController.Prefe
         this.caption = caption;
 
         control = new PasswordField();
-        control.setPrefWidth(250);
+        control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
-        control.setMaxWidth(control.getPrefWidth());
         control.textProperty().addListener(
                 (ObservableValue<? extends String> observable, String oldValue, String newValue) ->
                 {
