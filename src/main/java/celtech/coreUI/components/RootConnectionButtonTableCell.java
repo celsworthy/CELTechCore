@@ -268,7 +268,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                         });
                         
                         // Download the file from the web server.
-                        URL rootDownloadURL = new URL("http://www.cel-robox.com/wp-content/uploads/Software/Root/" + rootFileName);
+                        URL rootDownloadURL = new URL("https://downloads.cel-uk.com/software/root/" + rootFileName);
                         if (SystemUtils.downloadFromUrl(rootDownloadURL, rootFilePath.toString(), this))
                             return Optional.of(rootFilePath.toFile());
                     }
