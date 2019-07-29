@@ -1,7 +1,6 @@
 package celtech.utils;
 
 import celtech.Lookup;
-import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.CoreMemory;
@@ -146,8 +145,8 @@ public class AutoUpdate extends Thread
     {
         int upgradeStatus = ERROR;
 
-//        String url = "https://downloads.cel-uk.com/software/update/" + appDirectory + "/" + applicationName + "-update.xml";
-        String url = "http://downloads.cel-robox.com/" + appDirectory + "/" + applicationName + "-update.xml";
+        String url = "https://downloads.cel-uk.com/software/update/" + appDirectory + "/" + applicationName + "-update.xml";
+
         String encodedSwVersion = null;
         try
         {

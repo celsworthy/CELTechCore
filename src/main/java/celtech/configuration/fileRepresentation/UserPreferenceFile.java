@@ -33,11 +33,12 @@ public class UserPreferenceFile
     private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
-    private boolean timelapseTurnOffHeadLights = true;
-    private boolean timelapseTurnOffLED = false;
+    private String goProWifiPassword = "";
     private boolean timelapseMoveBeforeCapture = true;
     private int timelapseXMove = 0;
     private int timelapseYMove = 150;
+    private int timelapseDelay = 2;
+    private int timelapseDelayBeforeCapture = 2;
     private boolean loosePartSplitOnLoad = true;
     private boolean customPrinterEnabled = false;
     private PrinterType customPrinterType = PrinterType.ROBOX;
@@ -203,24 +204,14 @@ public class UserPreferenceFile
         this.timelapseTriggerEnabled = timelapseTriggerEnabled;
     }
 
-    public boolean isTimelapseTurnOffHeadLights()
+    public String getGoProWifiPassword()
     {
-        return timelapseTurnOffHeadLights;
+        return goProWifiPassword;
     }
 
-    public void setTimelapseTurnOffHeadLights(boolean timelapseTurnOffHeadLights)
+    public void setGoProWifiPassword(String goProWifiPassword)
     {
-        this.timelapseTurnOffHeadLights = timelapseTurnOffHeadLights;
-    }
-    
-    public boolean isTimelapseTurnOffLED()
-    {
-        return timelapseTurnOffLED;
-    }
-
-    public void setTimelapseTurnOffLED(boolean timelapseTurnOffLED)
-    {
-        this.timelapseTurnOffLED = timelapseTurnOffLED;
+        this.goProWifiPassword = goProWifiPassword;
     }
 
     public boolean isTimelapseMoveBeforeCapture()
@@ -251,6 +242,26 @@ public class UserPreferenceFile
     public int getTimelapseYMove()
     {
         return timelapseYMove;
+    }
+
+    public void setTimelapseDelay(int timelapseDelay)
+    {
+        this.timelapseDelay = timelapseDelay;
+    }
+
+    public int getTimelapseDelay()
+    {
+        return timelapseDelay;
+    }
+
+    public void setTimelapseDelayBeforeCapture(int timelapseDelayBeforeCapture)
+    {
+        this.timelapseDelayBeforeCapture = timelapseDelayBeforeCapture;
+    }
+
+    public int getTimelapseDelayBeforeCapture()
+    {
+        return timelapseDelayBeforeCapture;
     }
 
     public boolean isLoosePartSplitOnLoad()
@@ -310,9 +321,12 @@ public class UserPreferenceFile
         setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
+        setGoProWifiPassword(userPreferences.getGoProWifiPassword());
         setTimelapseMoveBeforeCapture(userPreferences.isTimelapseMoveBeforeCapture());
         setTimelapseXMove(userPreferences.getTimelapseXMove());
         setTimelapseYMove(userPreferences.getTimelapseYMove());
+        setTimelapseDelay(userPreferences.getTimelapseDelay());
+        setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
         setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
         setCustomPrinterType(userPreferences.getCustomPrinterType());

@@ -7,6 +7,7 @@ import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.remote.Configuration;
+import celtech.roboxbase.configuration.ApplicationVersion;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.MachineType;
 import celtech.roboxbase.utils.SystemUtils;
@@ -56,7 +57,9 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
     private GenericProgressBar rootSoftwareUploadProgress;
 
     private BooleanProperty inhibitUpdate = new SimpleBooleanProperty(false);
-
+    
+    private boolean userEnteredPin = false;
+    
     @FXML
     private HBox connectedBox;
 
@@ -68,12 +71,16 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
 
     @FXML
     private Button updateButton;
+    
+    @FXML
+    private Button downgradeButton;
 
     @FXML
     void connectToServer(ActionEvent event)
     {
         if (associatedServer != null)
         {
+            userEnteredPin = true;
             associatedServer.setPin(pinEntryField.getText());
             associatedServer.connect();
         }
@@ -261,7 +268,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                         });
                         
                         // Download the file from the web server.
-                        URL rootDownloadURL = new URL("http://www.cel-robox.com/wp-content/uploads/Software/Root/" + rootFileName);
+                        URL rootDownloadURL = new URL("https://downloads.cel-uk.com/software/root/" + rootFileName);
                         if (SystemUtils.downloadFromUrl(rootDownloadURL, rootFilePath.toString(), this))
                             return Optional.of(rootFilePath.toFile());
                     }
@@ -309,6 +316,16 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         String pathToRootFile = BaseConfiguration.getUserTempDirectory();
         String rootFile = ROOT_UPGRADE_FILE_PREFIX + BaseConfiguration.getApplicationVersion() + ".zip";
         upgradeRootWithFile(pathToRootFile, rootFile);
+    }
+    
+    @FXML
+    void downgradeRoot(ActionEvent event)
+    {
+        boolean downgradeConfirmed = BaseLookup.getSystemNotificationHandler().showAreYouSureYouWantToDowngradeDialog();
+        if (downgradeConfirmed)
+        {
+            updateRoot(event);
+        }
     }
 
     @FXML
@@ -385,6 +402,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
         }
 
         updateButton.disableProperty().bind(inhibitUpdate);
+        downgradeButton.disableProperty().bind(inhibitUpdate);
     }
 
     @Override
@@ -423,24 +441,59 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 connectedBox.setVisible(true);
                 disconnectedBox.setVisible(false);
                 updateButton.setVisible(false);
+                downgradeButton.setVisible(false);
+                userEnteredPin = false;
                 break;
             case NOT_CONNECTED:
-            case WRONG_PIN:
                 disconnectedBox.setVisible(true);
                 pinEntryField.clear();
                 connectedBox.setVisible(false);
                 updateButton.setVisible(false);
+                downgradeButton.setVisible(false);
+                userEnteredPin = false;
                 break;
             case WRONG_VERSION:
-                updateButton.setVisible(true);
-                disconnectedBox.setVisible(false);
-                connectedBox.setVisible(false);
+                handleWrongVersionCase();
+                break;
+            case WRONG_PIN:
+                if (userEnteredPin)
+                {
+                    BaseLookup.getSystemNotificationHandler().showErrorNotification(Lookup.i18n("rootScanner.PIN"), Lookup.i18n("rootScanner.incorrectPIN"));
+                    userEnteredPin = false;
+                }
+                associatedServer.setServerStatus(ServerStatus.NOT_CONNECTED);
                 break;
             default:
                 disconnectedBox.setVisible(false);
                 connectedBox.setVisible(false);
                 updateButton.setVisible(false);
+                downgradeButton.setVisible(false);
+                userEnteredPin = false;
                 break;
         }
+    }
+    
+    private void handleWrongVersionCase()
+    {
+        ApplicationVersion localVersion = new ApplicationVersion(BaseConfiguration.getApplicationVersion());
+        ApplicationVersion serverVersion = associatedServer.getVersion();
+        
+        int comparison = localVersion.compareTo(serverVersion);
+        
+        if (comparison < 0)
+        {
+            // Local version is lower than server
+            downgradeButton.setVisible(true);
+            updateButton.setVisible(false);
+        } else if (comparison > 0)
+        {
+            // Local version is higher than server
+            updateButton.setVisible(true);
+            downgradeButton.setVisible(false);
+        }
+        
+        disconnectedBox.setVisible(false);
+        connectedBox.setVisible(false);
+        userEnteredPin = false;
     }
 }

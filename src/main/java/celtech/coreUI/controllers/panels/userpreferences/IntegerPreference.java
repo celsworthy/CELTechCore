@@ -27,7 +27,6 @@ public class IntegerPreference implements PreferencesInnerPanelController.Prefer
         control = new RestrictedNumberField();
         control.setPrefWidth(150);
         control.setMinWidth(control.getPrefWidth());
-        control.setMaxWidth(control.getPrefWidth());
         control.setAllowedDecimalPlaces(0);
         control.setAllowNegative(false);
         control.setMaxLength(4);

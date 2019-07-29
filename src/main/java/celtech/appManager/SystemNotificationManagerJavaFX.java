@@ -458,15 +458,16 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * @return True if the user has agreed to update, otherwise false
      */
     @Override
-    public boolean askUserToUpdateFirmware()
+    public boolean askUserToUpdateFirmware(Printer printerToUpdate)
     {
         Callable<Boolean> askUserToUpgradeDialog = new Callable()
         {
             @Override
             public Boolean call() throws Exception
             {
+                String printerName = printerToUpdate.getPrinterIdentity().printerFriendlyNameProperty().get();
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
-                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle"));
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle") + printerName);
                 choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.firmwareUpdateError"));
                 ChoiceLinkButton updateFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("dialogs.firmwareUpdateOKTitle"),
@@ -852,6 +853,45 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during model too large query");
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean showAreYouSureYouWantToDowngradeDialog()
+    {
+        Callable<Boolean> askUserWhetherToDowngrade = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.downgradeWarning"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.downgradeMessage"));
+                ChoiceLinkButton proceedChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("dialogs.downgradeContinue"));
+                ChoiceLinkButton dontDowngradeChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("dialogs.Cancel"));
+
+                Optional<ChoiceLinkButton> downgradeResponse = choiceLinkDialogBox.getUserInput();
+
+                boolean downgradeApplication = false;
+
+                if (downgradeResponse.isPresent())
+                {
+                    downgradeApplication = downgradeResponse.get() == proceedChoice;
+                }
+
+                return downgradeApplication;
+            }
+        };
+
+        FutureTask<Boolean> askWhetherToDowngradeTask = new FutureTask<>(askUserWhetherToDowngrade);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askWhetherToDowngradeTask);
+        try
+        {
+            return askWhetherToDowngradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error when asking user if they wish to contiunue with downgrade of root");
             return false;
         }
     }

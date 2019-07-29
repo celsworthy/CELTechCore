@@ -27,7 +27,7 @@ public class CurrencySymbolPreference implements PreferencesInnerPanelController
 
         control = new ComboBox<>();
         control.getStyleClass().add("cmbCleanCombo");
-        control.setPrefWidth(200);
+        control.setPrefWidth(100);
         control.setMinWidth(control.getPrefWidth());
 
         Callback<ListView<CurrencySymbol>, ListCell<CurrencySymbol>> currencySymbolCellFactory
