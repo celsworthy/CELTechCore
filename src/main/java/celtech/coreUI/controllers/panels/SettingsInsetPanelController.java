@@ -373,6 +373,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 typeToSelect = printerSettings.getPrintSupportTypeOverride();
                 allowSaveSupportType = true;
             }
+        } else if (HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.SINGLE_MATERIAL_HEAD 
+                && printerSettings != null)
+        {
+            allowSaveSupportType = true;
         }
 
         populatingForProject = !allowSaveSupportType;
