@@ -146,6 +146,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.warning("B Position Warning error detected");
                     break;
 
+                case ERROR_BED_TEMPERATURE_DROOP:
+                    steno.warning("Bed Temperature Droop Warning error detected");
+                    break;
+                    
                 default:
                     if (errorChoiceBox == null)
                     {

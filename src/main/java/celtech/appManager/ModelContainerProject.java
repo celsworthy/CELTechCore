@@ -11,6 +11,7 @@ import celtech.modelcontrol.ProjectifiableThing;
 import celtech.modelcontrol.RotatableThreeD;
 import celtech.modelcontrol.RotatableTwoD;
 import celtech.roboxbase.configuration.Filament;
+import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
@@ -371,6 +372,31 @@ public class ModelContainerProject extends Project
                 if (!localUsedExtruders.get(1))
                 {
                     localUsedExtruders.set(1, true);
+                }
+            } else if (printerSettings.getPrintSupportTypeOverride() == SupportType.AS_PROFILE)
+            {
+                // Here we must check the actual profile settings for the support nozzles and
+                // determine manually which extruders are being used. It's not a neat solution.
+                
+                if (printer != null
+                    && printer.headProperty().get() != null)
+                {
+                    RoboxProfile settings = printerSettings.getSettings(printer.headProperty().get().typeCodeProperty().get(), SlicerType.Cura4);
+                    
+                    if (printerSettings.getPrintSupportOverride())
+                    {
+                        int supportNoz = settings.getSpecificIntSettingWithDefault("supportNozzle", 0);
+                        int supportInterfaceNoz = settings.getSpecificIntSettingWithDefault("supportInterfaceNozzle", 0);
+                        
+                        localUsedExtruders.set(1 - supportNoz, true);
+                        localUsedExtruders.set(1 - supportInterfaceNoz, true);
+                    }
+                    
+                    if (printerSettings.getRaftOverride() || printerSettings.getBrimOverride() > 0)
+                    {
+                        int raftBrimNoz = settings.getSpecificIntSettingWithDefault("raftBrimNozzle", 0);
+                        localUsedExtruders.set(1 - raftBrimNoz, true);
+                    }
                 }
             }
         }
