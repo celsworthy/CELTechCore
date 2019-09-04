@@ -504,6 +504,50 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
             return false;
         }
     }
+    
+    @Override
+    public boolean showDowngradeFirmwareDialog(Printer printerToUpdate)
+    {
+        Callable<Boolean> showDowngradeFirmwareDialog = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                String printerName = printerToUpdate.getPrinterIdentity().printerFriendlyNameProperty().get();
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareDowngradeTitle") + printerName);
+                choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.firmwareDowngradeMessage"));
+                ChoiceLinkButton downgradeFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.firmwareDowngradeOKTitle"),
+                        Lookup.i18n("dialogs.firmwareDowngradeOKMessage"));
+                ChoiceLinkButton dontDownGradeFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.firmwareDowngradeNotOKTitle"),
+                        Lookup.i18n("dialogs.firmwareDowngradeNotOKMessage"));
+
+                Optional<ChoiceLinkButton> firmwareDowngradeResponse = choiceLinkDialogBox.
+                        getUserInput();
+
+                boolean downgradeConfirmed = false;
+
+                if (firmwareDowngradeResponse.isPresent())
+                {
+                    downgradeConfirmed = firmwareDowngradeResponse.get() == downgradeFirmwareChoice;
+                }
+
+                return downgradeConfirmed;
+            }
+        };
+        FutureTask<Boolean> askUserToDowngradeTask = new FutureTask<>(showDowngradeFirmwareDialog);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askUserToDowngradeTask);
+        try
+        {
+            return askUserToDowngradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during firmware downgrade query");
+            return false;
+        }
+    }
 
     /**
      * @param printerToUse
