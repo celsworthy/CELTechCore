@@ -26,6 +26,12 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     {
         return false;
     }
+    
+    @Override
+    public boolean showDowngradeFirmwareDialog(Printer printerToUpdate)
+    {
+        return false;
+    }
 
     public RoboxResetIDResult askUserToResetPrinterID(Printer printerToUse, PrinterIDResponse printerID)
     {
