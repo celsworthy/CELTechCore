@@ -195,8 +195,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     private GraphicButtonWithLabel distributeModelsButton;
 
-    @FXML
-    private GraphicButtonWithLabel addCloudModelButton;
+//    @FXML
+//    private GraphicButtonWithLabel addCloudModelButton;
 
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
@@ -630,11 +630,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     }
 
-    @FXML
-    void addCloudModel(ActionEvent event)
-    {
-        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
-    }
+//    @FXML
+//    void addCloudModel(ActionEvent event)
+//    {
+//        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
+//    }
 
     @FXML
     void deleteModel(ActionEvent event)
@@ -1701,7 +1701,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         addModelButton.disableProperty().bind(
                 snapToGround.or(projectGUIRules.canAddModel().not()));
-        addCloudModelButton.disableProperty().bind(snapToGround.or(projectGUIRules.canAddModel().not()));
+//        addCloudModelButton.disableProperty().bind(snapToGround.or(projectGUIRules.canAddModel().not()));
 
         distributeModelsButton.disableProperty().bind(
                 notSelectModeOrNoLoadedModels.or(projectGUIRules.canAddModel().not()));
