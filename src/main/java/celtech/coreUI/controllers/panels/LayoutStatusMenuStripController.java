@@ -199,8 +199,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     private GraphicButtonWithLabel distributeModelsButton;
 
-    @FXML
-    private GraphicButtonWithLabel addCloudModelButton;
+//    @FXML
+//    private GraphicButtonWithLabel addCloudModelButton;
 
     @FXML
     private GraphicToggleButtonWithLabel snapToGroundButton;
@@ -740,11 +740,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         }
     }
 
-    @FXML
-    void addCloudModel(ActionEvent event)
-    {
-        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
-    }
+//    @FXML
+//    void addCloudModel(ActionEvent event)
+//    {
+//        applicationStatus.modeProperty().set(ApplicationMode.MY_MINI_FACTORY);
+//    }
 
     @FXML
     void deleteModel(ActionEvent event)
@@ -1818,7 +1818,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         deleteModelButton.disableProperty().unbind();
         duplicateModelButton.disableProperty().unbind();
         snapToGroundButton.disableProperty().unbind();
-        addCloudModelButton.disableProperty().unbind();
+//        addCloudModelButton.disableProperty().unbind();
         distributeModelsButton.disableProperty().unbind();
         groupButton.disableProperty().unbind();
         groupButton.visibleProperty().unbind();
@@ -1843,18 +1843,17 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         addModelButton.disableProperty().bind(
                 snapToGround.or(projectGUIRules.canAddModel().not()));
-
         distributeModelsButton.disableProperty().bind(
                 notSelectModeOrNoLoadedModels.or(projectGUIRules.canAddModel().not()));
 
         if (project instanceof ShapeContainerProject)
         {
-            addCloudModelButton.disableProperty().set(true);
+//            addCloudModelButton.disableProperty().set(true);
             snapToGroundButton.disableProperty().set(true);
         }
         else
         {
-            addCloudModelButton.disableProperty().bind(snapToGround.or(projectGUIRules.canAddModel().not()));
+//            addCloudModelButton.disableProperty().bind(snapToGround.or(projectGUIRules.canAddModel().not()));
             snapToGroundButton.disableProperty().bind(
                 noLoadedModels.or(projectGUIRules.canSnapToGroundSelection().not()));
         }
