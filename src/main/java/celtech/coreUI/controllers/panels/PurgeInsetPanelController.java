@@ -660,14 +660,13 @@ public class PurgeInsetPanelController implements Initializable
             purgeMaterial0.setSelected(false);
             purgeMaterial1.setSelected(false);
 
-            //Dual nozzle heads have extruder/nozzle reversed!
             if (PrinterUtils.isPurgeNecessaryForExtruder(printer, 0))
             {
-                purgeMaterial1.setSelected(true);
+                purgeMaterial0.setSelected(true);
             }
             if (PrinterUtils.isPurgeNecessaryForExtruder(printer, 1))
             {
-                purgeMaterial0.setSelected(true);
+                purgeMaterial1.setSelected(true);
             }
         }
     }
