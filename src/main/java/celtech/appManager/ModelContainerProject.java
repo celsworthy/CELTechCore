@@ -18,6 +18,7 @@ import celtech.roboxbase.configuration.datafileaccessors.PrinterContainer;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterDefinitionFile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.configuration.fileRepresentation.SupportType;
+import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Head.HeadType;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.utils.Math.packing.core.Bin;
@@ -354,7 +355,6 @@ public class ModelContainerProject extends Project
     {
         List<Boolean> localUsedExtruders = getPrintingExtruders(printer);
 
-        // Don't add material 1 if there isn't a second extruder...
         if (printerSettings.getPrintSupportOverride()
                 || printerSettings.getRaftOverride()
                 || printerSettings.getBrimOverride() > 0)
@@ -375,27 +375,38 @@ public class ModelContainerProject extends Project
                 }
             } else if (printerSettings.getPrintSupportTypeOverride() == SupportType.AS_PROFILE)
             {
-                // Here we must check the actual profile settings for the support nozzles and
-                // determine manually which extruders are being used. It's not a neat solution.
-                
                 if (printer != null
                     && printer.headProperty().get() != null)
                 {
-                    RoboxProfile settings = printerSettings.getSettings(printer.headProperty().get().typeCodeProperty().get(), SlicerType.Cura4);
                     
-                    if (printerSettings.getPrintSupportOverride())
-                    {
-                        int supportNoz = settings.getSpecificIntSettingWithDefault("supportNozzle", 0);
-                        int supportInterfaceNoz = settings.getSpecificIntSettingWithDefault("supportInterfaceNozzle", 0);
-                        
-                        localUsedExtruders.set(1 - supportNoz, true);
-                        localUsedExtruders.set(1 - supportInterfaceNoz, true);
-                    }
+                    Head head = printer.headProperty().get();
                     
-                    if (printerSettings.getRaftOverride() || printerSettings.getBrimOverride() > 0)
+                    if (head.headTypeProperty().get().equals(HeadType.SINGLE_MATERIAL_HEAD))
                     {
-                        int raftBrimNoz = settings.getSpecificIntSettingWithDefault("raftBrimNozzle", 0);
-                        localUsedExtruders.set(1 - raftBrimNoz, true);
+                        if (!localUsedExtruders.get(0))
+                        {
+                            localUsedExtruders.set(0, true);
+                        }
+                    } else
+                    {
+                        // Here we must check the actual profile settings for the support nozzles and
+                        // determine manually which extruders are being used. It's not a neat solution.
+                        RoboxProfile settings = printerSettings.getSettings(head.typeCodeProperty().get(), SlicerType.Cura4);
+
+                        if (printerSettings.getPrintSupportOverride())
+                        {
+                            int supportNoz = settings.getSpecificIntSettingWithDefault("supportNozzle", 0);
+                            int supportInterfaceNoz = settings.getSpecificIntSettingWithDefault("supportInterfaceNozzle", 0);
+
+                            localUsedExtruders.set(1 - supportNoz, true);
+                            localUsedExtruders.set(1 - supportInterfaceNoz, true);
+                        }
+
+                        if (printerSettings.getRaftOverride() || printerSettings.getBrimOverride() > 0)
+                        {
+                            int raftBrimNoz = settings.getSpecificIntSettingWithDefault("raftBrimNozzle", 0);
+                            localUsedExtruders.set(1 - raftBrimNoz, true);
+                        }
                     }
                 }
             }
