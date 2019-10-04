@@ -511,6 +511,7 @@ public class PurgeInsetPanelController implements Initializable
                 transitionManager.setPurgeTemperature(0, 0);
             }
             purgeTemperature0.textProperty().set("0");
+            textCurrentMaterial0.textProperty().set("Unknown");
         }
     }
 
@@ -536,6 +537,7 @@ public class PurgeInsetPanelController implements Initializable
         {
             transitionManager.setPurgeTemperature(0, 0);
             purgeTemperature1.textProperty().set("0");
+            textCurrentMaterial1.textProperty().set("Unknown");
         }
     }
 
