@@ -249,7 +249,7 @@ public class ApplicationConfiguration
         return defaultDirectory;
     }
 
-    public static String getLastDirectory(DirectoryMemoryProperty memoryProperty)
+    private static String getLastDirectory(DirectoryMemoryProperty memoryProperty)
     {
         String directory = BaseConfiguration.getApplicationMemory(memoryProperty.name());
         if (directory == null)
@@ -266,7 +266,7 @@ public class ApplicationConfiguration
         File modelDirectory = new File(directory);
         if (!modelDirectory.exists())
         {
-            directory = ApplicationConfiguration.resetLastDirectoryToDefaults(DirectoryMemoryProperty.LAST_MODEL_DIRECTORY);
+            directory = ApplicationConfiguration.resetLastDirectoryToDefaults(memoryProperty);
             modelDirectory = new File(directory);
         }
         return modelDirectory;

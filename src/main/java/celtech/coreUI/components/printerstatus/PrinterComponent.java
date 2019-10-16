@@ -5,27 +5,31 @@ package celtech.coreUI.components.printerstatus;
 
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.roboxbase.comms.remote.PauseStatus;
-import celtech.roboxbase.PrinterColourMap;
 import celtech.coreUI.StandardColours;
+import celtech.coreUI.components.HideableTooltip;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.PrinterColourMap;
 import celtech.roboxbase.comms.RemoteDetectedPrinter;
+import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.comms.rx.FirmwareError;
-import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.PrinterStatus;
+import celtech.roboxbase.printerControl.model.Printer;
 import static celtech.roboxbase.utils.ColourStringConverter.colourToString;
 import static celtech.utils.StringMetrics.getWidthOfString;
 import com.sun.javafx.tk.FontMetrics;
 import com.sun.javafx.tk.Toolkit;
 import java.io.IOException;
 import java.net.URL;
+import java.util.stream.Collectors;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -46,6 +50,8 @@ public class PrinterComponent extends Pane
     private double sizePixels = 80;
     private int fontSize;
     private boolean inInterruptibleState;
+    
+    private final HideableTooltip errorTooltip = new HideableTooltip();
     
     public enum Size
     {
@@ -248,16 +254,11 @@ public class PrinterComponent extends Pane
             
             updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
             
-            printer.getActiveErrors().addListener(new ListChangeListener<FirmwareError>()
-            {
-                @Override
-                public void onChanged(ListChangeListener.Change<? extends FirmwareError> c)
-                {
-                    printerSVG.showErrorIndicator(!printer.getActiveErrors().isEmpty());
-                }
+            printer.getActiveErrors().addListener((ListChangeListener.Change<? extends FirmwareError> c) -> {
+                dealWithErrorVisibility();
             });
             
-            printerSVG.showErrorIndicator(!printer.getActiveErrors().isEmpty());
+            dealWithErrorVisibility();
             
             URL printerImageURL = getClass().getResource(ApplicationConfiguration.imageResourcePath + "printers/" + printer.printerConfigurationProperty().get().getTypeCode() + ".png");
             if (printerImageURL != null)
@@ -292,6 +293,24 @@ public class PrinterComponent extends Pane
                 this.setOpacity(1);
             }
         });
+    }
+    
+    private void dealWithErrorVisibility()
+    {
+        if (printer.getActiveErrors().isEmpty())
+        {
+            errorTooltip.setText("");
+            Tooltip.uninstall(this, errorTooltip);
+            printerSVG.showErrorIndicator(false);
+        } else
+        {
+            String errorTooltipString = printer.getActiveErrors().stream()
+                    .map(error -> BaseLookup.i18n("misc.error") + ": " + BaseLookup.i18n(error.getErrorTitleKey()) + "\n")
+                    .collect(Collectors.joining());
+            errorTooltip.setText(errorTooltipString);
+            Tooltip.install(this, errorTooltip);
+            printerSVG.showErrorIndicator(true);
+        }
     }
     
     public void setProgress(double progress)

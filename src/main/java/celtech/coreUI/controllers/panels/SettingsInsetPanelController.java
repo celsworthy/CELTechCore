@@ -371,6 +371,10 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
                 typeToSelect = printerSettings.getPrintSupportTypeOverride();
                 allowSaveSupportType = true;
             }
+        } else if (HeadContainer.getHeadByID(currentHeadType).getType() == Head.HeadType.SINGLE_MATERIAL_HEAD 
+                && printerSettings != null)
+        {
+            allowSaveSupportType = true;
         }
 
         populatingForProject = !allowSaveSupportType;
@@ -695,15 +699,18 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
 
     private void dealWithSupportGap()
     {
-        supportGapHBox.disableProperty().set(!supportButton.isSelected());
+        if (currentProject instanceof ModelContainerProject)
+        {
+            supportGapHBox.disableProperty().set(!supportButton.isSelected());
 
-        boolean supportGapEnabledDriver = currentPrinter != null
-                && supportButton.isSelected()
-                && !(currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() != currentPrinter.effectiveFilamentsProperty().get(1).getMaterial()
-                && !((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
+            boolean supportGapEnabledDriver = currentPrinter != null
+                    && supportButton.isSelected()
+                    && !(currentPrinter.effectiveFilamentsProperty().get(0).getMaterial() != currentPrinter.effectiveFilamentsProperty().get(1).getMaterial()
+                    && !((ModelContainerProject) currentProject).getPrintingExtruders(currentPrinter).get(supportComboBox.getSelectionModel().getSelectedItem().getExtruderNumber()));
 
-        if(getSlicerType() == SlicerType.Cura) {
-            supportGapButton.setSelected(supportGapEnabledDriver);
+            if(getSlicerType() == SlicerType.Cura) {
+                supportGapButton.setSelected(supportGapEnabledDriver);
+            }
         }
     }
 

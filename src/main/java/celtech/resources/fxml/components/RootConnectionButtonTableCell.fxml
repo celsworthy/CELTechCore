@@ -5,13 +5,14 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
+<?import celtech.coreUI.components.RestrictedNumberField?>
 
 <StackPane stylesheets="@../../css/JMetroDarkTheme.css" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox fx:id="disconnectedBox" alignment="CENTER" layoutX="10.0" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
          <children>
             <Label style="-fx-text-fill: black;" text="%rootScanner.PIN" />
-            <TextField fx:id="pinEntryField" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="100.0" onKeyPressed="#onPinKeyPressed" />
+            <RestrictedNumberField maxLength="4" fx:id="pinEntryField" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="100.0" style="-fx-alignment: CENTER_LEFT;" onKeyPressed="#onPinKeyPressed" />
             <Button mnemonicParsing="false" onAction="#connectToServer" text="%rootScanner.connect" />
          </children>
       </HBox>
@@ -22,5 +23,6 @@
          </children>
       </HBox>
       <Button fx:id="updateButton" layoutX="177.0" layoutY="10.0" mnemonicParsing="false" onAction="#updateRoot" text="%rootScanner.updateRoot" />
+      <Button fx:id="downgradeButton" layoutX="177.0" layoutY="10.0" mnemonicParsing="false" onAction="#downgradeRoot" text="%rootScanner.downgradeRoot" />
    </children>
 </StackPane>

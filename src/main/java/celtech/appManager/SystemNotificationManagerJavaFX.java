@@ -146,6 +146,10 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     steno.warning("B Position Warning error detected");
                     break;
 
+                case ERROR_BED_TEMPERATURE_DROOP:
+                    steno.warning("Bed Temperature Droop Warning error detected");
+                    break;
+                    
                 default:
                     if (errorChoiceBox == null)
                     {
@@ -458,15 +462,16 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * @return True if the user has agreed to update, otherwise false
      */
     @Override
-    public boolean askUserToUpdateFirmware()
+    public boolean askUserToUpdateFirmware(Printer printerToUpdate)
     {
         Callable<Boolean> askUserToUpgradeDialog = new Callable()
         {
             @Override
             public Boolean call() throws Exception
             {
+                String printerName = printerToUpdate.getPrinterIdentity().printerFriendlyNameProperty().get();
                 ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
-                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle"));
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareUpdateTitle") + printerName);
                 choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.firmwareUpdateError"));
                 ChoiceLinkButton updateFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
                         Lookup.i18n("dialogs.firmwareUpdateOKTitle"),
@@ -496,6 +501,50 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during firmware upgrade query");
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean showDowngradeFirmwareDialog(Printer printerToUpdate)
+    {
+        Callable<Boolean> showDowngradeFirmwareDialog = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                String printerName = printerToUpdate.getPrinterIdentity().printerFriendlyNameProperty().get();
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(true);
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.firmwareDowngradeTitle") + printerName);
+                choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.firmwareDowngradeMessage"));
+                ChoiceLinkButton downgradeFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.firmwareDowngradeOKTitle"),
+                        Lookup.i18n("dialogs.firmwareDowngradeOKMessage"));
+                ChoiceLinkButton dontDownGradeFirmwareChoice = choiceLinkDialogBox.addChoiceLink(
+                        Lookup.i18n("dialogs.firmwareDowngradeNotOKTitle"),
+                        Lookup.i18n("dialogs.firmwareDowngradeNotOKMessage"));
+
+                Optional<ChoiceLinkButton> firmwareDowngradeResponse = choiceLinkDialogBox.
+                        getUserInput();
+
+                boolean downgradeConfirmed = false;
+
+                if (firmwareDowngradeResponse.isPresent())
+                {
+                    downgradeConfirmed = firmwareDowngradeResponse.get() == downgradeFirmwareChoice;
+                }
+
+                return downgradeConfirmed;
+            }
+        };
+        FutureTask<Boolean> askUserToDowngradeTask = new FutureTask<>(showDowngradeFirmwareDialog);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askUserToDowngradeTask);
+        try
+        {
+            return askUserToDowngradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error during firmware downgrade query");
             return false;
         }
     }
@@ -852,6 +901,45 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
         } catch (InterruptedException | ExecutionException ex)
         {
             steno.error("Error during model too large query");
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean showAreYouSureYouWantToDowngradeDialog()
+    {
+        Callable<Boolean> askUserWhetherToDowngrade = new Callable()
+        {
+            @Override
+            public Boolean call() throws Exception
+            {
+                ChoiceLinkDialogBox choiceLinkDialogBox = new ChoiceLinkDialogBox(false);
+                choiceLinkDialogBox.setTitle(Lookup.i18n("dialogs.downgradeWarning"));
+                choiceLinkDialogBox.setMessage(Lookup.i18n("dialogs.downgradeMessage"));
+                ChoiceLinkButton proceedChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("dialogs.downgradeContinue"));
+                ChoiceLinkButton dontDowngradeChoice = choiceLinkDialogBox.addChoiceLink(Lookup.i18n("dialogs.Cancel"));
+
+                Optional<ChoiceLinkButton> downgradeResponse = choiceLinkDialogBox.getUserInput();
+
+                boolean downgradeApplication = false;
+
+                if (downgradeResponse.isPresent())
+                {
+                    downgradeApplication = downgradeResponse.get() == proceedChoice;
+                }
+
+                return downgradeApplication;
+            }
+        };
+
+        FutureTask<Boolean> askWhetherToDowngradeTask = new FutureTask<>(askUserWhetherToDowngrade);
+        BaseLookup.getTaskExecutor().runOnGUIThread(askWhetherToDowngradeTask);
+        try
+        {
+            return askWhetherToDowngradeTask.get();
+        } catch (InterruptedException | ExecutionException ex)
+        {
+            steno.error("Error when asking user if they wish to contiunue with downgrade of root");
             return false;
         }
     }
