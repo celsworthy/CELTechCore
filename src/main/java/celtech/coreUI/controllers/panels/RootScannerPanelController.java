@@ -2,6 +2,7 @@ package celtech.coreUI.controllers.panels;
 
 import celtech.Lookup;
 import celtech.WebEngineFix.AMURLStreamHandlerFactory;
+import celtech.coreUI.components.RootCameraTableCell;
 import celtech.coreUI.components.RootConnectionButtonTableCell;
 import celtech.coreUI.components.RootTableCell;
 import celtech.roboxbase.BaseLookup;
@@ -64,6 +65,7 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
     private TableColumn versionColumn;
     private TableColumn<DetectedServer, ServerStatus> statusColumn;
     private TableColumn<DetectedServer, DetectedServer> scannedRootButtonsColumn;
+    private TableColumn cameraColumn;
     
     @FXML
     private TextField ipTextField;
@@ -216,12 +218,19 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         scannedRootButtonsColumn.setMaxWidth(Integer.MAX_VALUE);
         scannedRootButtonsColumn.setResizable(false);
         
+        cameraColumn = new TableColumn<>();
+        cameraColumn.setCellFactory(cameraCell -> new RootCameraTableCell());
+        cameraColumn.setCellValueFactory(new PropertyValueFactory<>("cameraDetected"));
+        cameraColumn.setPrefWidth(40);
+        cameraColumn.setResizable(false);
+        
         scannedRoots.getColumns().add(colourColumn);
         scannedRoots.getColumns().add(nameColumn);
         scannedRoots.getColumns().add(ipAddressColumn);
         scannedRoots.getColumns().add(versionColumn);
         scannedRoots.getColumns().add(statusColumn);
         scannedRoots.getColumns().add(scannedRootButtonsColumn);
+        scannedRoots.getColumns().add(cameraColumn);
         scannedRoots.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         HBox.setHgrow(scannedRoots, Priority.ALWAYS);
         
