@@ -3,9 +3,12 @@ package celtech.coreUI.controllers.panels;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.RestrictedComboBox;
 import celtech.coreUI.components.RestrictedNumberField;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.camera.CameraInfo;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.datafileaccessors.CameraProfileContainer;
 import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
+import celtech.utils.WebUtil;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +21,14 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.util.StringConverter;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 
@@ -78,10 +86,17 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     @FXML
     private  CheckBox ambientLight;
     
+    @FXML
+    private ComboBox<CameraInfo> cmbCameraSelection;
+    
+    @FXML
+    private Button testCameraButton;
+    
     private Map<String, CameraProfile> cameraProfilesMap;
     
     private CameraProfile currentCameraProfile;
     private String selectedProfileName;
+    private CameraInfo currentSelectedCamera;
     
     private final ChangeListener<Object> dirtyFieldListener = (ObservableValue<? extends Object> ov, Object oldEntry, Object newEntry) -> {
             isDirty.set(true);
@@ -111,6 +126,41 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
                 selectDefaultCameraProfile();
             }
         });
+        
+        BaseLookup.getConnectedCameras().addListener((Change<? extends CameraInfo> c) -> {
+            cmbCameraSelection.setItems(BaseLookup.getConnectedCameras().sorted());
+        });
+        
+        cmbCameraSelection.setConverter(new StringConverter<CameraInfo>() 
+        {    
+            @Override
+            public String toString(CameraInfo camera) 
+            {
+                if (camera == null)
+                {
+                    return "";
+                }
+                return camera.getCameraName();
+            }
+
+            @Override
+            public CameraInfo fromString(String string) 
+            {
+                return cmbCameraSelection.getItems().stream().filter(camera -> 
+                    camera.getCameraName().equals(string)).findFirst().orElse(null);
+            }
+        });
+        
+        cmbCameraSelection.valueProperty().addListener((observable, oldValue, newValue) -> {
+            currentSelectedCamera = newValue;
+        });
+    }
+    
+    @FXML
+    private void testSelectedCamera(ActionEvent event)
+    {
+        String cameraFeedAddress = currentSelectedCamera.getMotionStreamHandle();
+        WebUtil.launchURL(cameraFeedAddress);
     }
     
     private void setupProfileNameChangeListeners()

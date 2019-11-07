@@ -19,6 +19,10 @@
         <RowConstraints />
         <RowConstraints />
         <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
+        <RowConstraints />
     </rowConstraints>
     <children>
         <!-- General camera settings section -->
@@ -86,5 +90,19 @@
                <HideableTooltip text="%cameraProfilesHelp.ambientLight" />
            </tooltip>
         </CheckBox>
+        <!-- Camera test section -->
+        <Label alignment="CENTER" text="%cameraProfiles.testCamera" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="7">
+            <styleClass>
+                <String fx:value="filamentLibTitle" />
+                <String fx:value="preferenceControl" />
+            </styleClass>
+        </Label>
+        <ComboBox fx:id="cmbCameraSelection" prefWidth="150.0" GridPane.columnIndex="0" GridPane.rowIndex="8">
+            <styleClass>
+               <String fx:value="cmbPrintProfile" />
+               <String fx:value="cmbCleanCombo" />
+            </styleClass>
+        </ComboBox>
+        <Button fx:id="testCameraButton" mnemonicParsing="false" onAction="#testSelectedCamera" text="%cameraProfiles.testCamera" GridPane.columnIndex="1" GridPane.rowIndex="8" />
     </children>
 </GridPane>

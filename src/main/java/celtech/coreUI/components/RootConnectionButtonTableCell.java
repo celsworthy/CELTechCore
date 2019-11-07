@@ -9,14 +9,11 @@ import celtech.roboxbase.comms.DetectedServer.ServerStatus;
 import celtech.roboxbase.comms.remote.Configuration;
 import celtech.roboxbase.configuration.ApplicationVersion;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.configuration.MachineType;
 import celtech.roboxbase.utils.SystemUtils;
 import celtech.utils.TaskWithProgessCallback;
-import java.awt.Desktop;
+import celtech.utils.WebUtil;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -332,45 +329,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
     private void launchRootManager(ActionEvent event)
     {
         String url = "http://" + associatedServer.getServerIP() + ":" + Configuration.remotePort + "/index.html";
-        if (Desktop.isDesktopSupported()
-                && BaseConfiguration.getMachineType()
-                != MachineType.LINUX_X86
-                && BaseConfiguration.getMachineType()
-                != MachineType.LINUX_X64)
-        {
-            try
-            {
-                URI linkToVisit = new URI(url);
-                Desktop.getDesktop().browse(linkToVisit);
-            } catch (IOException | URISyntaxException ex)
-            {
-                System.err.println("Error when attempting to browse to "
-                        + url);
-            }
-        } else if (BaseConfiguration.getMachineType() == MachineType.LINUX_X86
-                || BaseConfiguration.getMachineType() == MachineType.LINUX_X64)
-        {
-            try
-            {
-                if (Runtime.getRuntime().exec(new String[]
-                {
-                    "which", "xdg-open"
-                }).getInputStream().read() != -1)
-                {
-                    Runtime.getRuntime().exec(new String[]
-                    {
-                        "xdg-open", url
-                    });
-                }
-            } catch (IOException ex)
-            {
-                System.err.println("Failed to run linux-specific browser command");
-            }
-        } else
-        {
-            System.err.println(
-                    "Couldn't get Desktop - not able to support hyperlinks");
-        }
+        WebUtil.launchURL(url);
     }
 
     private StackPane buttonHolder;
