@@ -193,7 +193,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         {
             Project project = preloadedProjects.get(projectNumber);
             ProjectTab newProjectTab = new ProjectTab(project, tabDisplay.widthProperty(),
-                    tabDisplay.heightProperty());
+                    tabDisplay.heightProperty(), true);
             tabDisplay.getTabs().add(1, newProjectTab);
         }
         steno.debug("end load projects");
@@ -1103,7 +1103,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             ModelLoader loader = new ModelLoader();
             loader.loadExternalModels(newProject, listOfFiles, false, null, false);
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
-                    tabDisplay.heightProperty());
+                    tabDisplay.heightProperty(), false);
             tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, projectTab);
             tabDisplay.getSelectionModel().select(projectTab);
         };
@@ -1140,7 +1140,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             loader.loadExternalModels(newProject, fileToLoad, false, null, false);
 
             ProjectTab projectTab = new ProjectTab(newProject, tabDisplay.widthProperty(),
-                    tabDisplay.heightProperty());
+                    tabDisplay.heightProperty(), false);
             tabDisplay.getTabs().add(1, projectTab);
 
             Lookup.getUserPreferences().setFirstUse(false);

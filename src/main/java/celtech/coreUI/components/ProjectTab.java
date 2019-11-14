@@ -126,13 +126,14 @@ public class ProjectTab extends Tab implements ProjectCallback
 
     public ProjectTab(Project inboundProject,
             ReadOnlyDoubleProperty tabDisplayWidthProperty,
-            ReadOnlyDoubleProperty tabDisplayHeightProperty)
+            ReadOnlyDoubleProperty tabDisplayHeightProperty,
+            boolean loadingAtStartup)
     {
         project = inboundProject;
         this.tabDisplayWidthProperty = tabDisplayWidthProperty;
         this.tabDisplayHeightProperty = tabDisplayHeightProperty;
         coreInitialisation();
-        initialiseWithProject();
+        initialiseWithProject(loadingAtStartup);
     }
     
     public Project getProject() {
@@ -259,7 +260,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         });
     }
 
-    private void initialiseWithProject()
+    private void initialiseWithProject(boolean loadingAtStartup)
     {
         rhInsetContainer = new VBox();
         rhInsetContainer.setSpacing(30);
@@ -324,7 +325,10 @@ public class ProjectTab extends Tab implements ProjectCallback
 
         projectManager.projectOpened(project);
 
-        primeTabInsetPanels(true);
+        if (!loadingAtStartup)
+        {
+            primeTabInsetPanels(true);
+        }
     }
 
     private void setup3DView()
@@ -624,7 +628,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         if (this.project == null)
         {
             this.project = project;
-            initialiseWithProject();
+            initialiseWithProject(false);
         }
     }
 
@@ -634,7 +638,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             ModelContainerProject newProject = new ModelContainerProject();
             this.project = newProject;
-            initialiseWithProject();
+            initialiseWithProject(false);
         }
     }
 
@@ -644,7 +648,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             ShapeContainerProject newProject = new ShapeContainerProject();
             this.project = newProject;
-            initialiseWithProject();
+            initialiseWithProject(false);
         }
     }
     
