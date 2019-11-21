@@ -50,6 +50,7 @@ public class PrinterComponent extends Pane
     private double sizePixels = 80;
     private int fontSize;
     private boolean inInterruptibleState;
+    private boolean showProgress;
     
     private final HideableTooltip errorTooltip = new HideableTooltip();
     
@@ -187,6 +188,7 @@ public class PrinterComponent extends Pane
     public void setStatus(Status status)
     {
         printerSVG.setStatus(status);
+        progressBar.setVisible(showProgress);
     }
     
     public void setName(String newName)
@@ -356,6 +358,7 @@ public class PrinterComponent extends Pane
             case OPENING_DOOR:
                 status = Status.READY;
                 inInterruptibleState = true;
+                showProgress = false;
                 break;
             case RUNNING_MACRO_FILE:
             case PRINTING_PROJECT:
@@ -365,10 +368,12 @@ public class PrinterComponent extends Pane
             case PURGING_HEAD:
                 status = Status.PRINTING;
                 inInterruptibleState = true;
+                showProgress = true;
                 break;
             default:
                 status = Status.READY;
                 inInterruptibleState = false;
+                showProgress = false;
                 break;
         }
         
