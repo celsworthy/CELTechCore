@@ -102,6 +102,19 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * Error dialog
      */
     private ChoiceLinkDialogBox errorChoiceBox = null;
+    private ListChangeListener<? super FirmwareError> errorChangeListener = null;
+    
+    private void clearErrorChoiceDialog(Printer printer) {
+        if (errorChangeListener != null) {
+            printer.getCurrentErrors().removeListener(errorChangeListener);
+            errorChangeListener = null;
+        }
+        if (errorChoiceBox != null) {
+            if (errorChoiceBox.isShowing())
+                errorChoiceBox.close();
+            errorChoiceBox = null;
+        }
+    }
 
     @Override
     public void showErrorNotification(String title, String message)
@@ -154,7 +167,6 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                     if (errorChoiceBox == null)
                     {
                         setupErrorOptions();
-
                         errorChoiceBox = new ChoiceLinkDialogBox(true);
                         String printerName = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
                         if (printerName != null)
@@ -169,20 +181,23 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                 .stream()
                                 .forEach(option -> errorChoiceBox.
                                 addChoiceLink(errorToButtonMap.get(option)));
-                        ListChangeListener<? super FirmwareError> listener = (ListChangeListener.Change<? extends FirmwareError> c) -> {
-                            if (!printer.getActiveErrors().contains(error))
+                        errorChangeListener = (ListChangeListener.Change<? extends FirmwareError> c) -> {
+                            if (!printer.getCurrentErrors().contains(error)) {
                                 errorChoiceBox.closeDueToPrinterDisconnect();
+                                clearErrorChoiceDialog(printer);
+                            }
                         };
-                        printer.getActiveErrors().addListener(listener);
+                        printer.getCurrentErrors().addListener(errorChangeListener);
 
-                        Optional<ChoiceLinkButton> buttonPressed;
+                        Optional<ChoiceLinkButton> buttonPressed = Optional.empty();
                         try
                         {
+                            // This shows the dialog and waits for user input.
                             buttonPressed = errorChoiceBox.getUserInput();
-                        } catch (PrinterDisconnectedException ex)
+                        }
+                        catch (PrinterDisconnectedException ex)
                         {
-                            printer.getActiveErrors().removeListener(listener);
-                            return;
+                            buttonPressed = Optional.empty();
                         }
 
                         if (buttonPressed.isPresent())
@@ -212,6 +227,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                         "Error whilst cancelling print from error dialog");
                                             }
                                             break;
+                                            
                                         case CLEAR_CONTINUE:
                                             try
                                             {
@@ -225,17 +241,18 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                         "Error whilst resuming print from error dialog");
                                             }
                                             break;
+                                            
                                         default:
                                             break;
                                     }
+
                                     printer.clearError(error);
-                                    printer.getActiveErrors().removeListener(listener);
                                     break;
                                 }
                             }
                         }
 
-                        errorChoiceBox = null;
+                        clearErrorChoiceDialog(printer);
                     }
                     break;
             }
@@ -244,6 +261,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private void setupErrorOptions()
     {
+        // This can't be called from the constructor because the instance is constructed before
+        // i18n has been initialised.
         if (errorToButtonMap == null)
         {
             errorToButtonMap = new HashMap<>();
