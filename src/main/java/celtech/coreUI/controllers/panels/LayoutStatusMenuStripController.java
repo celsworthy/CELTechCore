@@ -257,8 +257,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private final BooleanProperty printerConnectionOffline = new SimpleBooleanProperty(false);
     
-    private ConditionalNotificationBar tooManyRoboxAttachedNotificationBar;
-
     private TimeCostThreadManager timeCostThreadManager;
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
@@ -1065,6 +1063,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         headFanButton.setSelected(newValue);
     };
 
+    private final ChangeListener<Boolean> tooManyRoboxAttachedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    {
+        if (newValue)
+            BaseLookup.getSystemNotificationHandler()
+                      .showWarningNotification(Lookup.i18n("dialogs.toomanyrobox.title"),
+                                               Lookup.i18n("dialogs.toomanyrobox.message"));
+    };
+
     /*
      * JavaFX initialisation method
      */
@@ -1117,8 +1123,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 .and(notEnoughFilament2ForPrint)
                 .and(printerConnectionOffline.not()));
 
-        tooManyRoboxAttachedNotificationBar = new ConditionalNotificationBar("dialogs.toomanyrobox.message", NotificationType.CAUTION);
-        tooManyRoboxAttachedNotificationBar.setAppearanceCondition(RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty());
+        RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty().addListener(tooManyRoboxAttachedListener);
 
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();

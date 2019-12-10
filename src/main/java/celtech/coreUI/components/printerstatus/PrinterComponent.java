@@ -257,7 +257,10 @@ public class PrinterComponent extends Pane
             updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
             
             printer.getCurrentErrors().addListener((ListChangeListener.Change<? extends FirmwareError> c) -> {
-                dealWithErrorVisibility();
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    dealWithErrorVisibility();
+                });
             });
             
             dealWithErrorVisibility();
