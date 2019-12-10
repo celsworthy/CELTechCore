@@ -55,6 +55,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class SystemNotificationManagerJavaFX implements SystemNotificationManager
 {
+    private final int DROOP_ERROR_CLEAR_TIME = 30000; // Milliseconds (= 30 seconds)
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             SystemNotificationManagerJavaFX.class.getName());
@@ -103,13 +104,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      */
     private ChoiceLinkDialogBox errorChoiceBox = null;
     private ListChangeListener<? super FirmwareError> errorChangeListener = null;
-    
-    private void clearErrorChoiceDialog(Printer printer) {
-        if (errorChangeListener != null) {
+    private Thread clearDroopThread = null;
+        
+    private void clearErrorChoiceDialog(Printer printer)
+    {
+        if (errorChangeListener != null)
+        {
             printer.getCurrentErrors().removeListener(errorChangeListener);
             errorChangeListener = null;
         }
-        if (errorChoiceBox != null) {
+        if (errorChoiceBox != null)
+        {
             if (errorChoiceBox.isShowing())
                 errorChoiceBox.close();
             errorChoiceBox = null;
@@ -148,19 +153,39 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
-
             switch (error)
             {
                 case B_POSITION_LOST:
                     steno.warning("B Position Lost error detected");
+                    printer.clearError(error);
                     break;
 
                 case B_POSITION_WARNING:
                     steno.warning("B Position Warning error detected");
+                    printer.clearError(error);
                     break;
 
                 case ERROR_BED_TEMPERATURE_DROOP:
-                    steno.warning("Bed Temperature Droop Warning error detected");
+                    if (clearDroopThread == null) {
+                        steno.warning("Bed Temperature Droop Warning error detected");
+                        clearDroopThread = new Thread(() -> {
+                            try {
+                                // Clear the error after 30 seconds.
+                                // It is shown as a tooltip on the printerComponent.
+                                Thread.sleep(DROOP_ERROR_CLEAR_TIME);
+                                printer.clearError(error);
+                            }
+                            catch (Exception ex)
+                            {
+                                // May get some errors if printer has been disconnected.
+                            }
+                            finally {
+                                clearDroopThread = null;
+                            }
+                        });
+                        clearDroopThread.setDaemon(true);
+                        clearDroopThread.start();
+                    }
                     break;
                     
                 default:
@@ -246,12 +271,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                             break;
                                     }
 
-                                    printer.clearError(error);
                                     break;
                                 }
                             }
                         }
-
+                        printer.clearError(error);
                         clearErrorChoiceDialog(printer);
                     }
                     break;
