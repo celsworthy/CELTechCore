@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -113,6 +114,8 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private boolean projectNeedsSlicing = true;
     private boolean selectedTaskReBound = false;
     
+    private ReentrantLock taskMapLock = new ReentrantLock();
+    
     public GCodeGeneratorManager(Project project)
     {
         this.project = project;
@@ -148,7 +151,15 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                 }
                 if(isCurrentProjectSelected() && projectNeedsSlicing) 
                 {
-                    restartAllTasks();
+                    // We lock this so when we try to print the tasks are restarted before we try to use them.
+                    taskMapLock.lock();
+                    try
+                    {
+                        restartAllTasks();
+                    } finally
+                    {
+                        taskMapLock.unlock();
+                    }
                     projectNeedsSlicing = false;
                 }
             }
@@ -235,7 +246,18 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     
     public Optional<GCodeGeneratorResult> getPrepResult(PrintQualityEnumeration quality)
     {
-        Future<GCodeGeneratorResult> resultFuture = taskMap.get(quality);
+        Future<GCodeGeneratorResult> resultFuture = null;
+        
+        // This is effectively locked if we are in the middle of restarting the tasks.
+        // It makes sure the map has had a chance to be refilled by the newely restarted tasks.
+        taskMapLock.lock();
+        try
+        {
+            resultFuture = taskMap.get(quality);
+        } finally
+        {
+            taskMapLock.unlock();
+        }
         
         if (resultFuture != null)
         {
@@ -296,10 +318,12 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private void restartAllTasks()
     {
         purgeAllTasks();
-        Runnable restartAfterDelay = () ->
-        {
+        Runnable restartTasks = () ->
+        {                        
             try
             {
+                // We sleep here so that any rapid changes to print settings 
+                // aren't setting off the slicer.
                 Thread.sleep(500);
             } catch (InterruptedException ex)
             {
@@ -404,7 +428,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         };
 
         cancellable = new SimpleCancellable();
-        restartTask = slicingExecutorService.submit(restartAfterDelay);
+        restartTask = slicingExecutorService.submit(restartTasks);
     }
     
     public String getGCodeDirectory(PrintQualityEnumeration printQuality)
@@ -558,6 +582,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             selectedTask.runningProperty().addListener(taskRunningChangeListener);
             selectedTask.progressProperty().addListener(taskProgressChangeListener);
             selectedTask.messageProperty().addListener(taskMessageChangeListener);
+            selectedTaskMessage = selectedTask.messageProperty().get();
         }
     }
     
@@ -653,7 +678,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     {
         return selectedTaskMessage;
     }
-    
+
     @Override
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
