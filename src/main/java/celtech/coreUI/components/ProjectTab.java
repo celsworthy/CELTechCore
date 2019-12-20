@@ -134,6 +134,21 @@ public class ProjectTab extends Tab implements ProjectCallback
         coreInitialisation();
         initialiseWithProject(loadingAtStartup);
     }
+    
+    public Project getProject()
+    {
+        return project;
+    }
+
+    public ThreeDViewManager getThreeDViewManager()
+    {
+        return viewManager;
+    }
+
+    public SVGViewManager getSVGViewManager() 
+    {
+        return svgViewManager;
+    }
 
     private void primeTabInsetPanels(boolean tabIsSelected)
     {
@@ -178,6 +193,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             steno.debug("Beginning project save");
             saveAndCloseProject();
             steno.debug("Completed project save");
+            projectManager.saveState();
         });
 
         setOnSelectionChanged((Event t) ->
@@ -289,6 +305,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         fireProjectSelected();
 
         projectManager.projectOpened(project);
+        projectManager.saveState();
 
         if (!loadingAtStartup)
         {
@@ -575,6 +592,14 @@ public class ProjectTab extends Tab implements ProjectCallback
     public void fireProjectSelected()
     {
         Lookup.setSelectedProject(project);
+    }
+    
+    public void fireProjectDeselected()
+    {
+        if (!project.isProjectSaved())
+        {
+            Project.saveProject(project);
+        }
     }
 
     @Override

@@ -336,9 +336,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void printPressed(ActionEvent event)
     {
         Printer printer = Lookup.getSelectedPrinterProperty().get();
-
+        
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
+        if (!currentProject.isProjectSaved())
+        {
+            Project.saveProject(currentProject);
+        }
+        
         if (currentProject instanceof ModelContainerProject)
         {
             String projectLocation = ApplicationConfiguration.getProjectDirectory()
@@ -425,8 +430,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void savePressed(ActionEvent event) 
     {
-        Project currentProject = Lookup.getSelectedProjectProperty().get();
         steno.trace("Save slice to file pressed");
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        
+        if (!currentProject.isProjectSaved())
+        {
+            Project.saveProject(currentProject);
+        }
         
         if (currentProject instanceof ModelContainerProject) 
         {
