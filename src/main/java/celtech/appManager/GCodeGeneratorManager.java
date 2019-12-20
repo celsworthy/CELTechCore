@@ -94,7 +94,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private Map<PrintQualityEnumeration, Future> taskMap = new HashMap<>();
     private ObservableMap<PrintQualityEnumeration, Future> observableTaskMap = FXCollections.observableMap(taskMap);
     
-    private Future printOrSaveFuture = null;
+    private Future printOrSaveTask = null;
     private BooleanProperty printOrSaveTaskRunning = new SimpleBooleanProperty(false);
     
     private Cancellable cancellable = null;
@@ -105,7 +105,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     private ObjectProperty<PrintQualityEnumeration> currentPrintQuality = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
     private List<PrintQualityEnumeration> slicingOrder = Arrays.asList(PrintQualityEnumeration.values()); 
     private GCodeGeneratorTask selectedTask;
-
+    
     private ChangeListener applicationModeChangeListener;
     private ChangeListener selectedPrinterReactionChangeListener;
     private PrinterListChangesListener printerListChangesListener;
@@ -125,8 +125,12 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             thread.setDaemon(true);
             return thread;
         };
-        slicingExecutorService = Executors.newFixedThreadPool(1, threadFactory);
-//       printOrSaveExecutorService = Executors.newSingleThreadExecutor(threadFactory);
+        // Could run multiple slicers, but probably safer to run them one at a time.
+        //int nThreads = Runtime.getRuntime().availableProcessors() - 1;
+        //if (nThreads < 1)
+        //    nThreads = 1;
+        int nThreads = 1;
+        slicingExecutorService = Executors.newFixedThreadPool(nThreads, threadFactory);
         printOrSaveExecutorService = Executors.newSingleThreadExecutor();
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
         
@@ -268,7 +272,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             }
             catch (InterruptedException ex)
             {
-                STENO.debug("Thread interrupted, usually the case when the user has selected differen't profile settings");
+                STENO.debug("Thread interrupted, usually the case when the user has selected different profile settings");
             }
             catch (CancellationException ex) 
             {
@@ -329,6 +333,8 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             {
                 return;
             }
+            if (cancellable.cancelled().get())
+                return;
             
             selectedTaskReBound = false;
             
@@ -415,7 +421,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                         observableTaskMap.put(printQuality, prepTask);
                         tidyProjectDirectory(getGCodeDirectory(printQuality));
                         prepTask.initialise(currentPrinter, meshSupplier, getGCodeDirectory(printQuality));
-                        slicingExecutorService.submit(prepTask);
+                        slicingExecutorService.execute(prepTask);
                         if (!selectedTaskReBound)
                         {
                             selectedTaskReBound = true;
@@ -599,11 +605,12 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         }
     }
     
-    public void replaceAndSubmitPrintOrSaveTask(Task printOrSaveTask)
+    public void replaceAndExecutePrintOrSaveTask(Task printOrSaveTask)
     {
         cancelPrintOrSaveTask();
         printOrSaveTaskRunning.bind(printOrSaveTask.runningProperty());
-        this.printOrSaveFuture = printOrSaveExecutorService.submit(printOrSaveTask);
+        this.printOrSaveTask = printOrSaveTask;
+        printOrSaveExecutorService.execute(printOrSaveTask);
     }
     
     public BooleanProperty printOrSaveTaskRunningProperty()
@@ -616,9 +623,9 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         printOrSaveTaskRunning.unbind();
         printOrSaveTaskRunning.set(false);
         
-        if (printOrSaveFuture != null)
+        if (printOrSaveTask != null)
         {
-            return printOrSaveFuture.cancel(true);
+            return printOrSaveTask.cancel(true);
         }
         
         return false;
