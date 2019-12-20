@@ -417,7 +417,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     }
                 };
                 // Run the task from GCodeGenManager so it can be managed...
-                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndPrint);
+                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndExecutePrintOrSaveTask(fetchGCodeResultAndPrint);
             }
         }
     }
@@ -474,7 +474,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
             };
             // Run the task from GCodeGenManager so it can be managed...
-            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndSave);
+            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndExecutePrintOrSaveTask(fetchGCodeResultAndSave);
         }
     }
 	
