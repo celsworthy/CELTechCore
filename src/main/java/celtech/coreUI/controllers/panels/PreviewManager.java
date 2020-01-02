@@ -18,14 +18,12 @@ import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
-import celtech.roboxbase.configuration.slicer.NozzleParameters;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.services.gcodepreview.GCodePreviewExecutorService;
 import celtech.services.gcodepreview.GCodePreviewTask;
-import java.util.List;
 import java.util.Optional;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -81,6 +79,10 @@ public class PreviewManager
                           DisplayManager displayManager)
     {
         this.previewButton = previewButton;
+        if(BaseConfiguration.isWindows32Bit())
+        {
+            previewButton.disableProperty().set(true);
+        }
         this.displayManager = displayManager;
         try
         {

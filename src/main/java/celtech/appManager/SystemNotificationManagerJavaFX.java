@@ -55,6 +55,7 @@ import libertysystems.stenographer.StenographerFactory;
  */
 public class SystemNotificationManagerJavaFX implements SystemNotificationManager
 {
+    private final int DROOP_ERROR_CLEAR_TIME = 30000; // Milliseconds (= 30 seconds)
 
     private final Stenographer steno = StenographerFactory.getStenographer(
             SystemNotificationManagerJavaFX.class.getName());
@@ -102,6 +103,23 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
      * Error dialog
      */
     private ChoiceLinkDialogBox errorChoiceBox = null;
+    private ListChangeListener<? super FirmwareError> errorChangeListener = null;
+    private Thread clearDroopThread = null;
+        
+    private void clearErrorChoiceDialog(Printer printer)
+    {
+        if (errorChangeListener != null)
+        {
+            printer.getCurrentErrors().removeListener(errorChangeListener);
+            errorChangeListener = null;
+        }
+        if (errorChoiceBox != null)
+        {
+            if (errorChoiceBox.isShowing())
+                errorChoiceBox.close();
+            errorChoiceBox = null;
+        }
+    }
 
     @Override
     public void showErrorNotification(String title, String message)
@@ -135,26 +153,45 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     {
         BaseLookup.getTaskExecutor().runOnGUIThread(() ->
         {
-
             switch (error)
             {
                 case B_POSITION_LOST:
                     steno.warning("B Position Lost error detected");
+                    printer.clearError(error);
                     break;
 
                 case B_POSITION_WARNING:
                     steno.warning("B Position Warning error detected");
+                    printer.clearError(error);
                     break;
 
                 case ERROR_BED_TEMPERATURE_DROOP:
-                    steno.warning("Bed Temperature Droop Warning error detected");
+                    if (clearDroopThread == null) {
+                        steno.warning("Bed Temperature Droop Warning error detected");
+                        clearDroopThread = new Thread(() -> {
+                            try {
+                                // Clear the error after 30 seconds.
+                                // It is shown as a tooltip on the printerComponent.
+                                Thread.sleep(DROOP_ERROR_CLEAR_TIME);
+                                printer.clearError(error);
+                            }
+                            catch (Exception ex)
+                            {
+                                // May get some errors if printer has been disconnected.
+                            }
+                            finally {
+                                clearDroopThread = null;
+                            }
+                        });
+                        clearDroopThread.setDaemon(true);
+                        clearDroopThread.start();
+                    }
                     break;
                     
                 default:
                     if (errorChoiceBox == null)
                     {
                         setupErrorOptions();
-
                         errorChoiceBox = new ChoiceLinkDialogBox(true);
                         String printerName = printer.getPrinterIdentity().printerFriendlyNameProperty().get();
                         if (printerName != null)
@@ -169,20 +206,23 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                 .stream()
                                 .forEach(option -> errorChoiceBox.
                                 addChoiceLink(errorToButtonMap.get(option)));
-                        ListChangeListener<? super FirmwareError> listener = (ListChangeListener.Change<? extends FirmwareError> c) -> {
-                            if (!printer.getActiveErrors().contains(error))
+                        errorChangeListener = (ListChangeListener.Change<? extends FirmwareError> c) -> {
+                            if (!printer.getCurrentErrors().contains(error)) {
                                 errorChoiceBox.closeDueToPrinterDisconnect();
+                                clearErrorChoiceDialog(printer);
+                            }
                         };
-                        printer.getActiveErrors().addListener(listener);
+                        printer.getCurrentErrors().addListener(errorChangeListener);
 
-                        Optional<ChoiceLinkButton> buttonPressed;
+                        Optional<ChoiceLinkButton> buttonPressed = Optional.empty();
                         try
                         {
+                            // This shows the dialog and waits for user input.
                             buttonPressed = errorChoiceBox.getUserInput();
-                        } catch (PrinterDisconnectedException ex)
+                        }
+                        catch (PrinterDisconnectedException ex)
                         {
-                            printer.getActiveErrors().removeListener(listener);
-                            return;
+                            buttonPressed = Optional.empty();
                         }
 
                         if (buttonPressed.isPresent())
@@ -212,6 +252,7 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                         "Error whilst cancelling print from error dialog");
                                             }
                                             break;
+                                            
                                         case CLEAR_CONTINUE:
                                             try
                                             {
@@ -225,17 +266,17 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                                                         "Error whilst resuming print from error dialog");
                                             }
                                             break;
+                                            
                                         default:
                                             break;
                                     }
-                                    printer.clearError(error);
-                                    printer.getActiveErrors().removeListener(listener);
+
                                     break;
                                 }
                             }
                         }
-
-                        errorChoiceBox = null;
+                        printer.clearError(error);
+                        clearErrorChoiceDialog(printer);
                     }
                     break;
             }
@@ -244,6 +285,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
 
     private void setupErrorOptions()
     {
+        // This can't be called from the constructor because the instance is constructed before
+        // i18n has been initialised.
         if (errorToButtonMap == null)
         {
             errorToButtonMap = new HashMap<>();

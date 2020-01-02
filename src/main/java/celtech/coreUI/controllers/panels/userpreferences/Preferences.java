@@ -6,9 +6,11 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController.Preference;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -157,6 +159,9 @@ public class Preferences
         Preference enableCustomPrinterPref = new TickBoxPreference(customPrinterEnabled, "preferences.customPrinterEnabled");
         Preference customPrinterTypePref = new CustomPrinterTypePreference(userPreferences);
         Preference customPrinterHeadPref = new CustomPrinterHeadPreference(userPreferences);
+        
+        BooleanProperty windows32Bit = new SimpleBooleanProperty(BaseConfiguration.isWindows32Bit());
+        enableCustomPrinterPref.disableProperty(windows32Bit);
         
         preferences.add(enableCustomPrinterPref);
         preferences.add(customPrinterTypePref);

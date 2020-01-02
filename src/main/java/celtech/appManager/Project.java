@@ -76,6 +76,7 @@ public abstract class Project
     protected ObjectProperty<Date> lastModifiedDate;
 
     protected boolean suppressProjectChanged = false;
+    protected boolean projectSaved = true;
 
     protected ObjectProperty<ProjectMode> mode = new SimpleObjectProperty<>(ProjectMode.NONE);
 
@@ -206,6 +207,7 @@ public abstract class Project
             }
             basePath = basePath + project.getProjectName();
             project.save(basePath);
+            project.setProjectSaved(true);
         }
     }
 
@@ -577,6 +579,7 @@ public abstract class Project
     {
         if (!suppressProjectChanged)
         {
+            projectSaved = false;
             lastPrintJobID = "";
             lastModifiedDate.set(new Date());
         }
@@ -719,5 +722,15 @@ public abstract class Project
     public void close()
     {
         gCodeGenManager.shutdown();
+    }
+    
+    public boolean isProjectSaved()
+    {
+        return projectSaved;
+    }
+    
+    public void setProjectSaved(boolean projectSaved)
+    {
+        this.projectSaved = projectSaved;
     }
 }

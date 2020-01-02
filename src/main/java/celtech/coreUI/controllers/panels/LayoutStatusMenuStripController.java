@@ -252,8 +252,6 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
     private final BooleanProperty printerConnectionOffline = new SimpleBooleanProperty(false);
     
-    private ConditionalNotificationBar tooManyRoboxAttachedNotificationBar;
-
     private TimeCostThreadManager timeCostThreadManager;
 
     private final MapChangeListener<Integer, Filament> effectiveFilamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) ->
@@ -338,9 +336,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void printPressed(ActionEvent event)
     {
         Printer printer = Lookup.getSelectedPrinterProperty().get();
-
+        
         Project currentProject = Lookup.getSelectedProjectProperty().get();
 
+        if (!currentProject.isProjectSaved())
+        {
+            Project.saveProject(currentProject);
+        }
+        
         if (currentProject instanceof ModelContainerProject)
         {
             String projectLocation = ApplicationConfiguration.getProjectDirectory()
@@ -419,7 +422,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                     }
                 };
                 // Run the task from GCodeGenManager so it can be managed...
-                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndPrint);
+                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndExecutePrintOrSaveTask(fetchGCodeResultAndPrint);
             }
         }
     }
@@ -427,8 +430,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void savePressed(ActionEvent event) 
     {
-        Project currentProject = Lookup.getSelectedProjectProperty().get();
         steno.trace("Save slice to file pressed");
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        
+        if (!currentProject.isProjectSaved())
+        {
+            Project.saveProject(currentProject);
+        }
         
         if (currentProject instanceof ModelContainerProject) 
         {
@@ -476,7 +484,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
             };
             // Run the task from GCodeGenManager so it can be managed...
-            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndSave);
+            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndExecutePrintOrSaveTask(fetchGCodeResultAndSave);
         }
     }
 	
@@ -955,6 +963,14 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         headFanButton.setSelected(newValue);
     };
 
+    private final ChangeListener<Boolean> tooManyRoboxAttachedListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+    {
+        if (newValue)
+            BaseLookup.getSystemNotificationHandler()
+                      .showWarningNotification(Lookup.i18n("dialogs.toomanyrobox.title"),
+                                               Lookup.i18n("dialogs.toomanyrobox.message"));
+    };
+
     /*
      * JavaFX initialisation method
      */
@@ -1007,8 +1023,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 .and(notEnoughFilament2ForPrint)
                 .and(printerConnectionOffline.not()));
 
-        tooManyRoboxAttachedNotificationBar = new ConditionalNotificationBar("dialogs.toomanyrobox.message", NotificationType.CAUTION);
-        tooManyRoboxAttachedNotificationBar.setAppearanceCondition(RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty());
+        RoboxCommsManager.getInstance().tooManyRoboxAttachedProperty().addListener(tooManyRoboxAttachedListener);
 
         displayManager = DisplayManager.getInstance();
         applicationStatus = ApplicationStatus.getInstance();

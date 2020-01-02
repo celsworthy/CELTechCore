@@ -256,8 +256,11 @@ public class PrinterComponent extends Pane
             
             updateStatus(printer.printerStatusProperty().get(), printer.pauseStatusProperty().get());
             
-            printer.getActiveErrors().addListener((ListChangeListener.Change<? extends FirmwareError> c) -> {
-                dealWithErrorVisibility();
+            printer.getCurrentErrors().addListener((ListChangeListener.Change<? extends FirmwareError> c) -> {
+                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+                {
+                    dealWithErrorVisibility();
+                });
             });
             
             dealWithErrorVisibility();
@@ -299,14 +302,15 @@ public class PrinterComponent extends Pane
     
     private void dealWithErrorVisibility()
     {
-        if (printer.getActiveErrors().isEmpty())
+        
+        if (printer.getCurrentErrors().isEmpty())
         {
             errorTooltip.setText("");
             Tooltip.uninstall(this, errorTooltip);
             printerSVG.showErrorIndicator(false);
         } else
         {
-            String errorTooltipString = printer.getActiveErrors().stream()
+            String errorTooltipString = printer.getCurrentErrors().stream()
                     .map(error -> BaseLookup.i18n("misc.error") + ": " + BaseLookup.i18n(error.getErrorTitleKey()) + "\n")
                     .collect(Collectors.joining());
             errorTooltip.setText(errorTooltipString);

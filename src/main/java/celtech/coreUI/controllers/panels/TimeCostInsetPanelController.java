@@ -24,6 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -100,6 +104,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             PrintQualityEnumeration.CUSTOM));
     
     private final TimeCostThreadManager timeCostThreadManager = TimeCostThreadManager.getInstance();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
@@ -295,37 +300,80 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         
         Runnable runUpdateFields = () ->
         {
+            List<Future> futureList = new ArrayList<>();
             for(PrintQualityEnumeration printQuality : sliceOrder) 
             {
+                Runnable updateFieldOp = null;
                 switch(printQuality) {
                     case DRAFT:
-                        updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
-                        lblDraftWeight,
-                        lblDraftCost, cancellable);
+                        //System.out.println("Submitting TimeCost for DRAFT ...");
+                        updateFieldOp = () -> {
+                            //System.out.println("Running TimeCost for DRAFT ...");
+                            updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
+                            lblDraftWeight,
+                            lblDraftCost, cancellable);
+                            //System.out.println("... DRAFT done");
+                        };
                         break;
                     case NORMAL:
-                        updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
-                        lblNormalWeight,
-                        lblNormalCost, cancellable);
+                        //System.out.println("Submitting TimeCost for NORMAL ...");
+                        updateFieldOp = () -> {
+                            //System.out.println("Running TimeCost for NORMAL ...");
+                            updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
+                            lblNormalWeight,
+                            lblNormalCost, cancellable);
+                            //System.out.println("... NORMAL done");
+                        };
                         break;
                     case FINE:
-                        updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
-                        lblFineWeight,
-                        lblFineCost, cancellable);
+                        //System.out.println("Submitting TimeCost for FINE ...");
+                        updateFieldOp = () -> {
+                            //System.out.println("Running TimeCost for FINE ...");
+                            updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
+                                lblFineWeight,
+                                lblFineCost, cancellable);
+                            //System.out.println("... FINE done");
+                        };
                         break;
                     case CUSTOM:
                         if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
                         {
-                            updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
-                                    lblCustomWeight,
-                                    lblCustomCost, cancellable);
+                            //System.out.println("Submitting TimeCost for CUSTOM ...");
+                            updateFieldOp = () -> {
+                                //System.out.println("Running TimeCost for CUSTOM ...");
+                                updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
+                                        lblCustomWeight,
+                                        lblCustomCost, cancellable);
+                                //System.out.println("... CUSTOM done");
+                            };
                         }
                         break;
                 }
-                if (cancellable.cancelled().get())
-                {
-                    return;
+                if (updateFieldOp != null) {
+                    Future f = executorService.submit(updateFieldOp);
+                    futureList.add(f);
                 }
+                if (cancellable.cancelled().get())
+                    break;
+            }    
+                
+            try {
+                int i = 0;
+                for (Future f : futureList) {
+                    //System.out.println("Waiting for future " + i++ + " ...");
+                    f.get();
+                    //System.out.println("... done");
+                }
+            }
+            catch (InterruptedException | ExecutionException ex) {
+            }
+            //System.out.println("All tasks done");
+            
+            if (cancellable.cancelled().get())
+            {
+                //System.out.println("Cancelled");
+                for (Future<?> f : futureList)
+                    f.cancel(true);
             }
         };
 
