@@ -299,81 +299,54 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         Cancellable cancellable = new SimpleCancellable();
         
         Runnable runUpdateFields = () ->
-        {
+        {            
             List<Future> futureList = new ArrayList<>();
             for(PrintQualityEnumeration printQuality : sliceOrder) 
             {
-                Runnable updateFieldOp = null;
-                switch(printQuality) {
+                switch(printQuality) 
+                {
                     case DRAFT:
-                        //System.out.println("Submitting TimeCost for DRAFT ...");
-                        updateFieldOp = () -> {
-                            //System.out.println("Running TimeCost for DRAFT ...");
-                            updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
+                        updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
                             lblDraftWeight,
                             lblDraftCost, cancellable);
-                            //System.out.println("... DRAFT done");
-                        };
                         break;
                     case NORMAL:
-                        //System.out.println("Submitting TimeCost for NORMAL ...");
-                        updateFieldOp = () -> {
-                            //System.out.println("Running TimeCost for NORMAL ...");
-                            updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
+                        updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
                             lblNormalWeight,
                             lblNormalCost, cancellable);
-                            //System.out.println("... NORMAL done");
-                        };
                         break;
                     case FINE:
-                        //System.out.println("Submitting TimeCost for FINE ...");
-                        updateFieldOp = () -> {
-                            //System.out.println("Running TimeCost for FINE ...");
-                            updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
-                                lblFineWeight,
-                                lblFineCost, cancellable);
-                            //System.out.println("... FINE done");
-                        };
+                        updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
+                            lblFineWeight,
+                            lblFineCost, cancellable);
                         break;
                     case CUSTOM:
                         if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
                         {
-                            //System.out.println("Submitting TimeCost for CUSTOM ...");
-                            updateFieldOp = () -> {
-                                //System.out.println("Running TimeCost for CUSTOM ...");
-                                updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
-                                        lblCustomWeight,
-                                        lblCustomCost, cancellable);
-                                //System.out.println("... CUSTOM done");
-                            };
+                            updateFieldsForQuality(project, PrintQualityEnumeration.CUSTOM, lblCustomTime,
+                                    lblCustomWeight,
+                                    lblCustomCost, cancellable);
                         }
                         break;
-                }
-                if (updateFieldOp != null) {
-                    Future f = executorService.submit(updateFieldOp);
-                    futureList.add(f);
                 }
                 if (cancellable.cancelled().get())
                     break;
             }    
                 
-            try {
-                int i = 0;
+            try 
+            {
                 for (Future f : futureList) {
-                    //System.out.println("Waiting for future " + i++ + " ...");
                     f.get();
-                    //System.out.println("... done");
                 }
             }
             catch (InterruptedException | ExecutionException ex) {
             }
-            //System.out.println("All tasks done");
             
             if (cancellable.cancelled().get())
             {
-                //System.out.println("Cancelled");
-                for (Future<?> f : futureList)
+                futureList.forEach((f) -> {
                     f.cancel(true);
+                });
             }
         };
 
