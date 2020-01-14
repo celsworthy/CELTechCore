@@ -18,7 +18,7 @@ import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
-import celtech.roboxbase.services.CameraTriggerData;
+import celtech.roboxbase.services.camera.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -141,7 +141,14 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
     {
         filamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) -> 
         {
-            reactToChange(true);
+            if (isCurrentProjectSelected())
+            {
+                reactToChange(true);
+            }
+            else
+            {
+                projectNeedsSlicing = true;
+            }
         };
         
         applicationModeChangeListener = (o, oldValue, newValue) -> 
@@ -183,7 +190,14 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                 {
                     currentPrinter.effectiveFilamentsProperty().addListener(filamentListener);
                 }
-                reactToChange(true);
+                if (isCurrentProjectSelected())
+                {
+                    reactToChange(true);
+                }
+                else
+                {
+                    projectNeedsSlicing = true;
+                }
             }
         };
         
@@ -192,18 +206,26 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
             @Override
             public void whenHeadAdded(Printer printer)
             {
-                if (printer == currentPrinter)
+                if (printer == currentPrinter && isCurrentProjectSelected())
                 {
                     reactToChange(true);
+                }
+                else
+                {
+                    projectNeedsSlicing = true;
                 }
             }
 
             @Override
             public void whenExtruderAdded(Printer printer, int extruderIndex) 
             {
-                if (printer == currentPrinter)
+                if (printer == currentPrinter && isCurrentProjectSelected())
                 {
                     reactToChange(true);
+                }
+                else
+                {
+                    projectNeedsSlicing = true;
                 }
             }
         };
