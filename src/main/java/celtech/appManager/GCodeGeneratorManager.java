@@ -18,7 +18,7 @@ import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
-import celtech.roboxbase.services.camera.CameraTriggerData;
+import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
