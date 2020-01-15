@@ -43,7 +43,7 @@ import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
-import celtech.roboxbase.services.CameraTriggerData;
+import celtech.roboxbase.services.camera.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.utils.PrintJobUtils;
 import celtech.roboxbase.utils.PrinterUtils;
