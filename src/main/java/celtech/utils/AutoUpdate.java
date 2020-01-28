@@ -259,7 +259,10 @@ public class AutoUpdate extends Thread
                 commands.add("cmd.exe");
                 commands.add("/S");
                 commands.add("/C");
-                commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                if (BaseConfiguration.isWindows32Bit())
+                    commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows.exe\"\"");
+                else
+                    commands.add("\"\"" + BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-windows-x64.exe\"\"");
                 break;
             case MAC:
                 commands.add(BaseConfiguration.getApplicationInstallDirectory(parentClass) + applicationName + "-update-osx.app/Contents/MacOS/installbuilder.sh");
