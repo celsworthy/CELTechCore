@@ -13,11 +13,8 @@ import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.RoboxProfile;
-import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
@@ -25,6 +22,8 @@ import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.services.gcodepreview.GCodePreviewExecutorService;
 import celtech.services.gcodepreview.GCodePreviewTask;
 import java.util.Optional;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -41,6 +40,16 @@ public class PreviewManager
 {
     private final Stenographer steno = StenographerFactory.getStenographer(PreviewManager.class.getName());
 
+    private enum PreviewState
+    {
+        CLOSED,
+        LOADING,
+        OPEN,
+        SLICE_UNAVAILABLE,
+        NOT_SUPPORTED
+    }
+    
+    private ObjectProperty<PreviewState> previewState = new SimpleObjectProperty<>(PreviewState.CLOSED);
     private DisplayManager displayManager = null;
     private Project currentProject = null;
     private GCodePreviewExecutorService buttonExecutor = new GCodePreviewExecutorService();
@@ -49,17 +58,17 @@ public class PreviewManager
     private final GraphicButtonWithLabel previewButton;
     private GCodePreviewTask previewTask = null;
     
-    private final ChangeListener<Boolean> previewRunningListener =(ObservableValue<? extends Boolean> observable, Boolean wasRunning, Boolean isRunning) -> {
+    private final ChangeListener<Boolean> previewRunningListener =(observable, wasRunning, isRunning) -> {
         if (wasRunning && !isRunning) {
             removePreview();
         }
     };
     
-    private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+    private final ChangeListener<Boolean> gCodePrepChangeListener = (observable, oldValue, newValue) -> {
         autoStartAndUpdatePreview();
     };
 
-    private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
+    private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (observable, oldValue, newValue) -> {
         autoStartAndUpdatePreview();
     };
     
@@ -75,13 +84,22 @@ public class PreviewManager
         }
     };
     
+    private final ChangeListener<PreviewState> previewStateChangeListener = (observable, oldState, newState) -> {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            updatePreviewButton(newState);
+        });
+    };
+    
     public PreviewManager(GraphicButtonWithLabel previewButton,
                           DisplayManager displayManager)
     {
         this.previewButton = previewButton;
+        this.previewState.addListener(previewStateChangeListener);
+        
         if(BaseConfiguration.isWindows32Bit())
         {
-            previewButton.disableProperty().set(true);
+            previewState.set(PreviewState.NOT_SUPPORTED);
         }
         this.displayManager = displayManager;
         try
@@ -96,7 +114,10 @@ public class PreviewManager
     public void previewPressed(ActionEvent event)
     {
         if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
-            updatePreview();
+            if(previewState.get() != PreviewState.OPEN)
+            {  
+                updatePreview();
+            }
         }
         else {
             BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
@@ -118,9 +139,14 @@ public class PreviewManager
             {
                 ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
                 ((ModelContainerProject)currentProject).getGCodeGenManager().getPrintQualityProperty().addListener(this.printQualityChangeListener);
-                if (previewTask != null)
+                if (previewState.get() == PreviewState.OPEN ||
+                    previewState.get() == PreviewState.LOADING)
                 {
                     updatePreview();
+                }
+                else if (previewState.get() != PreviewState.NOT_SUPPORTED)
+                {
+                    previewState.set(PreviewState.CLOSED);
                 }
             }
             else
@@ -148,6 +174,27 @@ public class PreviewManager
                 ((ModelContainerProject)currentProject).getGCodeGenManager().modelIsSuitable());
     }
    
+    private void updatePreviewButton(PreviewState newState)
+    {
+        switch(newState)
+        {
+            case CLOSED:
+            case OPEN:
+                previewButton.setFxmlFileName("previewButton");
+                previewButton.disableProperty().set(false);
+                break;
+            case NOT_SUPPORTED:
+            case SLICE_UNAVAILABLE:
+                previewButton.setFxmlFileName("previewButton");
+                previewButton.disableProperty().set(true);
+                break;
+            case LOADING:
+                previewButton.setFxmlFileName("previewLoadingButton");
+                previewButton.disableProperty().set(true);
+                break;
+        }
+    }
+    
     private void clearPreview()
     {
         if (previewTask != null)
@@ -163,6 +210,7 @@ public class PreviewManager
         {
             previewTask.runningProperty().removeListener(previewRunningListener);
             previewTask.terminatePreview();
+            previewState.set(PreviewState.CLOSED);
         }
         previewTask = null;
     }
@@ -185,7 +233,8 @@ public class PreviewManager
 
     private void autoStartAndUpdatePreview()
     {
-            if (previewTask != null ||
+            if (previewState.get() == PreviewState.OPEN ||
+                    previewState.get() == PreviewState.LOADING ||
                 (Lookup.getUserPreferences().isAutoGCodePreview() &&
                 BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
         {
@@ -200,12 +249,7 @@ public class PreviewManager
         boolean modelUnsuitable = !modelIsSuitable();
         if (modelUnsuitable)
         {
-            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-            {
-                // Disable preview button.
-                previewButton.setFxmlFileName("previewLoadingButton");
-                previewButton.disableProperty().set(true);
-            });
+            previewState.set(PreviewState.SLICE_UNAVAILABLE);
             clearPreview();
         }
         else
@@ -214,12 +258,7 @@ public class PreviewManager
             {
                 // Showing preview preview button.
                 steno.info("Showing preview");
-                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                {
-                    // Enable preview button.
-                    previewButton.setFxmlFileName("previewLoadingButton");
-                    previewButton.disableProperty().set(false);
-                });
+                previewState.set(PreviewState.LOADING);
 
                 if (previewTask == null)
                     startPreview();
@@ -285,21 +324,13 @@ public class PreviewManager
                     if (Lookup.getUserPreferences().isAutoGCodePreview())
                         previewTask.giveFocus();
                     
-                    BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        // Enable preview button.
-                        previewButton.setFxmlFileName("previewButton");
-                    });
+                    previewState.set(PreviewState.OPEN);
                 }
                 else
                 {
                     // Failed.
-                     BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        steno.info("Setting button state to failed");
-                        previewButton.disableProperty().set(true);
-                        previewButton.setFxmlFileName("previewLoadingButton");
-                    });
+                    steno.info("Setting button state to failed");
+                    previewState.set(PreviewState.SLICE_UNAVAILABLE);
                 }
             };
 
@@ -308,36 +339,5 @@ public class PreviewManager
             steno.debug("Running update tasks");
             updateExecutor.runTask(doUpdatePreview);
         }
-    }
-    
-    private Optional<RoboxProfile> getPrintProfile(PrintQualityEnumeration quality, String headTypeCode)
-    {
-        RoboxProfileSettingsContainer profileSettingsContainer = RoboxProfileSettingsContainer.getInstance();
-        Optional<RoboxProfile> profileOption = Optional.empty();
-        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-		
-        switch (quality) {
-            case DRAFT:
-                profileOption = profileSettingsContainer
-                        .getRoboxProfileWithName(BaseConfiguration.draftSettingsProfileName, slicerType, headTypeCode);
-                break;
-            case NORMAL:
-                profileOption = profileSettingsContainer
-                        .getRoboxProfileWithName(BaseConfiguration.normalSettingsProfileName, slicerType, headTypeCode);
-                break;
-            case FINE:
-               profileOption = profileSettingsContainer
-                        .getRoboxProfileWithName(BaseConfiguration.fineSettingsProfileName, slicerType, headTypeCode);
-                break;
-            case CUSTOM: {
-                    String customSettingsName = currentProject.getPrinterSettings().getSettingsName();
-                    if (!customSettingsName.isEmpty()) 
-                        profileOption = profileSettingsContainer.getRoboxProfileWithName(customSettingsName, slicerType, headTypeCode);
-                }
-                break;
-            default:
-                break;
-        }
-        return profileOption;
     }
 }
