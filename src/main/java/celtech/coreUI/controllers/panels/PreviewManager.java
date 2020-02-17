@@ -14,7 +14,6 @@ import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
-import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
@@ -25,7 +24,6 @@ import java.util.Optional;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
@@ -52,7 +50,6 @@ public class PreviewManager
     private ObjectProperty<PreviewState> previewState = new SimpleObjectProperty<>(PreviewState.CLOSED);
     private DisplayManager displayManager = null;
     private Project currentProject = null;
-    private GCodePreviewExecutorService buttonExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService updateExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService previewExecutor = new GCodePreviewExecutorService();
     private final GraphicButtonWithLabel previewButton;
@@ -65,22 +62,20 @@ public class PreviewManager
     };
     
     private final ChangeListener<Boolean> gCodePrepChangeListener = (observable, oldValue, newValue) -> {
+        //steno.info("gCodePrepChangeListener");
         autoStartAndUpdatePreview();
     };
 
     private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (observable, oldValue, newValue) -> {
+        //steno.info("printQualityChangeListener");
         autoStartAndUpdatePreview();
     };
     
-    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = (observable, oldValue, newValue) -> {
+        //steno.info("printQualityChangeListener");
+        if (newValue == ApplicationMode.SETTINGS)
         {
-            if (newValue == ApplicationMode.SETTINGS)
-            {
-                autoStartAndUpdatePreview();
-            }
+            autoStartAndUpdatePreview();
         }
     };
     
@@ -107,7 +102,7 @@ public class PreviewManager
             ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
         } catch (Exception ex)
         {
-            ex.printStackTrace();
+            steno.exception("Unexpected error in PreviewManager constructor", ex);
         }
     }
 
@@ -197,11 +192,13 @@ public class PreviewManager
     
     private void clearPreview()
     {
+        //steno.info("clearPreview");
         if (previewTask != null)
         {
-            steno.debug("Clearing preview");
+            //steno.info("Clearing preview");
             previewTask.clearGCode();
         }
+        //steno.info("clearPreview done");
     }
 
     private void removePreview()
@@ -216,6 +213,7 @@ public class PreviewManager
     }
     
     private void startPreview() {
+        //steno.info("startPreview");
         if (previewTask == null)
         {
             String printerType = null;
@@ -224,11 +222,12 @@ public class PreviewManager
                 printerType = printer.printerConfigurationProperty().get().getTypeCode();
             String projDirectory = ApplicationConfiguration.getProjectDirectory()
                                        + currentProject.getProjectName(); 
-            steno.debug("Starting preview task");
+            //steno.info("Starting preview task");
             previewTask = new GCodePreviewTask(projDirectory, printerType, displayManager.getNormalisedPreviewRectangle());
             previewTask.runningProperty().addListener(previewRunningListener);
             previewExecutor.runTask(previewTask);
         }
+        //steno.info("startPreview done");
     }
 
     private void autoStartAndUpdatePreview()
@@ -244,39 +243,42 @@ public class PreviewManager
 
     private void updatePreview()
     {
-        steno.debug("Updating preview");
-        
-        boolean modelUnsuitable = !modelIsSuitable();
+       boolean modelUnsuitable = !modelIsSuitable();
         if (modelUnsuitable)
         {
+            //steno.info("Model unsuitable: setting previewState to SLICE_UNAVAILABLE ...");
+            
             previewState.set(PreviewState.SLICE_UNAVAILABLE);
+            //steno.info("... Model unsuitable: clearing preview ...");
             clearPreview();
+            //steno.info("... Model unsuitable done");
         }
         else
         {
             Runnable doUpdatePreview = () ->
             {
                 // Showing preview preview button.
-                steno.info("Showing preview");
+                //steno.info("Showing preview");
                 previewState.set(PreviewState.LOADING);
 
+                //steno.info("Preview is null");
                 if (previewTask == null)
                     startPreview();
                 else
                     clearPreview();
                 ModelContainerProject mProject = (ModelContainerProject)currentProject;
-                steno.debug("Waiting for prep result");
+                //steno.info("Waiting for prep result");
                 Optional<GCodeGeneratorResult> resultOpt = mProject.getGCodeGenManager().getPrepResult(currentProject.getPrintQuality());
-                steno.debug("Got prep result - ifPresent() = " + Boolean.toString(resultOpt.isPresent()) + "isSuccess() = " + (resultOpt.isPresent() ? Boolean.toString(resultOpt.get().isSuccess()) : "---"));
+                //steno.info("Got prep result - ifPresent() = " + Boolean.toString(resultOpt.isPresent()));
+                //steno.info("                  isSuccess() = " + (resultOpt.isPresent() ? Boolean.toString(resultOpt.get().isSuccess()) : "---"));
                 if (resultOpt.isPresent() && resultOpt.get().isSuccess())
                 {
-                    steno.debug("GCodePrepResult = " + resultOpt.get().getPostProcOutputFileName());
+                    //steno.info("GCodePrepResult = " + resultOpt.get().getPostProcOutputFileName());
 
                     // Get tool colours.
                     Color t0Colour = StandardColours.ROBOX_BLUE;
                     Color t1Colour = StandardColours.HIGHLIGHT_ORANGE;
                     String printerType = null;
-                    String headTypeCode = HeadContainer.defaultHeadID;
                     Printer printer = Lookup.getSelectedPrinterProperty().get();
                     if (printer != null)
                     {
@@ -285,8 +287,6 @@ public class PreviewManager
                         Head head = printer.headProperty().get();
                         if (head != null)
                         {
-                            headTypeCode = head.typeCodeProperty().get();
-                            
                             // Assume we have at least one extruder.
                             Filament filamentInUse;
                             filamentInUse = printer.effectiveFilamentsProperty().get(0);
@@ -312,32 +312,38 @@ public class PreviewManager
                                 t1Colour = t0Colour;
                         }
                     }
-
+                    
+                    //steno.info("Preview is still null");
                     if (previewTask == null)
                         startPreview();
                     else
                         previewTask.setPrinterType(printerType);
-                    steno.debug("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
+                    //steno.info("Loading GCode file = " + resultOpt.get().getPostProcOutputFileName());
                     previewTask.setToolColour(0, t0Colour);
                     previewTask.setToolColour(1, t1Colour);
                     previewTask.loadGCodeFile(resultOpt.get().getPostProcOutputFileName());
                     if (Lookup.getUserPreferences().isAutoGCodePreview())
                         previewTask.giveFocus();
                     
+                    //steno.info("Setting previewState to OPEN ...");
                     previewState.set(PreviewState.OPEN);
+                    //steno.info("... OPEN done");
                 }
                 else
                 {
                     // Failed.
-                    steno.info("Setting button state to failed");
+                    //steno.info("Setting previewState to SLICE_UNAVAILABLE ...");
                     previewState.set(PreviewState.SLICE_UNAVAILABLE);
+                    //steno.info("... SLICE_UNAVAILABLE done");
                 }
             };
 
-            steno.debug("Cancelling update tasks");
+            //steno.info("Cancelling update tasks");
             updateExecutor.cancelTask();
-            steno.debug("Running update tasks");
+            //steno.info("Running update tasks");
             updateExecutor.runTask(doUpdatePreview);
+            //steno.info("done updates");
         }
+        //steno.info("Updating preview done");
     }
 }

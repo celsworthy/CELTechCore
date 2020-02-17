@@ -1,6 +1,5 @@
 package celtech.services.gcodepreview;
 
-import celtech.roboxbase.configuration.SlicerType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +43,7 @@ class GCodePreviewConsumer extends Thread
             boolean receivedGoodbye = false;
             while (!receivedGoodbye && (line = br.readLine()) != null)
             {
-                steno.info("> " + line);
+                steno.debug("> " + line);
                 Scanner lineScanner = new Scanner(line);
                 if (lineScanner.hasNext()) {
                     String commandWord = lineScanner.next().toLowerCase();
