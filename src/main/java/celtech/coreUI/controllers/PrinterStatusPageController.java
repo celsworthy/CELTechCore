@@ -206,6 +206,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 
         printerStackMap = new HashMap<>();
         printerStackMap.put("RBX01", rbx01Stack);
+        printerStackMap.put("RBX02", rbx01Stack);
         setupPrinterType("RBX01");
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
