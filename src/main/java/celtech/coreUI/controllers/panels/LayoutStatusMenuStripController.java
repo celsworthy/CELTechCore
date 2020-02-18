@@ -492,7 +492,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void previewPressed(ActionEvent event)
     {
         if (previewManager != null)
-            previewManager.previewPressed(event);
+            previewManager.previewAction(event);
     }
 
     @FXML
@@ -971,6 +971,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                Lookup.i18n("dialogs.toomanyrobox.message"));
     };
 
+    private final ChangeListener<PreviewManager.PreviewState> previewStateChangeListener = (observable, oldState, newState) -> {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            updatePreviewButton(newState);
+        });
+    };
+
     /*
      * JavaFX initialisation method
      */
@@ -1058,13 +1065,35 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         });
         
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
-        previewManager = new PreviewManager(previewButton, displayManager);
+        previewManager = new PreviewManager();
         previewManager.setProjectAndPrinter(selectedProject, currentPrinter);
+        previewManager.previewStateProperty().addListener(previewStateChangeListener);
         displayManager.setPreviewManager(previewManager);
 
         BaseLookup.getPrinterListChangesNotifier().addListener(this);
     }
-
+        
+    private void updatePreviewButton(PreviewManager.PreviewState newState)
+    {
+        switch(newState)
+        {
+            case CLOSED:
+            case OPEN:
+                previewButton.setFxmlFileName("previewButton");
+                previewButton.disableProperty().set(false);
+                break;
+            case NOT_SUPPORTED:
+            case SLICE_UNAVAILABLE:
+                previewButton.setFxmlFileName("previewButton");
+                previewButton.disableProperty().set(true);
+                break;
+            case LOADING:
+                previewButton.setFxmlFileName("previewLoadingButton");
+                previewButton.disableProperty().set(true);
+                break;
+        }
+    }
+    
     private void setupButtonVisibility()
     {
 
@@ -1379,7 +1408,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             snapToGroundButton.selectedProperty().set(false);
         }
     };
-
+    
     ProjectChangesListener projectChangesListener = new ProjectChangesListener()
     {
 
@@ -1425,8 +1454,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Lookup.getSelectedPrinterProperty().removeListener(printerSettingsListener);
         layoutSubmode.removeListener(layoutSubmodeListener);
         project.removeProjectChangesListener(projectChangesListener);
-        if (previewManager != null)
+        if (previewManager != null) {
             previewManager.setProjectAndPrinter(null, currentPrinter);
+            previewManager.previewStateProperty().removeListener(previewStateChangeListener);
+        }
         undoButton.disableProperty().unbind();
         redoButton.disableProperty().unbind();
     }
@@ -1435,22 +1466,26 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
 
         createPrinterSettingsListener(printerSettings);
-        bindSelectedModels(project);
+        if (project != null) {
+            bindSelectedModels(project);
 
-        if (currentPrinter != null && project != null)
-        {
-            whenProjectOrSettingsPrinterChange();
+            if (currentPrinter != null)
+            {
+                whenProjectOrSettingsPrinterChange();
+            }
+
+            layoutSubmode.addListener(layoutSubmodeListener);
+            project.addProjectChangesListener(projectChangesListener);
+
+            undoButton.disableProperty().bind(
+                    Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
+            redoButton.disableProperty().bind(
+                    Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
         }
-
-        layoutSubmode.addListener(layoutSubmodeListener);
-        project.addProjectChangesListener(projectChangesListener);
-
-        undoButton.disableProperty().bind(
-                Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
-        redoButton.disableProperty().bind(
-                Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
-        if (previewManager != null)
+        if (previewManager != null) {
             previewManager.setProjectAndPrinter(project, currentPrinter);
+            previewManager.previewStateProperty().addListener(previewStateChangeListener);
+        }
     }
 
     private void dealWithOutOfBoundsModels()

@@ -6,9 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
-import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
@@ -21,10 +19,13 @@ import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.services.gcodepreview.GCodePreviewExecutorService;
 import celtech.services.gcodepreview.GCodePreviewTask;
 import java.util.Optional;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -38,7 +39,7 @@ public class PreviewManager
 {
     private final Stenographer steno = StenographerFactory.getStenographer(PreviewManager.class.getName());
 
-    private enum PreviewState
+    public enum PreviewState
     {
         CLOSED,
         LOADING,
@@ -48,11 +49,9 @@ public class PreviewManager
     }
     
     private ObjectProperty<PreviewState> previewState = new SimpleObjectProperty<>(PreviewState.CLOSED);
-    private DisplayManager displayManager = null;
     private Project currentProject = null;
     private GCodePreviewExecutorService updateExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService previewExecutor = new GCodePreviewExecutorService();
-    private final GraphicButtonWithLabel previewButton;
     private GCodePreviewTask previewTask = null;
     
     private final ChangeListener<Boolean> previewRunningListener =(observable, wasRunning, isRunning) -> {
@@ -79,24 +78,12 @@ public class PreviewManager
         }
     };
     
-    private final ChangeListener<PreviewState> previewStateChangeListener = (observable, oldState, newState) -> {
-        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            updatePreviewButton(newState);
-        });
-    };
-    
-    public PreviewManager(GraphicButtonWithLabel previewButton,
-                          DisplayManager displayManager)
+    public PreviewManager()
     {
-        this.previewButton = previewButton;
-        this.previewState.addListener(previewStateChangeListener);
-        
         if(BaseConfiguration.isWindows32Bit())
         {
             previewState.set(PreviewState.NOT_SUPPORTED);
         }
-        this.displayManager = displayManager;
         try
         {
             ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
@@ -106,7 +93,12 @@ public class PreviewManager
         }
     }
 
-    public void previewPressed(ActionEvent event)
+    public ReadOnlyObjectProperty<PreviewState> previewStateProperty()
+    {
+        return previewState;
+    }
+
+    public void previewAction(ActionEvent event)
     {
         if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
             if(previewState.get() != PreviewState.OPEN)
@@ -169,27 +161,6 @@ public class PreviewManager
                 ((ModelContainerProject)currentProject).getGCodeGenManager().modelIsSuitable());
     }
    
-    private void updatePreviewButton(PreviewState newState)
-    {
-        switch(newState)
-        {
-            case CLOSED:
-            case OPEN:
-                previewButton.setFxmlFileName("previewButton");
-                previewButton.disableProperty().set(false);
-                break;
-            case NOT_SUPPORTED:
-            case SLICE_UNAVAILABLE:
-                previewButton.setFxmlFileName("previewButton");
-                previewButton.disableProperty().set(true);
-                break;
-            case LOADING:
-                previewButton.setFxmlFileName("previewLoadingButton");
-                previewButton.disableProperty().set(true);
-                break;
-        }
-    }
-    
     private void clearPreview()
     {
         //steno.info("clearPreview");
@@ -201,8 +172,12 @@ public class PreviewManager
         //steno.info("clearPreview done");
     }
 
-    private void removePreview()
+    // Start and remove preview need to be synchronized so that
+    // the previewTask is started/stopped and the variable updated
+    // as a single transaction.
+    private synchronized void removePreview()
     {
+        //steno.info("removingPreview");
         if (previewTask != null)
         {
             previewTask.runningProperty().removeListener(previewRunningListener);
@@ -210,9 +185,25 @@ public class PreviewManager
             previewState.set(PreviewState.CLOSED);
         }
         previewTask = null;
+        //steno.info("removePreview done");
     }
     
-    private void startPreview() {
+    // There are some curious issues with starting the preview.
+    // Originally the preview tried open in  specific position relative
+    // to the AutoMaker window. To do this, it called displayManager.getNormalisedPreviewRectangle(),
+    // which queries some JavaFX nodes. The calling thread was not necessarily the main JavaFX thread.
+    // Most of the time this worked, but if the tabs and the forward button were clicked multiple times,
+    // particularly during startup, it would sometimes corrupt the internal JavaFX data structures,
+    // causing JavaFX to throw exceptions and enter an infinite loop, freezing the GUI.
+    //
+    // Making startPreview into a FutureTask, running it on the JavaFx thread and waiting for the result produced even
+    // wierder symptoms. Clicking on the forward and tab buttons during starup would cause startPreview to be
+    // called multiple times but not complete. A preview window would appear but not update. On closing the preview,
+    // another would immediately appear. It seems these previews started by the calls to startPreview that did not complete.
+    // If all these "phantom" previews were closed, so no more appeared, then opening a preview with the preview button worked.
+    // The current code below, which creates the previewTask immediately, and places in a fixed position rather than calling
+    // the displayManager, seems to work OK.
+    private synchronized void startPreview() {
         //steno.info("startPreview");
         if (previewTask == null)
         {
@@ -222,8 +213,8 @@ public class PreviewManager
                 printerType = printer.printerConfigurationProperty().get().getTypeCode();
             String projDirectory = ApplicationConfiguration.getProjectDirectory()
                                        + currentProject.getProjectName(); 
-            //steno.info("Starting preview task");
-            previewTask = new GCodePreviewTask(projDirectory, printerType, displayManager.getNormalisedPreviewRectangle());
+            Rectangle2D nRectangle = new Rectangle2D(0.25, 0.25, 0.5, 0.5);
+            previewTask = new GCodePreviewTask(projDirectory, printerType, nRectangle);
             previewTask.runningProperty().addListener(previewRunningListener);
             previewExecutor.runTask(previewTask);
         }
