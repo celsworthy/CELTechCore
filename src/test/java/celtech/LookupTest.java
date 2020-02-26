@@ -13,7 +13,7 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author tony
  */
-public class LookupTest extends JavaFXConfiguredTest
+public class LookupTest extends ConfiguredTest
 {
     
     
