@@ -1252,7 +1252,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public boolean reprintJob(String printJobID)
+    public boolean printJob(String printJobID)
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
