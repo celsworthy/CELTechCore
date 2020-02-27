@@ -1,5 +1,6 @@
 package celtech.coreUI.components;
 
+import celtech.FXTest;
 import celtech.JavaFXConfiguredTest;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
@@ -7,11 +8,13 @@ import static org.hamcrest.CoreMatchers.is;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author Ian
  */
+@Category(FXTest.class)
 public class HyperlinkedLabelTest extends JavaFXConfiguredTest
 {
 

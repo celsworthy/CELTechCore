@@ -1,5 +1,6 @@
 package celtech.utils.settingsgeneration;
 
+import celtech.FXTest;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -28,12 +29,14 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test class for the {@link ProfileDetailsGenerator}
  * 
  * @author George Salter
  */
+@Category(FXTest.class)
 public class ProfileDetailsGeneratorTest extends JavaFXConfiguredTest {
     
     private static final String FLOAT_VALUE_TYPE = "float";

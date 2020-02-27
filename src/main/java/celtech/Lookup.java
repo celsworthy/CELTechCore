@@ -95,7 +95,11 @@ public class Lookup
         BaseLookup.setupDefaultValues(userPreferences.getLoggingLevel(),
                 appLocale, 
                 new SystemNotificationManagerJavaFX());
-
+    }
+    
+    public static void setupDefaultValuesFX()
+    {
+        setupDefaultValues();
         setNotificationDisplay(new NotificationDisplay());
         setProgressDisplay(new ProgressDisplay());
     }

@@ -3,7 +3,7 @@
  */
 package celtech.appManager;
 
-import celtech.JavaFXConfiguredTest;
+import celtech.ConfiguredTest;
 import celtech.TestUtils;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.configuration.fileRepresentation.ModelContainerProjectFile;
@@ -32,7 +32,7 @@ import org.junit.rules.TemporaryFolder;
  *
  * @author tony
  */
-public class ProjectTest extends JavaFXConfiguredTest
+public class ProjectTest extends ConfiguredTest
 {
 
     private static final String GROUP_NAME = "group";
