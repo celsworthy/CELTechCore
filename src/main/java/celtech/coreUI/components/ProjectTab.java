@@ -596,7 +596,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     
     public void fireProjectDeselected()
     {
-        if (!project.isProjectSaved())
+        if (project != null && !project.isProjectSaved())
         {
             Project.saveProject(project);
         }

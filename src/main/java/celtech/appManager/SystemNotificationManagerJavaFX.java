@@ -1428,9 +1428,11 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
     /**
      *
      * @param printer
+     * @param nozzleNumber
+     * @param error
      */
     @Override
-    public void showEjectFailedDialog(Printer printer, int nozzleNumber)
+    public void showEjectFailedDialog(Printer printer, int nozzleNumber, FirmwareError error)
     {
         if (failedEjectDialogBox == null)
         {
@@ -1479,6 +1481,8 @@ public class SystemNotificationManagerJavaFX implements SystemNotificationManage
                 {
                     steno.error("Eject failed - user chose not to run eject stuck material");
                 }
+                
+                printer.clearError(error);
             });
         }
     }

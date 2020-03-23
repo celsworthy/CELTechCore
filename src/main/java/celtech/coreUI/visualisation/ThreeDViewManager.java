@@ -736,12 +736,8 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
             switch (newMode)
             {
                 case SETTINGS:
-                    subScene.removeEventHandler(MouseEvent.ANY, mouseEventHandler);
-                    subScene.removeEventHandler(ZoomEvent.ANY, zoomEventHandler);
-                    subScene.removeEventHandler(ScrollEvent.ANY, scrollEventHandler);
                     deselectAllModels();
                     transitionCameraToDefaults();
-
 //                            startSettingsAnimation();
                     break;
                 default:
