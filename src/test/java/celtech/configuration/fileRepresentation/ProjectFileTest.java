@@ -1,6 +1,6 @@
 package celtech.configuration.fileRepresentation;
 
-import celtech.JavaFXConfiguredTest;
+import celtech.ConfiguredTest;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -11,7 +11,7 @@ import org.junit.Test;
  *
  * @author Ian
  */
-public class ProjectFileTest extends JavaFXConfiguredTest
+public class ProjectFileTest extends ConfiguredTest
 {
 
     private static final String jsonifiedClass = "{\"projectType\":\"MODEL\",\"version\":5,\"projectName\":null,\"lastModifiedDate\":null,\"lastPrintJobID\":\"\",\"projectNameModified\":false,\"subVersion\":1,\"brimOverride\":0,\"fillDensityOverride\":0.0,\"fillDensityOverridenByUser\":false,\"printSupportOverride\":false,\"printSupportTypeOverride\":\"MATERIAL_2\",\"printRaft\":false,\"spiralPrint\":false,\"extruder0FilamentID\":null,\"extruder1FilamentID\":null,\"settingsName\":\"Draft\",\"printQuality\":\"NORMAL\",\"groupStructure\":{},\"groupState\":{}}";

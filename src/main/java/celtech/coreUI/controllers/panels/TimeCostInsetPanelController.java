@@ -361,7 +361,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private void updateFieldsForQuality(Project project, PrintQualityEnumeration printQuality,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
-        if (!modelOutOfBounds(printQuality))
+        if (!modelOutOfBounds(project, printQuality))
         {
             if (project instanceof ModelContainerProject)
             {
@@ -382,7 +382,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
     }
     
-    private boolean modelOutOfBounds(PrintQualityEnumeration printQuality) 
+    private boolean modelOutOfBounds(Project project, PrintQualityEnumeration printQuality) 
     {
         String headTypeToUse = HeadContainer.defaultHeadID;
         if (currentPrinter != null && currentPrinter.headProperty().get() != null)
@@ -391,9 +391,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
         
         RoboxProfile profileSettings = null;
-        if (currentProject != null && currentProject.getNumberOfProjectifiableElements() > 0)
+        if (project != null && project.getNumberOfProjectifiableElements() > 0)
         {
-            profileSettings = currentProject.getPrinterSettings().getSettings(headTypeToUse, getSlicerType(), printQuality);
+            profileSettings = project.getPrinterSettings().getSettings(headTypeToUse, getSlicerType(), printQuality);
         }
 
         double zReduction = 0.0;
@@ -405,21 +405,23 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         double raftOffset = profileSettings == null ? 0.0 : RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
 
         boolean aModelIsOffTheBed = false;
-        for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
-        {
-            if (projectifiableThing instanceof ModelContainer)
+        if (project != null && project.getTopLevelThings() != null) {
+            for (ProjectifiableThing projectifiableThing : project.getTopLevelThings())
             {
-                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-
-                //TODO use settings derived offset values for spiral
-                if (modelContainer.isOffBedProperty().get()
-                        || (currentProject.getPrinterSettings().getRaftOverride()
-                        && modelContainer.isModelTooHighWithOffset(zReduction + raftOffset))
-                        || (currentProject.getPrinterSettings().getSpiralPrintOverride()
-                        && modelContainer.isModelTooHighWithOffset(0.5)))
+                if (projectifiableThing instanceof ModelContainer)
                 {
-                    aModelIsOffTheBed = true;
-                    break;
+                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+
+                    //TODO use settings derived offset values for spiral
+                    if (modelContainer.isOffBedProperty().get()
+                            || (project.getPrinterSettings().getRaftOverride()
+                            && modelContainer.isModelTooHighWithOffset(zReduction + raftOffset))
+                            || (project.getPrinterSettings().getSpiralPrintOverride()
+                            && modelContainer.isModelTooHighWithOffset(0.5)))
+                    {
+                        aModelIsOffTheBed = true;
+                        break;
+                    }
                 }
             }
         }

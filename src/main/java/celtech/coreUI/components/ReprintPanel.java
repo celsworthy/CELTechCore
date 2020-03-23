@@ -118,7 +118,7 @@ public class ReprintPanel extends VBox
         printButton.disableProperty().bind(tableView.getSelectionModel().selectedItemProperty().isNull());
         printButton.setOnAction(event ->
         {
-            printerToUse.reprintJob(tableView.getSelectionModel().getSelectedItem().getPrintJobID());
+            printerToUse.printJob(tableView.getSelectionModel().getSelectedItem().getPrintJobID());
             close();
         });
 

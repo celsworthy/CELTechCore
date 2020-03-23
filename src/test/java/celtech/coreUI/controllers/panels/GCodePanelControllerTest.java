@@ -5,6 +5,7 @@
  */
 package celtech.coreUI.controllers.panels;
 
+import celtech.FXTest;
 import celtech.JavaFXConfiguredTest;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
@@ -19,11 +20,13 @@ import javafx.scene.layout.VBox;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author alynch
  */
+@Category(FXTest.class)
 public class GCodePanelControllerTest extends JavaFXConfiguredTest {
 
     GCodePanelController controller;
