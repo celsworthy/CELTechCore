@@ -82,6 +82,7 @@ public class PreviewManager
     {
         if(BaseConfiguration.isWindows32Bit())
         {
+            //steno.info("Setting previewState to NOT_SUPPORTED");
             previewState.set(PreviewState.NOT_SUPPORTED);
         }
         try
@@ -100,6 +101,7 @@ public class PreviewManager
 
     public void previewAction(ActionEvent event)
     {
+        //steno.info("previewAction");
         if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
             if(previewState.get() != PreviewState.OPEN)
             {  
@@ -127,12 +129,14 @@ public class PreviewManager
                 ((ModelContainerProject)currentProject).getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
                 ((ModelContainerProject)currentProject).getGCodeGenManager().getPrintQualityProperty().addListener(this.printQualityChangeListener);
                 if (previewState.get() == PreviewState.OPEN ||
-                    previewState.get() == PreviewState.LOADING)
+                    previewState.get() == PreviewState.LOADING ||
+                    previewState.get() == PreviewState.SLICE_UNAVAILABLE)
                 {
                     updatePreview();
                 }
                 else if (previewState.get() != PreviewState.NOT_SUPPORTED)
                 {
+                    //steno.info("Setting previewState to CLOSED");
                     previewState.set(PreviewState.CLOSED);
                 }
             }
@@ -223,11 +227,14 @@ public class PreviewManager
 
     private void autoStartAndUpdatePreview()
     {
-            if (previewState.get() == PreviewState.OPEN ||
-                    previewState.get() == PreviewState.LOADING ||
-                (Lookup.getUserPreferences().isAutoGCodePreview() &&
-                BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
+        //steno.info("autoStartAndUpdatePreview");
+        if (previewState.get() == PreviewState.OPEN ||
+            previewState.get() == PreviewState.LOADING ||
+            previewState.get() == PreviewState.SLICE_UNAVAILABLE ||
+            (Lookup.getUserPreferences().isAutoGCodePreview() &&
+             BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
         {
+            //steno.info("autoStartAndUpdatePreview calling updatePreview");
             updatePreview();
         }
     }
@@ -238,7 +245,6 @@ public class PreviewManager
         if (modelUnsuitable)
         {
             //steno.info("Model unsuitable: setting previewState to SLICE_UNAVAILABLE ...");
-            
             previewState.set(PreviewState.SLICE_UNAVAILABLE);
             //steno.info("... Model unsuitable: clearing preview ...");
             clearPreview();
@@ -249,7 +255,7 @@ public class PreviewManager
             Runnable doUpdatePreview = () ->
             {
                 // Showing preview preview button.
-                //steno.info("Showing preview");
+                //steno.info("Setting previewState to LOADING");
                 previewState.set(PreviewState.LOADING);
 
                 //steno.info("Preview is null");
@@ -323,7 +329,7 @@ public class PreviewManager
                 else
                 {
                     // Failed.
-                    //steno.info("Setting previewState to SLICE_UNAVAILABLE ...");
+                    //steno.info("Failed - Setting previewState to SLICE_UNAVAILABLE ...");
                     previewState.set(PreviewState.SLICE_UNAVAILABLE);
                     //steno.info("... SLICE_UNAVAILABLE done");
                 }
