@@ -34,6 +34,7 @@ public class CustomPrinterHeadPreference implements PreferencesInnerPanelControl
         headDisplayNameMap.put("RBX01-S2", "QuickFill\u2122 v2");
         headDisplayNameMap.put("RBX01-DM", "DualMaterial\u2122");
         headDisplayNameMap.put("RBXDV-S1", "SingleX\u2122 Experimental\u2122");
+        headDisplayNameMap.put("RBXDV-S3", "SingleLite\u2122");
         
         control = new ComboBox<>();
         control.getStyleClass().add("cmbCleanCombo");
