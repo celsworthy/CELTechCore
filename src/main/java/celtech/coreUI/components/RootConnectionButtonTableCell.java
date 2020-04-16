@@ -463,6 +463,7 @@ public class RootConnectionButtonTableCell extends TableCell<DetectedServer, Det
                 }
                 associatedServer.setServerStatus(ServerStatus.NOT_CONNECTED);
                 break;
+            case UPGRADING:
             default:
                 disconnectedBox.setVisible(false);
                 connectedBox.setVisible(false);
