@@ -140,63 +140,66 @@ public class ModelContainerProject extends Project
     @Override
     protected void load(ProjectFile projectFile, String basePath) throws ProjectLoadException
     {
-        suppressProjectChanged = true;
+        try {
+            suppressProjectChanged = true;
 
-        if (projectFile instanceof ModelContainerProjectFile)
-        {
-            ModelContainerProjectFile mcProjectFile = (ModelContainerProjectFile) projectFile;
-            try
+            if (projectFile instanceof ModelContainerProjectFile)
             {
-                version = projectFile.getVersion();
-
-                projectNameProperty.set(projectFile.getProjectName());
-                lastModifiedDate.set(projectFile.getLastModifiedDate());
-                lastPrintJobID = projectFile.getLastPrintJobID();
-                projectNameModified = projectFile.isProjectNameModified();
-
-                String filamentID0 = mcProjectFile.getExtruder0FilamentID();
-                String filamentID1 = mcProjectFile.getExtruder1FilamentID();
-                if (!filamentID0.equals("NULL"))
+                ModelContainerProjectFile mcProjectFile = (ModelContainerProjectFile) projectFile;
+                try
                 {
-                    Filament filament0 = filamentContainer.getFilamentByID(filamentID0);
-                    if (filament0 != null)
+                    version = projectFile.getVersion();
+
+                    projectNameProperty.set(projectFile.getProjectName());
+                    lastModifiedDate.set(projectFile.getLastModifiedDate());
+                    lastPrintJobID = projectFile.getLastPrintJobID();
+                    projectNameModified = projectFile.isProjectNameModified();
+
+                    String filamentID0 = mcProjectFile.getExtruder0FilamentID();
+                    String filamentID1 = mcProjectFile.getExtruder1FilamentID();
+                    if (!filamentID0.equals("NULL"))
                     {
-                        extruder0Filament.set(filament0);
+                        Filament filament0 = filamentContainer.getFilamentByID(filamentID0);
+                        if (filament0 != null)
+                        {
+                            extruder0Filament.set(filament0);
+                        }
                     }
-                }
-                if (!filamentID1.equals("NULL"))
+                    if (!filamentID1.equals("NULL"))
+                    {
+                        Filament filament1 = filamentContainer.getFilamentByID(filamentID1);
+                        if (filament1 != null)
+                        {
+                            extruder1Filament.set(filament1);
+                        }
+                    }
+
+                    printerSettings.setSettingsName(mcProjectFile.getSettingsName());
+                    printerSettings.setPrintQuality(mcProjectFile.getPrintQuality());
+                    printerSettings.setBrimOverride(mcProjectFile.getBrimOverride());
+                    printerSettings.setFillDensityOverride(mcProjectFile.getFillDensityOverride());
+                    printerSettings.setFillDensityChangedByUser(mcProjectFile.isFillDensityOverridenByUser());
+                    printerSettings.setPrintSupportOverride(mcProjectFile.getPrintSupportOverride());
+                    printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
+                    printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
+                    printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
+
+                    loadModels(basePath);
+
+                    recreateGroups(mcProjectFile.getGroupStructure(), mcProjectFile.getGroupState());
+
+                } catch (IOException ex)
                 {
-                    Filament filament1 = filamentContainer.getFilamentByID(filamentID1);
-                    if (filament1 != null)
-                    {
-                        extruder1Filament.set(filament1);
-                    }
+                    steno.exception("Failed to load project " + basePath, ex);
+                } catch (ClassNotFoundException ex)
+                {
+                    steno.exception("Failed to load project " + basePath, ex);
                 }
-
-                printerSettings.setSettingsName(mcProjectFile.getSettingsName());
-                printerSettings.setPrintQuality(mcProjectFile.getPrintQuality());
-                printerSettings.setBrimOverride(mcProjectFile.getBrimOverride());
-                printerSettings.setFillDensityOverride(mcProjectFile.getFillDensityOverride());
-                printerSettings.setFillDensityChangedByUser(mcProjectFile.isFillDensityOverridenByUser());
-                printerSettings.setPrintSupportOverride(mcProjectFile.getPrintSupportOverride());
-                printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
-                printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
-                printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
-                
-                loadModels(basePath);
-
-                recreateGroups(mcProjectFile.getGroupStructure(), mcProjectFile.getGroupState());
-
-            } catch (IOException ex)
-            {
-                steno.exception("Failed to load project " + basePath, ex);
-            } catch (ClassNotFoundException ex)
-            {
-                steno.exception("Failed to load project " + basePath, ex);
             }
         }
-
-        suppressProjectChanged = false;
+        finally {
+            suppressProjectChanged = false;
+        }
     }
 
     private void loadModels(String basePath) throws IOException, ClassNotFoundException
