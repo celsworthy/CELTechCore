@@ -470,6 +470,7 @@ public class PurgeInsetPanelController implements Initializable
             cantPrintFilament1NotSpecifiedNotificationBar.clearAppearanceCondition();
             textCurrentMaterial0.visibleProperty().unbind();
             textCurrentMaterial1.visibleProperty().unbind();
+            startPurgeButton.disableProperty().unbind();
             proceedButton.disableProperty().unbind();
             purgeMaterial0.onActionProperty().unbind();
             purgeMaterial1.onActionProperty().unbind();
@@ -562,6 +563,7 @@ public class PurgeInsetPanelController implements Initializable
         cantPurgeDoorIsOpenNotificationBar.setAppearanceCondition(doorIsOpen
                 .and(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)));
 
+        
         if (!headHasTwoNozzleHeaters(printer))
         {
             cantPrintNoFilamentNotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
@@ -573,40 +575,41 @@ public class PurgeInsetPanelController implements Initializable
 
             BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen).or(extruder0NotLoaded);
             button.disableProperty().bind(isDisabled);
-        } else
+        }
+        else
         {
 
             BooleanBinding extruder1NotLoaded = printer.extrudersProperty().get(1).
                     filamentLoadedProperty().not();
 
-            BooleanBinding purgingNozzleHeater0 = new BooleanBinding()
-            {
-                {
-                    super.bind(transitionManager.getPurgeNozzleHeater0());
-                }
-
-                @Override
-                protected boolean computeValue()
-                {
-                    return transitionManager.getPurgeNozzleHeater0().get();
-                }
-            };
-
-            BooleanBinding purgingNozzleHeater1 = new BooleanBinding()
-            {
-                {
-                    super.bind(transitionManager.getPurgeNozzleHeater1());
-                }
-
-                @Override
-                protected boolean computeValue()
-                {
-                    return transitionManager.getPurgeNozzleHeater1().get();
-                }
-            };
-
             if (button == proceedButton)
             {
+                BooleanBinding purgingNozzleHeater0 = new BooleanBinding()
+                {
+                    {
+                        super.bind(transitionManager.getPurgeNozzleHeater0());
+                    }
+
+                    @Override
+                    protected boolean computeValue()
+                    {
+                        return transitionManager.getPurgeNozzleHeater0().get();
+                    }
+                };
+
+                BooleanBinding purgingNozzleHeater1 = new BooleanBinding()
+                {
+                    {
+                        super.bind(transitionManager.getPurgeNozzleHeater1());
+                    }
+
+                    @Override
+                    protected boolean computeValue()
+                    {
+                        return transitionManager.getPurgeNozzleHeater1().get();
+                    }
+                };
+                
                 cantPrintNoFilament0NotificationBar.setAppearanceCondition(applicationStatus.modeProperty().isEqualTo(ApplicationMode.PURGE)
                         .and(purgingNozzleHeater1.and(extruder0NotLoaded)));
 
@@ -627,6 +630,12 @@ public class PurgeInsetPanelController implements Initializable
                         .or(purgingNozzleHeater0.and(extruder1NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())
                                         .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
                         .or(purgingNozzleHeater0.not().and(purgingNozzleHeater1.not()));
+                button.disableProperty().bind(isDisabled);
+            }
+            else
+            {
+                BooleanBinding neitherExtruderLoaded = extruder0NotLoaded.and(extruder1NotLoaded);
+                BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen).or(neitherExtruderLoaded);
                 button.disableProperty().bind(isDisabled);
             }
         }
