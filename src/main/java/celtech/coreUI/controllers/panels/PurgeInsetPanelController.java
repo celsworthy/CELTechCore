@@ -226,6 +226,31 @@ public class PurgeInsetPanelController implements Initializable
                 transitionManager.setPurgeTemperature(0, purgeTemperature1.getAsInt());
             };
 
+    private final ChangeListener<Boolean> purgeMaterial0Listener
+            = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+                {
+                    transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
+                } else
+                {
+                    transitionManager.setPurgeNozzleHeater1(purgeMaterial0.isSelected());
+                }
+            };
+
+    private final ChangeListener<Boolean> purgeMaterial1Listener
+            = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+            {
+                if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
+                {
+                    transitionManager.setPurgeNozzleHeater1(purgeMaterial1.isSelected());
+                } else
+                {
+                    transitionManager.setPurgeNozzleHeater0(purgeMaterial1.isSelected());
+                }
+            };
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
@@ -418,6 +443,7 @@ public class PurgeInsetPanelController implements Initializable
                 {
                     showCurrentMaterial1();
                     purgeTemperature1.valueChangedProperty().addListener(purgeTempEntryListener1);
+                    purgeMaterial0.setVisible(true);
                 } else
                 {
                     purgeMaterial0.setVisible(false);
@@ -472,8 +498,8 @@ public class PurgeInsetPanelController implements Initializable
             textCurrentMaterial1.visibleProperty().unbind();
             startPurgeButton.disableProperty().unbind();
             proceedButton.disableProperty().unbind();
-            purgeMaterial0.onActionProperty().unbind();
-            purgeMaterial1.onActionProperty().unbind();
+            purgeMaterial0.selectedProperty().removeListener(purgeMaterial0Listener);
+            purgeMaterial1.selectedProperty().removeListener(purgeMaterial1Listener);
             printer.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
         }
 
@@ -624,12 +650,16 @@ public class PurgeInsetPanelController implements Initializable
                         .and(purgingNozzleHeater0.and(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull()
                                         .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT)))));
 
-                BooleanBinding isDisabled = notPurgingAndNotIdle.or(doorIsOpen)
-                        .or(purgingNozzleHeater1.and(extruder0NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull())
-                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
-                        .or(purgingNozzleHeater0.and(extruder1NotLoaded.or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull())
-                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT))))
-                        .or(purgingNozzleHeater0.not().and(purgingNozzleHeater1.not()));
+                BooleanBinding filament0Invalid = Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isNull()
+                                                .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 0).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT));
+                BooleanBinding filament1Invalid = Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isNull()
+                                        .or(Bindings.valueAt(printer.effectiveFilamentsProperty(), 1).isEqualTo(FilamentContainer.UNKNOWN_FILAMENT));
+
+                BooleanBinding isDisabled = notPurgingAndNotIdle
+                        .or(doorIsOpen)
+                        .or(purgingNozzleHeater0.not().and(purgingNozzleHeater1.not()))
+                        .or(purgingNozzleHeater1.and(extruder0NotLoaded.or(filament0Invalid)))
+                        .or(purgingNozzleHeater0.and(extruder1NotLoaded.or(filament1Invalid)));
                 button.disableProperty().bind(isDisabled);
             }
             else
@@ -707,29 +737,8 @@ public class PurgeInsetPanelController implements Initializable
             currentMaterialTemperature1.textProperty().unbind();
             lastMaterialTemperature1.textProperty().unbind();
 
-            purgeMaterial0.onActionProperty().set(
-                    (EventHandler<ActionEvent>) (ActionEvent event) ->
-                    {
-                        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
-                        {
-                            transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
-                        } else
-                        {
-                            transitionManager.setPurgeNozzleHeater1(purgeMaterial0.isSelected());
-                        }
-                    });
-
-            purgeMaterial1.onActionProperty().set(
-                    (EventHandler<ActionEvent>) (ActionEvent event) ->
-                    {
-                        if (printer.headProperty().get().headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD)
-                        {
-                            transitionManager.setPurgeNozzleHeater1(purgeMaterial1.isSelected());
-                        } else
-                        {
-                            transitionManager.setPurgeNozzleHeater0(purgeMaterial1.isSelected());
-                        }
-                    });
+            purgeMaterial0.selectedProperty().addListener(purgeMaterial0Listener);
+            purgeMaterial1.selectedProperty().addListener(purgeMaterial1Listener);
 
             setPurgeForRequiredNozzles();
             
@@ -774,6 +783,7 @@ public class PurgeInsetPanelController implements Initializable
                 transitionManager.setPurgeNozzleHeater0(purgeMaterial0.isSelected());
             } else
             {
+                transitionManager.setPurgeNozzleHeater0(purgeMaterial1.isSelected());
                 transitionManager.setPurgeNozzleHeater1(purgeMaterial0.isSelected());
             }
 
