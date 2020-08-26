@@ -116,6 +116,11 @@ public class ShapeContainerProject extends Project
     {
     }
 
+        @Override
+    protected void fireWhenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
+    {
+    }
+
     @Override
     protected void load(ProjectFile projectFile, String basePath) throws ProjectLoadException
     {
@@ -128,6 +133,8 @@ public class ShapeContainerProject extends Project
                 projectNameProperty.set(projectFile.getProjectName());
                 lastModifiedDate.set(projectFile.getLastModifiedDate());
                 lastPrintJobID = projectFile.getLastPrintJobID();
+                
+                loadTimelapseSettings(projectFile);
 
                 loadModels(basePath);
 

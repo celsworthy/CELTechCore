@@ -183,6 +183,8 @@ public class ModelContainerProject extends Project
                     printerSettings.setPrintSupportTypeOverride(mcProjectFile.getPrintSupportTypeOverride());
                     printerSettings.setRaftOverride(mcProjectFile.getPrintRaft());
                     printerSettings.setSpiralPrintOverride(mcProjectFile.getSpiralPrint());
+                    
+                    loadTimelapseSettings(mcProjectFile);
 
                     loadModels(basePath);
 
@@ -539,6 +541,15 @@ public class ModelContainerProject extends Project
         for (ProjectChangesListener projectChangesListener : projectChangesListeners)
         {
             projectChangesListener.whenPrinterSettingsChanged(printerSettings);
+        }
+    }
+
+    @Override
+    protected void fireWhenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
+    {
+        for (ProjectChangesListener projectChangesListener : projectChangesListeners)
+        {
+            projectChangesListener.whenTimelapseSettingsChanged(timelapseSettings);
         }
     }
 

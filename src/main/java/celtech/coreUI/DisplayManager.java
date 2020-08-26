@@ -31,6 +31,7 @@ import celtech.roboxbase.comms.DummyPrinterCommandInterface;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.RoboxProfile;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.io.File;
@@ -200,6 +201,14 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
         LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
         controller.showAndSelectPrintProfile(roboxProfile);
+    }
+
+    public void showAndSelectCameraProfile(CameraProfile profile)
+    {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.LIBRARY);
+        Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
+        LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
+        controller.showAndSelectCameraProfile(profile);
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)

@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import celtech.coreUI.components.*?>
-<?import celtech.coreUI.components.printerstatus.*?>
-<?import celtech.coreUI.components.material.*?>
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.paint.*?>
-<?import javafx.scene.shape.*?>
-<?import jfxtras.styles.jmetro8.*?>
+<?import celtech.coreUI.components.RestrictedNumberField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<HBox id="settingsInsetRoot" fx:id="settingsInsetRoot" alignment="CENTER" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsInsetPanelController">
+<HBox id="settingsInsetRoot" fx:id="settingsInsetRoot" alignment="CENTER" maxWidth="360.0" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.SettingsInsetPanelController">
     <children>
         <VBox alignment="CENTER" fillWidth="true" spacing="10.0">
             <children>
@@ -25,7 +24,7 @@
                                 <Label id="pleaseCreateProfile" fx:id="createProfileLabel" text="%sidePanel_settings.pleaseCreateProfile" />
                             </children>
                         </StackPane>
-                        <Button fx:id="editPrintProfileButton" mnemonicParsing="false" onAction="#editPrintProfile" scaleY="0.9" style="-fx-background-color: light_grey;" text="..." />
+                        <Button fx:id="editPrintProfileButton" mnemonicParsing="false" onAction="#editPrintProfile" scaleY="0.9" style="-fx-background-color: light_grey; -fx-padding: 2;" text="..." />
                     </children>
                     <VBox.margin>
                         <Insets />

@@ -90,6 +90,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private LoadedPanelData settingsInsetPanelData = null;
     private LoadedPanelData timeCostInsetPanelData = null;
     private LoadedPanelData modelActionsInsetPanelData = null;
+    private LoadedPanelData timelapseInsetPanelData = null;
     
     private class LoadedPanelData
     {
@@ -156,31 +157,43 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             if (tabIsSelected == false)
             {
-                if (settingsInsetPanelData != null)
-                {
-                    settingsInsetPanelData.getController().shutdownController();
-                    rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
-                    settingsInsetPanelData = null;
-                }
                 if (timeCostInsetPanelData != null)
                 {
                     timeCostInsetPanelData.getController().shutdownController();
                     rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
                     timeCostInsetPanelData = null;
                 }
+                if (settingsInsetPanelData != null)
+                {
+                    settingsInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
+                    settingsInsetPanelData = null;
+                }
+                if (timelapseInsetPanelData != null)
+                {
+                    timelapseInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(timelapseInsetPanelData.getNode());
+                    timelapseInsetPanelData = null;
+                }
             } else
             {
+                if (timeCostInsetPanelData == null)
+                {
+                    timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
+                    timeCostInsetPanelData.getNode().setVisible(false);
+                    rhInsetContainer.getChildren().add(timeCostInsetPanelData.getNode());
+                }
                 if (settingsInsetPanelData == null)
                 {
                     settingsInsetPanelData = loadInsetPanel("settingsInsetPanel.fxml", project);
                     settingsInsetPanelData.getNode().setVisible(false);
                     rhInsetContainer.getChildren().add(settingsInsetPanelData.getNode());
                 }
-                if (timeCostInsetPanelData == null)
+                if (timelapseInsetPanelData == null)
                 {
-                    timeCostInsetPanelData = loadInsetPanel("timeCostInsetPanel.fxml", project);
-                    timeCostInsetPanelData.getNode().setVisible(false);
-                    rhInsetContainer.getChildren().add(0, timeCostInsetPanelData.getNode());
+                    timelapseInsetPanelData = loadInsetPanel("timelapseInsetPanel.fxml", project);
+                    timelapseInsetPanelData.getNode().setVisible(false);
+                    rhInsetContainer.getChildren().add(timelapseInsetPanelData.getNode());
                 }
             }
         }

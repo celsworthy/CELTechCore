@@ -7,6 +7,7 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.TimelapseSettingsData;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
@@ -30,11 +31,14 @@ import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
+import celtech.roboxbase.camera.CameraInfo;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
+import celtech.roboxbase.configuration.fileRepresentation.CameraSettings;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Head;
@@ -354,20 +358,32 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
                     ((ModelContainerProject) currentProject).getUsedExtruders(printer));
 
+            // Trigger data is used by post processor.
+            // Camera data is sent to Root.
             CameraTriggerData cameraTriggerData = null;
-
-            if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
-            {
-                cameraTriggerData = new CameraTriggerData(
-                        Lookup.getUserPreferences().isTimelapseTurnOffHeadLights(),
-                        Lookup.getUserPreferences().isTimelapseTurnOffLED(),
-                        Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
-                        Lookup.getUserPreferences().getTimelapseXMove(),
-                        Lookup.getUserPreferences().getTimelapseYMove());
+            Optional<CameraSettings> cameraData = Optional.empty();
+            boolean timelapseEnabled = false;
+            TimelapseSettingsData tlsd = currentProject.getTimelapseSettings();
+            if (tlsd != null) {
+                // Curious mix of programming styles!    
+                Optional<CameraInfo> infoOpt = tlsd.getTimelapseCamera();
+                Optional<CameraProfile> profileOpt = tlsd.getTimelapseProfile();
+                cameraData = infoOpt.flatMap((ci) -> profileOpt.map((cp) -> new CameraSettings(cp, ci)));
+                if (cameraData.isPresent()) {
+                    CameraProfile profile = profileOpt.get();
+                    cameraTriggerData = new CameraTriggerData(
+                        !profile.isHeadLightOn(),
+                        !profile.isAmbientLightOn(),
+                        false,
+                        0,
+                        0);
+                }
+                timelapseEnabled = tlsd.getTimelapseTriggerEnabled();
             }
-            
+                
             printableProject.setCameraTriggerData(cameraTriggerData);
-            printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
+            printableProject.setCameraEnabled(timelapseEnabled);
+            printableProject.setCameraData(cameraData);
 
             if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
             {
@@ -469,7 +485,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                                     // The files must use an appropriate print job id in order for the printer to accept it at.
                                     String jobUUID = SystemUtils.generate16DigitID();
-                                    PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                                    Optional<CameraInfo> infoOpt = currentProject.getTimelapseSettings().getTimelapseCamera();
+                                    Optional<CameraProfile> profileOpt = currentProject.getTimelapseSettings().getTimelapseProfile();
+                                    Optional<CameraSettings> settings = infoOpt.flatMap((i) -> profileOpt.map((p) -> new CameraSettings(p, i)));
+                                    PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString(), settings);
                                 }
                                 catch (IOException ex)
                                 {
@@ -1443,6 +1462,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
         @Override
         public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
+        {
+            whenProjectOrSettingsPrinterChange();
+        }
+
+        @Override
+        public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
         {
             whenProjectOrSettingsPrinterChange();
         }

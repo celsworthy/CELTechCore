@@ -1,108 +1,146 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import celtech.coreUI.components.*?>
+<?import celtech.coreUI.components.HideableTooltip?>
+<?import celtech.coreUI.components.RestrictedComboBox?>
+<?import celtech.coreUI.components.RestrictedNumberField?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
-<GridPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8">
-    <columnConstraints>
-        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
-        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
-        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
-        <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
-    </columnConstraints>
-    <rowConstraints>
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-    </rowConstraints>
-    <children>
-        <!-- General camera settings section -->
-        <RestrictedComboBox fx:id="cmbCameraProfile" directorySafeName="true" maxLength="24" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" prefWidth="150.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-            <styleClass>
-               <String fx:value="cmbPrintProfile" />
-               <String fx:value="cmbCleanCombo" />
-            </styleClass>
-        </RestrictedComboBox>
-        <Label alignment="CENTER" text="%cameraProfiles.general" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1">
-            <styleClass>
-                <String fx:value="filamentLibTitle" />
-                <String fx:value="preferenceControl" />
-            </styleClass>
-        </Label>
-        <Label text="%cameraProfiles.captureHeight" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-        <RestrictedNumberField fx:id="captureHeight" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
-            <styleClass>
-                <String fx:value="preferenceControl" />
-            </styleClass>
-            <tooltip>
-                <HideableTooltip text="%cameraProfilesHelp.captureHeight" />
-            </tooltip>
-        </RestrictedNumberField>
-        <Label text="%cameraProfiles.captureWidth" styleClass="colon, preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-        <RestrictedNumberField fx:id="captureWidth" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-            <styleClass>
-                <String fx:value="preferenceControl" />
-            </styleClass>
-            <tooltip>
-                <HideableTooltip text="%cameraProfilesHelp.captureWidth" />
-            </tooltip>
-        </RestrictedNumberField>
-        <Label text="%cameraProfiles.lockFocus" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-        <CheckBox fx:id="lockFocus" GridPane.columnIndex="1" GridPane.rowIndex="3">
-            <tooltip>
-               <HideableTooltip text="%cameraProfilesHelp.lockFocus" />
-           </tooltip>
-        </CheckBox>
-        <Label text="%cameraProfiles.focusValue" styleClass="colon, preferenceControl" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-        <RestrictedNumberField fx:id="focusValue" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
-           <styleClass>
-               <String fx:value="preferenceControl" />
-           </styleClass>
-           <tooltip>
-               <HideableTooltip text="%cameraProfilesHelp.focusValue" />
-           </tooltip>
-        </RestrictedNumberField>
-        <!-- Time-lapse specific settings section -->
-        <Label alignment="CENTER" text="%cameraProfiles.timelapse" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="4">
-            <styleClass>
-                <String fx:value="filamentLibTitle" />
-                <String fx:value="preferenceControl" />
-            </styleClass>
-        </Label>
-        <Label text="%cameraProfiles.headLight" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-        <CheckBox fx:id="headLight" GridPane.columnIndex="1" GridPane.rowIndex="5">
-            <tooltip>
-               <HideableTooltip text="%cameraProfilesHelp.headLight" />
-           </tooltip>
-        </CheckBox>
-        <Label text="%cameraProfiles.ambientLight" styleClass="colon, preferenceControl" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-        <CheckBox fx:id="ambientLight" GridPane.columnIndex="1" GridPane.rowIndex="6">
-            <tooltip>
-               <HideableTooltip text="%cameraProfilesHelp.ambientLight" />
-           </tooltip>
-        </CheckBox>
-        <!-- Camera test section -->
-        <Label alignment="CENTER" text="%cameraProfiles.testCamera" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="7">
-            <styleClass>
-                <String fx:value="filamentLibTitle" />
-                <String fx:value="preferenceControl" />
-            </styleClass>
-        </Label>
-        <ComboBox fx:id="cmbCameraSelection" prefWidth="150.0" GridPane.columnIndex="0" GridPane.rowIndex="8">
-            <styleClass>
-               <String fx:value="cmbPrintProfile" />
-               <String fx:value="cmbCleanCombo" />
-            </styleClass>
-        </ComboBox>
-        <Button fx:id="testCameraButton" mnemonicParsing="false" onAction="#testSelectedCamera" text="%cameraProfiles.testCamera" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-    </children>
-</GridPane>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <GridPane id="AnchorPane" prefWidth="600.0" stylesheets="@../../css/JMetroDarkTheme.css">
+          <columnConstraints>
+              <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+              <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+              <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+              <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+            <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
+          </columnConstraints>
+          <rowConstraints>
+              <RowConstraints />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+              <RowConstraints />
+              <RowConstraints />
+              <RowConstraints />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" />
+              <RowConstraints />
+              <RowConstraints />
+              <RowConstraints />
+              <RowConstraints />
+            <RowConstraints />
+          </rowConstraints>
+          <children>
+              <!-- General camera settings section -->
+              <RestrictedComboBox fx:id="cmbCameraProfile" directorySafeName="true" maxLength="24" prefWidth="150.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="0" GridPane.columnSpan="2147483647" GridPane.rowIndex="0">
+                  <styleClass>
+                     <String fx:value="cmbPrintProfile" />
+                     <String fx:value="cmbCleanCombo" />
+                  </styleClass>
+               <GridPane.margin>
+                  <Insets right="5.0" />
+               </GridPane.margin>
+              </RestrictedComboBox>
+              <Label alignment="CENTER" text="%cameraProfiles.general" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="5">
+                  <styleClass>
+                      <String fx:value="filamentLibTitle" />
+                      <String fx:value="preferenceControl" />
+                  </styleClass>
+              </Label>
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureHeight" GridPane.columnIndex="3" GridPane.rowIndex="7" />
+              <RestrictedNumberField fx:id="captureHeight" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="4" GridPane.rowIndex="7">
+                  <styleClass>
+                      <String fx:value="preferenceControl" />
+                  </styleClass>
+                  <tooltip>
+                      <HideableTooltip text="%cameraProfilesHelp.captureHeight" />
+                  </tooltip>
+              </RestrictedNumberField>
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureWidth" GridPane.rowIndex="7" />
+              <RestrictedNumberField fx:id="captureWidth" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                  <styleClass>
+                      <String fx:value="preferenceControl" />
+                  </styleClass>
+                  <tooltip>
+                      <HideableTooltip text="%cameraProfilesHelp.captureWidth" />
+                  </tooltip>
+              </RestrictedNumberField>
+              <!-- Time-lapse specific settings section -->
+              <Label alignment="CENTER" text="%cameraProfiles.timelapse" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="1">
+                  <styleClass>
+                      <String fx:value="filamentLibTitle" />
+                      <String fx:value="preferenceControl" />
+                  </styleClass>
+              </Label>
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.headLightOn" GridPane.rowIndex="2" />
+              <CheckBox fx:id="headLightOn" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                  <tooltip>
+                     <HideableTooltip text="%cameraProfilesHelp.headLightOn" />
+                 </tooltip>
+              </CheckBox>
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.ambientLightOn" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+              <CheckBox fx:id="ambientLightOn" GridPane.columnIndex="4" GridPane.rowIndex="2">
+                  <tooltip>
+                     <HideableTooltip text="%cameraProfilesHelp.ambientLightOn" />
+                 </tooltip>
+              </CheckBox>
+            <Label alignment="CENTER" text="%cameraProfiles.controls" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="8">
+               <styleClass>
+                  <String fx:value="filamentLibTitle" />
+                  <String fx:value="preferenceControl" />
+               </styleClass>
+            </Label>
+            <RestrictedComboBox fx:id="cmbCameraName" directorySafeName="true" editable="true" maxLength="24" prefWidth="150.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
+               <styleClass>
+                  <String fx:value="cmbPrintProfile" />
+                  <String fx:value="cmbCleanCombo" />
+               </styleClass>
+            </RestrictedComboBox>
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.cameraName" GridPane.rowIndex="6" />
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.moveBeforeSnap" GridPane.rowIndex="3" />
+            <CheckBox fx:id="moveBeforeSnapshot" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <tooltip>
+                  <HideableTooltip text="%cameraProfilesHelp.moveBeforeSnapshot" />
+               </tooltip>
+            </CheckBox>
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.moveToX" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+            <RestrictedNumberField fx:id="moveToX" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" styleClass="preferenceControl" GridPane.columnIndex="4" GridPane.rowIndex="3">
+               <tooltip>
+                  <HideableTooltip text="%cameraProfilesHelp.captureWidth" />
+               </tooltip>
+            </RestrictedNumberField>
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.moveToY" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+            <RestrictedNumberField fx:id="moveToY" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" styleClass="preferenceControl" GridPane.columnIndex="4" GridPane.rowIndex="4">
+               <tooltip>
+                  <HideableTooltip text="%cameraProfilesHelp.captureWidth" />
+               </tooltip>
+            </RestrictedNumberField>
+          </children>
+      </GridPane>
+      <GridPane fx:id="controlGrid">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <TextField GridPane.rowIndex="1" />
+            <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label styleClass="preferenceControl" text="%cameraProfiles.controlName" GridPane.halignment="CENTER" />
+            <Label styleClass="preferenceControl" text="%cameraProfiles.controlValue" GridPane.columnIndex="1" GridPane.halignment="CENTER" />
+         </children>
+      </GridPane>
+   </children>
+</VBox>

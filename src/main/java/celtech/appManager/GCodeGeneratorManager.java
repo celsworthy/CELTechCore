@@ -8,12 +8,16 @@ import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.CameraProfileContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
+import celtech.roboxbase.configuration.fileRepresentation.TimelapseSettings;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
@@ -409,16 +413,24 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
 
                             Vector3D centreOfPrintedObject = centreCalc.getResult();
 
+                            TimelapseSettingsData timelapseSettings = project.getTimelapseSettings();
                             CameraTriggerData cameraTriggerData = null;
-
-                            if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
+                            
+                            if (currentPrinter != null &&
+                                currentPrinter.getCommandInterface() instanceof RoboxRemoteCommandInterface &&
+                                timelapseSettings.isTimelapseEnabled())
                             {
-                                cameraTriggerData = new CameraTriggerData(
-                                        Lookup.getUserPreferences().isTimelapseTurnOffHeadLights(),
-                                        Lookup.getUserPreferences().isTimelapseTurnOffLED(),
-                                        Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
-                                        Lookup.getUserPreferences().getTimelapseXMove(),
-                                        Lookup.getUserPreferences().getTimelapseYMove());
+                                Optional<CameraTriggerData> ctd = timelapseSettings.getTimelapseProfile()
+                                    .map((profile) -> { return new CameraTriggerData(!profile.isHeadLightOn(),
+                                                                                     !profile.isAmbientLightOn(),
+                                                                                     false,
+                                                                                     0,
+                                                                                     0);
+                                                      });
+                                // Clunky adaption to existing interface -
+                                // ideally, the optional would be passed into PrintableMeshes.
+                                if (ctd.isPresent())
+                                    cameraTriggerData = ctd.get();
                             }
 
                             return new PrintableMeshes(
@@ -433,7 +445,7 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                                     slicerType,
                                     centreOfPrintedObject,
                                     Lookup.getUserPreferences().isSafetyFeaturesOn(),
-                                    Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
+                                    cameraTriggerData != null,
                                     cameraTriggerData);
                         };
 
@@ -747,6 +759,11 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
         }
     }
     
+    @Override
+    public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings) {
+        reactToChange(false);
+    }
+
     public void shutdown()
     {
         slicingExecutorService.shutdown();

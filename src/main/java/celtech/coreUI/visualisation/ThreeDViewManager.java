@@ -6,6 +6,7 @@ import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
+import celtech.appManager.TimelapseSettingsData;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.coreUI.LayoutSubmode;
@@ -1540,6 +1541,11 @@ public class ThreeDViewManager implements Project.ProjectChangesListener, Screen
 
     @Override
     public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
+    {
+    }
+
+    @Override
+    public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
     {
     }
 

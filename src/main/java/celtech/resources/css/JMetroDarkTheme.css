@@ -2669,7 +2669,15 @@ color-picker-label .text-field {
 * Settings Inset Panel
 */
 #settingsInsetRoot {
-    -fx-background-color: mid_grey_solid;
+    -fx-background-color: mid_grey_50;
+    -fx-font-family: "Source Sans Pro";
+}
+
+/**
+* Timelapse Inset Panel
+*/
+#timelapseInsetRoot {
+    -fx-background-color: mid_grey_50;
     -fx-font-family: "Source Sans Pro";
 }
 

@@ -17,7 +17,11 @@ import celtech.modelcontrol.ScaleableThreeD;
 import celtech.modelcontrol.ScaleableTwoD;
 import celtech.modelcontrol.Translateable;
 import celtech.modelcontrol.TranslateableTwoD;
+import celtech.roboxbase.BaseLookup;
+import celtech.roboxbase.camera.CameraInfo;
 import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.CameraProfileContainer;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -31,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -71,6 +76,8 @@ public abstract class Project
     protected BooleanProperty customSettingsNotChosen;
 
     protected final PrinterSettingsOverrides printerSettings;
+    
+    protected final TimelapseSettingsData timelapseSettings;
 
     protected final StringProperty projectNameProperty;
     protected ObjectProperty<Date> lastModifiedDate;
@@ -119,6 +126,14 @@ public abstract class Project
                 {
                     projectModified();
                     fireWhenPrinterSettingsChanged(printerSettings);
+                });
+
+        timelapseSettings = new TimelapseSettingsData();
+        timelapseSettings.getDataChanged().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+                {
+                    projectModified();
+                    fireWhenTimelapseSettingsChanged(timelapseSettings);
                 });
 
         Lookup.getUserPreferences().getSlicerTypeProperty().addListener(
@@ -236,6 +251,11 @@ public abstract class Project
         return printerSettings;
     }
 
+    public final TimelapseSettingsData getTimelapseSettings()
+    {
+        return timelapseSettings;
+    }
+
     public abstract void addModel(ProjectifiableThing projectifiableThing);
 
     public abstract void removeModels(Set<ProjectifiableThing> projectifiableThings);
@@ -264,7 +284,8 @@ public abstract class Project
     {
         return customSettingsNotChosen;
     }
-    
+
+
     public ObservableList<Boolean> getUsedExtruders(Printer printer)
     {
         List<Boolean> localUsedExtruders = new ArrayList<>();
@@ -272,6 +293,36 @@ public abstract class Project
         localUsedExtruders.add(false);
         
         return FXCollections.observableArrayList(localUsedExtruders);
+    }
+    
+    protected void loadTimelapseSettings(ProjectFile pFile) 
+    {
+        timelapseSettings.setTimelapseTriggerEnabled(pFile.isTimelapseTriggerEnabled());
+        String profileName = pFile.getTimelapseProfileName();
+        if (profileName.isBlank())
+            timelapseSettings.setTimelapseProfile(Optional.empty());
+        else {
+            timelapseSettings.setTimelapseProfile(Optional.ofNullable(CameraProfileContainer.getInstance().getProfileByName(profileName)));
+        }
+        String cameraID = pFile.getTimelapseCameraID();
+        Optional<CameraInfo> camera = Optional.empty();
+        if (!cameraID.isBlank()) {
+            String[] fields = cameraID.split(":");
+            if (fields.length == 2) {
+                String cameraName = fields[0];
+                try {
+                    int cameraNumber = Integer.parseInt(fields[1]);
+                    camera = BaseLookup.getConnectedCameras()
+                                       .stream()
+                                       .filter(c -> c.getCameraName().equals(cameraName) &&
+                                                    c.getCameraNumber() == cameraNumber)
+                                       .findFirst();
+                }
+                catch (NumberFormatException ex) {
+                }
+            }
+        }
+        timelapseSettings.setTimelapseCamera(camera);
     }
 
     /**
@@ -325,6 +376,14 @@ public abstract class Project
          * @param printerSettings
          */
         void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings);
+
+        /**
+         * This should be fired whenever the TimelapseSettings of the project
+         * changes.
+         *
+         * @param timelapseSettings
+         */
+        void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings);
     }
 
     public abstract void autoLayout();
@@ -588,6 +647,8 @@ public abstract class Project
     abstract protected void fireWhenModelsTransformed(Set<ProjectifiableThing> projectifiableThings);
 
     abstract protected void fireWhenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings);
+
+    abstract protected void fireWhenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings);
 
     public int getNumberOfProjectifiableElements()
     {
