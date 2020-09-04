@@ -8,42 +8,27 @@ import celtech.appManager.Project;
 import celtech.appManager.TimelapseSettingsData;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.controllers.ProjectAwareController;
-import celtech.utils.CameraInfoStringConverter;
+import celtech.coreUI.controllers.utilityPanels.SnapshotController;
 import celtech.modelcontrol.ProjectifiableThing;
-import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.camera.CameraInfo;
-import celtech.roboxbase.comms.DetectedServer;
 import celtech.roboxbase.comms.RemoteDetectedPrinter;
 import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.configuration.datafileaccessors.CameraProfileContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
 import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
-import celtech.roboxbase.configuration.fileRepresentation.CameraSettings;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.printerControl.model.Printer;
-import celtech.utils.CameraProfileStringConverter;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -53,12 +38,9 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian Hudson @ Liberty Systems Limited
  */
-public class TimelapseInsetPanelController implements Initializable, ProjectAwareController, ModelContainerProject.ProjectChangesListener
+public class TimelapseInsetPanelController extends SnapshotController implements Initializable, ProjectAwareController, ModelContainerProject.ProjectChangesListener
 {
-
     private final Stenographer STENO = StenographerFactory.getStenographer(TimelapseInsetPanelController.class.getName());
-
-    private static final RoboxProfileSettingsContainer ROBOX_PROFILE_SETTINGS_CONTAINER = RoboxProfileSettingsContainer.getInstance();
     
     @FXML
     private GridPane timelapseInsetRoot;
@@ -67,38 +49,22 @@ public class TimelapseInsetPanelController implements Initializable, ProjectAwar
     private CheckBox timelapseEnableButton;
 
     @FXML
-    private ComboBox<CameraProfile> cameraProfileChooser;
-
-    @FXML
     private Button editCameraProfileButton;
 
-    @FXML
-    private ComboBox<CameraInfo> cameraChooser;
-
-    @FXML
-    private Button testCameraButton;
-
-    @FXML
-    private ImageView snapshotView;
-    private Task<Void> snapshotTask = null;
     private Printer currentPrinter = null;
-    private DetectedServer currentServer = null;
     private Project currentProject = null;
-    private CameraInfo selectedCamera = null;
-    
     
     private final ChangeListener<Printer> selectedPrinterChangeListener = 
             (ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) -> {
         whenPrinterChanged(newValue);
     };
 
-    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
-        {
-            setPanelVisibility();
-        }
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = (ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue) -> {
+        setPanelVisibility();
+    };
+
+    private final ChangeListener<Boolean> cameraDetectedChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+        setPanelVisibility();
     };
 
     @FXML
@@ -107,12 +73,6 @@ public class TimelapseInsetPanelController implements Initializable, ProjectAwar
         DisplayManager.getInstance().showAndSelectCameraProfile(cameraProfileChooser.getValue());
     }
 
-    @FXML
-    void testCamera(ActionEvent event)
-    {
-        takeSnapshot();
-    }
-    
     @FXML
     void timelapseEnableAction(ActionEvent event)
     {
@@ -124,67 +84,15 @@ public class TimelapseInsetPanelController implements Initializable, ProjectAwar
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
+        viewWidthFixed = false;
+        super.initialize(url,rb);
         try {
             timelapseEnableButton.setSelected(false);
-            // Disable all elements as they are not all in a common sub-panel.
-            //cameraChooser.disableProperty().bind(timelapseEnableButton.selectedProperty().not());
-            //cameraProfileChooser.disableProperty().bind(timelapseEnableButton.selectedProperty().not());
-            //editCameraProfileButton.disableProperty().bind(timelapseEnableButton.selectedProperty().not());
-            //testCameraButton.disableProperty().bind(timelapseEnableButton.selectedProperty().not());
             
-            cameraProfileChooser.setConverter(new CameraProfileStringConverter(cameraProfileChooser::getItems));
-
-            cameraProfileChooser.valueProperty().addListener((observable, oldValue, newValue) -> {
-                if (currentProject != null) {
-                    currentProject.getTimelapseSettings().setTimelapseProfile(Optional.ofNullable(newValue));
-                    populateCameraChooser();
-                    if (newValue != null) {
-                        cameraChooser.getItems()
-                                     .stream()
-                                     .filter(ci -> newValue.getCameraName().isBlank() ||
-                                                   ci.getCameraName().equalsIgnoreCase(newValue.getCameraName()))
-                                     .findFirst()
-                                     .ifPresentOrElse(cameraChooser::setValue, 
-                                                      () -> { cameraChooser.setValue(cameraChooser.getItems().size() > 0 ? cameraChooser.getItems().get(0) : null); });
-                    }
-                    else
-                        cameraChooser.setValue(cameraChooser.getItems().size() > 0 ? cameraChooser.getItems().get(0) : null);
-                }
-            });
-
             DisplayManager.getInstance().libraryModeEnteredProperty().addListener((observable, oldValue, enteredLibraryMode) -> {
                 if (!enteredLibraryMode)
-                {
-                    String selectedProfileName = cameraProfileChooser.getValue().getProfileName();
-                    populateCameraProfileChooser();
-                    List<CameraProfile> itemList = cameraProfileChooser.getItems();
-                    itemList.stream()
-                            .filter(p -> p.getProfileName().equals(selectedProfileName))
-                            .findAny()
-                            .ifPresentOrElse(cameraProfileChooser::setValue, 
-                                             () -> { cameraProfileChooser.setValue(CameraProfileContainer.getInstance().getDefaultProfile()); });
-                }
+                    repopulateCameraProfileChooser();
             });
-
-            cameraChooser.setConverter(new CameraInfoStringConverter(cameraChooser::getItems));
-            BaseLookup.getConnectedCameras().addListener((ListChangeListener.Change<? extends CameraInfo> c) -> {
-                repopulateCameraChooser();
-            });
-
-            cameraChooser.valueProperty().addListener((observable, oldValue, newValue) -> {
-                selectedCamera = newValue;
-                if (currentProject != null) {
-                    currentProject.getTimelapseSettings().setTimelapseCamera(Optional.ofNullable(newValue));
-                    if (selectedCamera == null)
-                        snapshotView.setImage(null);
-                    else
-                        takeSnapshot();
-                }
-            });
-
-            if (cameraChooser.getItems().size() > 0) {
-                cameraChooser.setValue(cameraChooser.getItems().get(0));
-            }
 
             Lookup.getSelectedPrinterProperty().addListener(selectedPrinterChangeListener);
 
@@ -196,71 +104,58 @@ public class TimelapseInsetPanelController implements Initializable, ProjectAwar
             ex.printStackTrace();
         }
     }
-    
+
+    @Override
+    protected void selectProfile(CameraProfile profile) {
+        super.selectProfile(profile);
+        if (currentProject != null)
+            currentProject.getTimelapseSettings().setTimelapseProfile(Optional.ofNullable(profile));
+    }
+
+    @Override
+    protected void selectCamera(CameraInfo camera) {
+        super.selectCamera(camera);
+        if (currentProject != null)
+            currentProject.getTimelapseSettings().setTimelapseCamera(Optional.ofNullable(camera));
+    }
+
     private void whenPrinterChanged(Printer printer)
     {
-        if (currentPrinter != null)
+        if (currentPrinter != null && connectedServer != null)
         {
+            connectedServer.cameraDetectedProperty().removeListener(cameraDetectedChangeListener);
         }
 
         currentPrinter = printer;
         if (currentPrinter != null && 
             currentPrinter.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
-            currentServer = ((RemoteDetectedPrinter)currentPrinter.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo();
-            repopulateCameraProfileChooser();
-            repopulateCameraChooser();
+            connectedServer = ((RemoteDetectedPrinter)currentPrinter.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo();
+            connectedServer.cameraDetectedProperty().addListener(cameraDetectedChangeListener);
         }
         else
-            currentServer = null;
+            connectedServer = null;
         
         setPanelVisibility();
-    }
-
-    private void repopulateCameraChooser() {
-        CameraInfo chosenCamera = cameraChooser.getValue();
-        populateCameraChooser();
-        cameraChooser.getItems()
-                     .stream()
-                     .filter(ci -> ci.equals(chosenCamera))
-                     .findAny()
-                     .ifPresentOrElse(cameraChooser::setValue, 
-                                      () -> { cameraChooser.setValue(cameraChooser.getItems().size() > 0 ? cameraChooser.getItems().get(0) : null); });
-    }
-
-    private void populateCameraChooser() {
-        String cameraName = (cameraProfileChooser.getValue() != null ? cameraProfileChooser.getValue().getCameraName()
-                                                                     : "");
-        if (currentServer != null) {
-            ObservableList<CameraInfo> itemList = BaseLookup.getConnectedCameras().stream()
-                    .filter(cc -> cc.getServer() == currentServer &&
-                                  (cameraName.isBlank() ||
-                                   cameraName.equalsIgnoreCase(cc.getCameraName())))
-                    .collect(Collectors.toCollection(FXCollections::observableArrayList))
-                    .sorted();
-            cameraChooser.setItems(itemList);
-        }
-        else
-        {
-            cameraChooser.setItems(FXCollections.emptyObservableList());
-        }
     }
 
     private void setPanelVisibility()
     {
         if (ApplicationStatus.getInstance().modeProperty().get() == ApplicationMode.SETTINGS &&
-            currentServer != null &&
-            currentServer.getCameraDetected())
+            connectedServer != null &&
+            connectedServer.getCameraDetected())
         {
             timelapseInsetRoot.setVisible(true);
+            timelapseInsetRoot.setManaged(true);
             timelapseInsetRoot.setMouseTransparent(false);
             if (snapshotTask == null) {
                 takeSnapshot();
             }
-            populateCameraProfileChooser();
-            populateCameraChooser();
+            repopulateCameraProfileChooser();
+            repopulateCameraChooser();
         }
         else {
             timelapseInsetRoot.setVisible(false);
+            timelapseInsetRoot.setManaged(false);
             timelapseInsetRoot.setMouseTransparent(true);
             if (snapshotTask != null) {
                 snapshotTask.cancel();
@@ -364,75 +259,5 @@ public class TimelapseInsetPanelController implements Initializable, ProjectAwar
         Lookup.getSelectedPrinterProperty().removeListener(selectedPrinterChangeListener);
 
         ApplicationStatus.getInstance().modeProperty().removeListener(applicationModeChangeListener);
-    }
-
-    private void populateCameraProfileChooser() {
-        // Get the names of all the cameras on the current server.
-        if (currentServer != null) {
-            List<String> cameraNames = BaseLookup.getConnectedCameras()
-                                                 .stream()
-                                                 .filter(cc -> cc.getServer() == currentServer)
-                                                 .map(CameraInfo::getCameraName)
-                                                 .distinct()
-                                                 .collect(Collectors.toList());
-            Map<String, CameraProfile> cameraProfilesMap = CameraProfileContainer.getInstance().getCameraProfilesMap();
-            ObservableList<CameraProfile> items = cameraProfilesMap.values()
-                                        .stream()
-                                        .filter(pp -> pp.getCameraName().isBlank() ||
-                                                      cameraNames.contains(pp.getCameraName()))
-                                        .collect(Collectors.toCollection(FXCollections::observableArrayList));
-            cameraProfileChooser.setItems(items);
-        }
-        else
-            cameraProfileChooser.setItems(FXCollections.emptyObservableList());
-    }
-    
-    private void repopulateCameraProfileChooser() {
-        CameraProfile selectedProfile = cameraProfileChooser.getValue();
-        populateCameraProfileChooser();
-        // Interesting mix of programming styles.
-        if (selectedProfile != null) {
-            String selectedProfileName = selectedProfile.getProfileName();
-            List<CameraProfile> itemList = cameraProfileChooser.getItems();
-            itemList.stream()
-                    .filter(p -> p.getProfileName().equals(selectedProfileName))
-                    .findAny()
-                    .ifPresentOrElse(cameraProfileChooser::setValue, 
-                                     () -> { cameraProfileChooser.setValue(CameraProfileContainer.getInstance().getDefaultProfile()); });
-        }
-        else
-            cameraProfileChooser.setValue(CameraProfileContainer.getInstance().getDefaultProfile());
-    }
-    
-    private void takeSnapshot()
-    {
-        if (snapshotTask != null) {
-            snapshotTask.cancel();
-            snapshotTask = null;
-        }
-        CameraProfile selectedProfile = cameraProfileChooser.getValue();
-        if (selectedProfile != null && selectedCamera != null) {
-            CameraSettings snapshotSettings = new CameraSettings(selectedProfile, selectedCamera);
-            snapshotTask = new Task<Void>() {
-                @Override
-                protected Void call() throws Exception {
-                    DetectedServer server = snapshotSettings.getCamera().getServer();
-                    while (!isCancelled()) {
-                        Image snapshotImage = server.takeCameraSnapshot(snapshotSettings);
-                        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
-                            if (selectedCamera == snapshotSettings.getCamera()) {
-                                snapshotView.setImage(snapshotImage);
-                            }
-                        });
-                        if (!isCancelled()) {
-                            Thread.sleep(500);
-                        }
-                    }
-                    return null;
-                }
-            };
-            Thread snapshotThread = new Thread(snapshotTask);
-            snapshotThread.start();
-        }
     }
 }

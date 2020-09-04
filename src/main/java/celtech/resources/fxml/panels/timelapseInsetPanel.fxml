@@ -14,7 +14,7 @@
 <columnConstraints>
 <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="20.0" />
 </columnConstraints>
 <rowConstraints>
 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
@@ -26,11 +26,7 @@
 </ComboBox>
 <Button fx:id="editCameraProfileButton" alignment="CENTER" contentDisplay="TEXT_ONLY" graphicTextGap="0.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="10.0" mnemonicParsing="false" onAction="#editCameraProfile" style="-fx-background-color: light_grey; -fx-padding: 2;" text="..." textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 <ComboBox fx:id="cameraChooser" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="100.0" promptText="%timelapsePanel.selectCameraLabel" styleClass="cmbCleanCombo" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-<Button fx:id="testCameraButton" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" maxWidth="1.7976931348623157E308" minHeight="64.0" minWidth="64.0" mnemonicParsing="false" onAction="#testCamera" style="-fx-background-color: light_grey; -fx-padding: 0; -fx-border-width: 0;" text="%timelapsePanel.testCamera" textAlignment="CENTER" GridPane.columnIndex="2" GridPane.rowSpan="3">
-         <graphic>
-            <ImageView fx:id="snapshotView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-         </graphic>
-      </Button>
+      <ImageView fx:id="snapshotView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.rowSpan="2147483647" />
 <Label maxHeight="1.7976931348623157E308" minWidth="100.0" text="%timelapsePanel.enable" GridPane.halignment="RIGHT" />
 <CheckBox fx:id="timelapseEnableButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" onAction="#timelapseEnableAction" GridPane.columnIndex="1" GridPane.halignment="LEFT" />
 </children>

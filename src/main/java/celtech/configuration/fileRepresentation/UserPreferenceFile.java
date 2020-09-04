@@ -13,7 +13,6 @@ import libertysystems.stenographer.LogLevel;
  * @author Ian
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class UserPreferenceFile
 {
 
@@ -30,6 +29,7 @@ public class UserPreferenceFile
     private boolean showDiagnostics = false;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
+    private boolean showSnapshot = true;
     private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
     private boolean timelapseTriggerEnabled = false;
@@ -158,6 +158,11 @@ public class UserPreferenceFile
         return showAdjustments;
     }
 
+    public boolean isShowSnapshot()
+    {
+        return showSnapshot;
+    }
+
     public boolean isAutoGCodePreview()
     {
         return autoGCodePreview;
@@ -176,6 +181,11 @@ public class UserPreferenceFile
     public void setShowAdjustments(boolean showAdjustments)
     {
         this.showAdjustments = showAdjustments;
+    }
+
+    public void setShowSnapshot(boolean showSnapshot)
+    {
+        this.showSnapshot = showSnapshot;
     }
 
     public void setAutoGCodePreview(boolean autoGCodePreview)
@@ -307,6 +317,7 @@ public class UserPreferenceFile
         setShowDiagnostics(userPreferences.getShowDiagnostics());
         setShowGCode(userPreferences.getShowGCode());
         setShowAdjustments(userPreferences.getShowAdjustments());
+        setShowSnapshot(userPreferences.getShowSnapshot());
         setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());

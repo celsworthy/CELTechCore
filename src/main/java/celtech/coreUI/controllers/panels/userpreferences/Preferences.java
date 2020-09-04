@@ -95,6 +95,10 @@ public class Preferences
                 "preferences.showAdjustments");
         showAdjustmentsPref.disableProperty(advancedModePref.getSelectedProperty().not());
         
+        TickBoxPreference showSnapshotPref = new TickBoxPreference(userPreferences.showSnapshotProperty(),
+                "preferences.showSnapshot");
+        showSnapshotPref.disableProperty(advancedModePref.getSelectedProperty().not());
+        
         advancedModePref.getSelectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -103,6 +107,7 @@ public class Preferences
                 showDiagnosticsPref.getSelectedProperty().set(t1);
                 showGCodePref.getSelectedProperty().set(t1);
                 showAdjustmentsPref.getSelectedProperty().set(t1);
+                showSnapshotPref.getSelectedProperty().set(t1);
             }
         });
 
@@ -110,6 +115,7 @@ public class Preferences
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);
         preferences.add(showAdjustmentsPref);
+        preferences.add(showSnapshotPref);
  
         return preferences;
     }

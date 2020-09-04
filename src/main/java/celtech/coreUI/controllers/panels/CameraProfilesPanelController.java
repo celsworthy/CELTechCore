@@ -74,15 +74,6 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     private RestrictedNumberField captureWidth;
     
     @FXML
-    private CheckBox moveBeforeSnapshot;
-    
-    @FXML
-    private RestrictedNumberField moveToX;
-    
-    @FXML
-    private RestrictedNumberField moveToY;
-
-    @FXML
     private CheckBox headLightOn;
     
     @FXML
@@ -121,9 +112,6 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         cmbCameraProfile.valueProperty().addListener((observable, oldValue, newValue) -> {
             selectCameraProfile(newValue);
         });
-        
-        moveToX.disableProperty().bind(moveBeforeSnapshot.selectedProperty().not());
-        moveToY.disableProperty().bind(moveBeforeSnapshot.selectedProperty().not());
         
         DisplayManager.getInstance().libraryModeEnteredProperty().addListener((observable, oldValue, enteredLibraryMode) -> {
             if (enteredLibraryMode)
@@ -225,9 +213,6 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         captureWidth.setValue(cameraProfile.getCaptureWidth());
         headLightOn.selectedProperty().set(cameraProfile.isHeadLightOn());
         ambientLightOn.selectedProperty().set(cameraProfile.isAmbientLightOn());
-        moveBeforeSnapshot.selectedProperty().set(cameraProfile.isMoveBeforeSnapshot());
-        moveToX.setValue(cameraProfile.getMoveToX());
-        moveToY.setValue(cameraProfile.getMoveToY());
         
         String cameraName = cameraProfile.getCameraName();
         if (cameraName.isBlank())
@@ -300,9 +285,6 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         captureWidth.valueChangedProperty().addListener(dirtyFieldListener);
         headLightOn.selectedProperty().addListener(dirtyFieldListener);
         ambientLightOn.selectedProperty().addListener(dirtyFieldListener);
-        moveBeforeSnapshot.selectedProperty().addListener(dirtyFieldListener);
-        moveToX.valueChangedProperty().addListener(dirtyFieldListener);
-        moveToY.valueChangedProperty().addListener(dirtyFieldListener);
         cmbCameraName.valueProperty().addListener(dirtyFieldListener);
     }
     
@@ -312,9 +294,6 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         currentCameraProfile.setCaptureWidth(captureWidth.getAsInt());
         currentCameraProfile.setHeadLightOn(headLightOn.selectedProperty().get());
         currentCameraProfile.setAmbientLightOn(ambientLightOn.selectedProperty().get());
-        currentCameraProfile.setMoveBeforeSnapshot(moveBeforeSnapshot.selectedProperty().get());
-        currentCameraProfile.setMoveToX(moveToX.getAsInt());
-        currentCameraProfile.setMoveToY(moveToY.getAsInt());
         String cameraName = cmbCameraName.getValue().strip();
         if (cameraName.equalsIgnoreCase(ANY_CAMERA_NAME))
             cameraName = "";

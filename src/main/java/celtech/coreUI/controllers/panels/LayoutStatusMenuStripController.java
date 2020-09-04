@@ -32,7 +32,10 @@ import celtech.roboxbase.PrinterColourMap;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
 import celtech.roboxbase.camera.CameraInfo;
+import celtech.roboxbase.comms.DetectedServer;
+import celtech.roboxbase.comms.RemoteDetectedPrinter;
 import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
@@ -370,6 +373,15 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 Optional<CameraProfile> profileOpt = tlsd.getTimelapseProfile();
                 cameraData = infoOpt.flatMap((ci) -> profileOpt.map((cp) -> new CameraSettings(cp, ci)));
                 if (cameraData.isPresent()) {
+                    // As camera is present, must be a remote printer.
+                    if (printer.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
+                        DetectedServer printerServer = ((RemoteDetectedPrinter)printer.getCommandInterface()
+                                                                                        .getPrinterHandle())
+                                                                                        .getServerPrinterIsAttachedTo();
+                
+                        // Use a new camera settings so it can be changed with affecting the printableProject.
+                        printerServer.cameraSettingsProperty().set(new CameraSettings(cameraData.get()));
+                    }
                     CameraProfile profile = profileOpt.get();
                     cameraTriggerData = new CameraTriggerData(
                         !profile.isHeadLightOn(),

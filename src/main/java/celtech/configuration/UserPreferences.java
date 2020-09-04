@@ -46,6 +46,7 @@ public class UserPreferences
     private final BooleanProperty showDiagnostics = new SimpleBooleanProperty(true);
     private final BooleanProperty showGCode = new SimpleBooleanProperty(true);
     private final BooleanProperty showAdjustments = new SimpleBooleanProperty(true);
+    private final BooleanProperty showSnapshot = new SimpleBooleanProperty(true);
     private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
@@ -134,6 +135,7 @@ public class UserPreferences
         showDiagnostics.set(userPreferenceFile.isShowDiagnostics());
         showGCode.set(userPreferenceFile.isShowGCode());
         showAdjustments.set(userPreferenceFile.isShowAdjustments());
+        showSnapshot.set(userPreferenceFile.isShowSnapshot());
         autoGCodePreview.set(userPreferenceFile.isAutoGCodePreview());
         currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
@@ -157,6 +159,7 @@ public class UserPreferences
         showDiagnostics.addListener(booleanChangeListener);
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
+        showSnapshot.addListener(booleanChangeListener);
         autoGCodePreview.addListener(enableAutoGCodePreviewChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
@@ -426,6 +429,21 @@ public class UserPreferences
     public void setShowAdjustments(boolean showAdjustments)
     {
         this.showAdjustments.set(showAdjustments);
+    }
+
+    public BooleanProperty showSnapshotProperty()
+    {
+        return showSnapshot;
+    }
+
+    public boolean getShowSnapshot()
+    {
+        return showSnapshot.get();
+    }
+
+    public void setShowSnapshot(boolean showSnapshot)
+    {
+        this.showSnapshot.set(showSnapshot);
     }
 
     public void setShowMetricUnits(boolean value)

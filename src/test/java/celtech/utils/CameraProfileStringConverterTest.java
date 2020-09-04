@@ -27,9 +27,6 @@ public class CameraProfileStringConverterTest {
         cp.setCaptureHeight(1080);
         cp.setCaptureWidth(1920);
         cp.setHeadLightOn(true);
-        cp.setMoveBeforeSnapshot(false);
-        cp.setMoveToX(0);
-        cp.setMoveToY(0);
         cp.setCameraName("Default");
         cp.setProfileName("Default");
         l.add(cp);
@@ -38,9 +35,6 @@ public class CameraProfileStringConverterTest {
         cp.setCaptureHeight(1080);
         cp.setCaptureWidth(1920);
         cp.setHeadLightOn(true);
-        cp.setMoveBeforeSnapshot(false);
-        cp.setMoveToX(0);
-        cp.setMoveToY(0);
         cp.setCameraName("Default");
         cp.setProfileName("Logitech 920");
         l.add(cp);
@@ -49,9 +43,6 @@ public class CameraProfileStringConverterTest {
         cp.setCaptureHeight(1080);
         cp.setCaptureWidth(1920);
         cp.setHeadLightOn(true);
-        cp.setMoveBeforeSnapshot(false);
-        cp.setMoveToX(0);
-        cp.setMoveToY(0);
         cp.setCameraName("Default");
         cp.setProfileName("Logitech StreamCam");
         l.add(cp);
