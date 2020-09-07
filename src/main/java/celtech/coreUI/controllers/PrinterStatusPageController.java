@@ -926,7 +926,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             resizePrinterDisplay(parentPanel);
         });
 
-        snapshotPanel = loadInsetPanel("snapshotPanel.fxml", "snapshotPanel.title",
+        snapshotPanel = loadInsetPanel("SnapshotPanel.fxml", "snapshotPanel.title",
                 Lookup.getUserPreferences().showSnapshotProperty(),
                 Lookup.getUserPreferences().showSnapshotProperty().and(selectedPrinterHasCamera), vBoxRight, 2);
         snapshotPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
