@@ -134,21 +134,9 @@ public class Preferences
         Preference timelapseTurnOffLEDPref = new TickBoxPreference(userPreferences.getTimelapseTurnOffLEDProperty(),
                 "preferences.timelapseTurnOffLED");
 
-        Preference timelapseMoveBeforeCapturePref = new TickBoxPreference(userPreferences.getTimelapseMoveBeforeCaptureProperty(),
-                "preferences.timelapseMoveBeforeCapture");
-
-        Preference timelapseXMovePref = new IntegerPreference(userPreferences.getTimelapseXMoveProperty(),
-                "preferences.timelapseXMove");
-
-        Preference timelapseYMovePref = new IntegerPreference(userPreferences.getTimelapseYMoveProperty(),
-                "preferences.timelapseYMove");
-
         preferences.add(timelapseTriggerEnabledPref);
         preferences.add(timelapseTurnOffHeadLightsPref);
         preferences.add(timelapseTurnOffLEDPref);
-        preferences.add(timelapseMoveBeforeCapturePref);
-        preferences.add(timelapseXMovePref);
-        preferences.add(timelapseYMovePref);
 
         return preferences;
     }

@@ -111,14 +111,14 @@ public class SnapshotPanelController extends SnapshotController
     @Override
     protected void selectProfile(CameraProfile profile) {
         super.selectProfile(profile);
-        if (connectedServer != null)
+        if (connectedServer != null && connectedServer.cameraSettingsProperty().get() != null)
             connectedServer.cameraSettingsProperty().get().setProfile(profile);
     }
     
     @Override
     protected void selectCamera(CameraInfo camera) {
         super.selectCamera(camera);
-        if (connectedServer != null)
+        if (connectedServer != null && connectedServer.cameraSettingsProperty().get() != null)
             connectedServer.cameraSettingsProperty().get().setCamera(camera);
     }
 }

@@ -15,7 +15,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <GridPane id="AnchorPane" hgap="5.0" prefWidth="600.0" stylesheets="@../../css/JMetroDarkTheme.css" vgap="5.0">
+      <GridPane id="AnchorPane" alignment="TOP_CENTER" hgap="5.0" prefWidth="600.0" stylesheets="@../../css/JMetroDarkTheme.css" vgap="5.0">
           <columnConstraints>
               <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
               <ColumnConstraints halignment="LEFT" hgrow="NEVER" percentWidth="25.0" />
@@ -25,17 +25,12 @@
           </columnConstraints>
           <rowConstraints>
               <RowConstraints />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" />
-              <RowConstraints />
-              <RowConstraints />
-              <RowConstraints />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" />
               <RowConstraints />
               <RowConstraints />
               <RowConstraints />
               <RowConstraints />
-            <RowConstraints />
+              <RowConstraints />
+              <RowConstraints />
           </rowConstraints>
           <children>
               <!-- General camera settings section -->
@@ -53,6 +48,9 @@
                       <String fx:value="filamentLibTitle" />
                       <String fx:value="preferenceControl" />
                   </styleClass>
+               <GridPane.margin>
+                  <Insets top="5.0" />
+               </GridPane.margin>
               </Label>
               <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureHeight" GridPane.columnIndex="3" GridPane.rowIndex="5" />
               <RestrictedNumberField fx:id="captureHeight" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="4" GridPane.rowIndex="5">
@@ -78,6 +76,9 @@
                       <String fx:value="filamentLibTitle" />
                       <String fx:value="preferenceControl" />
                   </styleClass>
+               <GridPane.margin>
+                  <Insets top="5.0" />
+               </GridPane.margin>
               </Label>
               <Label styleClass="colon, preferenceControl" text="%cameraProfiles.headLightOn" GridPane.rowIndex="2" />
               <CheckBox fx:id="headLightOn" GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -90,6 +91,9 @@
                   <String fx:value="filamentLibTitle" />
                   <String fx:value="preferenceControl" />
                </styleClass>
+               <GridPane.margin>
+                  <Insets top="5.0" />
+               </GridPane.margin>
             </Label>
             <RestrictedComboBox fx:id="cmbCameraName" directorySafeName="true" editable="true" maxLength="24" prefWidth="150.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
                <styleClass>

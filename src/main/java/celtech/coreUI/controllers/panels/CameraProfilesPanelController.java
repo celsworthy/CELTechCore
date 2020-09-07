@@ -108,6 +108,15 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
                                 .or(state.isEqualTo(State.CUSTOM)))));
         canCreateNew.bind(state.isNotEqualTo(State.NEW));
         canDelete.bind(state.isEqualTo(State.CUSTOM));
+
+        captureHeight.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        captureWidth.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        headLightOn.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        ambientLightOn.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        cmbCameraName.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        // controlSettingsManager handles disabling of it's grid, so it does
+        // not disable the titles.
+        // controlGrid.disableProperty().bind(state.isEqualTo(State.ROBOX));
         
         cmbCameraProfile.valueProperty().addListener((observable, oldValue, newValue) -> {
             selectCameraProfile(newValue);
@@ -195,10 +204,9 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
             updateValuesFromProfile(currentCameraProfile);
             selectedProfileName = currentCameraProfile.getProfileName();
             
-            controlSettingsManager.setControlSettings(currentCameraProfile.getControlSettings());
+            controlSettingsManager.setControlSettings(profile.getControlSettings(), profile.isSystemProfile());
             
-            State newState = profileName.equalsIgnoreCase(BaseConfiguration.defaultCameraProfileName)
-                    ? State.ROBOX : State.CUSTOM;
+            State newState = profile.isSystemProfile() ? State.ROBOX : State.CUSTOM;
             state.set(newState);
             isNameValid.set(true);
             isDirty.set(false);

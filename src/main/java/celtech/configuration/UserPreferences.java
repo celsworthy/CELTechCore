@@ -53,9 +53,6 @@ public class UserPreferences
     private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
     private final BooleanProperty timelapseTurnOffHeadLights = new SimpleBooleanProperty(true);
     private final BooleanProperty timelapseTurnOffLED = new SimpleBooleanProperty(false);
-    private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(true);
-    private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
-    private final IntegerProperty timelapseYMove = new SimpleIntegerProperty(0);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
     private final BooleanProperty autoGCodePreview = new SimpleBooleanProperty(true);
     private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
@@ -143,9 +140,6 @@ public class UserPreferences
         timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
         timelapseTurnOffHeadLights.set(userPreferenceFile.isTimelapseTurnOffHeadLights());
         timelapseTurnOffLED.set(userPreferenceFile.isTimelapseTurnOffLED());
-        timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
-        timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
-        timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
         loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
         customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
         customPrinterType.set(userPreferenceFile.getCustomPrinterType());
@@ -166,9 +160,6 @@ public class UserPreferences
         timelapseTriggerEnabled.addListener(booleanChangeListener);
         timelapseTurnOffHeadLights.addListener(booleanChangeListener);
         timelapseTurnOffLED.addListener(booleanChangeListener);
-        timelapseMoveBeforeCapture.addListener(booleanChangeListener);
-        timelapseXMove.addListener(numberChangeListener);
-        timelapseYMove.addListener(numberChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
         
@@ -459,51 +450,6 @@ public class UserPreferences
     public BooleanProperty showMetricUnitsProperty()
     {
         return showMetricUnits;
-    }
-
-    public BooleanProperty getTimelapseMoveBeforeCaptureProperty()
-    {
-        return timelapseMoveBeforeCapture;
-    }
-    
-    public boolean isTimelapseMoveBeforeCapture()
-    {
-        return timelapseMoveBeforeCapture.get();
-    }
-
-    public void setTimelapseMoveBeforeCapture(boolean value)
-    {
-        timelapseMoveBeforeCapture.set(value);
-    }
-    
-    public int getTimelapseXMove()
-    {
-        return timelapseXMove.get();
-    }
-
-    public void setTimelapseXMove(int value)
-    {
-        timelapseXMove.set(value);
-    }
-
-    public IntegerProperty getTimelapseXMoveProperty()
-    {
-        return timelapseXMove;
-    }
-
-    public int getTimelapseYMove()
-    {
-        return timelapseYMove.get();
-    }
-
-    public void setTimelapseYMove(int value)
-    {
-        timelapseYMove.set(value);
-    }
-
-    public IntegerProperty getTimelapseYMoveProperty()
-    {
-        return timelapseYMove;
     }
 
     public boolean isLoosePartSplitOnLoad()

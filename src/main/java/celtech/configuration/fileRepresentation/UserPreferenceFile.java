@@ -35,9 +35,6 @@ public class UserPreferenceFile
     private boolean timelapseTriggerEnabled = false;
     private boolean timelapseTurnOffHeadLights = true;
     private boolean timelapseTurnOffLED = false;
-    private boolean timelapseMoveBeforeCapture = true;
-    private int timelapseXMove = 0;
-    private int timelapseYMove = 150;
     private boolean loosePartSplitOnLoad = true;
     private boolean customPrinterEnabled = false;
     private PrinterType customPrinterType = PrinterType.ROBOX;
@@ -233,36 +230,6 @@ public class UserPreferenceFile
         this.timelapseTurnOffLED = timelapseTurnOffLED;
     }
 
-    public boolean isTimelapseMoveBeforeCapture()
-    {
-        return timelapseMoveBeforeCapture;
-    }
-
-    public void setTimelapseMoveBeforeCapture(boolean timelapseMoveBeforeCapture)
-    {
-        this.timelapseMoveBeforeCapture = timelapseMoveBeforeCapture;
-    }
-
-    public void setTimelapseXMove(int timelapseXMove)
-    {
-        this.timelapseXMove = timelapseXMove;
-    }
-
-    public int getTimelapseXMove()
-    {
-        return timelapseXMove;
-    }
-
-    public void setTimelapseYMove(int timelapseYMove)
-    {
-        this.timelapseYMove = timelapseYMove;
-    }
-
-    public int getTimelapseYMove()
-    {
-        return timelapseYMove;
-    }
-
     public boolean isLoosePartSplitOnLoad()
     {
         return loosePartSplitOnLoad;
@@ -321,9 +288,6 @@ public class UserPreferenceFile
         setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
         setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
-        setTimelapseMoveBeforeCapture(userPreferences.isTimelapseMoveBeforeCapture());
-        setTimelapseXMove(userPreferences.getTimelapseXMove());
-        setTimelapseYMove(userPreferences.getTimelapseYMove());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
         setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
         setCustomPrinterType(userPreferences.getCustomPrinterType());

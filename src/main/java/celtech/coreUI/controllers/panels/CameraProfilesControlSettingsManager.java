@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -103,13 +104,15 @@ public class CameraProfilesControlSettingsManager
     
     private GridPane controlGrid = null;
     private BooleanProperty isDirty = null;
+    private boolean isSystemProfile = false;
     private Map<String, String> controlSettings;
     private Map<TextField, FieldHandler> fieldMap = new HashMap<>();
     
     public CameraProfilesControlSettingsManager() {
     }
     
-    public void setControlSettings(Map<String, String> controlSettings) {
+    public void setControlSettings(Map<String, String> controlSettings, boolean isSystemProfile) {
+        this.isSystemProfile = isSystemProfile;
         this.controlSettings = controlSettings;
         populateGrid();
     }
@@ -152,7 +155,7 @@ public class CameraProfilesControlSettingsManager
         }
         else {
             field.setText(fieldValue);
-            field.setDisable(false);
+            field.setDisable(isSystemProfile);
         }
         
         
