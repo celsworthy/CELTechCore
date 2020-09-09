@@ -380,7 +380,8 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                                                         .getServerPrinterIsAttachedTo();
                 
                         // Use a new camera settings so it can be changed with affecting the printableProject.
-                        printerServer.cameraSettingsProperty().set(new CameraSettings(cameraData.get()));
+                        printerServer.setCameraTag(cameraData.get().getProfile().getProfileName(),
+                                                   cameraData.get().getCamera().getCameraName());
                     }
                     CameraProfile profile = profileOpt.get();
                     cameraTriggerData = new CameraTriggerData(

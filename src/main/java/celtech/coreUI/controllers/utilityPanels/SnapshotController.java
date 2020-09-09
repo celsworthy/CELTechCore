@@ -68,13 +68,24 @@ public abstract class SnapshotController implements Initializable
         }
     }
     
-    public void selectCameraAndProfile(CameraProfile profile, CameraInfo camera) {
-        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
-            if (profile != null && cameraProfileChooser.getItems().contains(profile))
-                cameraProfileChooser.setValue(profile);
-            if (camera != null && cameraChooser.getItems().contains(camera))
-                cameraChooser.setValue(camera);
-        });
+    public void selectCameraAndProfile(String profileName, String cameraName) {
+        // Find the profile.
+        cameraProfileChooser.getItems()
+                            .stream()
+                            .filter(cp -> cp.getProfileName().equalsIgnoreCase(profileName))
+                            .findFirst()
+                            .ifPresent((p) -> {
+                                selectedProfile = p;
+                                BaseLookup.getTaskExecutor().runOnGUIThread(() -> { cameraProfileChooser.setValue(p); });
+                            });
+        cameraChooser.getItems()
+                     .stream()
+                     .filter(ci -> ci.getCameraName().equalsIgnoreCase(cameraName))
+                     .findFirst()
+                     .ifPresent((c) -> {
+                         selectedCamera = c;
+                         BaseLookup.getTaskExecutor().runOnGUIThread(() -> { cameraChooser.setValue(c); });
+                     });
     }
     
     protected void selectProfile(CameraProfile profile) {

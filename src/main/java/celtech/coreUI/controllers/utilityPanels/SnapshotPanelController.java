@@ -4,10 +4,11 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.roboxbase.camera.CameraInfo;
+import celtech.roboxbase.comms.DetectedServer.CameraTag;
 import celtech.roboxbase.comms.RemoteDetectedPrinter;
 import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
+import celtech.roboxbase.configuration.CoreMemory;
 import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
-import celtech.roboxbase.configuration.fileRepresentation.CameraSettings;
 import celtech.roboxbase.printerControl.model.Printer;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -31,8 +32,8 @@ public class SnapshotPanelController extends SnapshotController
         controlSnapshotTask();
     };
 
-    private final ChangeListener<CameraSettings> cameraSettingsChangeListener = (ObservableValue<? extends CameraSettings> observable, CameraSettings oldValue, CameraSettings newValue) -> {
-        selectCameraAndProfile(newValue.getProfile(), newValue.getCamera());
+    private final ChangeListener<CameraTag> cameraTagChangeListener = (ObservableValue<? extends CameraTag> observable, CameraTag oldValue, CameraTag newValue) -> {
+        selectCameraAndProfile(newValue.getCameraProfileName(), newValue.getCameraName());
     };
 
     /**
@@ -49,7 +50,7 @@ public class SnapshotPanelController extends SnapshotController
         Lookup.getSelectedPrinterProperty().addListener((ObservableValue<? extends Printer> observable, Printer oldValue, Printer newValue) -> {
             if (connectedPrinter != null)
                 unbindFromPrinter(connectedPrinter);
-            
+
             if (newValue != null)
                 bindToPrinter(newValue);
         });
@@ -64,7 +65,7 @@ public class SnapshotPanelController extends SnapshotController
         
         if (connectedServer != null) {
             connectedServer.cameraDetectedProperty().removeListener(cameraDetectedChangeListener);
-            connectedServer.cameraSettingsProperty().removeListener(cameraSettingsChangeListener);
+            connectedServer.cameraTagProperty().removeListener(cameraTagChangeListener);
             connectedServer = null;
         }
         controlSnapshotTask();
@@ -77,12 +78,16 @@ public class SnapshotPanelController extends SnapshotController
             connectedPrinter.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
             connectedServer = ((RemoteDetectedPrinter)connectedPrinter.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo();
             connectedServer.cameraDetectedProperty().addListener(cameraDetectedChangeListener);
-            connectedServer.cameraSettingsProperty().addListener(cameraSettingsChangeListener);
-            CameraSettings settings = connectedServer.cameraSettingsProperty().get();
-            if (settings != null)
-                selectCameraAndProfile(settings.getProfile(), settings.getCamera());
+            connectedServer.cameraTagProperty().addListener(cameraTagChangeListener);
+
+            populateCameraProfileChooser();
+            populateCameraChooser();
+            
+            CameraTag tag = connectedServer.cameraTagProperty().get();
+            if (tag != null)
+                selectCameraAndProfile(tag.getCameraProfileName(), tag.getCameraName());
             else if (selectedProfile != null && selectedCamera != null) {
-                connectedServer.cameraSettingsProperty().set(new CameraSettings(selectedProfile, selectedCamera));
+                connectedServer.setCameraTag(selectedProfile.getProfileName(), selectedCamera.getCameraName());
             }
         }
         controlSnapshotTask();
@@ -111,14 +116,18 @@ public class SnapshotPanelController extends SnapshotController
     @Override
     protected void selectProfile(CameraProfile profile) {
         super.selectProfile(profile);
-        if (connectedServer != null && connectedServer.cameraSettingsProperty().get() != null)
-            connectedServer.cameraSettingsProperty().get().setProfile(profile);
+        if (connectedServer != null && profile != null && selectedCamera != null) {
+            connectedServer.setCameraTag(profile.getProfileName(), selectedCamera.getCameraName());
+            CoreMemory.getInstance().updateRoboxRoot(connectedServer);
+        }
     }
     
     @Override
     protected void selectCamera(CameraInfo camera) {
         super.selectCamera(camera);
-        if (connectedServer != null && connectedServer.cameraSettingsProperty().get() != null)
-            connectedServer.cameraSettingsProperty().get().setCamera(camera);
+        if (connectedServer != null && selectedProfile != null && camera != null) {
+            connectedServer.setCameraTag(selectedProfile.getProfileName(), camera.getCameraName());
+            CoreMemory.getInstance().updateRoboxRoot(connectedServer);
+        }
     }
 }
