@@ -133,6 +133,7 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
                 case PAUSED:
                 case PAUSE_PENDING:
                 case RESUME_PENDING:
+                case SELFIE_PAUSE:
                     statusProcessed = true;
                     barShouldBeDisplayed = true;
                     largeProgressDescription.setText(Lookup.i18n(printer.pauseStatusProperty().get().getI18nString()));

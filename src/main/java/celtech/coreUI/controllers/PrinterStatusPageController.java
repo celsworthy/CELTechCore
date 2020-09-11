@@ -658,6 +658,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             switch (printerToUse.pauseStatusProperty().get())
             {
                 case PAUSED:
+                case SELFIE_PAUSE:
                     visible = true;
                     break;
                 case PAUSE_PENDING:

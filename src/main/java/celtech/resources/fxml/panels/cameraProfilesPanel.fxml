@@ -27,6 +27,8 @@
               <RowConstraints />
               <RowConstraints />
               <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
               <RowConstraints />
               <RowConstraints />
               <RowConstraints />
@@ -43,7 +45,7 @@
                   <Insets right="5.0" />
                </GridPane.margin>
               </RestrictedComboBox>
-              <Label alignment="CENTER" text="%cameraProfiles.general" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="3">
+              <Label alignment="CENTER" text="%cameraProfiles.general" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="5">
                   <styleClass>
                       <String fx:value="filamentLibTitle" />
                       <String fx:value="preferenceControl" />
@@ -52,8 +54,8 @@
                   <Insets top="5.0" />
                </GridPane.margin>
               </Label>
-              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureHeight" GridPane.columnIndex="3" GridPane.rowIndex="5" />
-              <RestrictedNumberField fx:id="captureHeight" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="4" GridPane.rowIndex="5">
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureHeight" GridPane.columnIndex="3" GridPane.rowIndex="7" />
+              <RestrictedNumberField fx:id="captureHeight" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="4" GridPane.rowIndex="7">
                   <styleClass>
                       <String fx:value="preferenceControl" />
                   </styleClass>
@@ -61,8 +63,8 @@
                       <HideableTooltip text="%cameraProfilesHelp.captureHeight" />
                   </tooltip>
               </RestrictedNumberField>
-              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureWidth" GridPane.rowIndex="5" />
-              <RestrictedNumberField fx:id="captureWidth" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.captureWidth" GridPane.rowIndex="7" />
+              <RestrictedNumberField fx:id="captureWidth" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                   <styleClass>
                       <String fx:value="preferenceControl" />
                   </styleClass>
@@ -80,13 +82,13 @@
                   <Insets top="5.0" />
                </GridPane.margin>
               </Label>
-              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.headLightOn" GridPane.rowIndex="2" />
-              <CheckBox fx:id="headLightOn" GridPane.columnIndex="1" GridPane.rowIndex="2">
+              <Label styleClass="colon, preferenceControl" text="%cameraProfiles.headLightOff" GridPane.rowIndex="2" />
+              <CheckBox fx:id="headLightOff" GridPane.columnIndex="1" GridPane.rowIndex="2">
                   <tooltip>
                      <HideableTooltip text="%cameraProfilesHelp.headLightOn" />
                  </tooltip>
               </CheckBox>
-            <Label alignment="CENTER" text="%cameraProfiles.controls" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="6">
+            <Label alignment="CENTER" text="%cameraProfiles.controls" textAlignment="JUSTIFY" GridPane.columnSpan="2147483647" GridPane.halignment="CENTER" GridPane.rowIndex="8">
                <styleClass>
                   <String fx:value="filamentLibTitle" />
                   <String fx:value="preferenceControl" />
@@ -95,19 +97,37 @@
                   <Insets top="5.0" />
                </GridPane.margin>
             </Label>
-            <RestrictedComboBox fx:id="cmbCameraName" directorySafeName="true" editable="true" maxLength="24" prefWidth="150.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
+            <RestrictedComboBox fx:id="cmbCameraName" directorySafeName="true" editable="true" maxLength="24" prefWidth="150.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
                <styleClass>
                   <String fx:value="cmbPrintProfile" />
                   <String fx:value="cmbCleanCombo" />
                </styleClass>
             </RestrictedComboBox>
-            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.cameraName" GridPane.rowIndex="4" />
-            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.ambientLightOn" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-            <CheckBox fx:id="ambientLightOn" GridPane.columnIndex="4" GridPane.rowIndex="2">
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.cameraName" GridPane.rowIndex="6" />
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.ambientLightOff" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <CheckBox fx:id="ambientLightOff" GridPane.columnIndex="4" GridPane.rowIndex="2">
                <tooltip>
                   <HideableTooltip text="%cameraProfilesHelp.headLightOn" />
                </tooltip>
             </CheckBox>
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.moveBeforeCapture" GridPane.rowIndex="3" />
+            <CheckBox fx:id="moveBeforeCapture" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <tooltip>
+                  <HideableTooltip text="%cameraProfilesHelp.headLightOn" />
+               </tooltip>
+            </CheckBox>
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.moveToX" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+            <Label styleClass="colon, preferenceControl" text="%cameraProfiles.moveToY" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+            <RestrictedNumberField fx:id="moveToX" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" styleClass="preferenceControl" GridPane.columnIndex="4" GridPane.rowIndex="3">
+               <tooltip>
+                  <HideableTooltip text="%cameraProfilesHelp.captureHeight" />
+               </tooltip>
+            </RestrictedNumberField>
+            <RestrictedNumberField fx:id="moveToY" allowedDecimalPlaces="0" immediateUpdateMode="true" maxLength="4" maxWidth="-Infinity" prefColumnCount="4" prefHeight="24.0" styleClass="preferenceControl" GridPane.columnIndex="4" GridPane.rowIndex="4">
+               <tooltip>
+                  <HideableTooltip text="%cameraProfilesHelp.captureHeight" />
+               </tooltip>
+            </RestrictedNumberField>
           </children>
          <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

@@ -74,11 +74,20 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     private RestrictedNumberField captureWidth;
     
     @FXML
-    private CheckBox headLightOn;
+    private CheckBox headLightOff;
     
     @FXML
-    private  CheckBox ambientLightOn;
+    private  CheckBox ambientLightOff;
     
+    @FXML
+    private  CheckBox moveBeforeCapture;
+
+    @FXML
+    private RestrictedNumberField moveToX;
+    
+    @FXML
+    private RestrictedNumberField moveToY;
+
     @FXML
     private RestrictedComboBox<String> cmbCameraName;
     
@@ -111,8 +120,11 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
 
         captureHeight.disableProperty().bind(state.isEqualTo(State.ROBOX));
         captureWidth.disableProperty().bind(state.isEqualTo(State.ROBOX));
-        headLightOn.disableProperty().bind(state.isEqualTo(State.ROBOX));
-        ambientLightOn.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        headLightOff.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        ambientLightOff.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        moveBeforeCapture.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        moveToX.disableProperty().bind(state.isEqualTo(State.ROBOX));
+        moveToY.disableProperty().bind(state.isEqualTo(State.ROBOX));
         cmbCameraName.disableProperty().bind(state.isEqualTo(State.ROBOX));
         // controlSettingsManager handles disabling of it's grid, so it does
         // not disable the titles.
@@ -197,7 +209,13 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     
     private boolean selectCameraProfile(String profileName)
     {
-        CameraProfile profile = cameraProfilesMap.get(profileName.toLowerCase());
+        CameraProfile profile = null;
+        
+        if (profileName != null)
+            profile = cameraProfilesMap.get(profileName.toLowerCase());
+        else
+            STENO.debug("Null profile name");
+        
         if (profile != null)
         {
             currentCameraProfile = profile;
@@ -219,8 +237,11 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     {
         captureHeight.setValue(cameraProfile.getCaptureHeight());
         captureWidth.setValue(cameraProfile.getCaptureWidth());
-        headLightOn.selectedProperty().set(cameraProfile.isHeadLightOn());
-        ambientLightOn.selectedProperty().set(cameraProfile.isAmbientLightOn());
+        headLightOff.selectedProperty().set(cameraProfile.isHeadLightOff());
+        ambientLightOff.selectedProperty().set(cameraProfile.isAmbientLightOff());
+        moveBeforeCapture.selectedProperty().set(cameraProfile.isMoveBeforeCapture());
+        moveToX.setValue(cameraProfile.getMoveToX());
+        moveToY.setValue(cameraProfile.getMoveToY());
         
         String cameraName = cameraProfile.getCameraName();
         if (cameraName.isBlank())
@@ -291,8 +312,11 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     {
         captureHeight.valueChangedProperty().addListener(dirtyFieldListener);
         captureWidth.valueChangedProperty().addListener(dirtyFieldListener);
-        headLightOn.selectedProperty().addListener(dirtyFieldListener);
-        ambientLightOn.selectedProperty().addListener(dirtyFieldListener);
+        headLightOff.selectedProperty().addListener(dirtyFieldListener);
+        ambientLightOff.selectedProperty().addListener(dirtyFieldListener);
+        moveBeforeCapture.selectedProperty().addListener(dirtyFieldListener);
+        moveToX.valueChangedProperty().addListener(dirtyFieldListener);
+        moveToY.valueChangedProperty().addListener(dirtyFieldListener);
         cmbCameraName.valueProperty().addListener(dirtyFieldListener);
     }
     
@@ -300,8 +324,11 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     {
         currentCameraProfile.setCaptureHeight(captureHeight.getAsInt());
         currentCameraProfile.setCaptureWidth(captureWidth.getAsInt());
-        currentCameraProfile.setHeadLightOn(headLightOn.selectedProperty().get());
-        currentCameraProfile.setAmbientLightOn(ambientLightOn.selectedProperty().get());
+        currentCameraProfile.setHeadLightOff(headLightOff.selectedProperty().get());
+        currentCameraProfile.setAmbientLightOff(ambientLightOff.selectedProperty().get());
+        currentCameraProfile.setMoveBeforeCapture(moveBeforeCapture.selectedProperty().get());
+        currentCameraProfile.setMoveToX(moveToX.getAsInt());
+        currentCameraProfile.setMoveToY(moveToY.getAsInt());
         String cameraName = cmbCameraName.getValue().strip();
         if (cameraName.equalsIgnoreCase(ANY_CAMERA_NAME))
             cameraName = "";

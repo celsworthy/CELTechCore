@@ -421,11 +421,11 @@ public class GCodeGeneratorManager implements ModelContainerProject.ProjectChang
                                 timelapseSettings.isTimelapseEnabled())
                             {
                                 Optional<CameraTriggerData> ctd = timelapseSettings.getTimelapseProfile()
-                                    .map((profile) -> { return new CameraTriggerData(!profile.isHeadLightOn(),
-                                                                                     !profile.isAmbientLightOn(),
-                                                                                     false,
-                                                                                     0,
-                                                                                     0);
+                                    .map((profile) -> { return new CameraTriggerData(profile.isHeadLightOff(),
+                                                                                     profile.isAmbientLightOff(),
+                                                                                     profile.isMoveBeforeCapture(),
+                                                                                     profile.getMoveToX(),
+                                                                                     profile.getMoveToY());
                                                       });
                                 // Clunky adaption to existing interface -
                                 // ideally, the optional would be passed into PrintableMeshes.

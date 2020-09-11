@@ -384,12 +384,11 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                    cameraData.get().getCamera().getCameraName());
                     }
                     CameraProfile profile = profileOpt.get();
-                    cameraTriggerData = new CameraTriggerData(
-                        !profile.isHeadLightOn(),
-                        !profile.isAmbientLightOn(),
-                        false,
-                        0,
-                        0);
+                    cameraTriggerData = new CameraTriggerData(profile.isHeadLightOff(),
+														      profile.isAmbientLightOff(),
+															  profile.isMoveBeforeCapture(),
+															  profile.getMoveToX(),
+															  profile.getMoveToY());
                 }
                 timelapseEnabled = tlsd.getTimelapseTriggerEnabled();
             }
