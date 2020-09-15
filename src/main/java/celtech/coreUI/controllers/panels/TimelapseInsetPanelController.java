@@ -65,6 +65,10 @@ public class TimelapseInsetPanelController extends SnapshotController implements
 
     private final ChangeListener<Boolean> cameraDetectedChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
         setPanelVisibility();
+        if (currentProject != null &&
+            currentProject.getTimelapseSettings().getTimelapseTriggerEnabled()) {
+            currentProject.getTimelapseSettings().toggleDataChanged();
+        }
     };
 
     @FXML
@@ -108,6 +112,9 @@ public class TimelapseInsetPanelController extends SnapshotController implements
     @Override
     protected void selectProfile(CameraProfile profile) {
         super.selectProfile(profile);
+        // If repopulating, don't update the project as it will be 
+        // reset to the original value.
+//        if (!repopulatingProfileChooser && currentProject != null)
         if (currentProject != null)
             currentProject.getTimelapseSettings().setTimelapseProfile(Optional.ofNullable(profile));
     }
@@ -115,6 +122,9 @@ public class TimelapseInsetPanelController extends SnapshotController implements
     @Override
     protected void selectCamera(CameraInfo camera) {
         super.selectCamera(camera);
+        // If repopulating, don't update the project as it will be 
+        // reset to the original value.
+        //if (!repopulatingProfileChooser && !repopulatingCameraChooser && currentProject != null)
         if (currentProject != null)
             currentProject.getTimelapseSettings().setTimelapseCamera(Optional.ofNullable(camera));
     }
@@ -135,6 +145,8 @@ public class TimelapseInsetPanelController extends SnapshotController implements
         else
             connectedServer = null;
         
+        repopulateCameraProfileChooser();
+        repopulateCameraChooser();
         setPanelVisibility();
     }
 
@@ -150,8 +162,6 @@ public class TimelapseInsetPanelController extends SnapshotController implements
             if (snapshotTask == null) {
                 takeSnapshot();
             }
-            repopulateCameraProfileChooser();
-            repopulateCameraChooser();
         }
         else {
             timelapseInsetRoot.setVisible(false);

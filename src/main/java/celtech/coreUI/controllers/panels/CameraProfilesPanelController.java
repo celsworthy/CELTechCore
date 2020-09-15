@@ -112,7 +112,7 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         controlSettingsManager.initialise(controlGrid, isDirty);
         
         canSave.bind(isNameValid
-                .and(isDirty
+                        .and(isDirty
                         .and(state.isEqualTo(State.NEW)
                                 .or(state.isEqualTo(State.CUSTOM)))));
         canCreateNew.bind(state.isNotEqualTo(State.NEW));
@@ -209,13 +209,18 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     
     private boolean selectCameraProfile(String profileName)
     {
+        boolean selectedOK = false;
+        
+        String profileKey = null;
         CameraProfile profile = null;
         
-        if (profileName != null)
-            profile = cameraProfilesMap.get(profileName.toLowerCase());
+        if (profileName != null) {
+            profileKey = profileName.toLowerCase();
+            profile = cameraProfilesMap.get(profileKey);
+        }
         else
             STENO.debug("Null profile name");
-        
+
         if (profile != null)
         {
             currentCameraProfile = profile;
@@ -223,14 +228,21 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
             selectedProfileName = currentCameraProfile.getProfileName();
             
             controlSettingsManager.setControlSettings(profile.getControlSettings(), profile.isSystemProfile());
-            
             State newState = profile.isSystemProfile() ? State.ROBOX : State.CUSTOM;
             state.set(newState);
             isNameValid.set(true);
             isDirty.set(false);
-            return true;
+            selectedOK = true;
         }
-        return false;
+        else if (profile == null &&
+                 state.get() == State.NEW &&
+                 currentCameraProfile != null) {
+            selectedProfileName = profileName;
+            isNameValid.set(true);
+            selectedOK = true;
+        }
+
+        return selectedOK;
     }
     
     private void updateValuesFromProfile(CameraProfile cameraProfile)
@@ -254,7 +266,7 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         boolean valid = true;
         String profileNameText = cmbCameraProfile.getValue();
 
-        if (profileNameText.isBlank()) 
+        if (profileNameText == null || profileNameText.isBlank()) 
         {
             // Can't change name to empty string.
             valid = false;

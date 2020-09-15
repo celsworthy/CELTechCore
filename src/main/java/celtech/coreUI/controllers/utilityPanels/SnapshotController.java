@@ -22,6 +22,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import libertysystems.stenographer.Stenographer;
+import libertysystems.stenographer.StenographerFactory;
 
 /**
  * FXML Controller class
@@ -30,6 +32,7 @@ import javafx.scene.image.ImageView;
  */
 public abstract class SnapshotController implements Initializable
 {
+    private static final Stenographer STENO = StenographerFactory.getStenographer(SnapshotController.class.getName());
     protected static final int SNAPSHOT_INTERVAL = 500;
     
     @FXML
@@ -46,7 +49,7 @@ public abstract class SnapshotController implements Initializable
     protected CameraInfo selectedCamera = null;
     protected DetectedServer connectedServer = null;
     protected Task<Void> snapshotTask = null;
-
+    
     @Override
     public void initialize(URL url, ResourceBundle rb)
     {
@@ -57,6 +60,7 @@ public abstract class SnapshotController implements Initializable
         
         cameraChooser.setConverter(new CameraInfoStringConverter(cameraChooser::getItems));
         BaseLookup.getConnectedCameras().addListener((ListChangeListener.Change<? extends CameraInfo> c) -> {
+            repopulateCameraProfileChooser();
             repopulateCameraChooser();
         });
         cameraChooser.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -117,20 +121,24 @@ public abstract class SnapshotController implements Initializable
 }
     
     protected void repopulateCameraProfileChooser() {
-        CameraProfile selectedProfile = cameraProfileChooser.getValue();
-        populateCameraProfileChooser();
-        // Interesting mix of programming styles.
-        if (selectedProfile != null) {
-            String selectedProfileName = selectedProfile.getProfileName();
-            List<CameraProfile> itemList = cameraProfileChooser.getItems();
-            itemList.stream()
-                    .filter(p -> p.getProfileName().equals(selectedProfileName))
-                    .findAny()
-                    .ifPresentOrElse(cameraProfileChooser::setValue, 
-                                     () -> { cameraProfileChooser.setValue(CameraProfileContainer.getInstance().getDefaultProfile()); });
-        }
-        else
-            cameraProfileChooser.setValue(CameraProfileContainer.getInstance().getDefaultProfile());
+        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+            STENO.debug("Repopulating profile chooser");
+            CameraProfile currentProfile = cameraProfileChooser.getValue();
+            populateCameraProfileChooser();
+            // Interesting mix of programming styles.
+            CameraProfile profileToSelect;
+            if (currentProfile != null) {
+                String currentProfileName = currentProfile.getProfileName();
+                List<CameraProfile> itemList = cameraProfileChooser.getItems();
+                profileToSelect = itemList.stream()
+                                          .filter(p -> p.getProfileName().equals(currentProfileName))
+                                          .findAny()
+                                          .orElse(CameraProfileContainer.getInstance().getDefaultProfile());
+            }
+            else
+                profileToSelect = CameraProfileContainer.getInstance().getDefaultProfile();
+            cameraProfileChooser.setValue(profileToSelect);
+        });
     }
     
     protected void populateCameraProfileChooser() {
@@ -165,14 +173,17 @@ public abstract class SnapshotController implements Initializable
     }
 
     protected void repopulateCameraChooser() {
-        CameraInfo chosenCamera = cameraChooser.getValue();
-        populateCameraChooser();
-        cameraChooser.getItems()
-                     .stream()
-                     .filter(ci -> ci.equals(chosenCamera))
-                     .findAny()
-                     .ifPresentOrElse(cameraChooser::setValue, 
-                                      () -> { cameraChooser.setValue(cameraChooser.getItems().size() > 0 ? cameraChooser.getItems().get(0) : null); });
+        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+            STENO.debug("Repopulating camera chooser");
+            CameraInfo currentCamera = cameraChooser.getValue();
+            populateCameraChooser();
+            CameraInfo cameraToSelect = cameraChooser.getItems()
+                                                     .stream()
+                                                     .filter(ci -> ci.equals(currentCamera))
+                                                     .findAny()
+                                                     .orElse(cameraChooser.getItems().size() > 0 ? cameraChooser.getItems().get(0) : null);
+            cameraChooser.setValue(cameraToSelect);
+        });
     }
 
     protected void populateCameraChooser() {
@@ -199,7 +210,6 @@ public abstract class SnapshotController implements Initializable
             snapshotTask.cancel();
             snapshotTask = null;
         }
-        CameraProfile selectedProfile = cameraProfileChooser.getValue();
         if (selectedProfile != null && selectedCamera != null) {
             CameraSettings snapshotSettings = new CameraSettings(selectedProfile, selectedCamera);
             snapshotTask = new Task<Void>() {

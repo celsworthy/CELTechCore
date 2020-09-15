@@ -26,7 +26,7 @@ public class TimelapseSettingsData {
     public TimelapseSettingsData() {
     }
     
-    private void toggleDataChanged()
+    public void toggleDataChanged()
     {
         dataChanged.set(dataChanged.not().get());
     }
@@ -62,7 +62,7 @@ public class TimelapseSettingsData {
 
     public void setTimelapseProfile(Optional<CameraProfile> profile)
     {
-        if (timelapseProfile != profile)
+        if (!timelapseProfile.equals(profile))
         {
             this.timelapseProfile = profile;
             toggleDataChanged();
@@ -76,7 +76,7 @@ public class TimelapseSettingsData {
 
     public void setTimelapseCamera(Optional<CameraInfo> camera)
     {
-        if (timelapseCamera != camera)
+        if (!timelapseCamera.equals(camera))
         {
             this.timelapseCamera = camera;
             toggleDataChanged();
