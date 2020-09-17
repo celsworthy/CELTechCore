@@ -20,7 +20,7 @@ public class RestrictedComboBox<T> extends ComboBox<T>
     private final IntegerProperty maxLength = new SimpleIntegerProperty(-1);
     private final BooleanProperty directorySafeName = new SimpleBooleanProperty(false);
 
-    private final String standardAllowedCharacters = "\u0008\u007f";
+    private final String standardAllowedCharacters = "\u0008\u007f"; // Backspace and Delete
 
     public RestrictedComboBox()
     {

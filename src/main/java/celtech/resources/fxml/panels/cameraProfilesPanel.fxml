@@ -97,7 +97,7 @@
                   <Insets top="5.0" />
                </GridPane.margin>
             </Label>
-            <RestrictedComboBox fx:id="cmbCameraName" directorySafeName="true" editable="true" maxLength="24" prefWidth="150.0" restrict=" -_0-9a-zA-Z\p{L}\p{M}*+" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
+            <RestrictedComboBox fx:id="cmbCameraName" editable="true" maxLength="24" prefWidth="150.0" restrict="\\X" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
                <styleClass>
                   <String fx:value="cmbPrintProfile" />
                   <String fx:value="cmbCleanCombo" />

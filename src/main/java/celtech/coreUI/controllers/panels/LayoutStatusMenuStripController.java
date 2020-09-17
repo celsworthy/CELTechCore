@@ -367,30 +367,36 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             Optional<CameraSettings> cameraData = Optional.empty();
             boolean timelapseEnabled = false;
             TimelapseSettingsData tlsd = currentProject.getTimelapseSettings();
-            if (tlsd != null) {
-                // Curious mix of programming styles!    
+            if (tlsd != null &&
+                printer.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
+                DetectedServer printerServer = ((RemoteDetectedPrinter)printer.getCommandInterface()
+                                                                              .getPrinterHandle())
+                                                                              .getServerPrinterIsAttachedTo();
                 Optional<CameraInfo> infoOpt = tlsd.getTimelapseCamera();
                 Optional<CameraProfile> profileOpt = tlsd.getTimelapseProfile();
                 cameraData = infoOpt.flatMap((ci) -> profileOpt.map((cp) -> new CameraSettings(cp, ci)));
-                if (cameraData.isPresent()) {
-                    // As camera is present, must be a remote printer.
-                    if (printer.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
-                        DetectedServer printerServer = ((RemoteDetectedPrinter)printer.getCommandInterface()
-                                                                                        .getPrinterHandle())
-                                                                                        .getServerPrinterIsAttachedTo();
-                
-                        // Use a new camera settings so it can be changed with affecting the printableProject.
-                        printerServer.setCameraTag(cameraData.get().getProfile().getProfileName(),
-                                                   cameraData.get().getCamera().getCameraName());
-                    }
-                    CameraProfile profile = profileOpt.get();
-                    cameraTriggerData = new CameraTriggerData(profile.isHeadLightOff(),
-														      profile.isAmbientLightOff(),
-															  profile.isMoveBeforeCapture(),
-															  profile.getMoveToX(),
-															  profile.getMoveToY());
+                // Get trigger data only if there is a suitable camera on the current server.
+                Optional<CameraTriggerData> tdOpt = cameraData.flatMap(cd -> {
+                    String cameraName = cd.getCamera().getCameraName();
+                    return BaseLookup.getConnectedCameras()
+                        .stream()
+                        .filter(cc -> cc.getServer() == printerServer &&
+                                      cameraName.equalsIgnoreCase(cc.getCameraName()))
+                        .findAny()
+                        .flatMap(cc -> profileOpt.map(pp -> new CameraTriggerData(pp.isHeadLightOff(),
+                                                                                  pp.isAmbientLightOff(),
+                                                                                  pp.isMoveBeforeCapture(),
+                                                                                  pp.getMoveToX(),
+                                                                                  pp.getMoveToY())));
+                });
+
+                // Can't set local variables inside lambda expressions.
+                if (tdOpt.isPresent()) {
+                    cameraTriggerData= tdOpt.get();
+                    printerServer.setCameraTag(cameraData.get().getProfile().getProfileName(),
+                                               cameraData.get().getCamera().getCameraName());
+                    timelapseEnabled = tlsd.getTimelapseTriggerEnabled();
                 }
-                timelapseEnabled = tlsd.getTimelapseTriggerEnabled();
             }
                 
             printableProject.setCameraTriggerData(cameraTriggerData);

@@ -23,6 +23,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
@@ -101,9 +102,13 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     private String selectedProfileName = null;
     
     private final ChangeListener<Object> dirtyFieldListener = (ObservableValue<? extends Object> ov, Object oldEntry, Object newEntry) -> {
-            isDirty.set(true);
+        isDirty.set(true);
     };
     
+    private final ListChangeListener<CameraInfo> connectedCamerasListener = (ListChangeListener.Change<? extends CameraInfo> c) -> {
+        populateCmbCameraNames();
+    };
+
     @Override
     public void initialize(URL location, ResourceBundle resources) 
     {
@@ -138,11 +143,15 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
             if (enteredLibraryMode)
             {
                 populateCmbCameraProfiles();
+                BaseLookup.getConnectedCameras().addListener(connectedCamerasListener);
                 populateCmbCameraNames();
                 if (currentCameraProfile != null)
                     selectCameraProfile(currentCameraProfile.getProfileName());
                 else
                     selectDefaultCameraProfile();
+            }
+            else {
+                BaseLookup.getConnectedCameras().removeListener(connectedCamerasListener);
             }
         });
     }
@@ -168,10 +177,10 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
     {
         cameraProfilesMap = CAMERA_PROFILE_CONTAINER.getCameraProfilesMap();
         List<String> profileNames = cameraProfilesMap.values()
-                                                            .stream()
-                                                            .map(CameraProfile::getProfileName)
-                                                            .distinct()
-                                                            .collect(Collectors.toList());
+                                                     .stream()
+                                                     .map(CameraProfile::getProfileName)
+                                                     .distinct()
+                                                     .collect(Collectors.toList());
         Collections.sort(profileNames);
         cmbCameraProfile.setItems(FXCollections.observableArrayList(profileNames));
     }
@@ -196,9 +205,11 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
 
             cameraNames.addAll(additionalNames);
         }
-        cameraNames.add(ANY_CAMERA_NAME); 
+        cameraNames.add(ANY_CAMERA_NAME);
         Collections.sort(cameraNames);
+        cmbCameraName.valueProperty().removeListener(dirtyFieldListener);
         cmbCameraName.setItems(FXCollections.observableArrayList(cameraNames));
+        cmbCameraName.valueProperty().addListener(dirtyFieldListener);
     }
     
     private void selectDefaultCameraProfile()
@@ -293,6 +304,7 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
             updateProfileWithCurrentValues();
             CAMERA_PROFILE_CONTAINER.saveCameraProfile(currentCameraProfile);
             populateCmbCameraProfiles();
+            populateCmbCameraNames();
             selectCameraProfile(currentCameraProfile.getProfileName());
         }
     }
@@ -308,6 +320,7 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
         String newProfileName = "";
         cmbCameraProfile.getItems().add(newProfileName);
         cmbCameraProfile.setValue(newProfileName);
+        controlSettingsManager.setControlSettings(currentCameraProfile.getControlSettings(), currentCameraProfile.isSystemProfile());
     }
     
     private void whenDeletePressed()
@@ -317,6 +330,7 @@ public class CameraProfilesPanelController implements Initializable, MenuInnerPa
             CAMERA_PROFILE_CONTAINER.deleteCameraProfile(currentCameraProfile);
         }
         populateCmbCameraProfiles();
+        populateCmbCameraNames();
         selectDefaultCameraProfile();
     }
     

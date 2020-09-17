@@ -66,10 +66,6 @@ public abstract class SnapshotController implements Initializable
         cameraChooser.valueProperty().addListener((observable, oldValue, newValue) -> {
             selectCamera(newValue);
         });
-
-        if (cameraChooser.getItems().size() > 0) {
-            cameraChooser.setValue(cameraChooser.getItems().get(0));
-        }
     }
     
     public void selectCameraAndProfile(String profileName, String cameraName) {

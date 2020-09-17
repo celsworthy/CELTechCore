@@ -16,11 +16,9 @@ import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -50,9 +48,7 @@ public class UserPreferences
     private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
-    private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
-    private final BooleanProperty timelapseTurnOffHeadLights = new SimpleBooleanProperty(true);
-    private final BooleanProperty timelapseTurnOffLED = new SimpleBooleanProperty(false);
+    private final BooleanProperty searchForRemoteCameras = new SimpleBooleanProperty(true);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
     private final BooleanProperty autoGCodePreview = new SimpleBooleanProperty(true);
     private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
@@ -137,9 +133,7 @@ public class UserPreferences
         currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
-        timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
-        timelapseTurnOffHeadLights.set(userPreferenceFile.isTimelapseTurnOffHeadLights());
-        timelapseTurnOffLED.set(userPreferenceFile.isTimelapseTurnOffLED());
+        searchForRemoteCameras.set(userPreferenceFile.isSearchForRemoteCameras());
         loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
         customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
         customPrinterType.set(userPreferenceFile.getCustomPrinterType());
@@ -157,9 +151,7 @@ public class UserPreferences
         autoGCodePreview.addListener(enableAutoGCodePreviewChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
-        timelapseTriggerEnabled.addListener(booleanChangeListener);
-        timelapseTurnOffHeadLights.addListener(booleanChangeListener);
-        timelapseTurnOffLED.addListener(booleanChangeListener);
+        searchForRemoteCameras.addListener(booleanChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
         
@@ -310,49 +302,19 @@ public class UserPreferences
         this.currencyGBPToLocalMultiplier.set(value);
     }
 
-    public BooleanProperty getTimelapseTriggerEnabledProperty()
+    public BooleanProperty searchForRemoteCamerasProperty()
     {
-        return timelapseTriggerEnabled;
-    }
-
-    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled)
-    {
-        this.timelapseTriggerEnabled.set(timelapseTriggerEnabled);
-    }
-
-    public boolean isTimelapseTriggerEnabled()
-    {
-        return timelapseTriggerEnabled.get();
+        return searchForRemoteCameras;
     }
     
-    public BooleanProperty getTimelapseTurnOffHeadLightsProperty()
+    public void setSearchForRemoteCameras(boolean searchForRemoteCameras)
     {
-        return timelapseTurnOffHeadLights;
+        this.searchForRemoteCameras.set(searchForRemoteCameras);
     }
 
-    public void setTimelapseTurnOffHeadLightsEnabled(boolean timelapseTurnOffHeadLights)
+    public boolean isSearchForRemoteCameras()
     {
-        this.timelapseTurnOffHeadLights.set(timelapseTurnOffHeadLights);
-    }
-
-    public boolean isTimelapseTurnOffHeadLights()
-    {
-        return timelapseTurnOffHeadLights.get();
-    }
-    
-    public BooleanProperty getTimelapseTurnOffLEDProperty()
-    {
-        return timelapseTurnOffLED;
-    }
-
-    public void setTimelapseTurnOffLED(boolean timelapseTurnOffLED)
-    {
-        this.timelapseTurnOffLED.set(timelapseTurnOffLED);
-    }
-
-    public boolean isTimelapseTurnOffLED()
-    {
-        return timelapseTurnOffLED.get();
+        return searchForRemoteCameras.get();
     }
 
     private void saveSettings()

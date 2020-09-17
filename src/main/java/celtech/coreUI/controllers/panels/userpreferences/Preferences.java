@@ -64,6 +64,9 @@ public class Preferences
         Preference autoGCodePreviewPref = new TickBoxPreference(userPreferences.autoGCodePreviewProperty(),
             "preferences.autoGCodePreview");
 
+        Preference searchForRemoteCamerasPref = new TickBoxPreference(userPreferences.searchForRemoteCamerasProperty(),
+            "preferences.searchForRemoteCameras");
+
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
@@ -71,6 +74,7 @@ public class Preferences
         preferences.add(currencyGBPToLocalMultiplierPref);
         preferences.add(loosePartSplitPref);
         preferences.add(autoGCodePreviewPref);
+        preferences.add(searchForRemoteCamerasPref);
 
         return preferences;
     }
@@ -120,27 +124,6 @@ public class Preferences
         return preferences;
     }
 
-    public static List<PreferencesInnerPanelController.Preference> createTimelapsePreferences(
-            UserPreferences userPreferences)
-    {
-        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
-
-        Preference timelapseTriggerEnabledPref = new TickBoxPreference(userPreferences.getTimelapseTriggerEnabledProperty(),
-                "preferences.timelapseTriggerEnabled");
-        
-        Preference timelapseTurnOffHeadLightsPref = new TickBoxPreference(userPreferences.getTimelapseTurnOffHeadLightsProperty(),
-                "preferences.timelapseTurnOffHeadLights");
-        
-        Preference timelapseTurnOffLEDPref = new TickBoxPreference(userPreferences.getTimelapseTurnOffLEDProperty(),
-                "preferences.timelapseTurnOffLED");
-
-        preferences.add(timelapseTriggerEnabledPref);
-        preferences.add(timelapseTurnOffHeadLightsPref);
-        preferences.add(timelapseTurnOffLEDPref);
-
-        return preferences;
-    }
-    
     public static List<PreferencesInnerPanelController.Preference> createCustomPrinterPreferences(
         UserPreferences userPreferences) {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();

@@ -32,9 +32,7 @@ public class UserPreferenceFile
     private boolean showSnapshot = true;
     private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
-    private boolean timelapseTriggerEnabled = false;
-    private boolean timelapseTurnOffHeadLights = true;
-    private boolean timelapseTurnOffLED = false;
+    private boolean searchForRemoteCameras = true;
     private boolean loosePartSplitOnLoad = true;
     private boolean customPrinterEnabled = false;
     private PrinterType customPrinterType = PrinterType.ROBOX;
@@ -200,34 +198,14 @@ public class UserPreferenceFile
         this.showMetricUnits = showMetricUnits;
     }
 
-    public boolean isTimelapseTriggerEnabled()
+    public boolean isSearchForRemoteCameras()
     {
-        return timelapseTriggerEnabled;
+        return searchForRemoteCameras;
     }
 
-    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled)
+    public void setSearchForRemoteCameras(boolean searchForRemoteCameras)
     {
-        this.timelapseTriggerEnabled = timelapseTriggerEnabled;
-    }
-
-    public boolean isTimelapseTurnOffHeadLights()
-    {
-        return timelapseTurnOffHeadLights;
-    }
-
-    public void setTimelapseTurnOffHeadLights(boolean timelapseTurnOffHeadLights)
-    {
-        this.timelapseTurnOffHeadLights = timelapseTurnOffHeadLights;
-    }
-    
-    public boolean isTimelapseTurnOffLED()
-    {
-        return timelapseTurnOffLED;
-    }
-
-    public void setTimelapseTurnOffLED(boolean timelapseTurnOffLED)
-    {
-        this.timelapseTurnOffLED = timelapseTurnOffLED;
+        this.searchForRemoteCameras = searchForRemoteCameras;
     }
 
     public boolean isLoosePartSplitOnLoad()
@@ -287,7 +265,7 @@ public class UserPreferenceFile
         setShowSnapshot(userPreferences.getShowSnapshot());
         setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
-        setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
+        setSearchForRemoteCameras(userPreferences.isSearchForRemoteCameras());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
         setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
         setCustomPrinterType(userPreferences.getCustomPrinterType());
