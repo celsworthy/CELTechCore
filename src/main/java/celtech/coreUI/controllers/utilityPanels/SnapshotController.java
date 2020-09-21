@@ -161,9 +161,8 @@ public abstract class SnapshotController implements Initializable
     protected void selectCamera(CameraInfo camera) {
         selectedCamera = camera;
         if (connectedServer != null) {
-            if (selectedCamera == null)
-                snapshotView.setImage(null);
-            else 
+            snapshotView.setImage(null);
+            if (selectedCamera != null)
                 takeSnapshot();
         }
     }
