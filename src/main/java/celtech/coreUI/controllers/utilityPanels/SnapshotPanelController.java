@@ -77,15 +77,20 @@ public class SnapshotPanelController extends SnapshotController
         if (connectedPrinter != null && 
             connectedPrinter.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
             connectedServer = ((RemoteDetectedPrinter)connectedPrinter.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo();
-            connectedServer.cameraDetectedProperty().addListener(cameraDetectedChangeListener);
-            connectedServer.cameraTagProperty().addListener(cameraTagChangeListener);
-
+            String profileName = "";
+            String cameraName = "";
+            CameraTag tag = connectedServer.cameraTagProperty().get();
+            if (tag != null) {
+                profileName = tag.getCameraProfileName();
+                cameraName = tag.getCameraName();
+            }
+            
             populateCameraProfileChooser();
             populateCameraChooser();
             
-            CameraTag tag = connectedServer.cameraTagProperty().get();
-            if (tag != null)
-                selectCameraAndProfile(tag.getCameraProfileName(), tag.getCameraName());
+            if (!profileName.isBlank() && !cameraName.isBlank()) {
+                selectCameraAndProfile(profileName, cameraName);
+            }
             else if (selectedProfile != null && selectedCamera != null) {
                 connectedServer.setCameraTag(selectedProfile.getProfileName(), selectedCamera.getCameraName());
             }
