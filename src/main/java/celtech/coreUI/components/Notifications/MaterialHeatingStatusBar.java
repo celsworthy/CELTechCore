@@ -257,5 +257,7 @@ public class MaterialHeatingStatusBar extends AppearingProgressBar implements In
             heater.heaterModeProperty().removeListener(heaterModeChangeListener);
             heater = null;
         }
+        // Hide the bar if it is currently shown.
+        startSlidingOutOfView();
     }
 }

@@ -71,7 +71,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
         
         cancelButton.setOnAction(cancelEventHandler);
         
-        if(project != null) 
+        if (project != null) 
         {
             reassessStatus();
         }
@@ -81,7 +81,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         this.project = project;
         
-        if(project instanceof ModelContainerProject) 
+        if (project instanceof ModelContainerProject) 
         {
             gCodeGenManager = ((ModelContainerProject) project).getGCodeGenManager();
             if (gCodeGenManager != null)
@@ -91,7 +91,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
             }
         }
         
-        if(printer != null) 
+        if (printer != null) 
         {
             reassessStatus();
         }
@@ -145,6 +145,8 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
     {
         unbindFromProject();
         unbindFromPrinter();
+        // Hide the bar if it is currently shown.
+        startSlidingOutOfView();
     }
     
     public void unbindFromPrinter() {
@@ -162,6 +164,7 @@ public class PrintPreparationStatusBar extends AppearingProgressBar implements I
                 gCodeGenManager.selectedTaskRunningProperty().removeListener(serviceStatusListener);
                 gCodeGenManager.selectedTaskProgressProperty().removeListener(serviceProgressListener);
             }
+            project = null;
         }
     }
 }

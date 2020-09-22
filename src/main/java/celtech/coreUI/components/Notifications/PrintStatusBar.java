@@ -362,6 +362,8 @@ public class PrintStatusBar extends AppearingProgressBar implements Initializabl
             resumeButton.setOnAction(null);
             cancelButton.visibleProperty().unbind();
             cancelButton.setOnAction(null);
+            // Hide the bar if it is currently shown.
+            startSlidingOutOfView();
             printer = null;
         }
     }
