@@ -2,6 +2,7 @@ package celtech.coreUI.components;
 
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.comms.DetectedServer;
+import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -21,6 +22,7 @@ public class RootCameraTableCell extends TableCell<DetectedServer, Boolean>
         imageContainer = new ImageView();
         connectedImage = new Image(ApplicationConfiguration.imageResourcePath + "webcam.png");
         disconnectedImage = new Image(ApplicationConfiguration.imageResourcePath + "webcam_disconnected.png");
+        setAlignment(Pos.CENTER);
     }
 
     @Override

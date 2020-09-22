@@ -221,7 +221,8 @@ public class RootScannerPanelController implements Initializable, MenuInnerPanel
         cameraColumn = new TableColumn<>();
         cameraColumn.setCellFactory(cameraCell -> new RootCameraTableCell());
         cameraColumn.setCellValueFactory(new PropertyValueFactory<>("cameraDetected"));
-        cameraColumn.setPrefWidth(40);
+        cameraColumn.setText(Lookup.i18n("rootScanner.camera"));
+        cameraColumn.setPrefWidth(60);
         cameraColumn.setResizable(false);
         
         scannedRoots.getColumns().add(colourColumn);
