@@ -1,5 +1,8 @@
 package celtech.coreUI.components;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -16,12 +19,14 @@ import javafx.scene.control.ComboBox;
  */
 public class RestrictedComboBox<T> extends ComboBox<T>
 {
+    private final static Pattern BAD_RESTRICT_PATTERN = Pattern.compile("(.*)\\\\p\\{L\\}\\\\p\\{M\\}\\*\\+?(.*)");
+    private final static String STANDARD_ALLOWED_CHARACTERS = "\u0008\u007f"; // Backspace and Delete
+
     private final StringProperty restrict = new SimpleStringProperty("");
     private final IntegerProperty maxLength = new SimpleIntegerProperty(-1);
     private final BooleanProperty directorySafeName = new SimpleBooleanProperty(false);
 
-    private final String standardAllowedCharacters = "\u0008\u007f"; // Backspace and Delete
-
+    
     public RestrictedComboBox()
     {
         super();
@@ -45,9 +50,13 @@ public class RestrictedComboBox<T> extends ComboBox<T>
                     restrictedString = restrictedString.substring(0, maxLength.get());
                 }
                 
-                if (!restrictedString.isEmpty() && !restrictedString.matches(restrict.get())) 
-                {
-                    restrictedString = oldValue;
+                try {
+                    if (!restrictedString.isEmpty() && !restrictedString.matches(restrict.get())) 
+                    {
+                        restrictedString = oldValue;
+                    }
+                }
+                catch (PatternSyntaxException pex) {
                 }
                 
                 ignore = true;
@@ -65,7 +74,29 @@ public class RestrictedComboBox<T> extends ComboBox<T>
      */
     public void setRestrict(String restrict)
     {
-        String restrictString = "[" + restrict + standardAllowedCharacters + "]+";
+        // A common value of restrict is: " -_0-9a-zA-Z\p{L}\p{M}*+"
+        // but this breaks when in square brackets with the standard characters:
+        //
+        //     "[ -_0-9a-zA-Z\p{L}\p{M}*+\u0008\u007f]"
+        //
+        // The " -_" becomes all characters between space and underscore, and
+        // \p{L}\p{M}*+, which is intended to match any unicode codepoint
+        // followed by modifers, actually match any unicode point
+        // or any modifier or asterisk or plus.
+        //
+        // This attempts to correct the uicode error by using the pattern:
+        //
+        //   "([ -_0-9a-zA-Z\u0008\u007f]|(\p{L}\p{M}*))+"
+        //
+        // It doesn't attempt to correct the " -_" error.
+        //
+        String restrictString;
+        Matcher m = BAD_RESTRICT_PATTERN.matcher(restrict);
+        if (m.matches()) {
+            restrictString = "([" + m.group(1) + m.group(2) + STANDARD_ALLOWED_CHARACTERS + "]|(\\p{L}\\p{M}*))+";
+        }
+        else
+            restrictString = "[" + restrict + STANDARD_ALLOWED_CHARACTERS + "]+";
         this.restrict.set(restrictString);
     }
 
