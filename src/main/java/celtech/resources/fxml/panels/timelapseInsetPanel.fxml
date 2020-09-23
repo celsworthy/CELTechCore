@@ -12,9 +12,9 @@
 
 <GridPane id="timelapseInsetRoot" fx:id="timelapseInsetRoot" alignment="CENTER" hgap="5.0" maxWidth="1.7976931348623157E308" minWidth="-Infinity" prefWidth="360.0" stylesheets="@../../css/JMetroDarkTheme.css" vgap="5.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="celtech.coreUI.controllers.panels.TimelapseInsetPanelController">
 <columnConstraints>
-<ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="20.0" />
+<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="20.0" />
 </columnConstraints>
 <rowConstraints>
 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
