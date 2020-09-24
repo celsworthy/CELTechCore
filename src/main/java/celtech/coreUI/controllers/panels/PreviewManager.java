@@ -19,7 +19,6 @@ import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.services.gcodepreview.GCodePreviewExecutorService;
 import celtech.services.gcodepreview.GCodePreviewTask;
 import java.util.Optional;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -107,9 +106,6 @@ public class PreviewManager
             {  
                 updatePreview();
             }
-        }
-        else {
-            BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
         }
     }
 

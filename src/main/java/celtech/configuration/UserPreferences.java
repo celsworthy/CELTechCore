@@ -10,10 +10,6 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
-import celtech.roboxbase.licence.Licence;
-import celtech.roboxbase.licence.LicenceType;
-import celtech.roboxbase.licensing.LicenceManager;
-import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ObjectProperty;
@@ -87,10 +83,6 @@ public class UserPreferences
             if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.OFFLINE_PRINTER)) 
             {
                 RoboxCommsManager.getInstance().addDummyPrinter(true);
-            } else 
-            {
-                BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
-                customPrinterEnabled.set(false);
             }
         } else
         {
@@ -101,20 +93,11 @@ public class UserPreferences
 
     private final ChangeListener<Boolean> enableAutoGCodePreviewChangeListener = (observable, oldValue, newValue) -> {
         if (newValue && !BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
-            BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
             autoGCodePreview.set(false);
         }
         saveSettings();
     };
     
-    private final LicenceChangeListener autoGCodePreviewLicenceChangeListener = licenceOption -> {
-        if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) 
-        {
-            autoGCodePreview.set(false);
-        }
-        saveSettings();
-    };
-
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
         this.slicerType.set(userPreferenceFile.getSlicerType());
@@ -154,8 +137,6 @@ public class UserPreferences
         searchForRemoteCameras.addListener(booleanChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
-        
-        LicenceManager.addLicenceChangeListener(autoGCodePreviewLicenceChangeListener);
     }
 
     public String getLanguageTag()

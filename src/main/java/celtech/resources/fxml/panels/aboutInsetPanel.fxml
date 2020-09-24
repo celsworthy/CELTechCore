@@ -18,7 +18,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+<VBox styleClass="inset-panel-background-redux" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <StackPane alignment="TOP_CENTER" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
             <VBox.margin>
@@ -130,6 +130,7 @@
                                         <RowConstraints minHeight="35.0" vgrow="NEVER" />
                                         <RowConstraints vgrow="NEVER" />
                                         <RowConstraints vgrow="NEVER" />
+                              <RowConstraints />
                                     </rowConstraints>
                                     <children>
                                         <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1">
@@ -153,18 +154,9 @@
                                                 </HBox>
                                             </children>
                                         </VBox>
-                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                            <children>
-                                                <HBox alignment="CENTER_LEFT" spacing="3.0">
-                                                    <children>
-                                                        <Label fx:id="autoMakerLicense" style="-fx-text-fill: black;" styleClass="aboutSerialText" text="?" />
-                                                    </children>
-                                                </HBox>
-                                            </children>
-                                        </VBox>
-                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.roboxSerialNumber" wrapText="true"/>
-                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.headSerialNumber" wrapText="true" GridPane.rowIndex="2"/>
-                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.autoMakerLicense" wrapText="true" GridPane.rowIndex="3"/>
+                                        <VBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.roboxSerialNumber" wrapText="true" />
+                                        <Label style="-fx-text-fill: black;" styleClass="aboutSerialTextHeader" text="%aboutPanel.headSerialNumber" wrapText="true" GridPane.rowIndex="2" />
                                     </children>
                                     <VBox.margin>
                                         <Insets />
@@ -180,12 +172,7 @@
                         </HBox>
                         <HBox alignment="CENTER">
                             <children>
-                                <Button mnemonicParsing="false" prefWidth="180" onAction="#viewREADME" text="%buttonText.viewREADME" textAlignment="CENTER" />
-                            </children>
-                        </HBox>   
-                        <HBox alignment="CENTER">
-                            <children>
-                                <Button mnemonicParsing="false" prefWidth="180" onAction="#selectLicense" text="%buttonText.selectLicense" textAlignment="CENTER" />
+                                <Button mnemonicParsing="false" onAction="#viewREADME" prefWidth="180" text="%buttonText.viewREADME" textAlignment="CENTER" />
                             </children>
                         </HBox>   
                     </children>

@@ -7,11 +7,6 @@ import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.SlicerType;
-import celtech.roboxbase.licence.Licence;
-import celtech.roboxbase.licence.LicenceType;
-import celtech.roboxbase.licensing.LicenceManager;
-import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
-import java.util.Optional;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -26,7 +21,7 @@ import libertysystems.stenographer.StenographerFactory;
  *
  * @author Ian
  */
-public class SlicerTypePreference implements PreferencesInnerPanelController.Preference, LicenceChangeListener
+public class SlicerTypePreference implements PreferencesInnerPanelController.Preference
 {
     private static final Stenographer STENO = StenographerFactory.getStenographer(SlicerTypePreference.class.getName());
 
@@ -61,7 +56,6 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
         control.setCellFactory((ListView<SlicerType> param) -> new SlicerTypeCell());
         control.valueProperty().addListener(slicerTypeCtrlChangeListener);
         userPreferences.getSlicerTypeProperty().addListener(slicerTypeUPChangeListener);
-        LicenceManager.getInstance().addLicenceChangeListener(this);
     }
 
     @Override
@@ -79,7 +73,6 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
             {
                 if(!BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.LATEST_CURA_VERSION)) 
                 {
-                    BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
                     slicerType = SlicerType.Cura;
                 }
             }
@@ -119,17 +112,5 @@ public class SlicerTypePreference implements PreferencesInnerPanelController.Pre
     {
         control.disableProperty().unbind();
         control.disableProperty().bind(disableProperty);
-    }
-
-    @Override
-    public void onLicenceChange(Optional<Licence> licenceOption) {
-        SlicerType currentSelection = control.getSelectionModel().getSelectedItem();
-        // Reset list in order to invoke SlicerTypeCell updateItem method
-        control.setItems(FXCollections.observableArrayList(SlicerType.Cura));
-        control.setItems(slicerTypes);
-       if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) {
-             currentSelection = SlicerType.Cura;
-        }
-        control.getSelectionModel().select(currentSelection);
     }
 }

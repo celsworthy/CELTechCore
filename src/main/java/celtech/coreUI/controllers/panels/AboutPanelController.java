@@ -6,8 +6,6 @@ import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.licence.Licence;
-import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
@@ -44,9 +42,6 @@ public class AboutPanelController implements Initializable
     @FXML
     private Label headSerialNumber;
     
-    @FXML
-    private Label autoMakerLicense;
-
     @FXML
     private Label version;
 
@@ -91,12 +86,6 @@ public class AboutPanelController implements Initializable
         ApplicationStatus.getInstance().setMode(ApplicationMode.WELCOME);
     }
     
-    @FXML
-    private void selectLicense(ActionEvent event) 
-    {
-        boolean licenseFileValid = BaseLookup.getSystemNotificationHandler().showSelectLicenseDialog();
-    }
-
     @FXML
     private void okPressed(ActionEvent event)
     {
@@ -173,8 +162,6 @@ public class AboutPanelController implements Initializable
             bindToPrinter(newValue);
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
-        updateLicenseData();
-        LicenceManager.getInstance().addLicenceChangeListener(licenceOption -> autoMakerLicense.setText(licenceOption.map(Licence::toShortString).orElse("")));
     }
 
     private void updateHeadData(Head head)
@@ -204,15 +191,6 @@ public class AboutPanelController implements Initializable
         }
     }
     
-    private void updateLicenseData() {
-        Optional<Licence> potentiaLicense = LicenceManager.getInstance().readCachedLicenseFile();
-        if(potentiaLicense.isPresent()) {
-            autoMakerLicense.setText(potentiaLicense.get().toShortString());
-        } else {
-            autoMakerLicense.setText("");
-        }
-    }
-
     private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
     {
         @Override
