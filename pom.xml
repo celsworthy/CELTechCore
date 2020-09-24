@@ -4,7 +4,7 @@
     
     <groupId>celtech</groupId>
     <artifactId>CELTechCore</artifactId>
-    <version>1.3</version>
+    <version>1.4</version>
     <packaging>jar</packaging>
     
     <distributionManagement>
@@ -133,13 +133,13 @@
         <dependency>
             <groupId>libertysystems</groupId>
             <artifactId>Configuration</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>libertysystems</groupId>
             <artifactId>Stenographer</artifactId>
-            <version>1.10</version>
+            <version>1.11</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -208,7 +208,7 @@
         <dependency>
             <groupId>celtech</groupId>
             <artifactId>RoboxBase</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.orbisgis</groupId>
