@@ -110,6 +110,9 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
     private Group noHead;
 
     @FXML
+    private Group singleRubyNozzleHead;
+
+    @FXML
     private Group singleNozzleHead;
 
     @FXML
@@ -362,6 +365,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
         dualMaterialHead.setVisible(false);
         singleMaterialHead.setVisible(false);
         singleNozzleHead.setVisible(false);
+        singleRubyNozzleHead.setVisible(false);
         graphAlternativeMaterial1Legend.setVisible(false);
         graphAlternativeMaterial1Temp.setVisible(false);
         graphAlternativeMaterial2Legend.setVisible(false);
@@ -473,6 +477,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             dualMaterialHead.setVisible(true);
             singleMaterialHead.setVisible(false);
             singleNozzleHead.setVisible(false);
+            singleRubyNozzleHead.setVisible(false);
         } else if (head.headTypeProperty().get() == Head.HeadType.SINGLE_MATERIAL_HEAD &&
                    head.getNozzles().size() == 1)
         {
@@ -482,7 +487,10 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             headDataBox.setVisible(true);
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(false);
-            singleNozzleHead.setVisible(true);
+            if (head.typeCodeProperty().get().equals("RBXDV-S1"))
+                singleRubyNozzleHead.setVisible(true);
+            else
+                singleNozzleHead.setVisible(true);
         } else // Default to single material head.
         {
             headPanel.setVisible(true);
@@ -492,6 +500,7 @@ public class PrinterStatusSidePanelController implements Initializable, SidePane
             dualMaterialHead.setVisible(false);
             singleMaterialHead.setVisible(true);
             singleNozzleHead.setVisible(false);
+            singleRubyNozzleHead.setVisible(false);
         }
     }
 

@@ -219,6 +219,11 @@ public class ShapeContainerProject extends Project
         }
     }
 
+        @Override
+    protected void fireWhenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
+    {
+    }
+
     @Override
     protected void load(ProjectFile projectFile, String basePath) throws ProjectLoadException
     {
@@ -234,7 +239,7 @@ public class ShapeContainerProject extends Project
                 lastModifiedDate.set(projectFile.getLastModifiedDate());
                 lastPrintJobID = projectFile.getLastPrintJobID();
                 projectNameModified = projectFile.isProjectNameModified();
-
+                loadTimelapseSettings(projectFile);
                 loadModels(basePath);
                 recreateGroups(scpf.getGroupStructure(), scpf.getGroupState());
 

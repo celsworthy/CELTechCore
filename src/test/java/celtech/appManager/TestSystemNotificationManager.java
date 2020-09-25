@@ -226,7 +226,7 @@ public class TestSystemNotificationManager implements SystemNotificationManager
     }
 
     @Override
-    public void showEjectFailedDialog(Printer printer, int nozzleNumber)
+    public void showEjectFailedDialog(Printer printer, int nozzleNumber, FirmwareError error)
     {
     }
 

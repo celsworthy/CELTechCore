@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import celtech.coreUI.components.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.image.*?>
+<?import celtech.coreUI.components.RestrictedTextField?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
-<VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="30.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
+<VBox fx:id="headFullContainer" alignment="TOP_CENTER" spacing="30.0" stylesheets="@../../css/JMetroDarkTheme.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <GridPane fx:id="headEEPROMControls" maxWidth="-Infinity" prefWidth="550" vgap="2.0">
             <columnConstraints>
@@ -31,17 +36,17 @@
             <children>
                 <RestrictedTextField fx:id="headType" disable="true" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.columnSpan="2" />
                 <RestrictedTextField fx:id="headTypeCode" disable="true" styleClass="preferenceControl" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                <HBox fx:id="enterSerialNumberHBox" alignment="CENTER_LEFT" disable="false" prefHeight="-1.0" prefWidth="-1.0" spacing="1.0" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.columnSpan="2">
+                <HBox fx:id="enterSerialNumberHBox" alignment="CENTER_LEFT" disable="false" prefHeight="-1.0" prefWidth="-1.0" spacing="1.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="2">
                     <children>
-                        <RestrictedTextField fx:id="headTypeCodeEntry" maxLength="8" prefWidth="70" restrict="0-9A-Z" forceUpperCase="true" />
-                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <RestrictedTextField fx:id="headTypeCodeEntry" maxLength="8" prefWidth="70" restrict="0-9A-Za-z" />
+                        <Text style="-fx-fill:WHITE;" text="-" />
                         <RestrictedTextField fx:id="printerWeek" maxLength="2" prefWidth="25" restrict="0-9" />
                         <RestrictedTextField fx:id="printerYear" maxLength="2" prefWidth="25" restrict="0-9" />
-                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <Text style="-fx-fill:WHITE;" text="-" />
                         <RestrictedTextField fx:id="printerPONumber" maxLength="7" prefWidth="65.0" restrict="[0-9]" />
-                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <Text style="-fx-fill:WHITE;" text="-" />
                         <RestrictedTextField fx:id="printerSerialNumber" maxLength="4" prefWidth="40.0" restrict="[0-9]" />
-                        <Text text="-" style="-fx-fill:WHITE;"/>
+                        <Text style="-fx-fill:WHITE;" text="-" />
                         <RestrictedTextField fx:id="printerChecksum" maxLength="1" prefWidth="15" restrict="[0-9]" />
                         <StackPane>
                             <children>

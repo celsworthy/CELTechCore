@@ -6,9 +6,11 @@ package celtech.coreUI.controllers.panels.userpreferences;
 import celtech.configuration.UserPreferences;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController;
 import celtech.coreUI.controllers.panels.PreferencesInnerPanelController.Preference;
+import celtech.roboxbase.configuration.BaseConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -62,6 +64,9 @@ public class Preferences
         Preference autoGCodePreviewPref = new TickBoxPreference(userPreferences.autoGCodePreviewProperty(),
             "preferences.autoGCodePreview");
 
+        Preference searchForRemoteCamerasPref = new TickBoxPreference(userPreferences.searchForRemoteCamerasProperty(),
+            "preferences.searchForRemoteCameras");
+
         preferences.add(firstUsePref);
         preferences.add(languagePref);
         preferences.add(logLevelPref);
@@ -69,6 +74,7 @@ public class Preferences
         preferences.add(currencyGBPToLocalMultiplierPref);
         preferences.add(loosePartSplitPref);
         preferences.add(autoGCodePreviewPref);
+        preferences.add(searchForRemoteCamerasPref);
 
         return preferences;
     }
@@ -93,6 +99,10 @@ public class Preferences
                 "preferences.showAdjustments");
         showAdjustmentsPref.disableProperty(advancedModePref.getSelectedProperty().not());
         
+        TickBoxPreference showSnapshotPref = new TickBoxPreference(userPreferences.showSnapshotProperty(),
+                "preferences.showSnapshot");
+        showSnapshotPref.disableProperty(advancedModePref.getSelectedProperty().not());
+        
         advancedModePref.getSelectedProperty().addListener(new ChangeListener<Boolean>()
         {
             @Override
@@ -101,6 +111,7 @@ public class Preferences
                 showDiagnosticsPref.getSelectedProperty().set(t1);
                 showGCodePref.getSelectedProperty().set(t1);
                 showAdjustmentsPref.getSelectedProperty().set(t1);
+                showSnapshotPref.getSelectedProperty().set(t1);
             }
         });
 
@@ -108,47 +119,11 @@ public class Preferences
         preferences.add(showDiagnosticsPref);
         preferences.add(showGCodePref);
         preferences.add(showAdjustmentsPref);
+        preferences.add(showSnapshotPref);
  
         return preferences;
     }
 
-    public static List<PreferencesInnerPanelController.Preference> createTimelapsePreferences(
-            UserPreferences userPreferences)
-    {
-        List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
-
-        Preference timelapseTriggerEnabledPref = new TickBoxPreference(userPreferences.getTimelapseTriggerEnabledProperty(),
-                "preferences.timelapseTriggerEnabled");
-
-        Preference goProWifiPasswordPref = new PasswordPreference(userPreferences.getGoProWifiProperty(),
-                "preferences.goProWifiPassword");
-
-        Preference timelapseMoveBeforeCapturePref = new TickBoxPreference(userPreferences.getTimelapseMoveBeforeCaptureProperty(),
-                "preferences.timelapseMoveBeforeCapture");
-
-        Preference timelapseXMovePref = new IntegerPreference(userPreferences.getTimelapseXMoveProperty(),
-                "preferences.timelapseXMove");
-
-        Preference timelapseYMovePref = new IntegerPreference(userPreferences.getTimelapseYMoveProperty(),
-                "preferences.timelapseYMove");
-
-        Preference timelapseDelayPref = new IntegerPreference(userPreferences.getTimelapseDelayProperty(),
-                "preferences.timelapseDelay");
-
-        Preference timelapseDelayBeforeCapturePref = new IntegerPreference(userPreferences.getTimelapseDelayBeforeCaptureProperty(),
-                "preferences.timelapseDelayBeforeCapture");
-
-        preferences.add(timelapseTriggerEnabledPref);
-        preferences.add(goProWifiPasswordPref);
-        preferences.add(timelapseMoveBeforeCapturePref);
-        preferences.add(timelapseXMovePref);
-        preferences.add(timelapseYMovePref);
-        preferences.add(timelapseDelayPref);
-        preferences.add(timelapseDelayBeforeCapturePref);
-
-        return preferences;
-    }
-    
     public static List<PreferencesInnerPanelController.Preference> createCustomPrinterPreferences(
         UserPreferences userPreferences) {
         List<PreferencesInnerPanelController.Preference> preferences = new ArrayList<>();
@@ -157,6 +132,9 @@ public class Preferences
         Preference enableCustomPrinterPref = new TickBoxPreference(customPrinterEnabled, "preferences.customPrinterEnabled");
         Preference customPrinterTypePref = new CustomPrinterTypePreference(userPreferences);
         Preference customPrinterHeadPref = new CustomPrinterHeadPreference(userPreferences);
+        
+        BooleanProperty windows32Bit = new SimpleBooleanProperty(BaseConfiguration.isWindows32Bit());
+        enableCustomPrinterPref.disableProperty(windows32Bit);
         
         preferences.add(enableCustomPrinterPref);
         preferences.add(customPrinterTypePref);

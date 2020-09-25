@@ -9,13 +9,17 @@ import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ProjectifiableThing;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
+import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
+import celtech.roboxbase.configuration.datafileaccessors.CameraProfileContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
+import celtech.roboxbase.configuration.fileRepresentation.TimelapseSettings;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.importers.twod.svg.DragKnifeCompensator;
 import celtech.roboxbase.importers.twod.svg.DragKnifeCompensatorAlt;
@@ -25,8 +29,8 @@ import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterListChangesAdapter;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
-import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
+import celtech.roboxbase.services.camera.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorTask;
 import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
@@ -54,6 +58,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,7 +114,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
     private Map<PrintQualityEnumeration, Future<GCodeGeneratorResult>> taskMap = new HashMap<>();
     private ObservableMap<PrintQualityEnumeration, Future<GCodeGeneratorResult>> observableTaskMap = FXCollections.observableMap(taskMap);
     
-    private Future printOrSaveFuture = null;
+    private Future printOrSaveTask = null;
     private BooleanProperty printOrSaveTaskRunning = new SimpleBooleanProperty(false);
     
     private Cancellable cancellable = null;
@@ -120,7 +125,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
     private ObjectProperty<PrintQualityEnumeration> currentPrintQuality = new SimpleObjectProperty<>(PrintQualityEnumeration.DRAFT);
     private List<PrintQualityEnumeration> slicingOrder = Arrays.asList(PrintQualityEnumeration.values()); 
     private GCodeGeneratorTask selectedTask;
-
+    
     private ChangeListener applicationModeChangeListener;
     private ChangeListener selectedPrinterReactionChangeListener;
     private PrinterListChangesListener printerListChangesListener;
@@ -128,6 +133,8 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
     
     private boolean projectNeedsSlicing = true;
     private boolean selectedTaskReBound = false;
+    
+    private ReentrantLock taskMapLock = new ReentrantLock();
     
     public GCodeGeneratorManager(Project project)
     {
@@ -138,9 +145,13 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
             thread.setDaemon(true);
             return thread;
         };
-        preparationExecutorService = Executors.newFixedThreadPool(1, threadFactory);
-//       printOrSaveExecutorService = Executors.newSingleThreadExecutor(threadFactory);
-        printOrSaveExecutorService = Executors.newSingleThreadExecutor();
+        // Could run multiple slicers, but probably safer to run them one at a time.
+        //int nThreads = Runtime.getRuntime().availableProcessors() - 1;
+        //if (nThreads < 1)
+        //    nThreads = 1;
+        int nThreads = 1;
+        preparationExecutorService = Executors.newFixedThreadPool(nThreads, threadFactory);
+        printOrSaveExecutorService = Executors.newSingleThreadExecutor(threadFactory);
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
         
         initialiseListeners();
@@ -150,7 +161,14 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
     {
         filamentListener = (MapChangeListener.Change<? extends Integer, ? extends Filament> change) -> 
         {
-            reactToChange(true);
+            if (isCurrentProjectSelected())
+            {
+                reactToChange(true);
+            }
+            else
+            {
+                projectNeedsSlicing = true;
+            }
         };
         
         applicationModeChangeListener = (o, oldValue, newValue) -> 
@@ -164,7 +182,15 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                 }
                 if(isCurrentProjectSelected() && projectNeedsSlicing) 
                 {
-                    restartAllTasks();
+                    // We lock this so when we try to print the tasks are restarted before we try to use them.
+                    taskMapLock.lock();
+                    try
+                    {
+                        restartAllTasks();
+                    } finally
+                    {
+                        taskMapLock.unlock();
+                    }
                     projectNeedsSlicing = false;
                 }
             }
@@ -184,7 +210,14 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                 {
                     currentPrinter.effectiveFilamentsProperty().addListener(filamentListener);
                 }
-                reactToChange(true);
+                if (isCurrentProjectSelected())
+                {
+                    reactToChange(true);
+                }
+                else
+                {
+                    projectNeedsSlicing = true;
+                }
             }
         };
         
@@ -193,18 +226,26 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
             @Override
             public void whenHeadAdded(Printer printer)
             {
-                if (printer == currentPrinter)
+                if (printer == currentPrinter && isCurrentProjectSelected())
                 {
                     reactToChange(true);
+                }
+                else
+                {
+                    projectNeedsSlicing = true;
                 }
             }
 
             @Override
             public void whenExtruderAdded(Printer printer, int extruderIndex) 
             {
-                if (printer == currentPrinter)
+                if (printer == currentPrinter && isCurrentProjectSelected())
                 {
                     reactToChange(true);
+                }
+                else
+                {
+                    projectNeedsSlicing = true;
                 }
             }
         };
@@ -276,7 +317,19 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
 
     public Optional<GCodeGeneratorResult> getModelPrepResult(PrintQualityEnumeration quality)
     {
-        Future<GCodeGeneratorResult> resultFuture = taskMap.get(quality);
+        Future<GCodeGeneratorResult> resultFuture = null;
+        
+        // This is effectively locked if we are in the middle of restarting the tasks.
+        // It makes sure the map has had a chance to be refilled by the newely restarted tasks.
+        taskMapLock.lock();
+        try
+        {
+            resultFuture = taskMap.get(quality);
+        } finally
+        {
+            taskMapLock.unlock();
+        }
+
         if (resultFuture != null)
         {
             try 
@@ -286,7 +339,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
             }
             catch (InterruptedException ex)
             {
-                STENO.debug("Thread interrupted, usually the case when the user has selected differen't profile settings");
+                STENO.debug("Thread interrupted, usually the case when the user has selected different profile settings");
             }
             catch (CancellationException ex) 
             {
@@ -341,13 +394,16 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
     private void restartSlicerTasks() {
         Callable<Boolean> restartAfterDelay = () ->
         {
-            try
-            {
+            try {
+                // We sleep here so that any rapid changes to print settings 
+                // aren't setting off the slicer.
                 Thread.sleep(500);
             } catch (InterruptedException ex)
             {
                 return false;
             }
+            if (cancellable.cancelled().get())
+                return false;
             
             STENO.info("Restarting Slicer tasks");
             selectedTaskReBound = false;
@@ -398,17 +454,24 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
 
                             Vector3D centreOfPrintedObject = centreCalc.getResult();
 
+                            TimelapseSettingsData timelapseSettings = project.getTimelapseSettings();
                             CameraTriggerData cameraTriggerData = null;
-
-                            if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
+                            
+                            if (currentPrinter != null &&
+                                currentPrinter.getCommandInterface() instanceof RoboxRemoteCommandInterface &&
+                                timelapseSettings.isTimelapseEnabled())
                             {
-                                cameraTriggerData = new CameraTriggerData(
-                                        Lookup.getUserPreferences().getGoProWifiPassword(),
-                                        Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
-                                        Lookup.getUserPreferences().getTimelapseXMove(),
-                                        Lookup.getUserPreferences().getTimelapseYMove(),
-                                        Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
-                                        Lookup.getUserPreferences().getTimelapseDelay());
+                                Optional<CameraTriggerData> ctd = timelapseSettings.getTimelapseProfile()
+                                    .map((profile) -> { return new CameraTriggerData(profile.isHeadLightOff(),
+                                                                                     profile.isAmbientLightOff(),
+                                                                                     profile.isMoveBeforeCapture(),
+                                                                                     profile.getMoveToX(),
+                                                                                     profile.getMoveToY());
+                                                      });
+                                // Clunky adaption to existing interface -
+                                // ideally, the optional would be passed into PrintableMeshes.
+                                if (ctd.isPresent())
+                                    cameraTriggerData = ctd.get();
                             }
 
                             return new PrintableMeshes(
@@ -423,7 +486,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
                                     slicerType,
                                     centreOfPrintedObject,
                                     Lookup.getUserPreferences().isSafetyFeaturesOn(),
-                                    Lookup.getUserPreferences().isTimelapseTriggerEnabled(),
+                                    cameraTriggerData != null,
                                     cameraTriggerData);
                         };
 
@@ -710,6 +773,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
             selectedTask.runningProperty().addListener(taskRunningChangeListener);
             selectedTask.progressProperty().addListener(taskProgressChangeListener);
             selectedTask.messageProperty().addListener(taskMessageChangeListener);
+            selectedTaskMessage = selectedTask.messageProperty().get();
         }
     }
     
@@ -726,11 +790,12 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
         }
     }
     
-    public void replaceAndSubmitPrintOrSaveTask(Task printOrSaveTask)
+    public void replaceAndExecutePrintOrSaveTask(Task printOrSaveTask)
     {
         cancelPrintOrSaveTask();
         printOrSaveTaskRunning.bind(printOrSaveTask.runningProperty());
-        this.printOrSaveFuture = printOrSaveExecutorService.submit(printOrSaveTask);
+        this.printOrSaveTask = printOrSaveTask;
+        printOrSaveExecutorService.execute(printOrSaveTask);
     }
     
     public BooleanProperty printOrSaveTaskRunningProperty()
@@ -743,9 +808,9 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
         printOrSaveTaskRunning.unbind();
         printOrSaveTaskRunning.set(false);
         
-        if (printOrSaveFuture != null)
+        if (printOrSaveTask != null)
         {
-            return printOrSaveFuture.cancel(true);
+            return printOrSaveTask.cancel(true);
         }
         
         return false;
@@ -805,7 +870,7 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
     {
         return selectedTaskMessage;
     }
-    
+
     @Override
     public void whenModelAdded(ProjectifiableThing projectifiableThing)
     {
@@ -846,6 +911,11 @@ public class GCodeGeneratorManager implements Project.ProjectChangesListener
         }
     }
     
+    @Override
+    public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings) {
+        reactToChange(false);
+    }
+
     public void shutdown()
     {
         preparationExecutorService.shutdown();

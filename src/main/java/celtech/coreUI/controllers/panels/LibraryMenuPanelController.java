@@ -3,6 +3,7 @@ package celtech.coreUI.controllers.panels;
 import celtech.Lookup;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.roboxbase.configuration.RoboxProfile;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 
 /**
  *
@@ -10,6 +11,10 @@ import celtech.roboxbase.configuration.RoboxProfile;
  */
 public class LibraryMenuPanelController extends MenuPanelController
 {
+
+    private InnerPanelDetails cameraProfileDetails = null;
+    private CameraProfilesPanelController cameraProfileDetailsController = null;
+
 
     public LibraryMenuPanelController()
     {
@@ -27,12 +32,24 @@ public class LibraryMenuPanelController extends MenuPanelController
         profileDetails = loadInnerPanel(
                 ApplicationConfiguration.fxmlUtilityPanelResourcePath + "profileDetails.fxml",
                 profileDetailsController);
+        
+        cameraProfileDetailsController = new CameraProfilesPanelController();
+        cameraProfileDetails = loadInnerPanel(
+                ApplicationConfiguration.fxmlPanelResourcePath + "cameraProfilesPanel.fxml",
+                cameraProfileDetailsController);
     }
     
-        public void showAndSelectPrintProfile(RoboxProfile roboxProfile)
+    public void showAndSelectPrintProfile(RoboxProfile roboxProfile)
     {
         String profileMenuItemName = Lookup.i18n(profileDetails.innerPanel.getMenuTitle());
         panelMenu.selectItemOfName(profileMenuItemName);
         profileDetailsController.setAndSelectPrintProfile(roboxProfile);
+    }
+
+    public void showAndSelectCameraProfile(CameraProfile profile)
+    {
+        String cameraProfileMenuItemName = Lookup.i18n(cameraProfileDetails.innerPanel.getMenuTitle());
+        panelMenu.selectItemOfName(cameraProfileMenuItemName);
+        cameraProfileDetailsController.setAndSelectCameraProfile(profile);
     }
 }

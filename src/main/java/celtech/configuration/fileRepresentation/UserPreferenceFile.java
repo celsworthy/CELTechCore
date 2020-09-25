@@ -13,7 +13,6 @@ import libertysystems.stenographer.LogLevel;
  * @author Ian
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-
 public class UserPreferenceFile
 {
 
@@ -30,15 +29,10 @@ public class UserPreferenceFile
     private boolean showDiagnostics = false;
     private boolean showGCode = true;
     private boolean showAdjustments = true;
+    private boolean showSnapshot = true;
     private boolean autoGCodePreview = false;
     private boolean showMetricUnits = true;
-    private boolean timelapseTriggerEnabled = false;
-    private String goProWifiPassword = "";
-    private boolean timelapseMoveBeforeCapture = true;
-    private int timelapseXMove = 0;
-    private int timelapseYMove = 150;
-    private int timelapseDelay = 2;
-    private int timelapseDelayBeforeCapture = 2;
+    private boolean searchForRemoteCameras = true;
     private boolean loosePartSplitOnLoad = true;
     private boolean customPrinterEnabled = false;
     private PrinterType customPrinterType = PrinterType.ROBOX;
@@ -159,6 +153,11 @@ public class UserPreferenceFile
         return showAdjustments;
     }
 
+    public boolean isShowSnapshot()
+    {
+        return showSnapshot;
+    }
+
     public boolean isAutoGCodePreview()
     {
         return autoGCodePreview;
@@ -179,6 +178,11 @@ public class UserPreferenceFile
         this.showAdjustments = showAdjustments;
     }
 
+    public void setShowSnapshot(boolean showSnapshot)
+    {
+        this.showSnapshot = showSnapshot;
+    }
+
     public void setAutoGCodePreview(boolean autoGCodePreview)
     {
         this.autoGCodePreview = autoGCodePreview;
@@ -194,74 +198,14 @@ public class UserPreferenceFile
         this.showMetricUnits = showMetricUnits;
     }
 
-    public boolean isTimelapseTriggerEnabled()
+    public boolean isSearchForRemoteCameras()
     {
-        return timelapseTriggerEnabled;
+        return searchForRemoteCameras;
     }
 
-    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled)
+    public void setSearchForRemoteCameras(boolean searchForRemoteCameras)
     {
-        this.timelapseTriggerEnabled = timelapseTriggerEnabled;
-    }
-
-    public String getGoProWifiPassword()
-    {
-        return goProWifiPassword;
-    }
-
-    public void setGoProWifiPassword(String goProWifiPassword)
-    {
-        this.goProWifiPassword = goProWifiPassword;
-    }
-
-    public boolean isTimelapseMoveBeforeCapture()
-    {
-        return timelapseMoveBeforeCapture;
-    }
-
-    public void setTimelapseMoveBeforeCapture(boolean timelapseMoveBeforeCapture)
-    {
-        this.timelapseMoveBeforeCapture = timelapseMoveBeforeCapture;
-    }
-
-    public void setTimelapseXMove(int timelapseXMove)
-    {
-        this.timelapseXMove = timelapseXMove;
-    }
-
-    public int getTimelapseXMove()
-    {
-        return timelapseXMove;
-    }
-
-    public void setTimelapseYMove(int timelapseYMove)
-    {
-        this.timelapseYMove = timelapseYMove;
-    }
-
-    public int getTimelapseYMove()
-    {
-        return timelapseYMove;
-    }
-
-    public void setTimelapseDelay(int timelapseDelay)
-    {
-        this.timelapseDelay = timelapseDelay;
-    }
-
-    public int getTimelapseDelay()
-    {
-        return timelapseDelay;
-    }
-
-    public void setTimelapseDelayBeforeCapture(int timelapseDelayBeforeCapture)
-    {
-        this.timelapseDelayBeforeCapture = timelapseDelayBeforeCapture;
-    }
-
-    public int getTimelapseDelayBeforeCapture()
-    {
-        return timelapseDelayBeforeCapture;
+        this.searchForRemoteCameras = searchForRemoteCameras;
     }
 
     public boolean isLoosePartSplitOnLoad()
@@ -318,15 +262,10 @@ public class UserPreferenceFile
         setShowDiagnostics(userPreferences.getShowDiagnostics());
         setShowGCode(userPreferences.getShowGCode());
         setShowAdjustments(userPreferences.getShowAdjustments());
+        setShowSnapshot(userPreferences.getShowSnapshot());
         setAutoGCodePreview(userPreferences.isAutoGCodePreview());
         setShowMetricUnits(userPreferences.isShowMetricUnits());
-        setTimelapseTriggerEnabled(userPreferences.isTimelapseTriggerEnabled());
-        setGoProWifiPassword(userPreferences.getGoProWifiPassword());
-        setTimelapseMoveBeforeCapture(userPreferences.isTimelapseMoveBeforeCapture());
-        setTimelapseXMove(userPreferences.getTimelapseXMove());
-        setTimelapseYMove(userPreferences.getTimelapseYMove());
-        setTimelapseDelay(userPreferences.getTimelapseDelay());
-        setTimelapseDelayBeforeCapture(userPreferences.getTimelapseDelayBeforeCapture());
+        setSearchForRemoteCameras(userPreferences.isSearchForRemoteCameras());
         setLoosePartSplitOnLoad(userPreferences.isLoosePartSplitOnLoad());
         setCustomPrinterEnabled(userPreferences.isCustomPrinterEnabled());
         setCustomPrinterType(userPreferences.getCustomPrinterType());

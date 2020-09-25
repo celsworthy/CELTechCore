@@ -57,7 +57,7 @@ public class GCodePreviewTask extends Task<Boolean> {
     
     private void writeToInStream(String command) throws IOException
     {
-        steno.info("Writing command \"" + command + "\"");
+        steno.debug("Writing command \"" + command + "\"");
         stdInStream.write(command.getBytes());
         stdInStream.write('\n');
     }
@@ -104,9 +104,10 @@ public class GCodePreviewTask extends Task<Boolean> {
 
     public void setPrinterType(String printerType)
     {
+        this.printerType = printerTypeOrDefault(printerType);
         StringBuilder command = new StringBuilder();
         command.append("printer ");
-        command.append(printerTypeOrDefault(printerType));
+        command.append(this.printerType);
         command.trimToSize();
 
         writeCommand(command.toString());
@@ -224,7 +225,7 @@ public class GCodePreviewTask extends Task<Boolean> {
         
         if (commands.size() > 0)
         {
-            steno.info("GCodePreviewTask command is \"" + String.join(" ", commands) + "\"");
+            steno.debug("GCodePreviewTask command is \"" + String.join(" ", commands) + "\"");
             ProcessBuilder previewProcessBuilder = new ProcessBuilder(commands);
             previewProcessBuilder.redirectErrorStream(true);
 

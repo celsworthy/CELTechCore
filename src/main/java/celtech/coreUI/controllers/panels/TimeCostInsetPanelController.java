@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -101,6 +105,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
             PrintQualityEnumeration.CUSTOM));
     
     private final TimeCostThreadManager timeCostThreadManager = TimeCostThreadManager.getInstance();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
@@ -298,24 +303,26 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         Cancellable cancellable = new SimpleCancellable();
         
         Runnable runUpdateFields = () ->
-        {
+        {            
+            List<Future> futureList = new ArrayList<>();
             for(PrintQualityEnumeration printQuality : sliceOrder) 
             {
-                switch(printQuality) {
+                switch(printQuality) 
+                {
                     case DRAFT:
                         updateFieldsForQuality(project, PrintQualityEnumeration.DRAFT, lblDraftTime,
-                        lblDraftWeight,
-                        lblDraftCost, cancellable);
+                            lblDraftWeight,
+                            lblDraftCost, cancellable);
                         break;
                     case NORMAL:
                         updateFieldsForQuality(project, PrintQualityEnumeration.NORMAL, lblNormalTime,
-                        lblNormalWeight,
-                        lblNormalCost, cancellable);
+                            lblNormalWeight,
+                            lblNormalCost, cancellable);
                         break;
                     case FINE:
                         updateFieldsForQuality(project, PrintQualityEnumeration.FINE, lblFineTime,
-                        lblFineWeight,
-                        lblFineCost, cancellable);
+                            lblFineWeight,
+                            lblFineCost, cancellable);
                         break;
                     case CUSTOM:
                         if (!currentProject.getPrinterSettings().getSettingsName().equals(""))
@@ -327,9 +334,23 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
                         break;
                 }
                 if (cancellable.cancelled().get())
-                {
-                    return;
+                    break;
+            }    
+                
+            try 
+            {
+                for (Future f : futureList) {
+                    f.get();
                 }
+            }
+            catch (InterruptedException | ExecutionException ex) {
+            }
+            
+            if (cancellable.cancelled().get())
+            {
+                futureList.forEach((f) -> {
+                    f.cancel(true);
+                });
             }
         };
 
@@ -344,7 +365,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
     private void updateFieldsForQuality(Project project, PrintQualityEnumeration printQuality,
             Label lblTime, Label lblWeight, Label lblCost, Cancellable cancellable)
     {
-        if (!modelOutOfBounds(printQuality))
+        if (!modelOutOfBounds(project, printQuality))
         {
             if (project instanceof ModelContainerProject)
             {
@@ -365,7 +386,7 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
     }
     
-    private boolean modelOutOfBounds(PrintQualityEnumeration printQuality) 
+    private boolean modelOutOfBounds(Project project, PrintQualityEnumeration printQuality) 
     {
         String headTypeToUse = HeadContainer.defaultHeadID;
         if (currentPrinter != null && currentPrinter.headProperty().get() != null)
@@ -374,9 +395,9 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         }
         
         RoboxProfile profileSettings = null;
-        if (currentProject != null && currentProject.getNumberOfProjectifiableElements() > 0)
+        if (project != null && project.getNumberOfProjectifiableElements() > 0)
         {
-            profileSettings = currentProject.getPrinterSettings().getSettings(headTypeToUse, getSlicerType(), printQuality);
+            profileSettings = project.getPrinterSettings().getSettings(headTypeToUse, getSlicerType(), printQuality);
         }
 
         double zReduction = 0.0;
@@ -388,21 +409,23 @@ public class TimeCostInsetPanelController implements Initializable, ProjectAware
         double raftOffset = profileSettings == null ? 0.0 : RoboxProfileUtils.calculateRaftOffset(profileSettings, getSlicerType());
 
         boolean aModelIsOffTheBed = false;
-        for (ProjectifiableThing projectifiableThing : currentProject.getTopLevelThings())
-        {
-            if (projectifiableThing instanceof ModelContainer)
+        if (project != null && project.getTopLevelThings() != null) {
+            for (ProjectifiableThing projectifiableThing : project.getTopLevelThings())
             {
-                ModelContainer modelContainer = (ModelContainer) projectifiableThing;
-
-                //TODO use settings derived offset values for spiral
-                if (modelContainer.isOffBedProperty().get()
-                        || (currentProject.getPrinterSettings().getRaftOverride()
-                        && modelContainer.isModelTooHighWithOffset(zReduction + raftOffset))
-                        || (currentProject.getPrinterSettings().getSpiralPrintOverride()
-                        && modelContainer.isModelTooHighWithOffset(0.5)))
+                if (projectifiableThing instanceof ModelContainer)
                 {
-                    aModelIsOffTheBed = true;
-                    break;
+                    ModelContainer modelContainer = (ModelContainer) projectifiableThing;
+
+                    //TODO use settings derived offset values for spiral
+                    if (modelContainer.isOffBedProperty().get()
+                            || (project.getPrinterSettings().getRaftOverride()
+                            && modelContainer.isModelTooHighWithOffset(zReduction + raftOffset))
+                            || (project.getPrinterSettings().getSpiralPrintOverride()
+                            && modelContainer.isModelTooHighWithOffset(0.5)))
+                    {
+                        aModelIsOffTheBed = true;
+                        break;
+                    }
                 }
             }
         }

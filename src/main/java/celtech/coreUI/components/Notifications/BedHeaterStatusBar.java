@@ -173,5 +173,7 @@ public class BedHeaterStatusBar extends AppearingProgressBar implements Initiali
             bedTargetTemperature.removeListener(numberChangeListener);
             bedTargetTemperature = null;
         }
-    }
+        // Hide the bar if it is currently shown.
+        startSlidingOutOfView();
+   }
 }

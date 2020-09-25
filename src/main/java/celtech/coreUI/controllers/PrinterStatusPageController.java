@@ -43,6 +43,9 @@ import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
 import celtech.coreUI.DisplayManager;
+import celtech.roboxbase.comms.DetectedServer;
+import celtech.roboxbase.comms.RemoteDetectedPrinter;
+import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.printerControl.model.PrinterConnection;
 
 /**
@@ -56,6 +59,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     private final Stenographer steno = StenographerFactory.getStenographer(
             PrinterStatusPageController.class.getName());
     private Printer printerToUse = null;
+    private DetectedServer serverToUse = null;
     private ChangeListener<Color> printerColourChangeListener = null;
     private ChangeListener<PrinterStatus> printerStatusChangeListener = null;
     private ChangeListener<PauseStatus> pauseStatusChangeListener = null;
@@ -127,17 +131,17 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
     @FXML
     private HyperlinkedLabel disconnectedLinkedText;
 
-    private Printer lastSelectedPrinter = null;
-
     private VBox vBoxLeft = new VBox();
     private VBox vBoxRight = new VBox();
     private VBox gcodePanel = null;
     private VBox diagnosticPanel = null;
     private VBox projectPanel = null;
     private VBox printAdjustmentsPanel = null;
+    private VBox snapshotPanel = null;
     private VBox parentPanel = null;
 
     private BooleanProperty selectedPrinterIsPrinting = new SimpleBooleanProperty(false);
+    private BooleanProperty selectedPrinterHasCamera = new SimpleBooleanProperty(false);
     private BooleanProperty projectPanelShouldBeVisible = new SimpleBooleanProperty(true);
     private BooleanProperty projectPanelVisibility = new SimpleBooleanProperty(false);
     
@@ -208,6 +212,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 
         printerStackMap = new HashMap<>();
         printerStackMap.put("RBX01", rbx01Stack);
+        printerStackMap.put("RBX02", rbx01Stack);
         setupPrinterType("RBX01");
 
         threeDPformatter = DecimalFormat.getNumberInstance(Locale.UK);
@@ -254,16 +259,17 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                     public void changed(ObservableValue<? extends Printer> ov,
                             Printer t, Printer selectedPrinter)
                     {
+                        unbindFromSelectedPrinter();
                         printerToUse = selectedPrinter;
                         printerConnectionOffline.set(printerToUse != null && printerToUse.printerConnectionProperty().get().equals(PrinterConnection.OFFLINE));
-                        unbindFromSelectedPrinter();
                         setupBaseDisplay();
                         setupAmbientLight();
                             
                         if (selectedPrinter == null)
                         {
                             temperatureWarning.setVisible(false);
-                        } else
+                        } 
+                        else
                         {
                             selectedPrinter.getPrinterIdentity().printerColourProperty().addListener(
                                     printerColourChangeListener);
@@ -288,8 +294,6 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                                         extruder.filamentLoadedProperty().addListener(filamentLoadedListener);
                             });
                         }
-
-                        lastSelectedPrinter = selectedPrinter;
                     }
                 });
 
@@ -666,6 +670,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             switch (printerToUse.pauseStatusProperty().get())
             {
                 case PAUSED:
+                case SELFIE_PAUSE:
                     visible = true;
                     break;
                 case PAUSE_PENDING:
@@ -675,9 +680,23 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 default:
                     break;
             }
+            if (printerToUse.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
+                DetectedServer connectedServer = ((RemoteDetectedPrinter)printerToUse.getCommandInterface().getPrinterHandle()).getServerPrinterIsAttachedTo();
+                if (serverToUse != null && serverToUse != connectedServer) {
+                    selectedPrinterHasCamera.unbind();
+                    selectedPrinterHasCamera.set(false);
+                    serverToUse = null;
+                }
+                if (serverToUse == null) {
+                    serverToUse = connectedServer;
+                    selectedPrinterHasCamera.bind(serverToUse.cameraDetectedProperty());
+                }
+            }
         } else
         {
             selectedPrinterIsPrinting.set(false);
+            selectedPrinterHasCamera.unbind();
+            selectedPrinterHasCamera.set(false);
         }
 
         xAxisControls.setVisible(visible);
@@ -734,7 +753,7 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
             final double beginHeight = 1106;
             final double aspect = beginWidth / beginHeight;
             boolean lhPanelVisible = gcodePanel.isVisible() || diagnosticPanel.isVisible();
-            boolean rhPanelVisible = projectPanel.isVisible() || printAdjustmentsPanel.isVisible();
+            boolean rhPanelVisible = projectPanel.isVisible() || printAdjustmentsPanel.isVisible() || snapshotPanel.isVisible();
             double fudgeFactor = (baseReel2.isVisible() || baseReelBoth.isVisible()) ? 600 : 300;
             double lefthandPanelWidthToSubtract = (lhPanelVisible || rhPanelVisible) ? fudgeFactor : 0.0;
             double parentWidth = parent.getWidth() - lefthandPanelWidthToSubtract;
@@ -766,17 +785,22 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void unbindFromSelectedPrinter()
     {
-        if (lastSelectedPrinter != null)
+        if (printerToUse != null)
         {
-            lastSelectedPrinter.getPrinterIdentity().printerColourProperty().removeListener(
+            printerToUse.getPrinterIdentity().printerColourProperty().removeListener(
                     printerColourChangeListener);
-            lastSelectedPrinter.printerStatusProperty().removeListener(printerStatusChangeListener);
-            lastSelectedPrinter.pauseStatusProperty().removeListener(pauseStatusChangeListener);
-            lastSelectedPrinter.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
-            lastSelectedPrinter.extrudersProperty().forEach(extruder ->
+            printerToUse.printerStatusProperty().removeListener(printerStatusChangeListener);
+            printerToUse.pauseStatusProperty().removeListener(pauseStatusChangeListener);
+            printerToUse.effectiveFilamentsProperty().removeListener(effectiveFilamentListener);
+            printerToUse.extrudersProperty().forEach(extruder ->
             {
                 extruder.filamentLoadedProperty().removeListener(filamentLoadedListener);
             });
+            
+            selectedPrinterHasCamera.unbind();
+            selectedPrinterHasCamera.set(false);
+            serverToUse = null;
+            printerToUse = null;
         }
 
         temperatureWarning.visibleProperty().unbind();
@@ -808,17 +832,21 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 {
                     wrappedPanel.visibleProperty().bind(appearanceConditions);
                 }
-
-                final VBox panelToChangeHeightOf = wrappedPanel;
-                panelVisibilityAction((visibleProperty != null) ? visibleProperty.getValue() : false, panelToChangeHeightOf, parentPanel, position);
-                wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
-                {
-                    @Override
-                    public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
-                    {
-                        panelVisibilityAction(visible, panelToChangeHeightOf, parentPanel, position);
-                    }
-                });
+                wrappedPanel.managedProperty().bind(wrappedPanel.visibleProperty());
+                if (position <= parentPanel.getChildren().size())
+                    parentPanel.getChildren().add(position, wrappedPanel);
+                else
+                    parentPanel.getChildren().add(wrappedPanel);
+                //final VBox panelToChangeHeightOf = wrappedPanel;
+                //panelVisibilityAction((visibleProperty != null) ? visibleProperty.getValue() : false, panelToChangeHeightOf, parentPanel, position);
+                //wrappedPanel.visibleProperty().addListener(new ChangeListener<Boolean>()
+                //{
+                //    @Override
+                //    public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean visible)
+                //    {
+                //        panelVisibilityAction(visible, panelToChangeHeightOf, parentPanel, position);
+                //    }
+                //});
             } else
             {
                 wrappedPanel = insetPanel;
@@ -832,22 +860,25 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
 
     private void panelVisibilityAction(boolean visible, VBox panel, VBox parentPanel, int position)
     {
-        if (visible)
-        {
-            if (!parentPanel.getChildren().contains(panel))
+        BaseLookup.getTaskExecutor().runOnGUIThread(() -> {
+            if (visible)
             {
-                if (position <= parentPanel.getChildren().size())
+                if (!parentPanel.getChildren().contains(panel))
                 {
-                    parentPanel.getChildren().add(position, panel);
-                } else
-                {
-                    parentPanel.getChildren().add(panel);
+                    if (position <= parentPanel.getChildren().size())
+                    {
+                        parentPanel.getChildren().add(position, panel);
+                    } else
+                    {
+                        parentPanel.getChildren().add(panel);
+                    }
                 }
+            } else
+            {
+                parentPanel.getChildren().remove(panel);
             }
-        } else
-        {
-            parentPanel.getChildren().remove(panel);
-        }
+            panel.setManaged(visible);
+        });
     }
 
     private VBox wrapPanelInOuterPanel(Node insetPanel, String title,
@@ -904,6 +935,14 @@ public class PrinterStatusPageController implements Initializable, PrinterListCh
                 Lookup.getUserPreferences().showAdjustmentsProperty(),
                 Lookup.getUserPreferences().showAdjustmentsProperty().and(selectedPrinterIsPrinting), vBoxRight, 1);
         printAdjustmentsPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
+        {
+            resizePrinterDisplay(parentPanel);
+        });
+
+        snapshotPanel = loadInsetPanel("SnapshotPanel.fxml", "snapshotPanel.title",
+                Lookup.getUserPreferences().showSnapshotProperty(),
+                Lookup.getUserPreferences().showSnapshotProperty().and(selectedPrinterHasCamera), vBoxRight, 2);
+        snapshotPanel.visibleProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) ->
         {
             resizePrinterDisplay(parentPanel);
         });

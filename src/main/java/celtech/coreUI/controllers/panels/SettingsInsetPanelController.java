@@ -6,6 +6,7 @@ import celtech.appManager.ApplicationStatus;
 import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.TimelapseSettingsData;
 import celtech.coreUI.DisplayManager;
 import celtech.coreUI.components.Notifications.ConditionalNotificationBar;
 import celtech.coreUI.components.RestrictedNumberField;
@@ -860,6 +861,11 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     }
 
     @Override
+    public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
+    {
+    }
+
+    @Override
     public void shutdownController()
     {
         if (currentPrinter != null)
@@ -887,4 +893,5 @@ public class SettingsInsetPanelController implements Initializable, ProjectAware
     private SlicerType getSlicerType() {
         return Lookup.getUserPreferences().getSlicerType();
     }
+
 }

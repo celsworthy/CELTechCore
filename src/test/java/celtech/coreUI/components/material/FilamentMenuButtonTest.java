@@ -1,15 +1,18 @@
 package celtech.coreUI.components.material;
 
+import celtech.FXTest;
 import celtech.JavaFXConfiguredTest;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.experimental.categories.Category;
 
 /**
  *
  * @author Ian
  */
+@Category(FXTest.class)
 public class FilamentMenuButtonTest extends JavaFXConfiguredTest
 {
 

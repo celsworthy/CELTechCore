@@ -32,7 +32,7 @@ public class RootTableCell extends TableCell<DetectedServer, ServerStatus>
         if (item != null && !empty)
         {
             setGraphic(imageContainer);
-            if (item == ServerStatus.CONNECTED)
+            if (item == ServerStatus.CONNECTED || item == ServerStatus.UPGRADING)
             {
                 imageContainer.setImage(connectedImage);
             }

@@ -4,6 +4,7 @@ import celtech.Lookup;
 import celtech.appManager.ApplicationMode;
 import celtech.appManager.ApplicationStatus;
 import celtech.appManager.Project;
+import celtech.appManager.TimelapseSettingsData;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -417,6 +418,11 @@ public class SVGViewManager extends Pane implements Project.ProjectChangesListen
         }
     }
     
+    @Override
+    public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
+    {
+    }
+
     private final EventHandler<MouseEvent> mouseEventHandler = event ->
     {
         mousePreviousX = mousePosX;

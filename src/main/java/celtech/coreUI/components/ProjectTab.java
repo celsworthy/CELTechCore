@@ -91,6 +91,7 @@ public class ProjectTab extends Tab implements ProjectCallback
     private LoadedPanelData timeCostInsetPanelData = null;
     private LoadedPanelData stylusSettingsInsetPanelData = null;
     private LoadedPanelData modelActionsInsetPanelData = null;
+    private LoadedPanelData timelapseInsetPanelData = null;
     
     private class LoadedPanelData
     {
@@ -136,15 +137,18 @@ public class ProjectTab extends Tab implements ProjectCallback
         initialiseWithProject(loadingAtStartup);
     }
     
-    public Project getProject() {
+    public Project getProject()
+    {
         return project;
     }
 
-    public ThreeDViewManager getThreeDViewManager() {
+    public ThreeDViewManager getThreeDViewManager()
+    {
         return viewManager;
     }
 
-    public SVGViewManager getSVGViewManager() {
+    public SVGViewManager getSVGViewManager() 
+    {
         return svgViewManager;
     }
 
@@ -154,17 +158,23 @@ public class ProjectTab extends Tab implements ProjectCallback
         {
             if (tabIsSelected == false)
             {
+                if (timeCostInsetPanelData != null)
+                {
+                    timeCostInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
+                    timeCostInsetPanelData = null;
+                }
                 if (settingsInsetPanelData != null)
                 {
                     settingsInsetPanelData.getController().shutdownController();
                     rhInsetContainer.getChildren().remove(settingsInsetPanelData.getNode());
                     settingsInsetPanelData = null;
                 }
-                if (timeCostInsetPanelData != null)
+                if (timelapseInsetPanelData != null)
                 {
-                    timeCostInsetPanelData.getController().shutdownController();
-                    rhInsetContainer.getChildren().remove(timeCostInsetPanelData.getNode());
-                    timeCostInsetPanelData = null;
+                    timelapseInsetPanelData.getController().shutdownController();
+                    rhInsetContainer.getChildren().remove(timelapseInsetPanelData.getNode());
+                    timelapseInsetPanelData = null;
                 }
                 if (stylusSettingsInsetPanelData != null)
                 {
@@ -214,6 +224,7 @@ public class ProjectTab extends Tab implements ProjectCallback
             steno.debug("Beginning project save");
             saveAndCloseProject();
             steno.debug("Completed project save");
+            projectManager.saveState();
         });
 
         setOnSelectionChanged((Event t) ->
@@ -324,6 +335,7 @@ public class ProjectTab extends Tab implements ProjectCallback
         fireProjectSelected();
 
         projectManager.projectOpened(project);
+        projectManager.saveState();
 
         if (!loadingAtStartup)
         {
@@ -620,6 +632,14 @@ public class ProjectTab extends Tab implements ProjectCallback
     public void fireProjectSelected()
     {
         Lookup.setSelectedProject(project);
+    }
+    
+    public void fireProjectDeselected()
+    {
+        if (project != null && !project.isProjectSaved())
+        {
+            Project.saveProject(project);
+        }
     }
 
     @Override

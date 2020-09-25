@@ -7,19 +7,13 @@ import celtech.appManager.ModelContainerProject;
 import celtech.appManager.Project;
 import celtech.appManager.ShapeContainerProject;
 import celtech.configuration.ApplicationConfiguration;
-import celtech.coreUI.DisplayManager;
 import celtech.coreUI.StandardColours;
-import celtech.coreUI.components.buttons.GraphicButtonWithLabel;
 import celtech.roboxbase.ApplicationFeature;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.Filament;
-import celtech.roboxbase.configuration.RoboxProfile;
-import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
-import celtech.roboxbase.configuration.datafileaccessors.RoboxProfileSettingsContainer;
-import celtech.roboxbase.configuration.slicer.NozzleParameters;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
@@ -30,9 +24,13 @@ import celtech.services.gcodepreview.GCodePreviewTask;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.paint.Color;
 import libertysystems.stenographer.Stenographer;
 import libertysystems.stenographer.StenographerFactory;
@@ -46,58 +44,74 @@ public class PreviewManager
 {
     private final Stenographer steno = StenographerFactory.getStenographer(PreviewManager.class.getName());
 
-    private DisplayManager displayManager = null;
+    public enum PreviewState
+    {
+        CLOSED,
+        LOADING,
+        OPEN,
+        SLICE_UNAVAILABLE,
+        NOT_SUPPORTED
+    }
+    
+    private ObjectProperty<PreviewState> previewState = new SimpleObjectProperty<>(PreviewState.CLOSED);
     private Project currentProject = null;
-    private GCodePreviewExecutorService buttonExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService updateExecutor = new GCodePreviewExecutorService();
     private GCodePreviewExecutorService previewExecutor = new GCodePreviewExecutorService();
-    private final GraphicButtonWithLabel previewButton;
     private GCodePreviewTask previewTask = null;
     
-    private final ChangeListener<Boolean> previewRunningListener =(ObservableValue<? extends Boolean> observable, Boolean wasRunning, Boolean isRunning) -> {
+    private final ChangeListener<Boolean> previewRunningListener =(observable, wasRunning, isRunning) -> {
         if (wasRunning && !isRunning) {
             removePreview();
         }
     };
     
-    private final ChangeListener<Boolean> gCodePrepChangeListener = (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+    private final ChangeListener<Boolean> gCodePrepChangeListener = (observable, oldValue, newValue) -> {
+        //steno.info("gCodePrepChangeListener");
         autoStartAndUpdatePreview();
     };
 
-    private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (ObservableValue<? extends PrintQualityEnumeration> observable, PrintQualityEnumeration oldValue, PrintQualityEnumeration newValue) -> {
+    private final ChangeListener<PrintQualityEnumeration> printQualityChangeListener = (observable, oldValue, newValue) -> {
+        //steno.info("printQualityChangeListener");
         autoStartAndUpdatePreview();
     };
     
-    private final ChangeListener<ApplicationMode> applicationModeChangeListener = new ChangeListener<ApplicationMode>()
-    {
-        @Override
-        public void changed(ObservableValue<? extends ApplicationMode> observable, ApplicationMode oldValue, ApplicationMode newValue)
+    private final ChangeListener<ApplicationMode> applicationModeChangeListener = (observable, oldValue, newValue) -> {
+        //steno.info("printQualityChangeListener");
+        if (newValue == ApplicationMode.SETTINGS)
         {
-            if (newValue == ApplicationMode.SETTINGS)
-            {
-                autoStartAndUpdatePreview();
-            }
+            autoStartAndUpdatePreview();
         }
     };
     
-    public PreviewManager(GraphicButtonWithLabel previewButton,
-                          DisplayManager displayManager)
+    public PreviewManager()
     {
-        this.previewButton = previewButton;
-        this.displayManager = displayManager;
+        if(BaseConfiguration.isWindows32Bit())
+        {
+            //steno.info("Setting previewState to NOT_SUPPORTED");
+            previewState.set(PreviewState.NOT_SUPPORTED);
+        }
         try
         {
             ApplicationStatus.getInstance().modeProperty().addListener(applicationModeChangeListener);
         } catch (Exception ex)
         {
-            ex.printStackTrace();
+            steno.exception("Unexpected error in PreviewManager constructor", ex);
         }
     }
 
-    public void previewPressed(ActionEvent event)
+    public ReadOnlyObjectProperty<PreviewState> previewStateProperty()
     {
+        return previewState;
+    }
+
+    public void previewAction(ActionEvent event)
+    {
+        //steno.info("previewAction");
         if(BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)) {
-            updatePreview();
+            if(previewState.get() != PreviewState.OPEN)
+            {  
+                updatePreview();
+            }
         }
         else {
             BaseLookup.getSystemNotificationHandler().showPurchaseLicenseDialog();
@@ -121,41 +135,26 @@ public class PreviewManager
                 currentProject.getGCodeGenManager().getDataChangedProperty().addListener(this.gCodePrepChangeListener);
                 if (currentProject instanceof ModelContainerProject)
                     currentProject.getGCodeGenManager().getPrintQualityProperty().addListener(this.printQualityChangeListener);
-                if (previewTask != null)
+                
+                if (previewState.get() == PreviewState.OPEN ||
+                    previewState.get() == PreviewState.LOADING ||
+                    previewState.get() == PreviewState.SLICE_UNAVAILABLE)
                 {
                     updatePreview();
                 }
-                else
+                else if (previewState.get() != PreviewState.NOT_SUPPORTED)
                 {
-                    // FIXME! Race condition here - can enable button
-                    // when it should be disabled while waiting for gCode generator.
-                    setPreviewButtonEnabledState(modelIsSuitable());
+                    //steno.info("Setting previewState to CLOSED");
+                    previewState.set(PreviewState.CLOSED);
                 }
             }
             else
             {
-                setPreviewButtonEnabledState(false);
                 clearPreview();
             }
         }
     }
 
-    private void setPreviewButtonEnabledState(final boolean modelSuitable)
-    {
-        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-        {
-            // Enable/Disable preview button.
-            if (!modelSuitable) {
-                previewButton.setFxmlFileName("previewButton");
-                //System.out.println("setPreviewButtonEnabledState - disabling preview button with preview icon");
-            }
-            else
-            {
-                //System.out.println("setPreviewButtonEnabledState - enabling preview button without changing icon");
-            }
-            previewButton.disableProperty().set(!modelSuitable);
-        });
-    }
     public void shutdown()
     {
         removePreview();
@@ -178,24 +177,48 @@ public class PreviewManager
    
     private void clearPreview()
     {
+        //steno.info("clearPreview");
         if (previewTask != null)
         {
-            steno.debug("Clearing preview");
+            //steno.info("Clearing preview");
             previewTask.clearGCode();
         }
+        //steno.info("clearPreview done");
     }
 
-    private void removePreview()
+    // Start and remove preview need to be synchronized so that
+    // the previewTask is started/stopped and the variable updated
+    // as a single transaction.
+    private synchronized void removePreview()
     {
+        //steno.info("removingPreview");
         if (previewTask != null)
         {
             previewTask.runningProperty().removeListener(previewRunningListener);
             previewTask.terminatePreview();
+            previewState.set(PreviewState.CLOSED);
         }
         previewTask = null;
+        //steno.info("removePreview done");
     }
     
-    private void startPreview() {
+    // There are some curious issues with starting the preview.
+    // Originally the preview tried open in  specific position relative
+    // to the AutoMaker window. To do this, it called displayManager.getNormalisedPreviewRectangle(),
+    // which queries some JavaFX nodes. The calling thread was not necessarily the main JavaFX thread.
+    // Most of the time this worked, but if the tabs and the forward button were clicked multiple times,
+    // particularly during startup, it would sometimes corrupt the internal JavaFX data structures,
+    // causing JavaFX to throw exceptions and enter an infinite loop, freezing the GUI.
+    //
+    // Making startPreview into a FutureTask, running it on the JavaFx thread and waiting for the result produced even
+    // wierder symptoms. Clicking on the forward and tab buttons during starup would cause startPreview to be
+    // called multiple times but not complete. A preview window would appear but not update. On closing the preview,
+    // another would immediately appear. It seems these previews started by the calls to startPreview that did not complete.
+    // If all these "phantom" previews were closed, so no more appeared, then opening a preview with the preview button worked.
+    // The current code below, which creates the previewTask immediately, and places in a fixed position rather than calling
+    // the displayManager, seems to work OK.
+    private synchronized void startPreview() {
+        //steno.info("startPreview");
         if (previewTask == null)
         {
             String printerType = null;
@@ -204,58 +227,48 @@ public class PreviewManager
                 printerType = printer.printerConfigurationProperty().get().getTypeCode();
             String projDirectory = ApplicationConfiguration.getProjectDirectory()
                                        + currentProject.getProjectName(); 
-            steno.debug("Starting preview task");
-            previewTask = new GCodePreviewTask(projDirectory, printerType, displayManager.getNormalisedPreviewRectangle());
+            Rectangle2D nRectangle = new Rectangle2D(0.25, 0.25, 0.5, 0.5);
+            previewTask = new GCodePreviewTask(projDirectory, printerType, nRectangle);
             previewTask.runningProperty().addListener(previewRunningListener);
             previewExecutor.runTask(previewTask);
         }
+        //steno.info("startPreview done");
     }
 
     private void autoStartAndUpdatePreview()
     {
-        steno.info("autoStartAndUpdatePreview");
-        if (previewTask != null ||
+        //steno.info("autoStartAndUpdatePreview");
+        if (previewState.get() == PreviewState.OPEN ||
+            previewState.get() == PreviewState.LOADING ||
+            previewState.get() == PreviewState.SLICE_UNAVAILABLE ||
             (Lookup.getUserPreferences().isAutoGCodePreview() &&
-            BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
+             BaseConfiguration.isApplicationFeatureEnabled(ApplicationFeature.GCODE_VISUALISATION)))
         {
+            //steno.info("autoStartAndUpdatePreview calling updatePreview");
             updatePreview();
-        }
-        else
-        {
-            setPreviewButtonEnabledState(modelIsSuitable());
         }
     }
 
     private void updatePreview()
     {
-        steno.info("Updating preview");
-        
-        boolean modelUnsuitable = !modelIsSuitable();
+       boolean modelUnsuitable = !modelIsSuitable();
         if (modelUnsuitable)
         {
-            BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-            {
-                // Disable preview button.
-                System.out.println("Model unsuitable - disabling preview button");
-                previewButton.setFxmlFileName("previewButton");
-                previewButton.disableProperty().set(true);
-            });
+            //steno.info("Model unsuitable: setting previewState to SLICE_UNAVAILABLE ...");
+            previewState.set(PreviewState.SLICE_UNAVAILABLE);
+            //steno.info("... Model unsuitable: clearing preview ...");
             clearPreview();
+            //steno.info("... Model unsuitable done");
         }
         else
         {
             Runnable doUpdatePreview = () ->
             {
                 // Showing preview preview button.
-                steno.info("Showing preview");
-                BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                {
-                    // Enable preview button.
-                    System.out.println("Waiting for gcode prep - enabling preview button with loading icon");
-                    previewButton.setFxmlFileName("previewLoadingButton");
-                    previewButton.disableProperty().set(false);
-                });
+                //steno.info("Setting previewState to LOADING");
+                previewState.set(PreviewState.LOADING);
 
+                //steno.info("Preview is null");
                 if (previewTask == null)
                     startPreview();
                 else
@@ -362,63 +375,25 @@ public class PreviewManager
                 {    
                     if (Lookup.getUserPreferences().isAutoGCodePreview())
                         previewTask.giveFocus();
-                    
-                    BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        // Enable preview button.
-                        System.out.println("GCode ready - enabling preview button with preview icon");
-                        previewButton.disableProperty().set(false);
-                        previewButton.setFxmlFileName("previewButton");
-                    });
+                    //steno.info("Setting previewState to OPEN ...");
+                    previewState.set(PreviewState.OPEN);
+                    //steno.info("... OPEN done");
                 }
                 else
                 {
                     // Failed.
-                     BaseLookup.getTaskExecutor().runOnGUIThread(() ->
-                    {
-                        steno.info("Setting button state to failed");
-                        System.out.println("GCode prep failed - disabling preview button with preview icon");
-                        previewButton.disableProperty().set(true);
-                        previewButton.setFxmlFileName("previewButton");
-                    });
+                    //steno.info("Failed - Setting previewState to SLICE_UNAVAILABLE ...");
+                    previewState.set(PreviewState.SLICE_UNAVAILABLE);
+                    //steno.info("... SLICE_UNAVAILABLE done");
                 }
             };
 
-            steno.debug("Cancelling update tasks");
+            //steno.info("Cancelling update tasks");
             updateExecutor.cancelTask();
-            steno.debug("Running update tasks");
+            //steno.info("Running update tasks");
             updateExecutor.runTask(doUpdatePreview);
+            //steno.info("done updates");
         }
-    }
-    
-    private Optional<RoboxProfile> getPrintProfile(PrintQualityEnumeration quality, String headTypeCode)
-    {
-        RoboxProfileSettingsContainer profileSettingsContainer = RoboxProfileSettingsContainer.getInstance();
-        Optional<RoboxProfile> profileOption = Optional.empty();
-        SlicerType slicerType = Lookup.getUserPreferences().getSlicerType();
-		
-        switch (quality) {
-            case DRAFT:
-                profileOption = profileSettingsContainer
-                        .getRoboxProfileWithName(BaseConfiguration.draftSettingsProfileName, slicerType, headTypeCode);
-                break;
-            case NORMAL:
-                profileOption = profileSettingsContainer
-                        .getRoboxProfileWithName(BaseConfiguration.normalSettingsProfileName, slicerType, headTypeCode);
-                break;
-            case FINE:
-               profileOption = profileSettingsContainer
-                        .getRoboxProfileWithName(BaseConfiguration.fineSettingsProfileName, slicerType, headTypeCode);
-                break;
-            case CUSTOM: {
-                    String customSettingsName = currentProject.getPrinterSettings().getSettingsName();
-                    if (!customSettingsName.isEmpty()) 
-                        profileOption = profileSettingsContainer.getRoboxProfileWithName(customSettingsName, slicerType, headTypeCode);
-                }
-                break;
-            default:
-                break;
-        }
-        return profileOption;
+        //steno.info("Updating preview done");
     }
 }

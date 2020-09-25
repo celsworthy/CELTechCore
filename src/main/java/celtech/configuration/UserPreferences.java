@@ -16,11 +16,9 @@ import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleFloatProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -46,16 +44,11 @@ public class UserPreferences
     private final BooleanProperty showDiagnostics = new SimpleBooleanProperty(true);
     private final BooleanProperty showGCode = new SimpleBooleanProperty(true);
     private final BooleanProperty showAdjustments = new SimpleBooleanProperty(true);
+    private final BooleanProperty showSnapshot = new SimpleBooleanProperty(true);
     private final ObjectProperty<CurrencySymbol> currencySymbol = new SimpleObjectProperty<>(CurrencySymbol.POUND);
     private final FloatProperty currencyGBPToLocalMultiplier = new SimpleFloatProperty(1);
     private final BooleanProperty showMetricUnits = new SimpleBooleanProperty(true);
-    private final BooleanProperty timelapseTriggerEnabled = new SimpleBooleanProperty(false);
-    private final StringProperty goProWifiPassword = new SimpleStringProperty("");
-    private final BooleanProperty timelapseMoveBeforeCapture = new SimpleBooleanProperty(true);
-    private final IntegerProperty timelapseXMove = new SimpleIntegerProperty(0);
-    private final IntegerProperty timelapseYMove = new SimpleIntegerProperty(0);
-    private final IntegerProperty timelapseDelay = new SimpleIntegerProperty(0);
-    private final IntegerProperty timelapseDelayBeforeCapture = new SimpleIntegerProperty(0);
+    private final BooleanProperty searchForRemoteCameras = new SimpleBooleanProperty(true);
     private final BooleanProperty loosePartSplitOnLoad = new SimpleBooleanProperty(false);
     private final BooleanProperty autoGCodePreview = new SimpleBooleanProperty(true);
     private final BooleanProperty customPrinterEnabled = new SimpleBooleanProperty(false);
@@ -135,17 +128,12 @@ public class UserPreferences
         showDiagnostics.set(userPreferenceFile.isShowDiagnostics());
         showGCode.set(userPreferenceFile.isShowGCode());
         showAdjustments.set(userPreferenceFile.isShowAdjustments());
+        showSnapshot.set(userPreferenceFile.isShowSnapshot());
         autoGCodePreview.set(userPreferenceFile.isAutoGCodePreview());
         currencySymbol.set(userPreferenceFile.getCurrencySymbol());
         currencyGBPToLocalMultiplier.set(userPreferenceFile.getCurrencyGBPToLocalMultiplier());
         showMetricUnits.set(userPreferenceFile.isShowMetricUnits());
-        timelapseTriggerEnabled.set(userPreferenceFile.isTimelapseTriggerEnabled());
-        goProWifiPassword.set(userPreferenceFile.getGoProWifiPassword());
-        timelapseMoveBeforeCapture.set(userPreferenceFile.isTimelapseMoveBeforeCapture());
-        timelapseXMove.set(userPreferenceFile.getTimelapseXMove());
-        timelapseYMove.set(userPreferenceFile.getTimelapseYMove());
-        timelapseDelay.set(userPreferenceFile.getTimelapseDelay());
-        timelapseDelayBeforeCapture.set(userPreferenceFile.getTimelapseDelayBeforeCapture());
+        searchForRemoteCameras.set(userPreferenceFile.isSearchForRemoteCameras());
         loosePartSplitOnLoad.set(userPreferenceFile.isLoosePartSplitOnLoad());
         customPrinterEnabled.set(userPreferenceFile.isCustomPrinterEnabled());
         customPrinterType.set(userPreferenceFile.getCustomPrinterType());
@@ -159,16 +147,11 @@ public class UserPreferences
         showDiagnostics.addListener(booleanChangeListener);
         showGCode.addListener(booleanChangeListener);
         showAdjustments.addListener(booleanChangeListener);
+        showSnapshot.addListener(booleanChangeListener);
         autoGCodePreview.addListener(enableAutoGCodePreviewChangeListener);
         currencyGBPToLocalMultiplier.addListener(numberChangeListener);
         showMetricUnits.addListener(booleanChangeListener);
-        timelapseTriggerEnabled.addListener(booleanChangeListener);
-        goProWifiPassword.addListener(stringChangeListener);
-        timelapseMoveBeforeCapture.addListener(booleanChangeListener);
-        timelapseXMove.addListener(numberChangeListener);
-        timelapseYMove.addListener(numberChangeListener);
-        timelapseDelay.addListener(numberChangeListener);
-        timelapseDelayBeforeCapture.addListener(numberChangeListener);
+        searchForRemoteCameras.addListener(booleanChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
         
@@ -319,34 +302,19 @@ public class UserPreferences
         this.currencyGBPToLocalMultiplier.set(value);
     }
 
-    public BooleanProperty getTimelapseTriggerEnabledProperty()
+    public BooleanProperty searchForRemoteCamerasProperty()
     {
-        return timelapseTriggerEnabled;
+        return searchForRemoteCameras;
+    }
+    
+    public void setSearchForRemoteCameras(boolean searchForRemoteCameras)
+    {
+        this.searchForRemoteCameras.set(searchForRemoteCameras);
     }
 
-    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled)
+    public boolean isSearchForRemoteCameras()
     {
-        this.timelapseTriggerEnabled.set(timelapseTriggerEnabled);
-    }
-
-    public boolean isTimelapseTriggerEnabled()
-    {
-        return timelapseTriggerEnabled.get();
-    }
-
-    public StringProperty getGoProWifiProperty()
-    {
-        return goProWifiPassword;
-    }
-
-    public void setGoProWifiPassword(String goProWifiPassword)
-    {
-        this.goProWifiPassword.set(goProWifiPassword);
-    }
-
-    public String getGoProWifiPassword()
-    {
-        return goProWifiPassword.get();
+        return searchForRemoteCameras.get();
     }
 
     private void saveSettings()
@@ -416,6 +384,21 @@ public class UserPreferences
         this.showAdjustments.set(showAdjustments);
     }
 
+    public BooleanProperty showSnapshotProperty()
+    {
+        return showSnapshot;
+    }
+
+    public boolean getShowSnapshot()
+    {
+        return showSnapshot.get();
+    }
+
+    public void setShowSnapshot(boolean showSnapshot)
+    {
+        this.showSnapshot.set(showSnapshot);
+    }
+
     public void setShowMetricUnits(boolean value)
     {
         showMetricUnits.set(value);
@@ -429,81 +412,6 @@ public class UserPreferences
     public BooleanProperty showMetricUnitsProperty()
     {
         return showMetricUnits;
-    }
-
-    public BooleanProperty getTimelapseMoveBeforeCaptureProperty()
-    {
-        return timelapseMoveBeforeCapture;
-    }
-    
-    public boolean isTimelapseMoveBeforeCapture()
-    {
-        return timelapseMoveBeforeCapture.get();
-    }
-
-    public void setTimelapseMoveBeforeCapture(boolean value)
-    {
-        timelapseMoveBeforeCapture.set(value);
-    }
-    
-    public int getTimelapseXMove()
-    {
-        return timelapseXMove.get();
-    }
-
-    public void setTimelapseXMove(int value)
-    {
-        timelapseXMove.set(value);
-    }
-
-    public IntegerProperty getTimelapseXMoveProperty()
-    {
-        return timelapseXMove;
-    }
-
-    public int getTimelapseYMove()
-    {
-        return timelapseYMove.get();
-    }
-
-    public void setTimelapseYMove(int value)
-    {
-        timelapseYMove.set(value);
-    }
-
-    public IntegerProperty getTimelapseYMoveProperty()
-    {
-        return timelapseYMove;
-    }
-
-    public int getTimelapseDelay()
-    {
-        return timelapseDelay.get();
-    }
-
-    public void setTimelapseDelay(int value)
-    {
-        timelapseDelay.set(value);
-    }
-
-    public IntegerProperty getTimelapseDelayProperty()
-    {
-        return timelapseDelay;
-    }
-
-    public int getTimelapseDelayBeforeCapture()
-    {
-        return timelapseDelayBeforeCapture.get();
-    }
-
-    public void setTimelapseDelayBeforeCapture(int value)
-    {
-        timelapseDelayBeforeCapture.set(value);
-    }
-
-    public IntegerProperty getTimelapseDelayBeforeCaptureProperty()
-    {
-        return timelapseDelayBeforeCapture;
     }
 
     public boolean isLoosePartSplitOnLoad()

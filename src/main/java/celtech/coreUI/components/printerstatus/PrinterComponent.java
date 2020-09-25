@@ -382,6 +382,7 @@ public class PrinterComponent extends Pane
         }
         
         if (pauseStatus == PauseStatus.PAUSED
+                || pauseStatus == PauseStatus.SELFIE_PAUSE
                 || pauseStatus == PauseStatus.PAUSE_PENDING)
         {
             status = Status.PAUSED;

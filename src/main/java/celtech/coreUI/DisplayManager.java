@@ -33,6 +33,7 @@ import celtech.roboxbase.comms.DummyPrinterCommandInterface;
 import celtech.roboxbase.comms.RoboxCommsManager;
 import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.RoboxProfile;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
 import java.io.File;
@@ -205,6 +206,14 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
         LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
         controller.showAndSelectPrintProfile(roboxProfile);
+    }
+
+    public void showAndSelectCameraProfile(CameraProfile profile)
+    {
+        ApplicationStatus.getInstance().setMode(ApplicationMode.LIBRARY);
+        Initializable initializable = insetPanelControllers.get(ApplicationMode.LIBRARY);
+        LibraryMenuPanelController controller = (LibraryMenuPanelController) initializable;
+        controller.showAndSelectCameraProfile(profile);
     }
 
     private void switchPagesForMode(ApplicationMode oldMode, ApplicationMode newMode)
@@ -471,6 +480,12 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                                 applicationStatus.setMode(ApplicationMode.STATUS);
                             }
                         }
+                        
+                        if (lastTab instanceof ProjectTab)
+                        {
+                            ProjectTab lastProjectTab = (ProjectTab) lastTab;
+                            lastProjectTab.fireProjectDeselected();
+                        }
                     });
 
             AnchorPane.setBottomAnchor(notificationArea, 90.0);
@@ -591,11 +606,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
         contextMenu.getItems().add(item1);
         addPageTab.contextMenuProperty().set(contextMenu);
 
-        projectChooser = new FileChooser();
-        ListIterator extensionIterator = projectChooser.getExtensionFilters().listIterator();
-        projectChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Robox Project", "*.robox"));
-        
         steno.debug("load projects");
         loadProjectsAtStartup();
         loadModelsIntoNewProject(modelsToLoadAtStartup_projectName,
@@ -611,8 +621,6 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
     private void openProject()
     {
         FileChooser projectChooser = new FileChooser();
-    
-        ListIterator extensionIterator = projectChooser.getExtensionFilters().listIterator();
         projectChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Robox Project", "*.robox"));
         projectChooser.setInitialDirectory(new File(ApplicationConfiguration.getProjectDirectory()));
@@ -936,7 +944,8 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
                         ProjectTab newProjectTab = new ProjectTab(newProject,
                                                                   tabDisplay.widthProperty(),
                                                                   tabDisplay.heightProperty(),
-                                                                  false);
+                                                                  false
+                        );
 
                         tabDisplay.getTabs().add(tabDisplay.getTabs().size() - 1, newProjectTab);
                     }
@@ -956,7 +965,7 @@ public class DisplayManager implements EventHandler<KeyEvent>, KeyCommandListene
             steno.exception("Failed to open project", ex);
         }
     }
-
+    
     private void configureProjectDragNDrop(Node basePane)
     {
         basePane.setOnDragOver((DragEvent event) ->

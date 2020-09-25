@@ -8,6 +8,7 @@ import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectMode;
 import celtech.appManager.ShapeContainerProject;
+import celtech.appManager.TimelapseSettingsData;
 import celtech.appManager.undo.CommandStack;
 import celtech.appManager.undo.UndoableProject;
 import celtech.configuration.ApplicationConfiguration;
@@ -31,12 +32,18 @@ import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.PrinterColourMap;
 import celtech.roboxbase.appManager.NotificationType;
 import celtech.roboxbase.appManager.PurgeResponse;
+import celtech.roboxbase.camera.CameraInfo;
+import celtech.roboxbase.comms.DetectedServer;
+import celtech.roboxbase.comms.RemoteDetectedPrinter;
 import celtech.roboxbase.comms.RoboxCommsManager;
+import celtech.roboxbase.comms.remote.RoboxRemoteCommandInterface;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.RoboxProfile;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.FilamentContainer;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
+import celtech.roboxbase.configuration.fileRepresentation.CameraSettings;
 import celtech.roboxbase.configuration.fileRepresentation.PrinterSettingsOverrides;
 import celtech.roboxbase.configuration.utils.RoboxProfileUtils;
 import celtech.roboxbase.printerControl.model.Head;
@@ -46,9 +53,10 @@ import celtech.roboxbase.printerControl.model.PrinterConnection;
 import celtech.roboxbase.printerControl.model.PrinterException;
 import celtech.roboxbase.printerControl.model.PrinterListChangesListener;
 import celtech.roboxbase.printerControl.model.Reel;
-import celtech.roboxbase.services.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.StylusGCodeGeneratorResult;
+import celtech.roboxbase.services.camera.CameraTriggerData;
 import celtech.roboxbase.services.gcodegenerator.GCodeGeneratorResult;
+import celtech.roboxbase.services.slicer.PrintQualityEnumeration;
 import celtech.roboxbase.utils.PrintJobUtils;
 import celtech.roboxbase.utils.PrinterUtils;
 import celtech.roboxbase.utils.SystemUtils;
@@ -376,82 +384,117 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
         Printer printer = Lookup.getSelectedPrinterProperty().get();
 
-        String projectLocation = ApplicationConfiguration.getProjectDirectory()
-                + currentProject.getProjectName();
-        PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
-                currentProject.getPrintQuality(), projectLocation);
-
-        PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
-                currentProject.getUsedExtruders(printer));
-
-        CameraTriggerData cameraTriggerData = null;
-
-        if (Lookup.getUserPreferences().isTimelapseTriggerEnabled())
+        if (!currentProject.isProjectSaved())
         {
-            cameraTriggerData = new CameraTriggerData(
-                    Lookup.getUserPreferences().getGoProWifiPassword(),
-                    Lookup.getUserPreferences().isTimelapseMoveBeforeCapture(),
-                    Lookup.getUserPreferences().getTimelapseXMove(),
-                    Lookup.getUserPreferences().getTimelapseYMove(),
-                    Lookup.getUserPreferences().getTimelapseDelayBeforeCapture(),
-                    Lookup.getUserPreferences().getTimelapseDelay());
+            Project.saveProject(currentProject);
         }
         
-        printableProject.setCameraTriggerData(cameraTriggerData);
-        printableProject.setCameraEnabled(Lookup.getUserPreferences().isTimelapseTriggerEnabled());
+        if (currentProject instanceof ModelContainerProject)
+        {
+            String projectLocation = ApplicationConfiguration.getProjectDirectory()
+                    + currentProject.getProjectName();
+            PrintableProject printableProject = new PrintableProject(currentProject.getProjectName(), 
+                    currentProject.getPrintQuality(), projectLocation);
+            
+            PurgeResponse purgeConsent = printerUtils.offerPurgeIfNecessary(printer,
+                    ((ModelContainerProject) currentProject).getUsedExtruders(printer));
 
-        if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
-        {
-            displayManager.getPurgeInsetPanelController().purgeAndPrint(currentProject, printer);
-        } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
-                || purgeConsent == PurgeResponse.NOT_NECESSARY)
-        {
-            ObservableList<Boolean> usedExtruders = currentProject.getUsedExtruders(printer);
-            printableProject.setUsedExtruders(usedExtruders);
-            for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
+            // Trigger data is used by post processor.
+            // Camera data is sent to Root.
+            CameraTriggerData cameraTriggerData = null;
+            Optional<CameraSettings> cameraData = Optional.empty();
+            boolean timelapseEnabled = false;
+            TimelapseSettingsData tlsd = currentProject.getTimelapseSettings();
+            if (tlsd != null &&
+                printer.getCommandInterface() instanceof RoboxRemoteCommandInterface) {
+                DetectedServer printerServer = ((RemoteDetectedPrinter)printer.getCommandInterface()
+                                                                              .getPrinterHandle())
+                                                                              .getServerPrinterIsAttachedTo();
+                Optional<CameraInfo> infoOpt = tlsd.getTimelapseCamera();
+                Optional<CameraProfile> profileOpt = tlsd.getTimelapseProfile();
+                cameraData = infoOpt.flatMap((ci) -> profileOpt.map((cp) -> new CameraSettings(cp, ci)));
+                // Get trigger data only if there is a suitable camera on the current server.
+                Optional<CameraTriggerData> tdOpt = cameraData.flatMap(cd -> {
+                    String cameraName = cd.getCamera().getCameraName();
+                    return BaseLookup.getConnectedCameras()
+                        .stream()
+                        .filter(cc -> cc.getServer() == printerServer &&
+                                      cameraName.equalsIgnoreCase(cc.getCameraName()))
+                        .findAny()
+                        .flatMap(cc -> profileOpt.map(pp -> new CameraTriggerData(pp.isHeadLightOff(),
+                                                                                  pp.isAmbientLightOff(),
+                                                                                  pp.isMoveBeforeCapture(),
+                                                                                  pp.getMoveToX(),
+                                                                                  pp.getMoveToY())));
+                });
+
+                // Can't set local variables inside lambda expressions.
+                if (tdOpt.isPresent()) {
+                    cameraTriggerData= tdOpt.get();
+                    printerServer.setCameraTag(cameraData.get().getProfile().getProfileName(),
+                                               cameraData.get().getCamera().getCameraName());
+                    timelapseEnabled = tlsd.getTimelapseTriggerEnabled();
+                }
+            }
+                
+            printableProject.setCameraTriggerData(cameraTriggerData);
+            printableProject.setCameraEnabled(timelapseEnabled);
+            printableProject.setCameraData(cameraData);
+
+            if (purgeConsent == PurgeResponse.PRINT_WITH_PURGE)
             {
-                if (usedExtruders.get(extruderNumber))
+                displayManager.getPurgeInsetPanelController().purgeAndPrint(
+                        (ModelContainerProject) currentProject, printer);
+            } else if (purgeConsent == PurgeResponse.PRINT_WITHOUT_PURGE
+                    || purgeConsent == PurgeResponse.NOT_NECESSARY)
+            {
+                ObservableList<Boolean> usedExtruders = ((ModelContainerProject) currentProject).getUsedExtruders(printer);
+                printableProject.setUsedExtruders(usedExtruders);
+                for (int extruderNumber = 0; extruderNumber < usedExtruders.size(); extruderNumber++)
                 {
-                    if (extruderNumber == 0)
+                    if (usedExtruders.get(extruderNumber))
                     {
-                        if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                        if (extruderNumber == 0)
                         {
-                            currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
+                            if (currentPrinter.headProperty().get().headTypeProperty().get() == Head.HeadType.DUAL_MATERIAL_HEAD)
+                            {
+                                currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 1);
+                            } else
+                            {
+                                currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
+                            }
                         } else
                         {
                             currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                         }
-                    } else
-                    {
-                        currentPrinter.resetPurgeTemperatureForNozzleHeater(currentPrinter.headProperty().get(), 0);
                     }
                 }
-            }
-            applicationStatus.setMode(ApplicationMode.STATUS);
+                applicationStatus.setMode(ApplicationMode.STATUS);
 
-            Task<Boolean> fetchGCodeResultAndPrint = new Task<Boolean>() 
-            {
-                @Override
-                protected Boolean call() throws Exception 
+                Task<Boolean> fetchGCodeResultAndPrint = new Task<Boolean>() 
                 {
-                    try 
+                    @Override
+                    protected Boolean call() throws Exception 
                     {
-                        Optional<GCodeGeneratorResult> potentialGCodeGenResult = currentProject.getGCodeGenManager()
-                                                                                               .getModelPrepResult(currentProject.getPrintQuality());
-                        if(potentialGCodeGenResult.isPresent())
+                        try 
                         {
-                            printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                            Optional<GCodeGeneratorResult> potentialGCodeGenResult = ((ModelContainerProject) currentProject)
+                                    .getGCodeGenManager().getModelPrepResult(currentProject.getPrintQuality());
+                            if(potentialGCodeGenResult.isPresent())
+                            {
+                                printer.printProject(printableProject, potentialGCodeGenResult, Lookup.getUserPreferences().isSafetyFeaturesOn());
+                            }
+                            return true;
+                        } catch (PrinterException ex)
+                        {
+                            steno.error("Error during print project " + ex.getMessage());
+                            return false;
                         }
-                        return true;
-                    } catch (PrinterException ex)
-                    {
-                        steno.error("Error during print project " + ex.getMessage());
-                        return false;
                     }
-                }
-            };
-            // Run the task from GCodeGenManager so it can be managed...
-            currentProject.getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndPrint);
+                };
+                // Run the task from GCodeGenManager so it can be managed...
+                ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndExecutePrintOrSaveTask(fetchGCodeResultAndPrint);
+            }
         }
     }
 
@@ -497,7 +540,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             };
 
             // Run the task from GCodeGenManager so it can be managed...
-            currentProject.getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(generateGCodeAndPrint);
+            currentProject.getGCodeGenManager().replaceAndExecutePrintOrSaveTask(generateGCodeAndPrint);
         }
     }
     
@@ -524,8 +567,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     @FXML
     void savePressed(ActionEvent event) 
     {
-        Project currentProject = Lookup.getSelectedProjectProperty().get();
         steno.trace("Save slice to file pressed");
+        Project currentProject = Lookup.getSelectedProjectProperty().get();
+        
+        if (!currentProject.isProjectSaved())
+        {
+            Project.saveProject(currentProject);
+        }
         
         if (currentProject instanceof ModelContainerProject) 
         {
@@ -559,7 +607,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
 
                                     // The files must use an appropriate print job id in order for the printer to accept it at.
                                     String jobUUID = SystemUtils.generate16DigitID();
-                                    PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString());
+                                    Optional<CameraInfo> infoOpt = currentProject.getTimelapseSettings().getTimelapseCamera();
+                                    Optional<CameraProfile> profileOpt = currentProject.getTimelapseSettings().getTimelapseProfile();
+                                    Optional<CameraSettings> settings = infoOpt.flatMap((i) -> profileOpt.map((p) -> new CameraSettings(p, i)));
+                                    PrintJobUtils.assignPrintJobIdToProject(jobUUID, dest.getPath(), currentProject.getPrintQuality().toString(), settings);
                                 }
                                 catch (IOException ex)
                                 {
@@ -573,7 +624,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                 }
             };
             // Run the task from GCodeGenManager so it can be managed...
-            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndSubmitPrintOrSaveTask(fetchGCodeResultAndSave);
+            ((ModelContainerProject) currentProject).getGCodeGenManager().replaceAndExecutePrintOrSaveTask(fetchGCodeResultAndSave);
         }
     }
 	
@@ -581,7 +632,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     void previewPressed(ActionEvent event)
     {
         if (previewManager != null)
-            previewManager.previewPressed(event);
+            previewManager.previewAction(event);
     }
 
     @FXML
@@ -1071,6 +1122,13 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
                                                Lookup.i18n("dialogs.toomanyrobox.message"));
     };
 
+    private final ChangeListener<PreviewManager.PreviewState> previewStateChangeListener = (observable, oldState, newState) -> {
+        BaseLookup.getTaskExecutor().runOnGUIThread(() ->
+        {
+            updatePreviewButton(newState);
+        });
+    };
+
     /*
      * JavaFX initialisation method
      */
@@ -1158,13 +1216,35 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         });
         
         currentPrinter = Lookup.getSelectedPrinterProperty().get();
-        previewManager = new PreviewManager(previewButton, displayManager);
+        previewManager = new PreviewManager();
         previewManager.setProjectAndPrinter(selectedProject, currentPrinter);
+        previewManager.previewStateProperty().addListener(previewStateChangeListener);
         displayManager.setPreviewManager(previewManager);
 
         BaseLookup.getPrinterListChangesNotifier().addListener(this);
     }
-
+        
+    private void updatePreviewButton(PreviewManager.PreviewState newState)
+    {
+        switch(newState)
+        {
+            case CLOSED:
+            case OPEN:
+                previewButton.setFxmlFileName("previewButton");
+                previewButton.disableProperty().set(false);
+                break;
+            case NOT_SUPPORTED:
+            case SLICE_UNAVAILABLE:
+                previewButton.setFxmlFileName("previewButton");
+                previewButton.disableProperty().set(true);
+                break;
+            case LOADING:
+                previewButton.setFxmlFileName("previewLoadingButton");
+                previewButton.disableProperty().set(true);
+                break;
+        }
+    }
+    
     private void setupButtonVisibility()
     {
 
@@ -1487,7 +1567,7 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
             snapToGroundButton.selectedProperty().set(false);
         }
     };
-
+    
     ProjectChangesListener projectChangesListener = new ProjectChangesListener()
     {
 
@@ -1526,6 +1606,12 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         {
             whenProjectOrSettingsPrinterChange();
         }
+
+        @Override
+        public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
+        {
+            whenProjectOrSettingsPrinterChange();
+        }
     };
 
     private void unbindProject(Project project)
@@ -1533,8 +1619,10 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
         Lookup.getSelectedPrinterProperty().removeListener(printerSettingsListener);
         layoutSubmode.removeListener(layoutSubmodeListener);
         project.removeProjectChangesListener(projectChangesListener);
-        if (previewManager != null)
+        if (previewManager != null) {
             previewManager.setProjectAndPrinter(null, currentPrinter);
+            previewManager.previewStateProperty().removeListener(previewStateChangeListener);
+        }
         undoButton.disableProperty().unbind();
         redoButton.disableProperty().unbind();
     }
@@ -1543,22 +1631,26 @@ public class LayoutStatusMenuStripController implements PrinterListChangesListen
     {
 
         createPrinterSettingsListener(printerSettings);
-        bindSelectedModels(project);
+        if (project != null) {
+            bindSelectedModels(project);
 
-        if (currentPrinter != null && project != null)
-        {
-            whenProjectOrSettingsPrinterChange();
+            if (currentPrinter != null)
+            {
+                whenProjectOrSettingsPrinterChange();
+            }
+
+            layoutSubmode.addListener(layoutSubmodeListener);
+            project.addProjectChangesListener(projectChangesListener);
+
+            undoButton.disableProperty().bind(
+                    Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
+            redoButton.disableProperty().bind(
+                    Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
         }
-
-        layoutSubmode.addListener(layoutSubmodeListener);
-        project.addProjectChangesListener(projectChangesListener);
-
-        undoButton.disableProperty().bind(
-                Lookup.getProjectGUIState(project).getCommandStack().getCanUndo().not());
-        redoButton.disableProperty().bind(
-                Lookup.getProjectGUIState(project).getCommandStack().getCanRedo().not());
-        if (previewManager != null)
+        if (previewManager != null) {
             previewManager.setProjectAndPrinter(project, currentPrinter);
+            previewManager.previewStateProperty().addListener(previewStateChangeListener);
+        }
     }
 
     private void dealWithOutOfBoundsModels()

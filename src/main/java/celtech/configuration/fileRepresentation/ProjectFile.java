@@ -1,7 +1,10 @@
 package celtech.configuration.fileRepresentation;
 
 import celtech.appManager.Project;
+import celtech.roboxbase.camera.CameraInfo;
+import celtech.roboxbase.configuration.fileRepresentation.CameraProfile;
 import java.util.Date;
+import java.util.Optional;
 
 //@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 //@JsonDeserialize(using = ProjectFileDeserialiser.class)
@@ -13,6 +16,9 @@ public abstract class ProjectFile
     private Date lastModifiedDate;
     private String lastPrintJobID = "";
     private boolean projectNameModified = false;
+    private boolean timelapseTriggerEnabled = false;
+    private String timelapseProfileName = "";
+    private String timelapseCameraID = "";
 
     public ProjectFileTypeEnum getProjectType()
     {
@@ -74,8 +80,36 @@ public abstract class ProjectFile
         this.projectNameModified = projectNameModified;
     }
     
-    
+    public boolean isTimelapseTriggerEnabled() 
+    {
+        return timelapseTriggerEnabled;
+    }
+
+    public void setTimelapseTriggerEnabled(boolean timelapseTriggerEnabled) 
+    {
+        this.timelapseTriggerEnabled = timelapseTriggerEnabled;
+    }
            
+    public String getTimelapseProfileName() 
+    {
+        return timelapseProfileName;
+    }
+
+    public void setTimelapseProfileName(String timelapseProfileName) 
+    {
+        this.timelapseProfileName = timelapseProfileName;
+    }
+
+    public String getTimelapseCameraID() 
+    {
+        return timelapseCameraID;
+    }
+
+    public void setTimelapseCameraID(String timelapseCameraID) 
+    {
+        this.timelapseCameraID = timelapseCameraID;
+    }
+
     public abstract void implementationSpecificPopulate(Project project);
     
     public final void populateFromProject(Project project) {
@@ -83,6 +117,15 @@ public abstract class ProjectFile
         lastModifiedDate = project.getLastModifiedDate().get();
         lastPrintJobID = project.getLastPrintJobID();
         projectNameModified = project.isProjectNameModified();
+        timelapseTriggerEnabled = project.getTimelapseSettings().getTimelapseTriggerEnabled();
+        timelapseProfileName = project.getTimelapseSettings()
+                                      .getTimelapseProfile()
+                                      .map(CameraProfile::getProfileName)
+                                      .orElse("");
+        timelapseCameraID = project.getTimelapseSettings()
+                                      .getTimelapseCamera()
+                                      .map((c) -> String.format("%s:%02d", c.getCameraName(), c.getCameraNumber()))
+                                      .orElse("");
         
         implementationSpecificPopulate(project);
     }

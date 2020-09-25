@@ -7,6 +7,7 @@ import celtech.appManager.Project;
 import celtech.appManager.Project.ProjectChangesListener;
 import celtech.appManager.ProjectManager;
 import celtech.appManager.ProjectMode;
+import celtech.appManager.TimelapseSettingsData;
 import celtech.modelcontrol.ModelContainer;
 import celtech.modelcontrol.ModelGroup;
 import celtech.modelcontrol.ProjectifiableThing;
@@ -317,6 +318,11 @@ public class ProjectSelection implements ProjectChangesListener
 
     @Override
     public void whenPrinterSettingsChanged(PrinterSettingsOverrides printerSettings)
+    {
+    }
+
+    @Override
+    public void whenTimelapseSettingsChanged(TimelapseSettingsData timelapseSettings)
     {
     }
 
