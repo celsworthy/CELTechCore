@@ -6,14 +6,9 @@ import celtech.appManager.ApplicationStatus;
 import celtech.coreUI.DisplayManager;
 import celtech.roboxbase.BaseLookup;
 import celtech.roboxbase.configuration.BaseConfiguration;
-import celtech.roboxbase.licence.Licence;
-import celtech.roboxbase.licensing.LicenceManager;
 import celtech.roboxbase.printerControl.model.Head;
 import celtech.roboxbase.printerControl.model.Printer;
 import celtech.roboxbase.printerControl.model.PrinterIdentity;
-import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -24,6 +19,9 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -173,8 +171,6 @@ public class AboutPanelController implements Initializable
             bindToPrinter(newValue);
         });
         bindToPrinter(Lookup.getSelectedPrinterProperty().get());
-        updateLicenseData();
-        LicenceManager.getInstance().addLicenceChangeListener(licenceOption -> autoMakerLicense.setText(licenceOption.map(Licence::toShortString).orElse("")));
     }
 
     private void updateHeadData(Head head)
@@ -203,15 +199,7 @@ public class AboutPanelController implements Initializable
             roboxElectronicsVersion.setText("");
         }
     }
-    
-    private void updateLicenseData() {
-        Optional<Licence> potentiaLicense = LicenceManager.getInstance().readCachedLicenseFile();
-        if(potentiaLicense.isPresent()) {
-            autoMakerLicense.setText(potentiaLicense.get().toShortString());
-        } else {
-            autoMakerLicense.setText("");
-        }
-    }
+
 
     private ChangeListener<Head> headChangeListener = new ChangeListener<Head>()
     {

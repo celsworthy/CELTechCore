@@ -10,10 +10,6 @@ import celtech.roboxbase.configuration.BaseConfiguration;
 import celtech.roboxbase.configuration.SlicerType;
 import celtech.roboxbase.configuration.datafileaccessors.HeadContainer;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
-import celtech.roboxbase.licence.Licence;
-import celtech.roboxbase.licence.LicenceType;
-import celtech.roboxbase.licensing.LicenceManager;
-import celtech.roboxbase.licensing.LicenceManager.LicenceChangeListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.ObjectProperty;
@@ -107,13 +103,7 @@ public class UserPreferences
         saveSettings();
     };
     
-    private final LicenceChangeListener autoGCodePreviewLicenceChangeListener = licenceOption -> {
-        if (licenceOption.map(Licence::getLicenceType).orElse(LicenceType.AUTOMAKER_FREE) == LicenceType.AUTOMAKER_FREE) 
-        {
-            autoGCodePreview.set(false);
-        }
-        saveSettings();
-    };
+
 
     public UserPreferences(UserPreferenceFile userPreferenceFile)
     {
@@ -154,8 +144,6 @@ public class UserPreferences
         searchForRemoteCameras.addListener(booleanChangeListener);
         loosePartSplitOnLoad.addListener(booleanChangeListener);
         customPrinterEnabled.addListener(enableCustomPrinterChangeListener);
-        
-        LicenceManager.addLicenceChangeListener(autoGCodePreviewLicenceChangeListener);
     }
 
     public String getLanguageTag()
