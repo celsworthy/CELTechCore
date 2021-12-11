@@ -11,17 +11,7 @@ import celtech.roboxbase.comms.remote.BusyStatus;
 import celtech.roboxbase.comms.remote.EEPROMState;
 import celtech.roboxbase.comms.remote.PauseStatus;
 import celtech.roboxbase.comms.remote.clear.SuitablePrintJob;
-import celtech.roboxbase.comms.rx.AckResponse;
-import celtech.roboxbase.comms.rx.FirmwareError;
-import celtech.roboxbase.comms.rx.FirmwareResponse;
-import celtech.roboxbase.comms.rx.HeadEEPROMDataResponse;
-import celtech.roboxbase.comms.rx.ListFilesResponse;
-import celtech.roboxbase.comms.rx.PrinterIDResponse;
-import celtech.roboxbase.comms.rx.ReelEEPROM0DataResponse;
-import celtech.roboxbase.comms.rx.ReelEEPROMDataResponse;
-import celtech.roboxbase.comms.rx.RoboxRxPacket;
-import celtech.roboxbase.comms.rx.SendFile;
-import celtech.roboxbase.comms.rx.StatusResponse;
+import celtech.roboxbase.comms.rx.*;
 import celtech.roboxbase.configuration.Filament;
 import celtech.roboxbase.configuration.Macro;
 import celtech.roboxbase.configuration.fileRepresentation.HeadFile;
@@ -30,16 +20,7 @@ import celtech.roboxbase.configuration.fileRepresentation.PrinterEdition;
 import celtech.roboxbase.configuration.hardwarevariants.PrinterType;
 import celtech.roboxbase.postprocessor.PrintJobStatistics;
 import celtech.roboxbase.printerControl.PrinterStatus;
-import celtech.roboxbase.printerControl.model.Extruder;
-import celtech.roboxbase.printerControl.model.Head;
-import celtech.roboxbase.printerControl.model.PrintEngine;
-import celtech.roboxbase.printerControl.model.Printer;
-import celtech.roboxbase.printerControl.model.PrinterAncillarySystems;
-import celtech.roboxbase.printerControl.model.PrinterConnection;
-import celtech.roboxbase.printerControl.model.PrinterException;
-import celtech.roboxbase.printerControl.model.PrinterIdentity;
-import celtech.roboxbase.printerControl.model.Reel;
-import celtech.roboxbase.printerControl.model.TemperatureAndPWMData;
+import celtech.roboxbase.printerControl.model.*;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleHeightStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.NozzleOpeningStateTransitionManager;
 import celtech.roboxbase.printerControl.model.statetransitions.calibration.SingleNozzleHeightStateTransitionManager;
@@ -53,25 +34,15 @@ import celtech.roboxbase.utils.RectangularBounds;
 import celtech.roboxbase.utils.models.PrintableProject;
 import celtech.roboxbase.utils.tasks.Cancellable;
 import celtech.roboxbase.utils.tasks.TaskResponder;
-import java.util.List;
-import java.util.Optional;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.geometry.Point3D;
 import javafx.scene.paint.Color;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * The TestPrinter class has a testable/mutable Head, Reels etc.
@@ -293,7 +264,7 @@ public class TestPrinter implements Printer
     }
 
     @Override
-    public void ejectFilament(int extruderNumber, TaskResponder responder) throws PrinterException
+    public void ejectFilament(int extruderNumber,int temperature, TaskResponder responder) throws PrinterException
     {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
